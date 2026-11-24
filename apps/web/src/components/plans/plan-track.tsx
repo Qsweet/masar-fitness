@@ -6,29 +6,28 @@ interface PlanTrackProps {
 }
 
 /**
- * «المضمار»: طول الخط هو مدة الباقة. المدفوع كهرماني، والمجاني بلون الطباشير، وخط النهاية عمودي.
- * زخرفي للقارئ الآلي: المدة مكتوبة نصًا بجانبه.
+ * خط المدة: طوله مدة الباقة مقارنة بأطول باقة، فتُقارن الباقات بالنظر.
+ * المدفوع بلون داكن، والأشهر المجانية بالكهرماني. زخرفي للقارئ الآلي: المدة مكتوبة نصًا بجانبه.
  */
 export function PlanTrack({ paidShare, totalShare }: PlanTrackProps) {
   return (
     <svg
-      viewBox="0 0 100 10"
+      viewBox="0 0 100 4"
       preserveAspectRatio="none"
       aria-hidden="true"
-      className="block h-3 w-full overflow-visible rtl:-scale-x-100"
+      className="block h-1.5 w-full rtl:-scale-x-100"
     >
-      <line x1="0" y1="5" x2={totalShare} y2="5" className="track-band track-band-slim" />
-      <line x1="0" y1="5" x2={paidShare} y2="5" className="track-dash" />
+      <rect x="0" y="0" width="100" height="4" className="track-band" />
+      <rect x="0" y="0" width={paidShare} height="4" className="track-paid" />
       {totalShare > paidShare ? (
-        <line
-          x1={paidShare}
-          y1="5"
-          x2={totalShare}
-          y2="5"
-          className="track-dash track-dash-bonus"
+        <rect
+          x={paidShare}
+          y="0"
+          width={totalShare - paidShare}
+          height="4"
+          className="track-bonus"
         />
       ) : null}
-      <line x1={totalShare} y1="-2" x2={totalShare} y2="12" className="track-finish" />
     </svg>
   );
 }

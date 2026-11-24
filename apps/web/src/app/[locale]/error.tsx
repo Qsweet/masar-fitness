@@ -15,14 +15,14 @@ export default function LocaleError({ reset }: ErrorBoundaryProps) {
   const dictionary = getDictionary(locale);
 
   return (
-    <main className="surface-asphalt py-24 md:py-32">
+    <main className="surface-deep py-24 md:py-32">
       <div className="page-container">
         <h1 className="text-title font-display">{dictionary.error.title}</h1>
         <p className="text-muted mt-4 max-w-prose text-lead">{dictionary.error.lead}</p>
         <button
           type="button"
           onClick={reset}
-          className="mt-10 inline-flex min-h-12 cursor-pointer items-center rounded-control bg-lane-500 px-6 font-strong text-asphalt-950 transition-colors duration-(--duration-press) hover:bg-lane-600"
+          className="mt-10 inline-flex min-h-12 cursor-pointer items-center rounded-full bg-lane-500 px-6 font-strong text-ink-900 transition-colors duration-(--duration-press) hover:bg-lane-600"
         >
           {dictionary.error.retry}
         </button>

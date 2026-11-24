@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Steps } from "@/components/home/steps";
+import { PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
-import { PlanSummary } from "@/components/plans/plan-summary";
-import { PurchasePanel, StickyPurchaseBar } from "@/components/plans/purchase-panel";
+import { PlanShop } from "@/components/plans/plan-shop";
 import { getDictionary } from "@/i18n/dictionaries";
-import { isLocale } from "@/i18n/locales";
-import { getMembershipPlan } from "@/server/catalog";
+import { isLocale, localizedPath } from "@/i18n/locales";
+import { getMembershipPlan, getMembershipPlans } from "@/server/catalog";
 import { pageMetadata } from "@/server/metadata";
 
 type Props = PageProps<"/[locale]/memberships/[slug]">;
@@ -30,36 +31,49 @@ export default async function PlanPage({ params }: Props) {
   if (!isLocale(locale)) {
     notFound();
   }
-  const plan = await getMembershipPlan(slug);
+  const plans = await getMembershipPlans();
+  const plan = plans.find((candidate) => candidate.slug === slug);
   if (plan === undefined) {
     notFound();
   }
   const dictionary = getDictionary(locale);
+  const back = (
+    <p className="mb-4">
+      <Link
+        href={localizedPath(locale, "/memberships")}
+        className="font-medium underline underline-offset-4"
+      >
+        {dictionary.plan.back}
+      </Link>
+    </p>
+  );
 
   return (
-    <PageShell locale={locale} path={`/memberships/${plan.slug}`}>
-      <PlanSummary plan={plan} locale={locale} dictionary={dictionary} />
-      <section className="surface-chalk py-16 md:py-24">
-        <div className="page-container grid gap-10 md:grid-cols-12">
-          <div className="md:col-span-6">
-            <h2 className="text-title font-display">{dictionary.plan.includesTitle}</h2>
-            <ul className="rule mt-8 border-b">
-              {plan.benefits.map((benefit) => (
-                <li key={benefit.ar} className="rule border-t py-4 text-heading font-strong">
-                  {benefit[locale]}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="md:col-span-5 md:col-start-8">
-            <PurchasePanel plan={plan} locale={locale} dictionary={dictionary} />
-          </div>
+    <PageShell locale={locale} path={`/memberships/${plan.slug}`} stickyBar>
+      <PageIntro title={plan.name[locale]} lead={plan.summary[locale]} before={back} />
+      <section className="surface-light py-4 md:py-14">
+        <div className="page-container">
+          <PlanShop plans={plans} selected={plan} locale={locale} dictionary={dictionary} />
+        </div>
+      </section>
+      <section
+        aria-labelledby="includes-title"
+        className="surface-light surface-light-raised rule border-y py-12 md:py-16"
+      >
+        <div className="page-container">
+          <h2 id="includes-title" className="text-title font-display">
+            {dictionary.plan.includesTitle}
+          </h2>
+          <ul className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-4">
+            {plan.benefits.map((benefit) => (
+              <li key={benefit.ar} className="rule border-t pt-4 text-heading font-strong">
+                {benefit[locale]}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
       <Steps dictionary={dictionary} />
-      {/* مساحة بارتفاع شريط الشراء الثابت حتى لا يغطي آخر التذييل على الجوال */}
-      <div className="surface-asphalt surface-asphalt-deep h-20 md:hidden" aria-hidden="true" />
-      <StickyPurchaseBar plan={plan} locale={locale} dictionary={dictionary} />
     </PageShell>
   );
 }

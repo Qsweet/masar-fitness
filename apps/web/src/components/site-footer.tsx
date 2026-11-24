@@ -14,7 +14,7 @@ const LINK = "underline-offset-4 hover:underline";
 
 export function SiteFooter({ locale, dictionary }: SiteFooterProps) {
   return (
-    <footer className="surface-asphalt surface-asphalt-deep">
+    <footer className="surface-deep surface-deep-low">
       <div className="page-container grid gap-10 py-14 md:grid-cols-12">
         <div className="md:col-span-5">
           <Image src={logo} alt="" sizes="112px" className="h-28 w-auto" />

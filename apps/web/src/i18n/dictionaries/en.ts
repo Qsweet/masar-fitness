@@ -21,23 +21,21 @@ export const en: Dictionary = {
     main: "Main navigation",
     memberships: "Plans",
     location: "Location",
-    join: "Join",
     switchLanguage: "العربية",
     home: "Home",
   },
   staging: "Preview version: prices and content are for review and not final.",
   hero: {
-    title: "Start your track",
-    lead: "A men's sports club in Ar Rihab, Buraidah. Strength, fitness, pool, jacuzzi and steam room in one membership.",
-    primary: "Choose your plan",
-    secondary: "Club location",
+    title: "Strength, pool, jacuzzi and steam room in one membership",
+    lead: "Masters Way, a men's sports club in Ar Rihab, Buraidah.",
   },
   plans: {
-    title: "Choose your distance",
-    lead: "The length of the track is the length of your membership. Prices shown are totals including VAT.",
+    title: "Choose your duration",
+    lead: "The length of the line is the length of the membership. Prices shown are totals including VAT.",
     listLabel: "Membership plans",
     choose: "Choose plan",
     compare: "Compare plans",
+    bestValue: "Lowest cost per month",
     bonusSuffix: "free",
     perMonth: "per month",
     about: "About",
@@ -48,7 +46,7 @@ export const en: Dictionary = {
     emptyAction: "Message us on WhatsApp",
   },
   facilities: {
-    title: "Every facility in one membership",
+    title: "Every membership covers",
     items: [
       { name: "Strength and fitness", text: "The strength and fitness training floor." },
       { name: "Swimming pool", text: "Swimming and water fitness." },
@@ -76,6 +74,7 @@ export const en: Dictionary = {
   memberships: {
     title: "Membership plans",
     lead: "Every plan covers all club facilities. The difference is duration and price.",
+    intro: "Choose the duration that suits you and see the total straight away.",
     compareTitle: "Compare plans",
     compareCaption: "Membership plans compared by duration, price and benefits",
     rowPlan: "Plan",
@@ -87,7 +86,6 @@ export const en: Dictionary = {
     included: "Included",
     notIncluded: "Not included",
     none: "None",
-    scrollHint: "The table scrolls sideways",
   },
   plan: {
     back: "All plans",

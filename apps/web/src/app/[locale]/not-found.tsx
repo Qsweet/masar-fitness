@@ -11,7 +11,7 @@ export default async function NotFound() {
 
   return (
     <PageShell locale={locale} path="/">
-      <section className="surface-asphalt py-24 md:py-32">
+      <section className="surface-deep py-24 md:py-32">
         <div className="page-container">
           <h1 className="text-title font-display">{dictionary.notFound.title}</h1>
           <p className="text-muted mt-4 max-w-prose text-lead">{dictionary.notFound.lead}</p>

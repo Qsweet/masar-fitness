@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Facilities } from "@/components/home/facilities";
-import { Hero } from "@/components/home/hero";
 import { Location } from "@/components/home/location";
-import { PlansSection } from "@/components/home/plans-section";
 import { Steps } from "@/components/home/steps";
+import { PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
+import { PlanShop } from "@/components/plans/plan-shop";
 import { getDictionary } from "@/i18n/dictionaries";
-import { isLocale } from "@/i18n/locales";
+import { isLocale, localizedPath } from "@/i18n/locales";
 import { getMembershipPlans } from "@/server/catalog";
 import { pageMetadata } from "@/server/metadata";
 
@@ -39,9 +40,31 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const plans = await getMembershipPlans();
 
   return (
-    <PageShell locale={locale} path={PATH}>
-      <Hero locale={locale} dictionary={dictionary} />
-      <PlansSection plans={plans} locale={locale} dictionary={dictionary} />
+    <PageShell locale={locale} path={PATH} stickyBar={plans.length > 0}>
+      <PageIntro title={dictionary.hero.title} lead={dictionary.hero.lead} />
+      <section
+        id="plans"
+        aria-labelledby="plans-title"
+        className="surface-light scroll-mt-4 py-8 md:py-14"
+      >
+        <div className="page-container">
+          {/* على الجوال القائمة تشرح نفسها، والمساحة للباقات الأربع فوق شريط الشراء */}
+          <h2 id="plans-title" className="sr-only mb-5 text-title font-display md:not-sr-only">
+            {dictionary.plans.title}
+          </h2>
+          <PlanShop plans={plans} locale={locale} dictionary={dictionary} />
+          {plans.length > 1 ? (
+            <p className="mt-8">
+              <Link
+                href={`${localizedPath(locale, "/memberships")}#compare`}
+                className="font-strong underline underline-offset-4"
+              >
+                {dictionary.plans.compare}
+              </Link>
+            </p>
+          ) : null}
+        </div>
+      </section>
       <Facilities dictionary={dictionary} />
       <Steps dictionary={dictionary} />
       <Location locale={locale} dictionary={dictionary} />

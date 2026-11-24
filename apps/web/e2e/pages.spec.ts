@@ -4,29 +4,52 @@ import { expect, test } from "@playwright/test";
 const ANNUAL = { slug: "one-year", nameAr: "السنوية", nameEn: "Annual", price: "2,800" };
 
 test.describe("الرئيسية", () => {
-  test("تعرض الباقات من قاعدة البيانات بسعرها الإجمالي", async ({ page }) => {
+  test("تعرض المدد الأربع من قاعدة البيانات، والأقل تكلفة شهريًا مختارة مع ملخصها", async ({
+    page,
+  }) => {
     await page.goto("/");
-    const lanes = page.getByRole("list", { name: "باقات الاشتراك" }).getByRole("listitem");
-    await expect(lanes).toHaveCount(4);
-    // الاسم بالمطابقة التامة: «السنوية» جزء من «ربع السنوية» و«نصف السنوية»
-    const annual = lanes.filter({
-      has: page.getByRole("heading", { name: ANNUAL.nameAr, exact: true }),
-    });
+    const rows = page.getByRole("list", { name: "باقات الاشتراك" }).getByRole("listitem");
+    await expect(rows).toHaveCount(4);
+
+    const annual = rows.filter({ hasText: "12 شهرًا" });
     await expect(annual).toContainText(ANNUAL.price);
-    await expect(annual).toContainText("12");
     await expect(annual).toContainText("+ شهران مجانًا");
-    await expect(annual).toContainText("حوالي 200");
+    await expect(annual).toContainText("الأقل تكلفة شهريًا");
+    await expect(annual.getByRole("link")).toHaveAttribute("aria-current", "true");
+    await expect(rows.locator('a[aria-current="true"]')).toHaveCount(1);
+
+    const main = page.getByRole("main");
+    await expect(main).toContainText(`${ANNUAL.nameAr}: الإجمالي`);
+    await expect(main).toContainText("شامل ضريبة القيمة المضافة");
+    await expect(main).toContainText("حوالي 200 ر.س شهريًا");
   });
 
-  test("زر الواجهة ينقل إلى الباقات، والباقة تفتح صفحتها", async ({ page }) => {
+  test("اختيار مدة ينقل إلى صفحة باقتها ويحدّث الملخص", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: "اختر باقتك" }).click();
-    await expect(page).toHaveURL(/#plans$/);
-    await page
-      .getByRole("link", { name: new RegExp(`^اختر الباقة\\s*:\\s*${ANNUAL.nameAr}$`) })
-      .click();
-    await expect(page).toHaveURL(new RegExp(`/memberships/${ANNUAL.slug}$`));
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(ANNUAL.nameAr);
+    const rows = page.getByRole("list", { name: "باقات الاشتراك" }).getByRole("listitem");
+    await rows.filter({ hasText: "3 أشهر" }).getByRole("link").click();
+    await expect(page).toHaveURL(/\/memberships\/three-months$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("ربع السنوية");
+    await expect(page.locator('a[aria-current="true"]')).toContainText("3 أشهر");
+    await expect(page.getByRole("main")).toContainText("ربع السنوية: الإجمالي");
+    await expect(page.getByRole("main")).toContainText("حوالي 300 ر.س شهريًا");
+  });
+
+  test("الشاشة الأولى على الجوال: المدد الأربع بأسعارها وزر الشراء ظاهرة بلا تمرير", async ({
+    page,
+    viewport,
+  }) => {
+    test.skip((viewport?.width ?? 0) >= 768, "خاص بالجوال");
+    await page.goto("/");
+    const rows = page.getByRole("list", { name: "باقات الاشتراك" }).getByRole("listitem");
+    for (const price of ["350", "900", "1,600", ANNUAL.price]) {
+      await expect(
+        rows.filter({ hasText: price }).getByText(price, { exact: true }),
+      ).toBeInViewport({ ratio: 1 });
+    }
+    const bar = page.getByRole("complementary", { name: "ملخص الباقة والاشتراك" });
+    await expect(bar.getByRole("link", { name: "اشترك عبر واتساب" })).toBeInViewport({ ratio: 1 });
+    await expect(bar).toContainText(ANNUAL.price);
   });
 
   test("روابط الموقع الحقيقية: الاتجاهات والهاتف", async ({ page }) => {
@@ -67,8 +90,15 @@ test.describe("صفحة الباقة", () => {
     const main = page.getByRole("main");
     await expect(main).toContainText(`${ANNUAL.price} ر.س`);
     await expect(main).toContainText("شامل ضريبة القيمة المضافة");
-    await expect(main).toContainText("12 شهرًا مدفوعة + شهران مجانًا = 14 شهرًا");
+    await expect(main).toContainText("14 شهرًا: 12 شهرًا مدفوعة + شهران مجانًا");
     await expect(main.getByRole("listitem").filter({ hasText: "المسبح" })).toBeVisible();
+  });
+
+  test("باقة الشهر الواحد بلا سطر «تكلفة الشهر» المكرر", async ({ page }) => {
+    await page.goto("/memberships/one-month");
+    const main = page.getByRole("main");
+    await expect(main).toContainText("الشهرية: الإجمالي");
+    await expect(main).not.toContainText("حوالي");
   });
 
   test("زر الشراء يفتح واتساب النادي برسالة تسمّي الباقة", async ({ page }) => {
@@ -89,9 +119,7 @@ test.describe("صفحة الباقة", () => {
     await page.goto(`/en/memberships/${ANNUAL.slug}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(ANNUAL.nameEn);
     await expect(page.getByRole("main")).toContainText(`${ANNUAL.price} SAR`);
-    await expect(page.getByRole("main")).toContainText(
-      "12 months paid + 2 months free = 14 months",
-    );
+    await expect(page.getByRole("main")).toContainText("14 months: 12 months paid + 2 months free");
   });
 
   test("الرابط المعتمد وبدائل اللغة", async ({ page }) => {

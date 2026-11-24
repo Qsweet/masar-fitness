@@ -14,7 +14,7 @@ export function Location({ locale, dictionary }: LocationProps) {
     <section
       id="location"
       aria-labelledby="location-title"
-      className="surface-chalk surface-chalk-raised scroll-mt-4 py-20 md:py-28"
+      className="surface-light surface-light-raised scroll-mt-4 py-20 md:py-28"
     >
       <div className="page-container grid gap-10 md:grid-cols-12">
         <h2 id="location-title" className="text-title font-display md:col-span-5">

@@ -4,11 +4,14 @@ import type { ReactNode } from "react";
 type Variant = "primary" | "secondary";
 
 const BASE =
-  "inline-flex min-h-12 items-center justify-center rounded-control px-6 text-body font-strong whitespace-nowrap no-underline transition-colors duration-(--duration-press)";
+  "inline-flex min-h-13 items-center justify-center rounded-full px-7 text-body font-strong whitespace-nowrap no-underline transition-colors duration-(--duration-press)";
 
-/** الأساسي كهرماني بحبر داكن (تباين 9:1) ويصلح على السطحين؛ الثانوي إطار بلون نص السطح. */
+/**
+ * الأساسي كهرماني بحبر داكن (تباين 9:1): هو لون الفعل الوحيد في الموقع، فلا يُستعمل إلا للشراء أو الخطوة التالية.
+ * الثانوي إطار بلون نص السطح.
+ */
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-lane-500 text-asphalt-950 hover:bg-lane-600",
+  primary: "bg-lane-500 text-ink-900 hover:bg-lane-600",
   secondary: "border border-current hover:bg-(--band)",
 };
 

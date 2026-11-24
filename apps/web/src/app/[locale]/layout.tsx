@@ -25,7 +25,7 @@ const latinFont = localFont({
 export const dynamic = "force-dynamic";
 export const dynamicParams = false;
 
-export const viewport: Viewport = { themeColor: "#1d2125" };
+export const viewport: Viewport = { themeColor: "#0d3440" };
 
 export function generateStaticParams(): { locale: string }[] {
   return LOCALES.map((locale) => ({ locale }));
@@ -52,15 +52,15 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       dir={directionOf(locale)}
       className={`${arabicFont.variable} ${latinFont.variable}`}
     >
-      <body className="surface-asphalt min-h-dvh antialiased">
+      <body className="surface-light min-h-dvh antialiased">
         <a
           href={`#${MAIN_CONTENT_ID}`}
-          className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-20 focus:rounded-control focus:bg-lane-500 focus:px-4 focus:py-3 focus:font-strong focus:text-asphalt-950"
+          className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-20 focus:rounded-full focus:bg-lane-500 focus:px-4 focus:py-3 focus:font-strong focus:text-ink-900"
         >
           {dictionary.nav.skipToContent}
         </a>
         {isSiteIndexable(process.env.SITE_INDEXABLE) ? null : (
-          <p role="note" className="surface-chalk px-4 py-2 text-center text-small font-medium">
+          <p role="note" className="surface-light px-4 py-2 text-center text-small font-medium">
             {dictionary.staging}
           </p>
         )}

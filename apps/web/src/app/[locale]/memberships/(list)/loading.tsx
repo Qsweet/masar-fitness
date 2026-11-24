@@ -1,6 +1,7 @@
 import { locale as currentLocale } from "next/root-params";
+import { PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
-import { PlanLanesSkeleton } from "@/components/plans/plan-lanes-skeleton";
+import { PlanShopSkeleton } from "@/components/plans/plan-shop-skeleton";
 import { getDictionary } from "@/i18n/dictionaries";
 import { DEFAULT_LOCALE, isLocale } from "@/i18n/locales";
 
@@ -14,10 +15,10 @@ export default async function MembershipsLoading() {
   const dictionary = getDictionary(locale);
   return (
     <PageShell locale={locale} path="/memberships">
-      <section className="surface-asphalt pt-14 pb-20 md:pt-20 md:pb-28">
+      <PageIntro title={dictionary.memberships.title} lead={dictionary.memberships.intro} />
+      <section className="surface-light py-4 md:py-14">
         <div className="page-container">
-          <h1 className="mb-10 text-title font-display">{dictionary.memberships.title}</h1>
-          <PlanLanesSkeleton label={dictionary.loading} />
+          <PlanShopSkeleton label={dictionary.loading} />
         </div>
       </section>
     </PageShell>

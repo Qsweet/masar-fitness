@@ -1,35 +1,50 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Facilities } from "@/components/home/facilities";
+import { Hero } from "@/components/home/hero";
+import { Location } from "@/components/home/location";
+import { PlansSection } from "@/components/home/plans-section";
+import { Steps } from "@/components/home/steps";
+import { PageShell } from "@/components/page-shell";
 import { getDictionary } from "@/i18n/dictionaries";
-import { isLocale, LOCALES, localizedPath, type Locale } from "@/i18n/locales";
+import { isLocale } from "@/i18n/locales";
+import { getMembershipPlans } from "@/server/catalog";
+import { pageMetadata } from "@/server/metadata";
 
-function otherLocale(locale: Locale): Locale {
-  return LOCALES.find((candidate) => candidate !== locale) ?? locale;
+const PATH = "/";
+
+export async function generateMetadata({ params }: PageProps<"/[locale]">): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) {
+    return {};
+  }
+  const { meta, club } = getDictionary(locale);
+  return {
+    ...pageMetadata({
+      locale,
+      path: PATH,
+      title: meta.homeTitle,
+      description: meta.homeDescription,
+    }),
+    title: { absolute: `${club.name} | ${meta.homeTitle}` },
+  };
 }
 
-/** صفحة الأساس للمرحلة 1: تثبت أن اللغة والاتجاه والتوجيه تعمل. تُستبدل بالرئيسية في المرحلة 2. */
-export default async function FoundationPage({ params }: PageProps<"/[locale]">) {
+export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
   if (!isLocale(locale)) {
     notFound();
   }
   const dictionary = getDictionary(locale);
-  const alternate = otherLocale(locale);
+  const plans = await getMembershipPlans();
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center gap-4 px-6 py-16">
-      <h1 className="text-3xl font-bold">{dictionary.foundation.title}</h1>
-      <p className="text-lg text-neutral-700">{dictionary.foundation.lead}</p>
-      <p>
-        <Link
-          href={localizedPath(alternate)}
-          hrefLang={alternate}
-          lang={alternate}
-          className="underline underline-offset-4"
-        >
-          {dictionary.foundation.switchLanguage}
-        </Link>
-      </p>
-    </main>
+    <PageShell locale={locale} path={PATH}>
+      <Hero locale={locale} dictionary={dictionary} />
+      <PlansSection plans={plans} locale={locale} dictionary={dictionary} />
+      <Facilities dictionary={dictionary} />
+      <Steps dictionary={dictionary} />
+      <Location locale={locale} dictionary={dictionary} />
+    </PageShell>
   );
 }

@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { locale as currentLocale } from "next/root-params";
+import { PageShell } from "@/components/page-shell";
+import { ButtonLink } from "@/components/ui/button-link";
 import { getDictionary } from "@/i18n/dictionaries";
 import { DEFAULT_LOCALE, isLocale, localizedPath } from "@/i18n/locales";
 
@@ -9,14 +10,16 @@ export default async function NotFound() {
   const dictionary = getDictionary(locale);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center gap-4 px-6 py-16">
-      <h1 className="text-3xl font-bold">{dictionary.notFound.title}</h1>
-      <p className="text-lg text-neutral-700">{dictionary.notFound.lead}</p>
-      <p>
-        <Link href={localizedPath(locale)} className="underline underline-offset-4">
-          {dictionary.notFound.home}
-        </Link>
-      </p>
-    </main>
+    <PageShell locale={locale} path="/">
+      <section className="surface-asphalt py-24 md:py-32">
+        <div className="page-container">
+          <h1 className="text-title font-display">{dictionary.notFound.title}</h1>
+          <p className="text-muted mt-4 max-w-prose text-lead">{dictionary.notFound.lead}</p>
+          <ButtonLink href={localizedPath(locale)} className="mt-10">
+            {dictionary.notFound.home}
+          </ButtonLink>
+        </div>
+      </section>
+    </PageShell>
   );
 }

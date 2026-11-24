@@ -1,0 +1,13 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# pnpm لا يشغّل سكربتات التثبيت إلا لما نسمح به صراحةً (حماية من سلسلة التوريد)
+onlyBuiltDependencies:
+  - "@prisma/engines"
+  - prisma
+
+# ترقيع ثغرات في اعتماديات فرعية لا نملك إصدارها. كل سطر يُحذف حين يحدّث صاحب الحزمة اعتماده.
+overrides:
+  # GHSA-7589-6fvf-x4pw (ReDoS) — ‎@prisma/config@7.10.1 يثبّت effect@3.20.0
+  effect@<3.22.1: 3.22.5

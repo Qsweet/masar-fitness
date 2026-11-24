@@ -1,3 +1,4 @@
+export { findMembershipPlan, listMembershipPlans } from "./catalog";
 export { createDb, isDbReachable } from "./client";
 export type { Db } from "./client";
 export { Prisma } from "./generated/prisma/client";

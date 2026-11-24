@@ -18,6 +18,7 @@
     "e2e": "pnpm --filter @masar/web e2e",
     "db:generate": "pnpm --filter @masar/db generate",
     "db:migrate": "pnpm --filter @masar/db migrate:deploy",
+    "db:seed:demo": "pnpm --filter @masar/db seed:demo",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test"
   },
   "devDependencies": {

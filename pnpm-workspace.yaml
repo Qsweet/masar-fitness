@@ -6,6 +6,7 @@ packages:
 onlyBuiltDependencies:
   - "@prisma/engines"
   - prisma
+  - esbuild
 
 # ترقيع ثغرات في اعتماديات فرعية لا نملك إصدارها. كل سطر يُحذف حين يحدّث صاحب الحزمة اعتماده.
 overrides:

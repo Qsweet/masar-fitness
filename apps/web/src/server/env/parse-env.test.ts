@@ -70,6 +70,14 @@ describe("parseEnv", () => {
     ).toEqual(["SITE_URL: must use https in production"]);
   });
 
+  it("يرفض أي بروتوكول غير http(s) حتى على عنوان الجهاز نفسه", () => {
+    for (const SITE_URL of ["ftp://localhost", "ws://127.0.0.1:3000", "javascript://localhost"]) {
+      expect(problemsOf({ ...valid, SITE_URL, NODE_ENV: "production" })).toEqual([
+        "SITE_URL: must be an http(s) URL",
+      ]);
+    }
+  });
+
   it("لا يسرّب قيمة أي متغير في رسالة الخطأ", () => {
     const secretUrl = "mysql://user:s3cret-pass@db.internal/masar";
     try {

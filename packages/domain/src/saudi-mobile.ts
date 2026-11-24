@@ -35,14 +35,20 @@ function toNational(digits: string): string {
 }
 
 /**
- * يقبل ما يكتبه العميل فعلًا: ‎05XXXXXXXX، ‎5XXXXXXXX، ‎+9665…، ‎009665…، مع مسافات أو شرطات أو أرقام عربية.
+ * يقبل ما يكتبه العميل فعلًا: ‎05XXXXXXXX، ‎5XXXXXXXX، ‎+9665…، ‎009665…، مع مسافات أو شرطات أو نقاط أو أرقام عربية.
  */
 export function parseSaudiMobile(input: string): Result<SaudiMobile, DomainError> {
-  const ascii = toAsciiDigits(input.trim());
-  if (!/^\+?[\d\s\-()]+$/.test(ascii)) {
+  // الأرقام المنسوخة من جهات الاتصال وواتساب تحمل علامات اتجاه غير مرئية (‎\p{Cf}‎)
+  const ascii = toAsciiDigits(input.replace(/\p{Cf}/gu, "").trim());
+  if (!/^\+?[\d\s\-.()]+$/.test(ascii)) {
     return err(new DomainError("validation", "mobile.invalid_characters", { field: "mobile" }));
   }
-  const national = toNational(ascii.replace(/\D/g, ""));
+  const digits = ascii.replace(/\D/g, "");
+  // علامة + تعني صيغة دولية: يجب أن يتبعها رمز الدولة مباشرة
+  if (ascii.startsWith("+") && !digits.startsWith(COUNTRY_CODE)) {
+    return err(new DomainError("validation", "mobile.not_saudi_mobile", { field: "mobile" }));
+  }
+  const national = toNational(digits);
   if (!NATIONAL_PATTERN.test(national)) {
     return err(new DomainError("validation", "mobile.not_saudi_mobile", { field: "mobile" }));
   }

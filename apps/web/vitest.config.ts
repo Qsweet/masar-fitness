@@ -1,9 +1,16 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
+function fromHere(path: string): string {
+  return fileURLToPath(new URL(path, import.meta.url));
+}
+
 export default defineConfig({
   resolve: {
-    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+    alias: {
+      "@": fromHere("./src"),
+      "server-only": fromHere("./src/test/server-only-stub.ts"),
+    },
   },
   test: {
     include: ["src/**/*.test.ts"],

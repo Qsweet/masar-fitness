@@ -17,6 +17,10 @@ describe("parseSaudiMobile", () => {
     ["۰۵۱۲۳۴۵۶۷۸"],
     ["+٩٦٦٥١٢٣٤٥٦٧٨"],
     ["+966 0512345678"],
+    ["05.1234.5678"],
+    ["\u202A+966 51 234 5678\u202C"], // منسوخ من واتساب بعلامات اتجاه غير مرئية
+    ["\u200F0512345678\u200E"],
+    ["(051) 234-5678"],
   ])("يقبل %s ويوحّده إلى E.164", (input) => {
     const result = parseSaudiMobile(input);
     expect(result).toEqual({ ok: true, value: E164 });
@@ -31,6 +35,13 @@ describe("parseSaudiMobile", () => {
     ["0112345678", "mobile.not_saudi_mobile"], // هاتف ثابت
     ["+971512345678", "mobile.not_saudi_mobile"], // دولة أخرى
     ["0612345678", "mobile.not_saudi_mobile"],
+    ["+0512345678", "mobile.not_saudi_mobile"], // + بلا رمز الدولة
+    ["+512345678", "mobile.not_saudi_mobile"],
+    ["+00966512345678", "mobile.not_saudi_mobile"],
+    ["()", "mobile.not_saudi_mobile"],
+    ["-", "mobile.not_saudi_mobile"],
+    ["٠٥١٢٣٤٥٦٧٨#", "mobile.invalid_characters"],
+    ["0512345678;drop", "mobile.invalid_characters"],
   ])("يرفض %s", (input, reason) => {
     const result = parseSaudiMobile(input);
     expect(result.ok).toBe(false);

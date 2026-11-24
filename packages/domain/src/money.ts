@@ -8,16 +8,32 @@ export type Currency = (typeof CURRENCIES)[number];
  * مبلغ مالي بالوحدة الصغرى (هللة) كعدد صحيح. لا كسور عشرية في أي حساب مالي.
  * يُبنى عبر `money()` فقط ليضمن صحة القيمة.
  */
+declare const moneyBrand: unique symbol;
+
 export interface Money {
   readonly amountMinor: number;
   readonly currency: Currency;
+  /** علامة نوع فقط: تمنع بناء المبلغ بكائن حرفي يتجاوز فحوص `money()`. */
+  readonly [moneyBrand]: true;
 }
 
-export function money(amountMinor: number, currency: Currency = "SAR"): Money {
+function isCurrency(value: string): value is Currency {
+  return (CURRENCIES as readonly string[]).includes(value);
+}
+
+/**
+ * المدخل الوحيد لبناء مبلغ. `currency` نص عام لأن القيم تصل من القاعدة والمزوّدين.
+ * المبلغ السالب مسموح (فرق الاسترداد)؛ من يشترط الموجب يفحصه في موضعه.
+ */
+export function money(amountMinor: number, currency = "SAR"): Money {
   if (!Number.isSafeInteger(amountMinor)) {
     throw new DomainError("invariant", "money.not_safe_integer");
   }
-  return Object.freeze({ amountMinor, currency });
+  if (!isCurrency(currency)) {
+    throw new DomainError("invariant", "money.unsupported_currency");
+  }
+  // `+ 0` يحوّل الصفر السالب إلى صفر عادي
+  return Object.freeze({ amountMinor: amountMinor + 0, currency }) as Money;
 }
 
 /**

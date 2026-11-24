@@ -13,12 +13,14 @@ function isSecureOrLoopback(siteUrl: string): boolean {
   return url.protocol === "https:" || LOOPBACK_HOSTS.has(url.hostname);
 }
 
+const webUrl = z.url().refine((value) => /^https?:\/\//.test(value), "must be an http(s) URL");
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     DATABASE_URL: postgresUrl,
     /** الرابط العام للموقع بلا شرطة أخيرة، مثل https://example.com */
-    SITE_URL: z.url().transform((value) => value.replace(/\/+$/, "")),
+    SITE_URL: webUrl.transform((value) => value.replace(/\/+$/, "")),
     SITE_INDEXABLE: z.string().optional().transform(isSiteIndexable),
     /** يضبطه النشر (رقم الإصدار أو معرّف الإيداع). */
     APP_VERSION: z.string().min(1).default("dev"),

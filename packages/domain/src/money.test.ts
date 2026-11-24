@@ -5,6 +5,18 @@ import { addMoney, money, moneyEquals, subtractMoney, type Money } from "./money
 describe("money", () => {
   it("يحفظ المبلغ بالهللة كعدد صحيح", () => {
     expect(money(25758)).toEqual({ amountMinor: 25758, currency: "SAR" });
+    expect(money(25758, "SAR").currency).toBe("SAR");
+  });
+
+  it("يرفض عملة غير مدعومة (قيمة قادمة من القاعدة أو المزوّد)", () => {
+    for (const currency of ["USD", "sar", "", "SAR "]) {
+      expect(() => money(100, currency)).toThrow(/unsupported_currency/);
+    }
+  });
+
+  it("الصفر السالب يُوحَّد إلى صفر", () => {
+    expect(Object.is(money(-0).amountMinor, 0)).toBe(true);
+    expect(Object.is(subtractMoney(money(5), money(5)).amountMinor, 0)).toBe(true);
   });
 
   it("يرفض الكسور والقيم غير الآمنة", () => {
@@ -28,6 +40,7 @@ describe("money", () => {
   });
 
   it("يرفض خلط العملات", () => {
+    // لا يمكن بناؤها عبر money()؛ نحاكي قيمة فاسدة تسللت من خارج الحزمة
     const foreign = { amountMinor: 100, currency: "USD" } as unknown as Money;
     expect(() => addMoney(money(100), foreign)).toThrow(/currency_mismatch/);
     expect(moneyEquals(money(100), foreign)).toBe(false);

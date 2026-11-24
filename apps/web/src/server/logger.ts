@@ -1,21 +1,8 @@
 import "server-only";
-
-type LogLevel = "info" | "warn" | "error";
-type LogFields = Readonly<Record<string, unknown>>;
-
-function serializeError(error: unknown): unknown {
-  if (error instanceof Error) {
-    return { name: error.name, message: error.message, stack: error.stack, cause: error.cause };
-  }
-  return error;
-}
+import { buildLogLine, type LogFields, type LogLevel } from "./log-entry";
 
 function write(level: LogLevel, event: string, fields: LogFields): void {
-  const entry = { level, event, time: new Date().toISOString(), ...fields };
-  const line = JSON.stringify(entry, (_key, value: unknown) =>
-    value instanceof Error ? serializeError(value) : value,
-  );
-  // سطر JSON واحد لكل حدث: يقرؤه أي جامع سجلات بلا تحليل نصي
+  const line = buildLogLine(level, event, fields, new Date());
   if (level === "error") {
     console.error(line);
   } else {

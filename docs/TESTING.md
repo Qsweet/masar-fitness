@@ -19,6 +19,7 @@ export DATABASE_URL=postgresql://masar:masar@127.0.0.1:5432/masar_test SITE_URL=
 pnpm lint && pnpm format:check && pnpm typecheck
 pnpm test                              # وحدة
 pnpm db:migrate && pnpm test:integration
+SEED_DEMO_DATA=yes pnpm db:seed:demo   # بيانات الباقات التجريبية لاختبارات المتصفح
 pnpm build && pnpm e2e                 # المتصفح يحتاج بناءً حديثًا
 ```
 
@@ -45,7 +46,8 @@ CI (`.github/workflows/ci.yml`) يشغّل التسلسل نفسه على كل �
 
 لقطات Playwright حقيقية عند: 360، 390، 430، 768، 1024، 1440، 1920. تُراجع اللقطات نفسها لا الكود، بالعربية (RTL) والإنجليزية، مع محتوى مختلط اللغة والأرقام والعملة. فحص الوصول الآلي يُضاف مع أول واجهة حقيقية.
 
-المرحلة 1 تختبر مقاسين فقط (390 و1440) لأن الصفحة أساس بلا تصميم.
+`e2e/screens.spec.ts` يلتقط المقاسات السبعة للصفحات الثلاث باللغتين في `apps/web/screens/` (خارج git)، ويفشل عند أي تمرير أفقي أو خطأ console (ومنها مخالفات CSP). CI يحفظها مرفقًا باسم `screens`.
+`e2e/a11y.spec.ts` يفحص WCAG 2.2 AA آليًا (axe). الفحص الآلي لا يغني عن تجربة قارئ الشاشة يدويًا.
 
 ## حالات إلزامية قادمة
 

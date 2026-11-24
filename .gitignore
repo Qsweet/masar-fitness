@@ -16,3 +16,6 @@ packages/db/src/generated/
 test-results/
 playwright-report/
 .DS_Store
+
+# لقطات المراجعة البصرية (pnpm screens)
+apps/web/screens/

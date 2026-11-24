@@ -41,6 +41,7 @@ export DATABASE_URL=postgresql://masar:masar@127.0.0.1:5432/masar_test SITE_URL=
 pnpm install --frozen-lockfile
 pnpm lint && pnpm format:check && pnpm typecheck && pnpm test
 pnpm db:migrate && pnpm test:integration
+SEED_DEMO_DATA=yes pnpm db:seed:demo   # بيانات تجريبية، لا تُشغَّل على قاعدة إنتاج أبدًا
 pnpm build && pnpm e2e
 ```
 

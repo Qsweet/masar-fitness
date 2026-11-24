@@ -1,0 +1,18 @@
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# الأسرار لا تدخل git أبدًا
+.env
+.env.*
+!.env.example
+
+# مولَّدات
+packages/db/src/generated/
+test-results/
+playwright-report/
+.DS_Store

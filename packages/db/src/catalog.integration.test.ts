@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createDb, findMembershipPlan, listMembershipPlans, type Db } from "./index";
+import type { MembershipPlan } from "@masar/domain";
+import { createDb, listMembershipPlans, type Db } from "./index";
 
 const url = process.env.DATABASE_URL;
 if (url === undefined || url === "") {
@@ -29,7 +30,12 @@ interface VersionInput {
   bonusMonths?: number;
   validFrom: Date;
   validUntil?: Date;
-  benefits?: string[];
+  /** [النص، ترتيب العرض] */
+  benefits?: [label: string, sortOrder: number][];
+}
+
+async function findPlan(slug: string, now: Date): Promise<MembershipPlan | undefined> {
+  return (await listMembershipPlans(db, now)).find((plan) => plan.slug === slug);
 }
 
 async function addProduct(
@@ -57,10 +63,10 @@ async function addProduct(
           ...version,
           durationMonths,
           benefits: {
-            create: benefits.map((label, index) => ({
+            create: benefits.map(([label, sortOrder]) => ({
               labelAr: label,
               labelEn: label,
-              sortOrder: index,
+              sortOrder,
             })),
           },
         })),
@@ -76,12 +82,17 @@ beforeAll(async () => {
 
   await addProduct("year", { sortOrder: 2 }, [
     { priceMinor: 300000, validFrom: PAST, validUntil: RECENT }, // انتهت
+    // السارية. المزايا تُدرج بعكس ترتيب عرضها: الترتيب يجب أن يأتي من sort_order لا من ترتيب الإدراج
     {
       priceMinor: 280000,
       bonusMonths: 2,
       validFrom: RECENT,
-      benefits: ["ثانية", "أولى"].reverse(),
-    }, // السارية
+      validUntil: FUTURE,
+      benefits: [
+        ["ثانية", 1],
+        ["أولى", 0],
+      ],
+    },
     { priceMinor: 999999, validFrom: FUTURE }, // لم تبدأ
   ]);
   await addProduct("month", { sortOrder: 1 }, [
@@ -119,21 +130,28 @@ describe("listMembershipPlans", () => {
   });
 
   it("السعر يتبع التاريخ: قبل تغيير النسخة وبعد بدء القادمة", async () => {
-    const before = await findMembershipPlan(db, "ct-year", new Date("2026-03-01T00:00:00Z"));
-    const after = await findMembershipPlan(db, "ct-year", new Date("2026-08-01T00:00:00Z"));
+    const before = await findPlan("ct-year", new Date("2026-03-01T00:00:00Z"));
+    const after = await findPlan("ct-year", new Date("2026-08-01T00:00:00Z"));
     expect(before?.price.amountMinor).toBe(300000);
     expect(after?.price.amountMinor).toBe(999999);
   });
 
   it("لحظة انتهاء النسخة هي لحظة بدء التالية بلا فجوة ولا تداخل", async () => {
-    const atBoundary = await findMembershipPlan(db, "ct-year", RECENT);
-    expect(atBoundary?.price.amountMinor).toBe(280000);
+    const justBefore = new Date(RECENT.getTime() - 1);
+    expect((await findPlan("ct-year", justBefore))?.price.amountMinor).toBe(300000);
+    expect((await findPlan("ct-year", RECENT))?.price.amountMinor).toBe(280000);
+  });
+
+  it("النسخة المنتهية تُعرض حتى آخر لحظة ثم تختفي عند لحظة انتهائها تمامًا", async () => {
+    const justBefore = new Date(RECENT.getTime() - 1);
+    expect(await findPlan("ct-expired", justBefore)).toBeDefined();
+    expect(await findPlan("ct-expired", RECENT)).toBeUndefined();
   });
 });
 
-describe("findMembershipPlan", () => {
-  it("يرجع الباقة بالمعرّف النصي", async () => {
-    expect((await findMembershipPlan(db, "ct-month", NOW))?.name).toEqual({
+describe("ما ليس معروضًا للبيع", () => {
+  it("الباقة المعروضة تحمل اسمها باللغتين", async () => {
+    expect((await findPlan("ct-month", NOW))?.name).toEqual({
       ar: "باقة month",
       en: "Plan month",
     });
@@ -148,11 +166,66 @@ describe("findMembershipPlan", () => {
     "ct-no-duration",
     "ct-missing",
   ])("لا يرجع ما ليس معروضًا للبيع: %s", async (slug) => {
-    expect(await findMembershipPlan(db, slug, NOW)).toBeUndefined();
+    expect(await findPlan(slug, NOW)).toBeUndefined();
   });
 });
 
 describe("قيود القاعدة", () => {
+  it("ترفض نسختين ساريتين للمنتج نفسه في فترة متداخلة", async () => {
+    const product = await db.product.findUniqueOrThrow({ where: { slug: "ct-month" } });
+    const overlapping = db.productVersion.create({
+      data: { productId: product.id, priceMinor: 100, durationMonths: 1, validFrom: RECENT },
+    });
+    await expect(overlapping).rejects.toThrow();
+  });
+
+  it("تقبل نسخة تبدأ لحظة انتهاء سابقتها تمامًا", async () => {
+    const product = await db.product.findUniqueOrThrow({ where: { slug: "ct-expired" } });
+    const next = await db.productVersion.create({
+      data: {
+        productId: product.id,
+        priceMinor: 100,
+        durationMonths: 1,
+        validFrom: RECENT,
+        validUntil: FUTURE,
+      },
+    });
+    await db.productVersion.delete({ where: { id: next.id } });
+  });
+
+  it("ترفض عملة غير مدعومة", async () => {
+    const product = await db.product.findUniqueOrThrow({ where: { slug: "ct-upcoming" } });
+    const foreign = db.productVersion.create({
+      data: {
+        productId: product.id,
+        priceMinor: 100,
+        durationMonths: 1,
+        currency: "USD",
+        validFrom: PAST,
+        validUntil: RECENT,
+      },
+    });
+    await expect(foreign).rejects.toThrow();
+  });
+
+  it.each(["Bad-Slug", "bad slug", "bad_slug", "-bad", "bad-", "bad--slug", ""])(
+    "ترفض معرّفًا نصيًا لا يصلح رابطًا: «%s»",
+    async (slug) => {
+      const attempt = db.product.create({
+        data: {
+          clubId,
+          slug,
+          kind: "membership",
+          nameAr: "x",
+          nameEn: "x",
+          summaryAr: "x",
+          summaryEn: "x",
+        },
+      });
+      await expect(attempt).rejects.toThrow();
+    },
+  );
+
   it.each([
     ["سعر سالب", { priceMinor: -1 }],
     ["مدة صفرية", { durationMonths: 0 }],

@@ -1,4 +1,5 @@
 import type { Money } from "@masar/domain";
+import { getDictionary } from "./dictionaries";
 import type { Locale } from "./locales";
 
 const MINOR_PER_MAJOR = 100;
@@ -8,11 +9,6 @@ const DUAL = 2;
 
 /** الأرقام لاتينية في اللغتين (العرف السائد في المتاجر السعودية) — القرار 15. */
 const NUMBER_LOCALE = "en-US";
-
-const CURRENCY_UNIT: Record<Locale, Record<Money["currency"], string>> = {
-  ar: { SAR: "ر.س" },
-  en: { SAR: "SAR" },
-};
 
 export interface MoneyParts {
   readonly amount: string;
@@ -26,15 +22,7 @@ export function moneyParts(value: Money, locale: Locale): MoneyParts {
     minimumFractionDigits: hasHalalas ? HALALA_DIGITS : 0,
     maximumFractionDigits: HALALA_DIGITS,
   }).format(value.amountMinor / MINOR_PER_MAJOR);
-  return { amount, unit: CURRENCY_UNIT[locale][value.currency] };
-}
-
-/** مبلغ مقرَّب لأقرب ريال: للمقارنات التقريبية فقط («حوالي …»)، لا لمبلغ يُحصَّل. */
-export function roundedMoneyParts(value: Money, locale: Locale): MoneyParts {
-  const amount = new Intl.NumberFormat(NUMBER_LOCALE, { maximumFractionDigits: 0 }).format(
-    Math.round(value.amountMinor / MINOR_PER_MAJOR),
-  );
-  return { amount, unit: CURRENCY_UNIT[locale][value.currency] };
+  return { amount, unit: getDictionary(locale).currency[value.currency] };
 }
 
 export interface MonthsParts {
@@ -43,23 +31,19 @@ export interface MonthsParts {
   readonly unit: string;
 }
 
-function arabicMonths(months: number): MonthsParts {
+/**
+ * عدد الأشهر بصيغته الصحيحة. منطق اختيار الصيغة هنا والكلمات من القاموس:
+ * العربية تفرّق بين المفرد والمثنى (بلا رقم) والجمع (3–10) وتمييز ما فوق العشرة؛ الإنجليزية مفرد وجمع.
+ */
+export function monthsParts(months: number, locale: Locale): MonthsParts {
+  const words = getDictionary(locale).months;
   if (months === 1) {
-    return { count: undefined, unit: "شهر" };
+    return { count: locale === "ar" ? undefined : String(months), unit: words.one };
   }
   if (months === DUAL) {
-    return { count: undefined, unit: "شهران" };
+    return { count: locale === "ar" ? undefined : String(months), unit: words.two };
   }
-  // 3–10 جمع (أشهر)، 11 فأكثر مفرد منصوب (شهرًا)
-  return { count: String(months), unit: months <= ARABIC_FEW_MAX ? "أشهر" : "شهرًا" };
-}
-
-/** عدد الأشهر بصيغته الصحيحة: العربية تفرّق بين المفرد والمثنى والجمع وتمييز ما فوق العشرة. */
-export function monthsParts(months: number, locale: Locale): MonthsParts {
-  if (locale === "ar") {
-    return arabicMonths(months);
-  }
-  return { count: String(months), unit: months === 1 ? "month" : "months" };
+  return { count: String(months), unit: months <= ARABIC_FEW_MAX ? words.few : words.many };
 }
 
 export function formatMonths(months: number, locale: Locale): string {

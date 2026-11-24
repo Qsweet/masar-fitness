@@ -1,6 +1,6 @@
 import { money } from "@masar/domain";
 import { describe, expect, it } from "vitest";
-import { formatMonths, moneyParts, monthsParts, roundedMoneyParts } from "./format";
+import { formatMonths, moneyParts, monthsParts } from "./format";
 
 describe("moneyParts", () => {
   it("ريالات كاملة بلا كسور وبفاصلة الآلاف", () => {
@@ -22,14 +22,6 @@ describe("moneyParts", () => {
   it("الصفر والسالب", () => {
     expect(moneyParts(money(0), "ar").amount).toBe("0");
     expect(moneyParts(money(-15000), "en").amount).toBe("-150");
-  });
-});
-
-describe("roundedMoneyParts", () => {
-  it("يقرّب لأقرب ريال", () => {
-    expect(roundedMoneyParts(money(8571), "ar")).toEqual({ amount: "86", unit: "ر.س" });
-    expect(roundedMoneyParts(money(33333), "en")).toEqual({ amount: "333", unit: "SAR" });
-    expect(roundedMoneyParts(money(20000), "ar").amount).toBe("200");
   });
 });
 

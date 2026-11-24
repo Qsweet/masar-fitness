@@ -31,8 +31,7 @@ export default async function PlanPage({ params }: Props) {
   if (!isLocale(locale)) {
     notFound();
   }
-  const plans = await getMembershipPlans();
-  const plan = plans.find((candidate) => candidate.slug === slug);
+  const [plans, plan] = await Promise.all([getMembershipPlans(), getMembershipPlan(slug)]);
   if (plan === undefined) {
     notFound();
   }

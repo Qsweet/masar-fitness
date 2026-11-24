@@ -84,6 +84,13 @@ test.describe("صفحة غير موجودة", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Page not found");
   });
 
+  test("معرّف باقة بمحارف غير صالحة ⇒ 404 لا عطل", async ({ request }) => {
+    for (const path of ["/memberships/%00", "/memberships/%27%3B--", "/en/memberships/%E0%A4%A"]) {
+      const status = (await request.get(path)).status();
+      expect([400, 404], `${path} ⇒ ${String(status)}`).toContain(status);
+    }
+  });
+
   test("باقة غير موجودة ⇒ 404 لا صفحة فارغة", async ({ page }) => {
     const response = await page.goto("/memberships/no-such-plan");
     expect(response?.status()).toBe(404);
@@ -100,9 +107,15 @@ test.describe("الترويسات", () => {
       "/memberships/one-year",
       "/no-such-page",
       "/blog/v1.2",
+      // صفحات HTML ينتهي رابطها بامتداد: كانت تفلت من الترويستين
+      "/memberships/x.png",
+      "/en/page.txt",
     ]) {
       const response = await request.get(path);
       expect(response.headers()["x-robots-tag"], path).toBe("noindex, nofollow");
+      expect(response.headers()["content-security-policy"], path).toContain(
+        "script-src 'self' 'nonce-",
+      );
     }
   });
 

@@ -26,16 +26,23 @@ export function totalMonths(plan: Pick<MembershipPlan, "paidMonths" | "bonusMont
   return plan.paidMonths + plan.bonusMonths;
 }
 
-/**
- * تكلفة الشهر الواحد على كامل المدة (للمقارنة بين الباقات فقط، لا يُحصَّل بها).
- * تُقرَّب لأقرب هللة؛ الواجهة تعرضها «حوالي».
- */
-export function monthlyEquivalent(plan: MembershipPlan): Money {
-  const months = totalMonths(plan);
+const MINOR_PER_MAJOR = 100;
+
+function assertPositiveDuration(months: number): void {
   if (!Number.isInteger(months) || months <= 0) {
     throw new DomainError("invariant", "plan.duration_not_positive");
   }
-  return money(Math.round(plan.price.amountMinor / months), plan.price.currency);
+}
+
+/**
+ * تكلفة الشهر التقريبية على كامل المدة، مقرَّبة لأقرب ريال **مرة واحدة** من السعر والمدة.
+ * للمقارنة والعرض «حوالي …» فقط، ولا يُحصَّل بها.
+ */
+export function approximateMonthlyCost(plan: MembershipPlan): Money {
+  const months = totalMonths(plan);
+  assertPositiveDuration(months);
+  const wholeRiyals = Math.round(plan.price.amountMinor / (months * MINOR_PER_MAJOR));
+  return money(wholeRiyals * MINOR_PER_MAJOR, plan.price.currency);
 }
 
 /** أطول مدة بين الباقات المعروضة: مرجع رسم «المضمار». */
@@ -52,16 +59,26 @@ export function durationShare(months: number, longest: number): number {
 }
 
 /**
+ * هل الباقة الأولى أقل تكلفة شهريًا من الثانية؟ مقارنة صحيحة بالضرب التبادلي (بلا قسمة ولا تقريب):
+ * سعر‌أ ÷ مدة‌أ < سعر‌ب ÷ مدة‌ب ⇔ سعر‌أ × مدة‌ب < سعر‌ب × مدة‌أ. عند التعادل تُقدَّم الأطول مدة.
+ */
+function isBetterValue(candidate: MembershipPlan, current: MembershipPlan): boolean {
+  const candidateMonths = totalMonths(candidate);
+  const currentMonths = totalMonths(current);
+  assertPositiveDuration(candidateMonths);
+  assertPositiveDuration(currentMonths);
+  const difference =
+    candidate.price.amountMinor * currentMonths - current.price.amountMinor * candidateMonths;
+  return difference < 0 || (difference === 0 && candidateMonths > currentMonths);
+}
+
+/**
  * الباقة الأقل تكلفة شهريًا على كامل مدتها: حقيقة محسوبة لا رأي تسويقي.
- * عند التعادل تُقدَّم الأطول مدة. تُعرض مختارة افتراضيًا وتُعلَّم «الأقل تكلفة شهريًا».
+ * تُعرض مختارة افتراضيًا وتُعلَّم «الأقل تكلفة شهريًا».
  */
 export function bestValuePlan(plans: readonly MembershipPlan[]): MembershipPlan | undefined {
-  return plans.reduce<MembershipPlan | undefined>((best, plan) => {
-    if (best === undefined) {
-      return plan;
-    }
-    const difference = monthlyEquivalent(plan).amountMinor - monthlyEquivalent(best).amountMinor;
-    const cheaper = difference < 0 || (difference === 0 && totalMonths(plan) > totalMonths(best));
-    return cheaper ? plan : best;
-  }, undefined);
+  return plans.reduce<MembershipPlan | undefined>(
+    (best, plan) => (best === undefined || isBetterValue(plan, best) ? plan : best),
+    undefined,
+  );
 }

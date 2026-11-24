@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { money } from "../money";
 import {
+  approximateMonthlyCost,
   bestValuePlan,
   durationShare,
   longestDuration,
-  monthlyEquivalent,
   totalMonths,
   type MembershipPlan,
 } from "./membership-plan";
@@ -29,28 +29,42 @@ describe("totalMonths", () => {
   });
 });
 
-describe("monthlyEquivalent", () => {
-  it("يقسم السعر على كامل المدة", () => {
-    expect(monthlyEquivalent(plan())).toEqual(money(10000));
+describe("approximateMonthlyCost", () => {
+  it("يقسم السعر على كامل المدة ويقرّب لأقرب ريال", () => {
+    expect(approximateMonthlyCost(plan())).toEqual(money(10000));
+    expect(approximateMonthlyCost(plan({ price: money(100000), paidMonths: 3 }))).toEqual(
+      money(33300),
+    );
+    expect(approximateMonthlyCost(plan({ price: money(200000), paidMonths: 3 }))).toEqual(
+      money(66700),
+    );
   });
 
   it("الأشهر المجانية تخفّض تكلفة الشهر", () => {
-    // 1200 ريال على 14 شهرًا = 85.714... ⇒ 85.71
-    expect(monthlyEquivalent(plan({ bonusMonths: 2 }))).toEqual(money(8571));
+    // 1200 ريال على 14 شهرًا = 85.71 ⇒ 86
+    expect(approximateMonthlyCost(plan({ bonusMonths: 2 }))).toEqual(money(8600));
   });
 
-  it("يقرّب لأقرب هللة", () => {
-    expect(monthlyEquivalent(plan({ price: money(100000), paidMonths: 3 }))).toEqual(money(33333));
-    expect(monthlyEquivalent(plan({ price: money(200000), paidMonths: 3 }))).toEqual(money(66667));
+  it("تقريب واحد لا تقريبان: 1,025.94 على 12 شهرًا = 85.495 ⇒ 85 لا 86", () => {
+    expect(approximateMonthlyCost(plan({ price: money(102594), paidMonths: 12 }))).toEqual(
+      money(8500),
+    );
+    expect(approximateMonthlyCost(plan({ price: money(16899), paidMonths: 2 }))).toEqual(
+      money(8400),
+    );
   });
 
   it("باقة الشهر الواحد: تكلفة الشهر هي السعر", () => {
-    expect(monthlyEquivalent(plan({ price: money(35000), paidMonths: 1 }))).toEqual(money(35000));
+    expect(approximateMonthlyCost(plan({ price: money(35000), paidMonths: 1 }))).toEqual(
+      money(35000),
+    );
   });
 
   it("يرفض مدة غير موجبة بدل القسمة على صفر", () => {
-    expect(() => monthlyEquivalent(plan({ paidMonths: 0 }))).toThrow(/duration_not_positive/);
-    expect(() => monthlyEquivalent(plan({ paidMonths: 1.5 }))).toThrow(/duration_not_positive/);
+    expect(() => approximateMonthlyCost(plan({ paidMonths: 0 }))).toThrow(/duration_not_positive/);
+    expect(() => approximateMonthlyCost(plan({ paidMonths: 1.5 }))).toThrow(
+      /duration_not_positive/,
+    );
   });
 });
 
@@ -100,6 +114,20 @@ describe("bestValuePlan", () => {
     const long = plan({ slug: "l", price: money(120000), paidMonths: 6 });
     expect(bestValuePlan([short, long])?.slug).toBe("l");
     expect(bestValuePlan([long, short])?.slug).toBe("l");
+  });
+
+  it("المقارنة صحيحة لا مقرَّبة: فرق أقل من هللة شهريًا يحسم", () => {
+    // 100.00 ÷ 3 = 33.3333 مقابل 199.99 ÷ 6 = 33.3317: الثانية أرخص وإن تساوتا بعد التقريب للهللة
+    const three = plan({ slug: "three", price: money(10000), paidMonths: 3 });
+    const six = plan({ slug: "six", price: money(19999), paidMonths: 6 });
+    expect(bestValuePlan([three, six])?.slug).toBe("six");
+    expect(bestValuePlan([six, three])?.slug).toBe("six");
+  });
+
+  it("يرفض باقة بمدة غير موجبة بدل نتيجة خاطئة", () => {
+    expect(() => bestValuePlan([plan({ slug: "a" }), plan({ slug: "b", paidMonths: 0 })])).toThrow(
+      /duration_not_positive/,
+    );
   });
 
   it("باقة واحدة هي الأفضل، ولا شيء عند غياب الباقات", () => {

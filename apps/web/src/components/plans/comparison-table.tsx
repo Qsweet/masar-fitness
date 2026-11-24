@@ -1,9 +1,9 @@
-import { monthlyEquivalent, totalMonths, type MembershipPlan } from "@masar/domain";
+import { approximateMonthlyCost, totalMonths, type MembershipPlan } from "@masar/domain";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Price } from "@/components/ui/price";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { formatMonths, moneyParts, roundedMoneyParts } from "@/i18n/format";
+import { formatMonths, moneyParts } from "@/i18n/format";
 import { localizedPath, type Locale } from "@/i18n/locales";
 
 interface ComparisonTableProps {
@@ -56,7 +56,7 @@ function buildRows({ plans, locale, dictionary }: ComparisonTableProps): Row[] {
     },
     {
       label: labels.rowMonthly,
-      cell: (plan) => <Price parts={roundedMoneyParts(monthlyEquivalent(plan), locale)} />,
+      cell: (plan) => <Price parts={moneyParts(approximateMonthlyCost(plan), locale)} />,
     },
   ];
   const benefits: Row[] = allBenefits(plans, locale).map((benefit) => ({

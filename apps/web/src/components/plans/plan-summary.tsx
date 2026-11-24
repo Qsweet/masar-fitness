@@ -1,8 +1,8 @@
-import { monthlyEquivalent, totalMonths, type MembershipPlan } from "@masar/domain";
+import { approximateMonthlyCost, totalMonths, type MembershipPlan } from "@masar/domain";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Price } from "@/components/ui/price";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { formatMonths, moneyParts, roundedMoneyParts } from "@/i18n/format";
+import { formatMonths, moneyParts } from "@/i18n/format";
 import type { Locale } from "@/i18n/locales";
 import { purchaseUrl } from "./plan-paths";
 
@@ -12,7 +12,7 @@ interface PlanSummaryProps {
   readonly dictionary: Dictionary;
 }
 
-/** «14 شهرًا: 12 شهرًا مدفوعة + شهران مجانًا» أو المدة وحدها إن لم توجد أشهر مجانية. */
+/** «14 شهرًا: 12 شهرًا + شهران مجانًا» أو المدة وحدها إن لم توجد أشهر مجانية. بلا نعت يحتاج مطابقة العدد. */
 function DurationLine({ plan, locale, dictionary }: PlanSummaryProps) {
   const total = formatMonths(totalMonths(plan), locale);
   if (plan.bonusMonths === 0) {
@@ -24,8 +24,8 @@ function DurationLine({ plan, locale, dictionary }: PlanSummaryProps) {
   }
   return (
     <p>
-      <span className="font-strong">{total}</span>: {formatMonths(plan.paidMonths, locale)}{" "}
-      {dictionary.plan.paid} + {formatMonths(plan.bonusMonths, locale)} {dictionary.plan.bonus}
+      <span className="font-strong">{total}</span>: {formatMonths(plan.paidMonths, locale)} +{" "}
+      {formatMonths(plan.bonusMonths, locale)} {dictionary.plans.bonusSuffix}
     </p>
   );
 }
@@ -49,7 +49,7 @@ export function PlanSummary({ plan, locale, dictionary }: PlanSummaryProps) {
         {totalMonths(plan) > 1 ? (
           <p className="text-muted">
             {dictionary.plans.about}{" "}
-            <Price parts={roundedMoneyParts(monthlyEquivalent(plan), locale)} />{" "}
+            <Price parts={moneyParts(approximateMonthlyCost(plan), locale)} />{" "}
             {dictionary.plans.perMonth}
           </p>
         ) : null}
@@ -66,6 +66,7 @@ export function PlanSummary({ plan, locale, dictionary }: PlanSummaryProps) {
 export function StickyPurchaseBar({ plan, locale, dictionary }: PlanSummaryProps) {
   return (
     <aside
+      data-sticky-bar
       aria-label={dictionary.plan.stickyLabel}
       className="surface-deep fixed inset-x-0 bottom-0 z-10 pb-[env(safe-area-inset-bottom)] shadow-bar md:hidden"
     >

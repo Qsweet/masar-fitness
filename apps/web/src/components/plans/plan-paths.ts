@@ -13,5 +13,5 @@ export function planHref(plan: MembershipPlan, locale: Locale): string {
  * يُستبدل بالدفع الإلكتروني في المرحلتين 3 و4، ويبقى واتساب بديلًا (القرار 18).
  */
 export function purchaseUrl(plan: MembershipPlan, locale: Locale, dictionary: Dictionary): string {
-  return whatsappUrl(`${dictionary.plan.whatsappMessage} «${plan.name[locale]}».`);
+  return whatsappUrl(dictionary.plan.whatsappMessage.replace("{plan}", plan.name[locale]));
 }

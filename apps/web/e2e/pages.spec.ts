@@ -90,7 +90,7 @@ test.describe("صفحة الباقة", () => {
     const main = page.getByRole("main");
     await expect(main).toContainText(`${ANNUAL.price} ر.س`);
     await expect(main).toContainText("شامل ضريبة القيمة المضافة");
-    await expect(main).toContainText("14 شهرًا: 12 شهرًا مدفوعة + شهران مجانًا");
+    await expect(main).toContainText("14 شهرًا: 12 شهرًا + شهران مجانًا");
     await expect(main.getByRole("listitem").filter({ hasText: "المسبح" })).toBeVisible();
   });
 
@@ -119,7 +119,7 @@ test.describe("صفحة الباقة", () => {
     await page.goto(`/en/memberships/${ANNUAL.slug}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(ANNUAL.nameEn);
     await expect(page.getByRole("main")).toContainText(`${ANNUAL.price} SAR`);
-    await expect(page.getByRole("main")).toContainText("14 months: 12 months paid + 2 months free");
+    await expect(page.getByRole("main")).toContainText("14 months: 12 months + 2 months free");
   });
 
   test("الرابط المعتمد وبدائل اللغة", async ({ page }) => {
@@ -150,5 +150,35 @@ test.describe("شريط الشراء الثابت", () => {
     } else {
       await expect(bar).toBeHidden();
     }
+  });
+});
+
+test.describe("التركيز بلوحة المفاتيح", () => {
+  test("شريط الشراء الثابت لا يحجب العنصر المركَّز عليه", async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) >= 768, "الشريط الثابت خاص بالجوال");
+    // التمرير الناعم غير متزامن؛ مع تقليل الحركة يصير فوريًا فيُقاس الموضع النهائي
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(`/memberships/${ANNUAL.slug}`);
+    const bar = page.getByRole("complementary", { name: "ملخص الباقة والاشتراك" });
+    const steps = 30;
+    for (let step = 0; step < steps; step++) {
+      await page.keyboard.press("Tab");
+      const hidden = await page.evaluate(() => {
+        const focused = document.activeElement;
+        const stickyBar = document.querySelector("[data-sticky-bar]");
+        // بعد آخر عنصر يخرج التركيز من الصفحة ويصير جسمها هو العنصر النشط: ليس عنصرًا محجوبًا
+        if (
+          focused === null ||
+          focused === document.body ||
+          stickyBar === null ||
+          stickyBar.contains(focused)
+        ) {
+          return false;
+        }
+        return focused.getBoundingClientRect().bottom > stickyBar.getBoundingClientRect().top + 1;
+      });
+      expect(hidden, `العنصر رقم ${String(step + 1)} في ترتيب التنقل محجوب تحت الشريط`).toBe(false);
+    }
+    await expect(bar).toBeVisible();
   });
 });

@@ -1,6 +1,8 @@
 import type { Dictionary } from "./ar";
 
 export const en: Dictionary = {
+  currency: { SAR: "SAR" },
+  months: { one: "month", two: "months", few: "months", many: "months" },
   club: {
     name: "Masters Way Sports Club",
     shortName: "Masters Way",
@@ -89,14 +91,10 @@ export const en: Dictionary = {
   },
   plan: {
     back: "All plans",
-    durationTitle: "Membership duration",
-    paid: "paid",
-    bonus: "free",
     includesTitle: "The membership covers",
     buyWhatsapp: "Join via WhatsApp",
     buyNote: "Direct online payment is being prepared. For now, join through the club's WhatsApp.",
-    whatsappMessage: "Hello, I would like to join with the plan",
-    nextTitle: "What happens next",
+    whatsappMessage: "Hello, I would like to join with the “{plan}” plan.",
     stickyLabel: "Plan summary and joining",
   },
   footer: {
@@ -114,5 +112,4 @@ export const en: Dictionary = {
     lead: "Something went wrong on our side. Try again, and if it continues, message us on WhatsApp.",
     retry: "Try again",
   },
-  loading: "Loading",
 };

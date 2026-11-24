@@ -1,0 +1,26 @@
+// مخطط قاعدة البيانات. كل تغيير = ترحيل جديد في prisma/migrations (لا تعديل لترحيل مطبَّق).
+// الأسماء في القاعدة snake_case، وفي الكود camelCase.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// النادي. المنصة اليوم لنادٍ واحد، لكن الجداول الرئيسية تحمل club_id من البداية
+/// ليبقى طريق الترخيص التجاري مفتوحًا بلا إعادة بناء (انظر docs/DECISIONS.md).
+model Club {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  slug      String   @unique
+  nameAr    String   @map("name_ar")
+  nameEn    String   @map("name_en")
+  timezone  String   @default("Asia/Riyadh")
+  currency  String   @default("SAR") @db.Char(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("clubs")
+}

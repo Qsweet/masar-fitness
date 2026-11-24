@@ -50,3 +50,18 @@ export function durationShare(months: number, longest: number): number {
   }
   return Math.min(FULL_SHARE, Math.round((months / longest) * FULL_SHARE));
 }
+
+/**
+ * الباقة الأقل تكلفة شهريًا على كامل مدتها: حقيقة محسوبة لا رأي تسويقي.
+ * عند التعادل تُقدَّم الأطول مدة. تُعرض مختارة افتراضيًا وتُعلَّم «الأقل تكلفة شهريًا».
+ */
+export function bestValuePlan(plans: readonly MembershipPlan[]): MembershipPlan | undefined {
+  return plans.reduce<MembershipPlan | undefined>((best, plan) => {
+    if (best === undefined) {
+      return plan;
+    }
+    const difference = monthlyEquivalent(plan).amountMinor - monthlyEquivalent(best).amountMinor;
+    const cheaper = difference < 0 || (difference === 0 && totalMonths(plan) > totalMonths(best));
+    return cheaper ? plan : best;
+  }, undefined);
+}

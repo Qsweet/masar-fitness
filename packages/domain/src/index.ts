@@ -1,4 +1,5 @@
 export {
+  bestValuePlan,
   durationShare,
   longestDuration,
   monthlyEquivalent,

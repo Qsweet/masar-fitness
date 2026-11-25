@@ -1,0 +1,8 @@
+[Unit]
+Description=Masar site: pull and redeploy when the branch changes
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/masar/deploy/update.sh

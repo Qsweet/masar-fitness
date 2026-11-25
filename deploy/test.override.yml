@@ -1,0 +1,7 @@
+# للاختبار المحلي فقط (docs/DEPLOYMENT.md): HTTP على منفذ جانبي بلا شهادة، وصورة مبنية مسبقًا.
+services:
+  caddy:
+    ports: !override
+      - "127.0.0.1:8080:80"
+  app:
+    image: masar-app:test

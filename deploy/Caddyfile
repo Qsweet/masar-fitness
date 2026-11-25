@@ -1,0 +1,5 @@
+# شهادة HTTPS تلقائية من Let's Encrypt لاسم المضيف، وتحويل HTTP إلى HTTPS.
+{$SITE_HOST} {
+	encode zstd gzip
+	reverse_proxy app:3000
+}

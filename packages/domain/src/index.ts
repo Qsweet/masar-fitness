@@ -8,3 +8,10 @@ export { err, ok } from "./result";
 export type { Result } from "./result";
 export { parseSaudiMobile } from "./saudi-mobile";
 export type { SaudiMobile } from "./saudi-mobile";
+export {
+  costPerVisit,
+  DEFAULT_VISITS_PER_WEEK,
+  MAX_VISITS_PER_WEEK,
+  MIN_VISITS_PER_WEEK,
+  parseVisitsPerWeek,
+} from "./tools/cost-per-visit";

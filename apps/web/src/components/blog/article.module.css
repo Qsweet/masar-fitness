@@ -193,6 +193,48 @@
   color: var(--white);
 }
 
+/*
+ * الشاشة الضيقة: ثلاثة أعمدة نصية تصير كلمة في كل سطر. يتكدس كل صف بطاقةً: رأس الصف أولًا،
+ * ثم كل خلية تحت عنوان عمودها (data-label). الرأس الأصلي مخفي بصريًا ويبقى لقارئ الشاشة.
+ */
+@media (width < 40rem) {
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+  }
+
+  .table tbody tr {
+    padding-block: 0.75rem;
+    border-top: 1px solid rgb(12 16 20 / 14%);
+  }
+
+  .table tbody th,
+  .table td {
+    padding: 0.25rem 0;
+    border-top: none;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--grey);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+}
+
 .note {
   padding: 1.25rem;
   background: var(--white);
@@ -211,6 +253,12 @@
   padding-inline-start: 1.5rem;
   list-style: decimal;
   overflow-wrap: anywhere;
+}
+
+/* العنوان سطر مستقل وتحته الناشر والسنة: عنوان لاتيني في صفحة عربية لا يتداخل مع ما بعده. */
+.sourceTitle,
+.sourceLine {
+  display: block;
 }
 
 .related {

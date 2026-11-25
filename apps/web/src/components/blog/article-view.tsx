@@ -42,6 +42,7 @@ export function ArticleView(props: ArticleViewProps) {
         title={translation.title}
         lead={translation.description}
         before={<ArticleTrail article={article} {...context} />}
+        size="article"
       >
         <ArticleMeta
           article={article}

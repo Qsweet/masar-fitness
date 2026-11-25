@@ -8,6 +8,7 @@ import { formatDate } from "@/i18n/dates";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { fill, fillNodes } from "@/i18n/fill";
 import { localizedPath, type Locale } from "@/i18n/locales";
+import { cx } from "@/lib/cx";
 import styles from "./article.module.css";
 
 interface Context {
@@ -146,10 +147,10 @@ export function Sources({
       <ol className={styles.sources}>
         {translation.sources.map((source) => (
           <li key={source.url}>
-            <a href={source.url} rel="noopener noreferrer">
+            <a href={source.url} rel="noopener noreferrer" className={styles.sourceTitle}>
               <bdi>{source.title}</bdi>
-            </a>{" "}
-            <span className="muted">
+            </a>
+            <span className={cx("muted", styles.sourceLine)}>
               {fillNodes<ReactNode>(dictionary.blog.sourceLine, {
                 // المرجع قد يكون بلغة أخرى: عزل اتجاهه حتى لا تنقلب الفواصل والأرقام حوله
                 publisher: <bdi>{source.publisher}</bdi>,

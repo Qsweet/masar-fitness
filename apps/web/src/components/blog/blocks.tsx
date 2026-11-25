@@ -48,7 +48,10 @@ function TableView({ block }: { readonly block: Extract<Block, { type: "table" }
                     {cell}
                   </th>
                 ) : (
-                  <td key={index}>{cell}</td>
+                  // عنوان العمود يظهر فوق الخلية حين يتكدس الجدول على الشاشة الضيقة (article.module.css)
+                  <td key={index} data-label={block.head[index]}>
+                    {cell}
+                  </td>
                 ),
               )}
             </tr>

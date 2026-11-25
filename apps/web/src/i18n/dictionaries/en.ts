@@ -139,4 +139,61 @@ export const en: Dictionary = {
     lead: "Something went wrong on our side. Try again, and if it keeps happening, message us on WhatsApp.",
     retry: "Try again",
   },
+  blog: {
+    nav: "Blog",
+    title: "Blog",
+    intro:
+      "Straight answers on choosing a membership, training and recovery, reviewed by a coach before publishing.",
+    metaDescription:
+      "Masar Champions club articles on choosing a membership, training, recovery and nutrition, reviewed by a coach before publishing.",
+    feedTitle: "{club} blog",
+    topics: {
+      choosing: {
+        label: "Choosing a membership",
+        lead: "Duration, price and what suits you before you pay.",
+      },
+      training: {
+        label: "Training",
+        lead: "How to start, how often to train and how to progress.",
+      },
+      recovery: { label: "Recovery", lead: "Pool, jacuzzi, steam and rest between sessions." },
+      nutrition: { label: "Nutrition", lead: "Eating around training, with no medical promises." },
+    },
+    draftBanner: "Draft awaiting the coach's review",
+    draftNote: "Visible on the preview site only, and not published before review.",
+    published: "Published {date}",
+    updated: "Updated {date}",
+    reviewed: "Reviewed by {name} — {credential} — {date}",
+    readingTime: "{minutes} read",
+    minutes: { one: "1 min", two: "2 min", few: "min", many: "min" },
+    breadcrumb: "Breadcrumb",
+    summaryTitle: "The short answer",
+    takeawaysTitle: "Key points",
+    tocTitle: "In this article",
+    sourcesTitle: "Sources",
+    sourceAccessed: "accessed {date}",
+    relatedTitle: "Read next",
+    recommendationLabel: "Club membership now",
+    recommendationTitle: "Best value per month: {plan}",
+    recommendationAction: "Compare memberships",
+  },
+  tools: {
+    footerLink: "Cost-per-visit calculator",
+    costPerVisit: {
+      metaTitle: "Cost-per-visit calculator",
+      metaDescription:
+        "Pick how often you train each week and see the approximate cost of one visit for each Masar Champions membership in Buraidah.",
+      title: "What does a visit cost?",
+      lead: "Pick how many times you train each week, and we divide each membership's price by your visits over its full duration.",
+      legend: "How many times a week do you train?",
+      submit: "Calculate",
+      resultTitle: "If you train {times} a week",
+      times: { one: "once", two: "twice", few: "times", many: "times" },
+      perVisit: "Approximate cost per visit",
+      total: "Total price",
+      approximate:
+        "This is an estimate: a month counts as 52 ÷ 12 weeks, and we assume the same number of visits every week for the full duration, free months included. Prices are the memberships on sale now, VAT included.",
+      membershipsLink: "What does one visit cost? Work it out",
+    },
+  },
 };

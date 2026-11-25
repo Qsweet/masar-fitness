@@ -1,7 +1,25 @@
 import { expect, test, type Page } from "@playwright/test";
 
-/** أقسام الرئيسية بعد التنقيح الثاني (القرار 48). البيانات من البذرة التجريبية. */
+/** أقسام الرئيسية بلغة قالب «نبض» (القرار 49): الواجهة والمرافق والأسعار. البيانات من بذرة المعاينة. */
 const ANNUAL = { slug: "one-year" };
+const FACILITY_CARDS = [
+  "صالة الحديد",
+  "التمارين الوظيفية",
+  "الحصص الجماعية",
+  "المسبح",
+  "الساونا",
+  "الجاكوزي والبخار",
+];
+/** مزايا الاشتراك بأسماء شروط النادي الحالية، وهي نفسها أسماء المرافق. */
+const BENEFITS = [
+  "صالة الحديد",
+  "التمارين الوظيفية",
+  "الحصص الجماعية",
+  "المسبح",
+  "الجاكوزي",
+  "الساونا",
+  "البخار",
+];
 
 function durations(page: Page) {
   return page.getByRole("group", { name: "مدة الاشتراك" });
@@ -11,41 +29,63 @@ function summary(page: Page) {
   return page.locator("#plans [aria-live]");
 }
 
-test.describe("الواجهة والمرافق", () => {
-  const FACILITIES = ["صالة الحديد", "التمارين الوظيفية", "المسبح", "الجاكوزي", "البخار"];
+test.describe("الواجهة", () => {
+  test("عنوان الصفحة بالفصحى يسمّي النادي والمدينة، وسطره الثاني شعار الجدار", async ({ page }) => {
+    await page.goto("/");
+    const title = page.getByRole("heading", { level: 1 });
+    await expect(title).toContainText("نادي مسار الأبطال الرياضي للرجال في بريدة");
+    await expect(title).toContainText("أنت قدها.");
+    await expect(page.locator("#top")).not.toContainText("جدار");
+  });
 
-  test("المرافق الخمسة بأسمائها في ثلاث بطاقات، وهي نفسها مزايا صفحة الاشتراك", async ({
+  test("رقائق الحقائق من موقع النادي فقط: التأسيس والتقييم وللرجال، بلا أعداد أعضاء", async ({
     page,
   }) => {
     await page.goto("/");
+    const hero = page.locator("#top");
+    await expect(hero).toContainText("2018");
+    await expect(hero).toContainText("4.5");
+    await expect(hero).toContainText("تقييم Google");
+    await expect(hero).toContainText("18+");
+    await expect(hero).toContainText("للرجال فقط");
+    // شارة العرض محسوبة من الكتالوج (مكافأة الاشتراك الأوفر شهريًا)، والساعات من الإعداد
+    await expect(hero).toContainText("+ شهران مجانًا");
+    await expect(hero).toContainText("6:00 ص – 2:00 ص");
+    await expect(hero).not.toContainText(/عضو|%/);
+  });
+});
+
+test.describe("المرافق", () => {
+  test("ست بطاقات بأسماء المرافق، والمسبح بمرساته وعمقه، وكلها ضمن الاشتراك", async ({ page }) => {
+    await page.goto("/");
     const section = page.locator("#facilities");
-    await expect(section.getByRole("heading", { level: 3 })).toHaveText([
-      "صالة الحديد",
-      "التمارين الوظيفية",
-      "الماء والاستشفاء",
-    ]);
-    await expect(section.locator("#water").getByRole("listitem")).toHaveText(FACILITIES.slice(2));
-    await expect(section.locator("#water")).toContainText("مسبح داخلي بمسارات للسباحة");
-    // كل الاشتراكات المعروضة بالمزايا نفسها: الملخص يختصرها في سطر واحد بلا قائمة مكررة
+    await expect(section.getByRole("heading", { level: 3 })).toHaveText(FACILITY_CARDS);
+    await expect(section.locator("#water")).toContainText("متدرج العمق");
+    await expect(section.locator("#water")).toContainText("عمق من 1.5 إلى 3.5 متر");
+    await expect(section.getByText("ضمن الاشتراك")).toHaveCount(FACILITY_CARDS.length);
+  });
+
+  test("مزايا صفحة الاشتراك بأسماء المرافق نفسها، والملخص يختصرها في سطر", async ({ page }) => {
+    await page.goto("/");
     await expect(summary(page)).toContainText("يشمل جميع مرافق النادي");
     await expect(summary(page).getByRole("listitem")).toHaveCount(0);
     await page.goto(`/memberships/${ANNUAL.slug}`);
     const benefits = page.locator("section", {
       has: page.getByRole("heading", { name: "يشمل الاشتراك" }),
     });
-    await expect(benefits.getByRole("listitem")).toHaveText(FACILITIES);
+    await expect(benefits.getByRole("listitem")).toHaveText(BENEFITS);
   });
 
-  test("عنوان الصفحة بالفصحى يسمّي النادي والمدينة، وشعار الجدار سطر لا عنوان", async ({
-    page,
-  }) => {
+  test("مع تقليل الحركة: الأقسام ظاهرة كاملة بلا حركة دخول", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
-    const title = page.getByRole("heading", { level: 1 });
-    await expect(title).toContainText("نادي مسار الأبطال الرياضي للرجال في بريدة");
-    await expect(page.locator("#top").getByText("أنت قدها.")).toBeVisible();
-    await expect(page.locator("#top")).not.toContainText("جدار");
+    const card = page.locator("#facilities li").last();
+    await expect(card).toHaveCSS("opacity", "1");
+    await expect(card).toHaveCSS("animation-name", "none");
   });
+});
 
+test.describe("بطاقات الأسعار", () => {
   test("طرق الدفع لا تُعرض والشراء الإلكتروني مغلق: سطر واحد صادق بجانب زر واتساب", async ({
     page,
   }) => {
@@ -58,40 +98,30 @@ test.describe("الواجهة والمرافق", () => {
     }
   });
 
-  test("مربعات المدة بالبنية نفسها: رقم ووحدة، والشهر الواحد يُقرأ «شهر واحد»", async ({
+  test("كل بطاقة: المدة كاملة والإجمالي والشهري والتجميد (5 أيام لكل شهر مدفوع)", async ({
     page,
   }) => {
     await page.goto("/");
-    const monthly = durations(page).locator("label").first();
-    await expect(monthly.locator("[aria-hidden]").filter({ hasText: "شهر" })).toHaveText("1شهر");
-    await expect(monthly).toContainText("350");
-    await expect(monthly).not.toContainText("شهريًا");
-    await expect(durations(page).getByRole("radio", { name: /^شهر واحد/ })).toHaveValue(
-      "one-month",
-    );
-    await expect(durations(page).getByRole("radio", { name: /^1 شهر/ })).toHaveCount(0);
+    const cards = durations(page).locator("label");
+    await expect(cards).toHaveCount(3);
+    await expect(cards.nth(0)).toContainText("4 أشهر، منها شهر مجانًا");
+    await expect(cards.nth(0)).toContainText("تجميد حتى 15 يومًا");
+    await expect(cards.nth(1)).toContainText("999");
+    await expect(cards.nth(1)).toContainText("تجميد حتى 30 يومًا");
+    await expect(cards.nth(2)).toContainText("تجميد حتى 60 يومًا");
+    for (const card of await cards.all()) {
+      await expect(card).toContainText("يبدأ من تاريخ التفعيل في النادي");
+    }
   });
 
-  test("مقطع قسم التمرين صامت ومتكرر، وزره يوقفه ويشغّله", async ({ page }) => {
+  test("عرض الأصدقاء تحت البطاقات: السعر للثلاثة وحصة الشخص، والحجز عبر واتساب", async ({
+    page,
+  }) => {
     await page.goto("/");
-    await page.locator("#train").scrollIntoViewIfNeeded();
-    const video = page.locator("#train video");
-    await expect(video).toHaveJSProperty("muted", true);
-    await expect(video).toHaveAttribute("loop", "");
-    const pause = page.getByRole("button", { name: "أوقف الفيديو" });
-    await pause.click();
-    await expect(video).toHaveJSProperty("paused", true);
-    await page.getByRole("button", { name: "شغّل الفيديو" }).click();
-    await expect(video).toHaveJSProperty("paused", false);
-  });
-
-  test("مع تقليل الحركة: الإطار وحده بلا فيديو ولا زر", async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/");
-    await page.locator("#train").scrollIntoViewIfNeeded();
-    await expect(page.locator("#train img")).toHaveCount(3);
-    await expect(page.locator("#train video")).toHaveCount(0);
-    await expect(page.locator("#train button")).toHaveCount(0);
-    await expect(page.locator("#top video")).toHaveCount(0);
+    const friends = page.locator("#friends");
+    await expect(friends).toContainText("3,999");
+    await expect(friends).toContainText("1,333 ر.س للشخص");
+    const href = await friends.getByRole("link").getAttribute("href");
+    expect(new URL(href ?? "").origin).toBe("https://wa.me");
   });
 });

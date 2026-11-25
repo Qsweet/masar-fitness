@@ -1,6 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
-/** الأرقام من البذرة التجريبية: «شهر واحد» 350 ر.س، و«سنة كاملة» 2800 ر.س لـ12 شهرًا + شهرين. */
+/** الأرقام من بذرة المعاينة: «3 أشهر + شهر مجانًا» 699 ر.س، و«12 شهرًا + شهرين مجانًا» 1,499 ر.س. */
+const ANNUAL = "12 شهرًا + شهرين";
+const QUARTER = "3 أشهر + شهر";
 const TOOL = "/tools/cost-per-visit";
 
 function result(page: Page) {
@@ -15,15 +17,15 @@ test.describe("حاسبة تكلفة الزيارة", () => {
     await expect(result(page).getByRole("heading", { level: 2 })).toHaveText(
       "إذا تمرنت 3 مرات في الأسبوع",
     );
-    await expect(result(page).getByRole("listitem")).toHaveCount(4);
-    const annual = result(page).getByRole("listitem").filter({ hasText: "سنة كاملة" });
-    // ريالات صحيحة بلا هللات: 15.38 ⇒ 15
-    await expect(annual.locator("dd").first()).toHaveText("15 ر.س");
-    await expect(annual).toContainText("2,800");
+    await expect(result(page).getByRole("listitem")).toHaveCount(3);
+    const annual = result(page).getByRole("listitem").filter({ hasText: ANNUAL });
+    // ريالات صحيحة بلا هللات: 1,499 ÷ 182 زيارة = 8.24 ⇒ 8
+    await expect(annual.locator("dd").first()).toHaveText("8 ر.س");
+    await expect(annual).toContainText("1,499");
     await expect(annual).toContainText("الأوفر شهريًا");
     await expect(
-      result(page).getByRole("listitem").filter({ hasText: "شهر واحد" }).locator("dd").first(),
-    ).toHaveText("27 ر.س");
+      result(page).getByRole("listitem").filter({ hasText: QUARTER }).locator("dd").first(),
+    ).toHaveText("13 ر.س");
     await expect(page.getByRole("radio", { name: "3" })).toBeChecked();
     await expect(result(page)).toContainText("الرقم تقريبي");
   });
@@ -50,8 +52,8 @@ test.describe("حاسبة تكلفة الزيارة", () => {
     await page.getByRole("button", { name: "احسب" }).click();
     await expect(page).toHaveURL(/\/tools\/cost-per-visit\?visits=7$/);
     await expect(
-      result(page).getByRole("listitem").filter({ hasText: "سنة كاملة" }).locator("dd").first(),
-    ).toHaveText("7 ر.س");
+      result(page).getByRole("listitem").filter({ hasText: ANNUAL }).locator("dd").first(),
+    ).toHaveText("4 ر.س");
     await context.close();
   });
 
@@ -66,8 +68,8 @@ test.describe("حاسبة تكلفة الزيارة", () => {
       "إذا تمرنت 7 مرات في الأسبوع",
     );
     await expect(
-      result(page).getByRole("listitem").filter({ hasText: "سنة كاملة" }).locator("dd").first(),
-    ).toHaveText("7 ر.س");
+      result(page).getByRole("listitem").filter({ hasText: ANNUAL }).locator("dd").first(),
+    ).toHaveText("4 ر.س");
     // بلا إعادة تحميل: التركيز يبقى على الرقم المختار
     await expect(page.getByRole("radio", { name: "7" })).toBeFocused();
   });

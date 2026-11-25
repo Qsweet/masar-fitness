@@ -16,7 +16,7 @@ test.describe("اللغة والاتجاه", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Masters Way, a men's gym in Buraidah",
+      "Masters Way Sports Club for men in Buraidah",
     );
   });
 

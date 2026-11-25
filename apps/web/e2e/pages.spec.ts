@@ -1,7 +1,17 @@
 import { expect, test, type Page } from "@playwright/test";
 
-/** البيانات من البذرة التجريبية (packages/db/prisma/seed-demo.ts). */
-const ANNUAL = { slug: "one-year", nameAr: "سنة كاملة", nameEn: "12 months", price: "2,800" };
+/** البيانات من بذرة المعاينة (packages/db/prisma/seed-demo.ts): أسعار النادي الحالية مؤقتًا. */
+const ANNUAL = {
+  slug: "one-year",
+  nameAr: "12 شهرًا + شهرين مجانًا",
+  nameEn: "12 months + 2 free",
+  price: "1,499",
+};
+const QUARTER = { slug: "three-months", nameAr: "3 أشهر + شهر مجانًا", price: "699" };
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 const BAR = "ملخص الاشتراك";
 
 function durations(page: Page) {
@@ -13,41 +23,43 @@ function summary(page: Page) {
 }
 
 test.describe("الرئيسية", () => {
-  test("تعرض المدد الأربع من القاعدة، والأوفر شهريًا مختار مع ملخصه", async ({ page }) => {
+  test("تعرض بطاقات الأسعار الثلاث من القاعدة، والأوفر شهريًا مختار مع ملخصه", async ({ page }) => {
     await page.goto("/");
     const options = durations(page).getByRole("radio");
-    await expect(options).toHaveCount(4);
-    const annual = durations(page).locator("label").filter({ hasText: "شهرًا" });
+    await expect(options).toHaveCount(3);
+    const annual = durations(page).locator("label").filter({ hasText: ANNUAL.nameAr });
     await expect(annual).toContainText(ANNUAL.price);
-    await expect(annual).toContainText("+ شهران مجانًا");
+    await expect(annual).toContainText("14 شهرًا، منها شهران مجانًا");
     await expect(annual).toContainText("الأوفر شهريًا");
-    await expect(annual).toContainText("نحو 200 ر.س شهريًا");
+    await expect(annual).toContainText("نحو 107 ر.س شهريًا");
+    await expect(annual).toContainText("تجميد حتى 60 يومًا");
     await expect(annual.getByRole("radio")).toBeChecked();
+    // شارة «الأوفر شهريًا» محسوبة: بطاقة واحدة فقط
+    await expect(durations(page).getByText("الأوفر شهريًا", { exact: true })).toHaveCount(1);
 
     await expect(summary(page)).toContainText(ANNUAL.nameAr);
     await expect(summary(page)).toContainText(`${ANNUAL.price} ر.س`);
     await expect(summary(page)).toContainText("شامل ضريبة القيمة المضافة");
     await expect(summary(page)).toContainText("14 شهرًا، منها شهران مجانًا");
-    await expect(summary(page)).toContainText("نحو 200 ر.س شهريًا");
+    await expect(summary(page)).toContainText("نحو 107 ر.س شهريًا");
   });
 
   test("اختيار مدة يحدّث الملخص فورًا بلا انتقال", async ({ page }) => {
     await page.goto("/");
     await durations(page)
       .locator("label")
-      .filter({ hasText: "أشهر" })
-      .first()
+      .filter({ hasText: QUARTER.nameAr })
       .getByRole("radio")
       .check();
     await expect(page).toHaveURL(/\/$/);
-    await expect(summary(page)).toContainText("ثلاثة أشهر");
-    await expect(summary(page)).toContainText("900 ر.س");
-    await expect(summary(page)).toContainText("نحو 300 ر.س شهريًا");
+    await expect(summary(page)).toContainText(QUARTER.nameAr);
+    await expect(summary(page)).toContainText(`${QUARTER.price} ر.س`);
+    await expect(summary(page)).toContainText("نحو 175 ر.س شهريًا");
     await summary(page)
       .getByRole("link", { name: /تفاصيل الاشتراك/ })
       .click();
     await expect(page).toHaveURL(/\/memberships\/three-months$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("ثلاثة أشهر");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(QUARTER.nameAr);
   });
 
   test("الاختيار بلوحة المفاتيح: الأسهم تنقل بين المدد", async ({ page }) => {
@@ -58,7 +70,7 @@ test.describe("الرئيسية", () => {
     await expect(durations(page).getByRole("radio", { checked: true })).not.toHaveValue(
       ANNUAL.slug,
     );
-    await expect(summary(page)).toContainText("ستة أشهر");
+    await expect(summary(page)).toContainText("6 أشهر + شهرين مجانًا");
   });
 
   test("روابط الموقع الحقيقية: الخريطة والهاتف", async ({ page }) => {
@@ -90,20 +102,22 @@ test.describe("صفحة الاشتراكات", () => {
     const table = compare.getByRole("table");
     const rows = compare.locator("ul > li");
     if ((viewport?.width ?? 0) >= 768) {
-      await expect(table.getByRole("columnheader")).toHaveCount(5);
+      await expect(table.getByRole("columnheader")).toHaveCount(4);
       const priceRow = table.getByRole("row", { name: /السعر الإجمالي/ });
-      await expect(priceRow).toContainText("350");
+      await expect(priceRow).toContainText(QUARTER.price);
       await expect(priceRow).toContainText(ANNUAL.price);
       await expect(table.getByRole("row", { name: /إجمالي المدة/ })).toContainText("14 شهرًا");
       await expect(rows.first()).toBeHidden();
     } else {
       await expect(table).toBeHidden();
-      await expect(rows).toHaveCount(4);
+      await expect(rows).toHaveCount(3);
       const annual = rows.filter({ hasText: ANNUAL.nameAr });
       await expect(annual).toContainText("14 شهرًا، منها شهران مجانًا");
       await expect(annual).toContainText(ANNUAL.price);
-      await expect(annual).toContainText("200");
-      const choose = annual.getByRole("link", { name: new RegExp(`اختر\\s*: ${ANNUAL.nameAr}`) });
+      await expect(annual).toContainText("107");
+      const choose = annual.getByRole("link", {
+        name: new RegExp(`اختر\\s*: ${escapeRegExp(ANNUAL.nameAr)}`),
+      });
       const box = await choose.boundingBox();
       expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
       // الصفحة لا تتحرك أفقيًا
@@ -113,7 +127,7 @@ test.describe("صفحة الاشتراكات", () => {
     }
     // كل الاشتراكات بالمزايا نفسها: جملة واحدة بدل صفوف علامات متطابقة
     await expect(compare).toContainText(
-      "كل الاشتراكات تشمل جميع المرافق: صالة الحديد والتمارين الوظيفية والمسبح والجاكوزي والبخار.",
+      "كل الاشتراكات تشمل جميع المرافق: صالة الحديد والتمارين الوظيفية والحصص الجماعية والمسبح والجاكوزي والساونا والبخار.",
     );
     await expect(compare.getByText("مشمول")).toHaveCount(0);
   });
@@ -123,15 +137,14 @@ test.describe("صفحة الاشتراك", () => {
   test("اشتراك الصفحة مختار، والإجمالي ظاهر قبل زر الشراء", async ({ page }) => {
     await page.goto("/memberships/three-months");
     await expect(durations(page).getByRole("radio", { checked: true })).toHaveValue("three-months");
-    await expect(summary(page)).toContainText("900 ر.س");
+    await expect(summary(page)).toContainText(`${QUARTER.price} ر.س`);
     await expect(summary(page).getByRole("link", { name: /تفاصيل الاشتراك/ })).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "يشمل الاشتراك" })).toBeVisible();
   });
 
-  test("اشتراك الشهر الواحد بلا سطر «تكلفة الشهر» المكرر", async ({ page }) => {
-    await page.goto("/memberships/one-month");
-    await expect(summary(page)).toContainText("شهر واحد");
-    await expect(summary(page)).not.toContainText("نحو");
+  test("اشتراك مؤرشف (شهر واحد التجريبي القديم) لا صفحة له", async ({ page }) => {
+    const response = await page.goto("/memberships/one-month");
+    expect(response?.status()).toBe(404);
   });
 
   test("زر الشراء يفتح واتساب النادي برسالة تسمّي الاشتراك", async ({ page }) => {
@@ -183,6 +196,18 @@ test.describe("شريط الشراء الثابت", () => {
       await expect(bar).toBeHidden();
     }
   });
+
+  test("يختفي أثناء الكتابة في نموذج التواصل ويعود بعدها", async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) >= 1024, "الشريط الثابت خاص بالجوال");
+    await page.goto("/");
+    const bar = page.getByRole("complementary", { name: BAR });
+    await page.locator("#plans").scrollIntoViewIfNeeded();
+    await expect(bar).toBeVisible();
+    await page.getByRole("textbox", { name: "الاسم" }).focus();
+    await expect(bar).toBeHidden();
+    await page.getByRole("textbox", { name: "الاسم" }).blur();
+    await expect(bar).toBeVisible();
+  });
 });
 
 test.describe("التركيز بلوحة المفاتيح", () => {
@@ -230,9 +255,9 @@ test.describe("قائمة الجوال", () => {
     await expect(menu).toHaveAttribute("open", "");
     await page
       .getByRole("navigation", { name: "قائمة الجوال" })
-      .getByRole("link", { name: "التمرين" })
+      .getByRole("link", { name: "المرافق" })
       .click();
-    await expect(page).toHaveURL(/#train$/);
+    await expect(page).toHaveURL(/#facilities$/);
     await expect(menu).not.toHaveAttribute("open");
 
     await menu.locator("summary").click();

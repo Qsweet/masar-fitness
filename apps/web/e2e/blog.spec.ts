@@ -2,8 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 
 /**
  * المدونة على نسخة المعاينة (SITE_INDEXABLE غير مضبوط): المسودات الثلاث ظاهرة بشريطها وnoindex،
- * ولا تظهر أبدًا في خريطة الموقع ولا الخلاصة ولا llms.txt. السعر من البذرة التجريبية: السنوية
- * 2,800 ر.س هي الأوفر شهريًا.
+ * ولا تظهر أبدًا في خريطة الموقع ولا الخلاصة ولا llms.txt. السعر من بذرة المعاينة: «12 شهرًا + شهرين
+ * مجانًا» 1,499 ر.س هي الأوفر شهريًا.
  */
 const SLUGS = [
   "choose-gym-membership-duration-buraidah",
@@ -105,8 +105,8 @@ test.describe("صفحة المقال على المعاينة", () => {
     const recommendations = page.getByRole("complementary", { name: "اشتراك النادي الآن" });
     await expect(recommendations).toHaveCount(2);
     for (const recommendation of await recommendations.all()) {
-      await expect(recommendation).toContainText("الأوفر شهريًا: سنة كاملة");
-      await expect(recommendation).toContainText("2,800");
+      await expect(recommendation).toContainText("الأوفر شهريًا: 12 شهرًا + شهرين مجانًا");
+      await expect(recommendation).toContainText("1,499");
       await expect(recommendation.getByRole("link", { name: "قارن الاشتراكات" })).toHaveAttribute(
         "href",
         "/memberships",

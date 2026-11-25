@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type Route } from "@playwright/test";
 
 /**
- * مسار الشراء على الخادم الثاني (3101، العلم مفتوح) بالبذرة التجريبية: باقات بأسعارها،
+ * مسار الشراء على الخادم الثاني (3101، العلم مفتوح) ببذرة المعاينة: الاشتراكات الثلاثة بأسعار النادي المؤقتة،
  * إضافة demo-addon بـ50 ر.س، وكوبون DEMO10 بخصم 10% (packages/db/prisma/seed-demo.ts).
  */
 const LABELS = {
@@ -87,12 +87,12 @@ test.describe("الشراء والعلم مفتوح", () => {
     const mobile = randomMobile();
     await page.goto("/memberships/one-year");
     const planSummary = page.locator("#plans [aria-live]");
-    await expect(planSummary).toContainText("2,800 ر.س");
+    await expect(planSummary).toContainText("1,499 ر.س");
     await planSummary.getByRole("link", { name: LABELS.ar.buy }).click();
 
     await expect(page).toHaveURL(/\/checkout\/one-year$/);
-    await expect(page.getByTestId("order-total")).toContainText("2,800 ر.س");
-    await expect(page.getByTestId("confirm-total")).toContainText("2,800 ر.س");
+    await expect(page.getByTestId("order-total")).toContainText("1,499 ر.س");
+    await expect(page.getByTestId("confirm-total")).toContainText("1,499 ر.س");
     await expect(page.getByText("منه ضريبة القيمة المضافة 15%")).toBeVisible();
     await expect(page.getByText("يبدأ الاشتراك من يوم الدفع.")).toBeVisible();
     await fillBuyer(page, "ar", mobile);
@@ -102,7 +102,7 @@ test.describe("الشراء والعلم مفتوح", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("طلبك محجوز");
     const reference = (await page.getByTestId("order-reference").textContent()) ?? "";
     expect(reference).toMatch(/^MSR-\d{7}$/);
-    await expect(page.getByTestId("order-total")).toContainText("2,800 ر.س");
+    await expect(page.getByTestId("order-total")).toContainText("1,499 ر.س");
     await expect(page.getByText(`+966•••••••${mobile.slice(-2)}`)).toBeVisible();
     await expect(page.getByText(mobile.slice(1))).toHaveCount(0);
     await expect(page.getByText("الدفع الإلكتروني غير متاح بعد", { exact: false })).toBeVisible();
@@ -118,16 +118,16 @@ test.describe("الشراء والعلم مفتوح", () => {
     await page.getByRole("button", { name: "Update summary" }).click();
 
     await expect(page).toHaveURL(/addon=demo-addon/);
-    // (2,800 + 50) − 10% = 2,565
-    await expect(page.getByTestId("order-total")).toContainText("2,565 SAR");
-    await expect(page.getByTestId("confirm-total")).toContainText("2,565 SAR");
+    // (1,499 + 50) − 10% = 1,394.10
+    await expect(page.getByTestId("order-total")).toContainText("1,394.10 SAR");
+    await expect(page.getByTestId("confirm-total")).toContainText("1,394.10 SAR");
     await expect(page.getByText("Coupon DEMO10")).toBeVisible();
     await fillBuyer(page, "en", randomMobile(), "Test Buyer");
     await submit(page, "en").click();
 
     await expect(page).toHaveURL(/^[^?]*\/en\/checkout\/orders\//);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your order is reserved");
-    await expect(page.getByTestId("order-total")).toContainText("2,565 SAR");
+    await expect(page.getByTestId("order-total")).toContainText("1,394.10 SAR");
     await expect(page.getByText("Demo add-on")).toBeVisible();
     await expect(page.getByText("Coupon DEMO10")).toBeVisible();
     await expectNoPaymentButton(page);
@@ -153,16 +153,16 @@ test.describe("الشراء والعلم مفتوح", () => {
   });
 
   test("كوبون غير صالح: نص عام على حقله، والسعر بلا خصم، ولا نموذج بيانات", async ({ page }) => {
-    await page.goto("/checkout/one-month?coupon=NOPE123");
+    await page.goto("/checkout/three-months?coupon=NOPE123");
     const coupon = page.getByLabel("كوبون الخصم");
     await expect(coupon).toHaveAttribute("aria-invalid", "true");
     await expect(page.locator("#coupon-message")).toHaveText(
       "لا يمكن استخدام هذا الكوبون لهذا الطلب. تأكد من كتابته أو أزله.",
     );
-    await expect(page.getByTestId("order-total")).toContainText("350 ر.س");
+    await expect(page.getByTestId("order-total")).toContainText("699 ر.س");
     await expect(submit(page, "ar")).toHaveCount(0);
 
-    await page.goto("/checkout/one-month?coupon=%21%21");
+    await page.goto("/checkout/three-months?coupon=%21%21");
     await expect(page.locator("#coupon-message")).toHaveText(
       "صيغة الكوبون غير صحيحة: حروف إنجليزية وأرقام فقط.",
     );
@@ -180,7 +180,7 @@ test.describe("الشراء والعلم مفتوح", () => {
   });
 
   test("صفحة المراجعة بلا axe مخالفات، ورمز غير معروف 404", async ({ page }) => {
-    await page.goto("/en/checkout/one-month");
+    await page.goto("/en/checkout/three-months");
     await fillBuyer(page, "en", randomMobile(), "Test Buyer");
     await submit(page, "en").click();
     await expect(page).toHaveURL(ORDER_URL);
@@ -202,8 +202,8 @@ test.describe("الشراء وJavaScript معطَّل", () => {
     await page.getByLabel("كوبون الخصم").fill("DEMO10");
     await page.getByLabel("كوبون الخصم").press("Enter");
     await expect(page).toHaveURL(/coupon=DEMO10/);
-    // 1,600 − 10% = 1,440
-    await expect(page.getByTestId("order-total")).toContainText("1,440 ر.س");
+    // 999 − 10% = 899.10
+    await expect(page.getByTestId("order-total")).toContainText("899.10 ر.س");
 
     await fillBuyer(page, "ar", "0000", "فهد");
     await page.getByLabel(LABELS.ar.mobile, { exact: true }).press("Enter");
@@ -216,7 +216,7 @@ test.describe("الشراء وJavaScript معطَّل", () => {
     await page.getByLabel(LABELS.ar.mobile, { exact: true }).press("Enter");
     await expect(page).toHaveURL(ORDER_URL);
     expectSingleOrder(page, destinations);
-    await expect(page.getByTestId("order-total")).toContainText("1,440 ر.س");
+    await expect(page.getByTestId("order-total")).toContainText("899.10 ر.س");
     await expectNoPaymentButton(page);
   });
 });
@@ -237,7 +237,7 @@ test("حد الجوال: ثلاثة طلبات، ثم سقف المعلّق، ث
     throttled: "محاولات كثيرة في وقت قصير. انتظر بضع دقائق ثم حاول مرة أخرى، أو راسلنا على واتساب.",
   };
   for (const outcome of expected) {
-    await page.goto("/checkout/one-month");
+    await page.goto("/checkout/three-months");
     await fillBuyer(page, "ar", mobile);
     await submit(page, "ar").click();
     if (outcome === "order") {

@@ -18,13 +18,13 @@ export interface ServiceView {
   readonly name: string;
   readonly line: string;
   readonly note: string;
-  /** «6–24 جلسة»، غائب لبرنامج لا يُباع بعد */
-  readonly range: string | undefined;
-  /** «من 720 ر.س»، غائب لبرنامج لا يُباع بعد */
+  /** «من 6 إلى 24 جلسة» */
+  readonly range: string;
+  /** «من 720 ر.س»، غائب حين لا يُعرف أن أقل سعر هنا هو أقل سعر للخدمة (lowestConfirmed) */
   readonly from: string | undefined;
   readonly packages: readonly PackageView[];
-  /** واتساب برسالة تسمّي الخدمة، غائب لبرنامج قيد الإعداد */
-  readonly askHref: string | undefined;
+  /** واتساب برسالة تسمّي الخدمة */
+  readonly askHref: string;
 }
 
 function priceText(priceMinor: number, template: string, locale: Locale): string {
@@ -38,27 +38,24 @@ function toServiceView(service: ServiceOffer, dictionary: Dictionary, locale: Lo
   const forms = services.units[service.unit];
   const counts = service.packages.map((item) => item.sessions);
   const prices = service.packages.map((item) => item.priceMinor);
-  const selling = service.packages.length > 0;
   return {
     id: service.id,
     name: copy.name,
     line: copy.line,
     note: copy.note,
-    range: selling
-      ? fill(services.range, {
-          min: String(Math.min(...counts)),
-          max: String(Math.max(...counts)),
-          unit: forms.many,
-        })
+    range: fill(services.range, {
+      min: String(Math.min(...counts)),
+      max: String(Math.max(...counts)),
+      unit: forms.many,
+    }),
+    from: service.lowestConfirmed
+      ? priceText(Math.min(...prices), services.from, locale)
       : undefined,
-    from: selling ? priceText(Math.min(...prices), services.from, locale) : undefined,
     packages: service.packages.map((item) => ({
       sessions: countText(item.sessions, forms),
       price: moneyParts(money(item.priceMinor), locale),
     })),
-    askHref: selling
-      ? whatsappUrl(fill(services.whatsappMessage, { service: copy.name }))
-      : undefined,
+    askHref: whatsappUrl(fill(services.whatsappMessage, { service: copy.name })),
   };
 }
 

@@ -116,16 +116,16 @@ function ContactColumn({ locale, dictionary }: Pick<SiteFooterProps, "locale" | 
   );
 }
 
-/** الشريط السفلي: الحقوق والسجل التجاري، وطرق الدفع والشراء مفتوح أو السطر الصادق عن واتساب. */
+/**
+ * الشريط السفلي: الحقوق، وطرق الدفع والشراء مفتوح أو السطر الصادق عن واتساب.
+ * لا رقم سجل تجاري: الرقم الوحيد في موقع النادي من شارة سلة، ونوعه ينتظر تأكيد المالك (CLUB_FACTS §13).
+ */
 function BottomBar({ checkoutEnabled, dictionary }: SiteFooterProps) {
   const { footer, payment, club } = dictionary;
   return (
     <div className={cx("container", styles.bottom)}>
       <p>
         © <bdi>{new Date().getFullYear()}</bdi> {club.name}. {footer.rights}.
-      </p>
-      <p>
-        {footer.registration} <bdi>{CLUB_FACTS.commercialRegistration}</bdi>
       </p>
       {checkoutEnabled ? (
         <ul className={styles.payments} aria-label={payment.title}>

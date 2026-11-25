@@ -3,8 +3,9 @@
  * مؤقتة حتى يؤكدها المالك، وغير قابلة للشراء من الموقع بعد: الطلب عبر واتساب. المبالغ بالهللة.
  * التدريب الشخصي: المجموعة الجديدة المربوطة من الرئيسية فقط (§4.3)، لا الباقات الأقدم المتعارضة معها (§13).
  * التأهيل: باقات الصفحات الجديدة (§4.4) التي تنص أنها ليست علاجًا طبيعيًا وتشترط موافقة طبية.
+ * BE STRONG 45 ليس هنا: الموقع نفسه يقول إن شراءه وتفعيله «قيد الإعداد» (§4.6)، فيُذكر بسطر تحت البطاقات فقط.
  */
-export type ServiceId = "personalTraining" | "rehab" | "swimming" | "beStrong";
+export type ServiceId = "personalTraining" | "rehab" | "swimming";
 
 export interface ServicePackage {
   readonly sessions: number;
@@ -15,14 +16,19 @@ export interface ServiceOffer {
   readonly id: ServiceId;
   /** وحدة العدّ في القاموس: حصص التدريب أو جلسات التأهيل والسباحة */
   readonly unit: "session" | "sitting";
-  /** فارغة حين لا يُباع البرنامج بعد (BE STRONG 45 «قيد الإعداد»، §4.6) */
-  readonly packages: readonly ServicePackage[];
+  readonly packages: readonly [ServicePackage, ...ServicePackage[]];
+  /**
+   * أقل سعر هنا هو فعلًا أقل سعر في موقع النادي، فتصح عبارة «من … ر.س». التدريب الشخصي لا: الموقع يعرض
+   * معه مجموعة أقدم أرخص (6 + 2 مجانًا بـ675، §13 البند 8) لم يُحسم أيهما الحالي.
+   */
+  readonly lowestConfirmed: boolean;
 }
 
 export const SERVICES: readonly ServiceOffer[] = [
   {
     id: "personalTraining",
     unit: "session",
+    lowestConfirmed: false,
     packages: [
       { sessions: 8, priceMinor: 99_000 },
       { sessions: 12, priceMinor: 142_800 },
@@ -33,6 +39,7 @@ export const SERVICES: readonly ServiceOffer[] = [
   {
     id: "rehab",
     unit: "sitting",
+    lowestConfirmed: true,
     packages: [
       { sessions: 6, priceMinor: 72_000 },
       { sessions: 12, priceMinor: 132_000 },
@@ -43,13 +50,13 @@ export const SERVICES: readonly ServiceOffer[] = [
   {
     id: "swimming",
     unit: "sitting",
+    lowestConfirmed: true,
     packages: [
       { sessions: 6, priceMinor: 69_000 },
       { sessions: 12, priceMinor: 115_000 },
       { sessions: 18, priceMinor: 199_000 },
     ],
   },
-  { id: "beStrong", unit: "sitting", packages: [] },
 ];
 
 /**

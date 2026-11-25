@@ -1,3 +1,4 @@
+import { BidiText } from "@/components/ui/bidi-text";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { PhotoCard } from "@/components/ui/photo-card";
 import { Price } from "@/components/ui/price";
@@ -5,25 +6,20 @@ import { SectionHead } from "@/components/ui/section-head";
 import { PHOTOS, type PhotoKey } from "@/config/photos";
 import type { ServiceId } from "@/config/services";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { cx } from "@/lib/cx";
 import type { ServiceView } from "./services-view";
 import grid from "./card-grid.module.css";
 import styles from "./services.module.css";
 
-const CARD_SIZES = "(min-width: 64rem) 23vw, (min-width: 40rem) 50vw, 100vw";
+const CARD_SIZES = "(min-width: 64rem) 30vw, (min-width: 40rem) 50vw, 100vw";
 
-/** صورة كل خدمة وأيقونة صفها. السباحة بصورة المسبح نفسه؛ BE STRONG 45 بصورة من صالة الحديد. */
+/** صورة كل خدمة وأيقونة صفها. السباحة بصورة المسبح نفسه. */
 const LOOK: Readonly<Record<ServiceId, { photo: PhotoKey; icon: IconName }>> = {
   personalTraining: { photo: "coachTalk", icon: "person" },
   rehab: { photo: "consultation", icon: "heart" },
   swimming: { photo: "pool", icon: "waves" },
-  beStrong: { photo: "latPulldown", icon: "calendar" },
 };
 
 function Packages({ service, label }: { readonly service: ServiceView; readonly label: string }) {
-  if (service.packages.length === 0) {
-    return null;
-  }
   return (
     <details className={styles.packages}>
       <summary>{label}</summary>
@@ -54,22 +50,23 @@ function ServiceCard({
       sizes={CARD_SIZES}
       title={service.name}
       line={service.line}
-      meta={{ icon: look.icon, text: service.range ?? services.preparing }}
+      meta={{ icon: look.icon, text: service.range }}
       badge={service.from}
       note={service.note === "" ? undefined : service.note}
     >
       <Packages service={service} label={services.packages} />
-      {service.askHref === undefined ? null : (
-        <a href={service.askHref} rel="noopener noreferrer" className={styles.ask}>
-          <Icon name="chat" />
-          {services.ask}
-        </a>
-      )}
+      <a href={service.askHref} rel="noopener noreferrer" className={styles.ask}>
+        <Icon name="chat" />
+        {services.ask}
+      </a>
     </PhotoCard>
   );
 }
 
-/** البرامج المدفوعة غير القابلة للشراء من الموقع بعد: بطاقات بنمط البرامج، والطلب عبر واتساب. */
+/**
+ * البرامج المدفوعة غير القابلة للشراء من الموقع بعد: ثلاث بطاقات بنمط البرامج، والطلب عبر واتساب.
+ * BE STRONG 45 «قيد الإعداد» في موقع النادي: سطر صغير تحت الشبكة لا بطاقة ناقصة.
+ */
 export function Services({
   dictionary,
   services,
@@ -87,11 +84,17 @@ export function Services({
           title={copy.title}
           lead={copy.lead}
         />
-        <ul className={cx(grid.grid, grid.four)}>
+        <ul className={grid.grid}>
           {services.map((service) => (
             <ServiceCard key={service.id} service={service} dictionary={dictionary} />
           ))}
         </ul>
+        <p className={styles.soon}>
+          <Icon name="calendar" />
+          <span>
+            <BidiText text={copy.soon} />
+          </span>
+        </p>
       </div>
     </section>
   );

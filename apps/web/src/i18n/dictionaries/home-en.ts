@@ -21,7 +21,7 @@ export const homeEn: HomeDictionary = {
   facilities: {
     eyebrow: "Facilities",
     title: "Everything you need in one place",
-    lead: "Seven facilities, all in your membership.",
+    lead: "Every club facility is in your membership.",
     included: "In your membership",
     items: [
       {
@@ -45,14 +45,9 @@ export const homeEn: HomeDictionary = {
         meta: "{min}–{max} m deep",
       },
       {
-        name: "Sauna",
-        line: "A dedicated sauna to relax and recover after training.",
-        meta: "After training",
-      },
-      {
-        name: "Jacuzzi and steam room",
-        line: "A hot and cold jacuzzi, and steam rooms for muscle recovery.",
-        meta: "Hot and cold",
+        name: "Sauna, jacuzzi and steam room",
+        line: "A sauna, a hot and cold jacuzzi, and steam rooms to relax and recover after training.",
+        meta: "Recovery after training",
       },
     ],
   },
@@ -92,7 +87,7 @@ export const homeEn: HomeDictionary = {
     packages: "Packages and prices",
     ask: "Ask on WhatsApp",
     whatsappMessage: "Hello, I'd like to ask about “{service}”.",
-    preparing: "In preparation",
+    soon: "In preparation: BE STRONG 45, a 45-day digital program built around your goal and level. It will be announced when ready.",
     units: {
       session: { one: "1 session", two: "2 sessions", few: "sessions", many: "sessions" },
       sitting: { one: "1 session", two: "2 sessions", few: "sessions", many: "sessions" },
@@ -112,11 +107,6 @@ export const homeEn: HomeDictionary = {
         name: "Adult swimming lessons",
         line: "From zero in the indoor pool, with a coach who specialises in teaching swimming.",
         note: "",
-      },
-      beStrong: {
-        name: "BE STRONG 45",
-        line: "A 45-day digital program built around your goal and level, at home or at the club.",
-        note: "It will be announced when ready, and it does not replace specialist medical or nutrition advice.",
       },
     },
   },

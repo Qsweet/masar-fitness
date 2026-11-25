@@ -11,23 +11,19 @@ import styles from "./card-grid.module.css";
 const CARD_SIZES = "(min-width: 64rem) 30vw, (min-width: 40rem) 50vw, 100vw";
 
 /**
- * عرض كل مرفق بترتيب القاموس (facilities.items): صورته من النادي أو أيقونته حين لا صورة مؤكدة
- * (الجاكوزي والبخار)، وأيقونة صف المعلومات، ومرساة المسبح ‎#water‎ التي تشير إليها روابط المقالات.
+ * عرض كل مرفق بترتيب القاموس (facilities.items): صورته من النادي، وأيقونة صف المعلومات، ومرساة المسبح
+ * ‎#water‎ التي تشير إليها روابط المقالات. لا صورة للجاكوزي ولا للبخار، فهما مع الساونا في بطاقة الاستشفاء
+ * بصورتها، لا بطاقة بلا صورة.
  */
-const ITEMS: readonly { photo: PhotoKey | IconName; meta: IconName; id?: string }[] = [
+const ITEMS: readonly { photo: PhotoKey; meta: IconName; id?: string }[] = [
   { photo: "legPress", meta: "dumbbell" },
   { photo: "functionalFront", meta: "dumbbell" },
   { photo: "functionalSquat", meta: "users" },
   { photo: "pool", meta: "waves", id: "water" },
   { photo: "sauna", meta: "flame" },
-  { photo: "steam", meta: "waves" },
 ];
 
-function isPhoto(key: PhotoKey | IconName): key is PhotoKey {
-  return Object.hasOwn(PHOTOS, key);
-}
-
-/** المرافق السبعة في ست بطاقات بنمط البرامج: صورة، اسم، سطر، وصف معلومات بشارة «ضمن الاشتراك». */
+/** المرافق في خمس بطاقات بنمط البرامج: صورة، اسم، سطر، وصف معلومات بشارة «ضمن الاشتراك». */
 export function Facilities({ dictionary }: { readonly dictionary: Dictionary }) {
   const { facilities, photos } = dictionary;
   const values = {
@@ -59,7 +55,7 @@ export function Facilities({ dictionary }: { readonly dictionary: Dictionary }) 
               <PhotoCard
                 key={item.name}
                 id={view.id}
-                photo={isPhoto(photo) ? { src: PHOTOS[photo], alt: photos[photo] } : photo}
+                photo={{ src: PHOTOS[photo], alt: photos[photo] }}
                 sizes={CARD_SIZES}
                 title={item.name}
                 line={fill(item.line, values)}

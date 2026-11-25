@@ -13,8 +13,6 @@ export const CLUB_FACTS = {
   minimumAge: 18,
   /** «5 أيام لكل شهر مدفوع» (§7، صفحات الاشتراكات والشروط) */
   freezeDaysPerPaidMonth: 5,
-  /** «السجل التجاري 7003597346» بالتسمية نفسها في شارة التذييل (§1) */
-  commercialRegistration: "7003597346",
   /** البريد الظاهر في الترويسة والتذييل (§1) */
   email: "Mmastersway@gmail.com",
 } as const;

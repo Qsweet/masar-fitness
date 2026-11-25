@@ -1,13 +1,14 @@
 import Image, { type StaticImageData } from "next/image";
 import type { ReactNode } from "react";
 import { cx } from "@/lib/cx";
+import { BidiText } from "./bidi-text";
 import { Icon, type IconName } from "./icon";
 import styles from "./photo-card.module.css";
 
 interface PhotoCardProps {
   readonly id?: string | undefined;
-  /** صورة من النادي، أو أيقونة على لوح دافئ لمرفق بلا صورة مؤكدة */
-  readonly photo: { readonly src: StaticImageData; readonly alt: string } | IconName;
+  /** صورة من النادي */
+  readonly photo: { readonly src: StaticImageData; readonly alt: string };
   readonly sizes: string;
   readonly title: string;
   readonly line: string;
@@ -27,22 +28,18 @@ export function PhotoCard(props: PhotoCardProps) {
   return (
     <li id={props.id} className={cx("reveal", styles.card, props.className)}>
       <div className={styles.media}>
-        {typeof photo === "string" ? (
-          <span className={styles.panel} aria-hidden="true">
-            <Icon name={photo} />
-          </span>
-        ) : (
-          <Image src={photo.src} alt={photo.alt} fill placeholder="blur" sizes={props.sizes} />
-        )}
+        <Image src={photo.src} alt={photo.alt} fill placeholder="blur" sizes={props.sizes} />
       </div>
       <div className={styles.body}>
         <h3 className={styles.title}>{props.title}</h3>
-        <p className={styles.line}>{props.line}</p>
+        <p className={styles.line}>
+          <BidiText text={props.line} />
+        </p>
         {props.note === undefined ? null : <p className={styles.note}>{props.note}</p>}
         <p className={styles.meta}>
           <span className={styles.metaText}>
             <Icon name={meta.icon} />
-            {meta.text}
+            <BidiText text={meta.text} />
           </span>
           {props.badge === undefined ? null : <span className={styles.badge}>{props.badge}</span>}
         </p>

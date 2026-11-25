@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { BidiText } from "@/components/ui/bidi-text";
 import { IconTile, type IconName } from "@/components/ui/icon";
 import { SectionHead } from "@/components/ui/section-head";
 import { CLUB_FACTS } from "@/config/club-facts";
@@ -41,7 +42,7 @@ export function About({ dictionary }: { readonly dictionary: Dictionary }) {
           <SectionHead id="about-title" eyebrow={about.eyebrow} title={about.title} start />
           {about.paragraphs.map((paragraph) => (
             <p key={paragraph} className={styles.paragraph}>
-              {fill(paragraph, { year: String(CLUB_FACTS.foundedYear) })}
+              <BidiText text={fill(paragraph, { year: String(CLUB_FACTS.foundedYear) })} />
             </p>
           ))}
           <ul className={styles.features}>
@@ -50,7 +51,9 @@ export function About({ dictionary }: { readonly dictionary: Dictionary }) {
                 <IconTile name={FEATURE_ICONS[index] ?? "check"} />
                 <span>
                   <strong>{feature.title}</strong>
-                  <span>{feature.line}</span>
+                  <span>
+                    <BidiText text={feature.line} />
+                  </span>
                 </span>
               </li>
             ))}

@@ -31,16 +31,6 @@
   scale: 1.04;
 }
 
-/* لوح دافئ بأيقونة كبيرة لمرفق بلا صورة مؤكدة */
-.panel {
-  display: grid;
-  place-items: center;
-  height: 100%;
-  background: var(--wash), var(--surface);
-  color: var(--accent-ink);
-  font-size: 3.5rem;
-}
-
 .body {
   display: flex;
   flex-direction: column;
@@ -92,4 +82,36 @@
 .badge {
   color: var(--accent-ink);
   font-weight: 700;
+}
+
+/*
+ * البطاقة الأخيرة الوحيدة في صفها تمتد عمودين بصورة جانبية، فلا يبقى في الشبكة فراغ:
+ * الفردية الأخيرة في عمودين، والثانية في صف من ثلاثة (البطاقة الخامسة في المرافق).
+ */
+@media (width >= 40rem) and (width < 64rem) {
+  .card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    flex-direction: row;
+  }
+}
+
+@media (width >= 64rem) {
+  .card:last-child:nth-child(3n + 2) {
+    grid-column: span 2;
+    flex-direction: row;
+  }
+}
+
+@media (width >= 40rem) and (width < 64rem) {
+  .card:last-child:nth-child(odd) .media {
+    flex: 0 0 48%;
+    aspect-ratio: auto;
+  }
+}
+
+@media (width >= 64rem) {
+  .card:last-child:nth-child(3n + 2) .media {
+    flex: 0 0 48%;
+    aspect-ratio: auto;
+  }
 }

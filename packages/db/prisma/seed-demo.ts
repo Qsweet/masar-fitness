@@ -58,7 +58,10 @@ interface SeedProduct {
   priceMinor: number;
 }
 
-/** الاشتراكات الثلاثة المعروضة في الرئيسية الحالية بأسمائها وأسعارها (CLUB_FACTS §4.1). */
+/**
+ * الاشتراكات الثلاثة المعروضة في الرئيسية الحالية بأسعارها (CLUB_FACTS §4.1). الأسماء بالفصحى: «+ شهران»
+ * بالرفع، لا «+ شهرين» كما في المتجر.
+ */
 const PLANS: SeedProduct[] = [
   {
     slug: "three-months",
@@ -70,7 +73,7 @@ const PLANS: SeedProduct[] = [
   },
   {
     slug: "six-months",
-    nameAr: "6 أشهر + شهرين مجانًا",
+    nameAr: "6 أشهر + شهران مجانًا",
     nameEn: "6 months + 2 free",
     months: 6,
     bonus: 2,
@@ -78,7 +81,7 @@ const PLANS: SeedProduct[] = [
   },
   {
     slug: "one-year",
-    nameAr: "12 شهرًا + شهرين مجانًا",
+    nameAr: "12 شهرًا + شهران مجانًا",
     nameEn: "12 months + 2 free",
     months: 12,
     bonus: 2,

@@ -70,3 +70,21 @@
 .ask:hover {
   background: var(--surface);
 }
+
+/* BE STRONG 45 «قيد الإعداد»: سطر هادئ تحت الشبكة لا بطاقة */
+.soon {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  color: var(--grey);
+  font-size: 0.9375rem;
+  text-align: center;
+}
+
+.soon svg {
+  flex: none;
+  margin-top: 0.3em;
+  color: var(--accent-ink);
+}

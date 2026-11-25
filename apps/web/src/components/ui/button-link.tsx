@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { cx } from "@/lib/cx";
 import styles from "./button.module.css";
 
-export type ButtonVariant = "ink" | "yellow" | "line";
+export type ButtonVariant = "primary" | "outline" | "light";
 
 interface ButtonLinkProps {
   readonly href: string;
@@ -22,7 +22,7 @@ export function buttonClass(variant: ButtonVariant, block = false): string {
 
 export function ButtonLink({
   href,
-  variant = "ink",
+  variant = "primary",
   external = false,
   block = false,
   children,

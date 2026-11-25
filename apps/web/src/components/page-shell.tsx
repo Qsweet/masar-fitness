@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { getDictionary } from "@/i18n/dictionaries";
 import { localizedPath, type Locale } from "@/i18n/locales";
 import { hasVisibleBlog } from "@/server/blog";
+import { isCheckoutEnabled } from "@/server/checkout/flag";
+import { ChatButton } from "./chat-button";
 import { MAIN_CONTENT_ID } from "./main-content-id";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
@@ -34,7 +36,17 @@ export function PageShell({ locale, path, hasPlans = false, children }: PageShel
         dictionary={dictionary}
       />
       <main id={MAIN_CONTENT_ID}>{children}</main>
-      <SiteFooter locale={locale} showBlog={showBlog} dictionary={dictionary} />
+      <SiteFooter
+        locale={locale}
+        showBlog={showBlog}
+        checkoutEnabled={isCheckoutEnabled()}
+        dictionary={dictionary}
+      />
+      <ChatButton
+        label={dictionary.chat}
+        message={dictionary.location.whatsappMessage}
+        raised={hasPlans}
+      />
       {hasPlans ? <div className={styles.barSpace} aria-hidden="true" /> : null}
     </>
   );

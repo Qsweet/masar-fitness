@@ -4,9 +4,12 @@ import { INTRO_ID, PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
 import { ComparisonTable } from "@/components/plans/comparison-table";
 import { toPlanViews } from "@/components/plans/plan-view";
+import { friendsView } from "@/components/home/services-view";
+import { Payment } from "@/components/plans/extras";
+import { FriendsOffer } from "@/components/plans/friends-offer";
 import { PlansSection } from "@/components/plans/plans-section";
-import { Payment } from "@/components/sections/closing";
 import { ButtonLink } from "@/components/ui/button-link";
+import { SectionHead } from "@/components/ui/section-head";
 import { ROUTES } from "@/config/routes";
 import { PHOTOS } from "@/config/photos";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -47,6 +50,7 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
   return (
     <PageShell locale={locale} path={PATH} hasPlans={plans.length > 0}>
       <PageIntro
+        eyebrow={dictionary.plans.eyebrow}
         title={dictionary.memberships.title}
         lead={dictionary.memberships.intro}
         photo={{ src: PHOTOS.trainerPortrait, alt: dictionary.photos.trainerPortrait }}
@@ -56,22 +60,28 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
         locale={locale}
         dictionary={dictionary}
         revealAfterId={INTRO_ID}
-      />
+      >
+        <FriendsOffer dictionary={dictionary} view={friendsView(dictionary, locale)} />
+      </PlansSection>
       {plans.length > 1 ? (
         <section
           id="compare"
           aria-labelledby="compare-title"
-          className={cx("container", "section", styles.compare)}
+          className={cx("section", "section-alt")}
         >
-          <h2 id="compare-title" className="title-section">
-            {dictionary.memberships.compareTitle}
-          </h2>
-          <ComparisonTable plans={plans} locale={locale} dictionary={dictionary} />
-          <p className={styles.toolLink}>
-            <ButtonLink href={localizedPath(locale, ROUTES.costPerVisit)} variant="line">
-              {dictionary.tools.costPerVisit.membershipsLink}
-            </ButtonLink>
-          </p>
+          <div className="container">
+            <SectionHead
+              id="compare-title"
+              eyebrow={dictionary.plans.eyebrow}
+              title={dictionary.memberships.compareTitle}
+            />
+            <ComparisonTable plans={plans} locale={locale} dictionary={dictionary} />
+            <p className={styles.toolLink}>
+              <ButtonLink href={localizedPath(locale, ROUTES.costPerVisit)} variant="outline">
+                {dictionary.tools.costPerVisit.membershipsLink}
+              </ButtonLink>
+            </p>
+          </div>
         </section>
       ) : null}
       {checkoutEnabled ? <Payment dictionary={dictionary} /> : null}

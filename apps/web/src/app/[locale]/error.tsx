@@ -33,14 +33,18 @@ export default function LocaleError({ retry }: ErrorBoundaryProps) {
           onClick={() => {
             retry();
           }}
-          className={buttonClass("yellow")}
+          className={buttonClass("primary")}
         >
           {dictionary.error.retry}
         </button>
-        <ButtonLink href={whatsappUrl(dictionary.location.whatsappMessage)} variant="line" external>
+        <ButtonLink
+          href={whatsappUrl(dictionary.location.whatsappMessage)}
+          variant="outline"
+          external
+        >
           {dictionary.location.whatsapp}
         </ButtonLink>
-        <ButtonLink href={localizedPath(locale)} variant="line">
+        <ButtonLink href={localizedPath(locale)} variant="outline">
           {dictionary.notFound.home}
         </ButtonLink>
       </div>

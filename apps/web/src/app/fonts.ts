@@ -1,18 +1,9 @@
 import localFont from "next/font/local";
 
 /*
- * خطان مستضافان ذاتيًا (رخصة OFL، النصوص في assets/fonts): لا طلب لطرف ثالث، ولا انزياح عند التحميل.
- * Changa للعناوين والأرقام الكبيرة (مضغوط رياضي)، وAlexandria للنص (هندسي عريض، الأقرب لكتابة الشعار).
+ * خط واحد مستضاف ذاتيًا (رخصة OFL، النص في assets/fonts): لا طلب لطرف ثالث، ولا انزياح عند التحميل.
+ * Alexandria للنص والعناوين والأرقام (هندسي عريض، الأقرب لكتابة الشعار، وأرقامه اللاتينية واضحة).
  */
-export const changa = localFont({
-  src: [
-    { path: "../assets/fonts/changa-arabic-wght.woff2", weight: "200 800" },
-    { path: "../assets/fonts/changa-latin-wght.woff2", weight: "200 800" },
-  ],
-  variable: "--font-changa",
-  display: "swap",
-});
-
 export const alexandria = localFont({
   src: [
     { path: "../assets/fonts/alexandria-arabic-wght-normal.woff2", weight: "100 900" },

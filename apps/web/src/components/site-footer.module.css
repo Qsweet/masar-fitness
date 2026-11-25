@@ -1,57 +1,116 @@
 .footer {
   background: var(--ink);
   color: var(--grey-on-ink);
-  border-top: 1px solid var(--rule-on-ink);
+  font-size: 0.975rem;
 }
 
 .inner {
   display: grid;
-  gap: 2rem;
-  padding-block: 3rem 2rem;
+  gap: 2.5rem;
+  padding-block: 4rem 3rem;
 }
 
-.slogan {
-  font-family: var(--display);
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  font-weight: 800;
-  color: var(--energy);
-  line-height: 1;
+.brand {
+  display: grid;
+  gap: 1.25rem;
+  justify-items: start;
+  max-width: 22rem;
 }
 
 .heading {
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   color: var(--white);
-  font-family: var(--display);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
 }
 
 .links {
   display: grid;
-  gap: 0.25rem;
 }
 
-.links a {
+.links a,
+.contact a {
   display: inline-flex;
-  min-height: 2.75rem;
+  min-height: var(--target);
   align-items: center;
   text-decoration: none;
 }
 
-.links a:hover {
+.links a:hover,
+.contact a:hover {
   color: var(--energy);
 }
 
-.note {
-  padding-block: 1.25rem 1.5rem;
+.contact {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.contact li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: var(--target);
+}
+
+.contact svg {
+  color: var(--energy);
+}
+
+.social {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.social a {
+  display: grid;
+  place-items: center;
+  width: var(--target);
+  height: var(--target);
+  border-radius: var(--radius-sm);
+  background: var(--ink-2);
+  color: var(--white);
+  transition:
+    background var(--press) ease,
+    color var(--press) ease;
+}
+
+.social a:hover {
+  background: var(--gradient);
+  color: var(--ink);
+}
+
+.bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  justify-content: space-between;
+  padding-block: 1.5rem 2rem;
   border-top: 1px solid var(--rule-on-ink);
   font-size: 0.875rem;
 }
 
+.payments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.payments li {
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--rule-on-ink);
+  border-radius: var(--radius-sm);
+}
+
+@media (width >= 48rem) {
+  .inner {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (width >= 64rem) {
   .inner {
-    grid-template-columns: auto 1fr auto auto;
-    align-items: start;
-    gap: 4rem;
+    grid-template-columns: 1.4fr 1fr 1fr 1.3fr;
+    gap: 3rem;
   }
 }

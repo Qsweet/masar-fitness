@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Logo } from "@/components/ui/logo";
+import { BrandMark } from "@/components/ui/brand-mark";
+import { Icon } from "@/components/ui/icon";
 import { ROUTES } from "@/config/routes";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { LOCALES, localizedPath, type Locale } from "@/i18n/locales";
-import { cx } from "@/lib/cx";
 import { MobileMenu } from "./mobile-menu";
 import styles from "./site-header.module.css";
 
@@ -18,50 +18,28 @@ interface SiteHeaderProps {
   readonly dictionary: Dictionary;
 }
 
-/** أقصى ارتفاع للشعار (الشاشة الواسعة)؛ الارتفاع الفعلي من الرمز ‎--logo-height‎. */
-const LOGO_HEIGHT = 88;
-
 function otherLocale(locale: Locale): Locale {
   return LOCALES.find((candidate) => candidate !== locale) ?? locale;
 }
 
-function LanguageLink({
-  locale,
-  path,
-  dictionary,
-  className,
-}: Pick<SiteHeaderProps, "locale" | "path" | "dictionary"> & {
-  readonly className: string | undefined;
-}) {
-  const alternate = otherLocale(locale);
-  return (
-    <Link
-      href={localizedPath(alternate, path)}
-      hrefLang={alternate}
-      lang={alternate}
-      className={className}
-    >
-      {dictionary.nav.switchLanguage}
-    </Link>
-  );
+/** روابط التنقل: أقسام الرئيسية بمراسيها، وصفحتا الاشتراكات والمدونة. */
+function navLinks({ locale, showBlog, dictionary }: Omit<SiteHeaderProps, "path" | "joinHref">) {
+  const home = localizedPath(locale);
+  const { nav } = dictionary;
+  return [
+    { href: `${home}#about`, label: nav.about },
+    { href: `${home}#facilities`, label: nav.facilities },
+    { href: localizedPath(locale, ROUTES.memberships), label: nav.memberships },
+    { href: `${home}#services`, label: nav.services },
+    ...(showBlog ? [{ href: localizedPath(locale, ROUTES.blog), label: dictionary.blog.nav }] : []),
+    { href: `${home}#contact`, label: nav.contact },
+  ];
 }
 
-function NavLinks({
-  locale,
-  showBlog,
-  dictionary,
-}: Pick<SiteHeaderProps, "locale" | "showBlog" | "dictionary">) {
-  const home = localizedPath(locale);
-  const links = [
-    { href: localizedPath(locale, "/memberships"), label: dictionary.nav.memberships },
-    { href: `${home}#facilities`, label: dictionary.nav.facilities },
-    { href: `${home}#train`, label: dictionary.nav.train },
-    { href: `${home}#location`, label: dictionary.nav.location },
-    ...(showBlog ? [{ href: localizedPath(locale, ROUTES.blog), label: dictionary.blog.nav }] : []),
-  ];
+function NavLinks(props: Omit<SiteHeaderProps, "path" | "joinHref">) {
   return (
     <>
-      {links.map((link) => (
+      {navLinks(props).map((link) => (
         <Link key={link.href} href={link.href} className={styles.link}>
           {link.label}
         </Link>
@@ -71,49 +49,43 @@ function NavLinks({
 }
 
 /**
- * الترويسة السوداء بعرض الشاشة ومحتواها داخل إطار المحتوى نفسه (فيحاذي الشعارُ نصَّ الصفحة):
- * الشعار على خلفيته الداكنة كما صُمّم، وروابط نصية على الشاشات الواسعة،
- * وقائمة <details> على الجوال (تعمل بلا JavaScript) مع تبديل اللغة ظاهرًا بجانبها، وكتلة الاشتراك الصفراء دائمًا ظاهرة.
+ * الترويسة الفاتحة الثابتة: مربع الشعار والاسم في البداية، والروابط النصية في الوسط على الشاشة الواسعة،
+ * وتبديل اللغة وزر «اشترك الآن» بالتدرّج في النهاية. على الجوال قائمة <details> تعمل بلا JavaScript.
  */
-export function SiteHeader(props: SiteHeaderProps) {
+export function SiteHeader({ locale, path, joinHref, showBlog, dictionary }: SiteHeaderProps) {
+  const alternate = otherLocale(locale);
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <HeaderContent {...props} />
-      </div>
-    </header>
-  );
-}
-
-function HeaderContent({ locale, path, joinHref, showBlog, dictionary }: SiteHeaderProps) {
-  return (
-    <>
-      <Link href={localizedPath(locale)} className={styles.brand}>
-        <Logo
-          height={LOGO_HEIGHT}
-          cssHeight="var(--logo-height)"
-          alt={dictionary.club.logoAlt}
-          preload
-        />
-      </Link>
-      <nav aria-label={dictionary.nav.main} className={styles.nav}>
-        <NavLinks locale={locale} showBlog={showBlog} dictionary={dictionary} />
-        <LanguageLink locale={locale} path={path} dictionary={dictionary} className={styles.link} />
-      </nav>
-      <LanguageLink
-        locale={locale}
-        path={path}
-        dictionary={dictionary}
-        className={cx(styles.link, styles.languageMobile)}
-      />
-      <MobileMenu label={dictionary.nav.menu} className={styles.menu}>
-        <nav aria-label={dictionary.nav.mobile} className={styles.menuPanel}>
+        <Link href={localizedPath(locale)} className={styles.brand}>
+          <BrandMark dictionary={dictionary} preload />
+        </Link>
+        <nav aria-label={dictionary.nav.main} className={styles.nav}>
           <NavLinks locale={locale} showBlog={showBlog} dictionary={dictionary} />
         </nav>
-      </MobileMenu>
-      <Link href={joinHref} className={styles.cta}>
-        {dictionary.nav.join}
-      </Link>
-    </>
+        <div className={styles.actions}>
+          <Link
+            href={localizedPath(alternate, path)}
+            hrefLang={alternate}
+            lang={alternate}
+            className={styles.language}
+          >
+            {dictionary.nav.switchLanguage}
+          </Link>
+          <Link href={joinHref} className={styles.cta}>
+            {dictionary.nav.join}
+          </Link>
+          <MobileMenu
+            label={dictionary.nav.menu}
+            icon={<Icon name="menu" />}
+            className={styles.menu}
+          >
+            <nav aria-label={dictionary.nav.mobile} className={styles.menuPanel}>
+              <NavLinks locale={locale} showBlog={showBlog} dictionary={dictionary} />
+            </nav>
+          </MobileMenu>
+        </div>
+      </div>
+    </header>
   );
 }

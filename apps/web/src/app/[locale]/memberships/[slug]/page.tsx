@@ -5,7 +5,8 @@ import { INTRO_ID, PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
 import { toPlanViews } from "@/components/plans/plan-view";
 import { PlansSection } from "@/components/plans/plans-section";
-import { Benefits, Payment, Visit } from "@/components/sections/closing";
+import { Contact } from "@/components/home/contact";
+import { Benefits, Payment } from "@/components/plans/extras";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedPath } from "@/i18n/locales";
 import { getMembershipPlan, getMembershipPlans } from "@/server/catalog";
@@ -43,7 +44,12 @@ export default async function PlanPage({ params }: Props) {
 
   return (
     <PageShell locale={locale} path={`/memberships/${plan.slug}`} hasPlans>
-      <PageIntro title={plan.name[locale]} lead={plan.summary[locale]} before={back} />
+      <PageIntro
+        eyebrow={dictionary.plans.eyebrow}
+        title={plan.name[locale]}
+        lead={plan.summary[locale]}
+        before={back}
+      />
       <PlansSection
         plans={toPlanViews(plans, locale, checkoutEnabled)}
         locale={locale}
@@ -53,11 +59,12 @@ export default async function PlanPage({ params }: Props) {
         showCompare
       />
       <Benefits
+        eyebrow={dictionary.facilities.eyebrow}
         title={dictionary.plan.includesTitle}
         benefits={plan.benefits.map((benefit) => benefit[locale])}
       />
       {checkoutEnabled ? <Payment dictionary={dictionary} /> : null}
-      <Visit locale={locale} dictionary={dictionary} />
+      <Contact locale={locale} dictionary={dictionary} />
     </PageShell>
   );
 }

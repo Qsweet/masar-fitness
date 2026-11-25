@@ -4,14 +4,16 @@ import { MAIN_CONTENT_ID } from "@/components/page-shell";
 import { StagingNote } from "@/components/staging-note";
 import { getDictionary } from "@/i18n/dictionaries";
 import { directionOf, isLocale, LOCALES } from "@/i18n/locales";
-import { alexandria, changa } from "../fonts";
+import { alexandria } from "../fonts";
 import "../globals.css";
+import "../patterns.css";
 
 // الأسعار تُقرأ من القاعدة عند كل طلب، وسياسة أمان المحتوى تولّد nonce لكل طلب (القرار 14).
 export const dynamic = "force-dynamic";
 export const dynamicParams = false;
 
-export const viewport: Viewport = { themeColor: "#0c1014" };
+// لون شريط المتصفح على الجوال: الترويسة الفاتحة
+export const viewport: Viewport = { themeColor: "#ffffff" };
 
 export function generateStaticParams(): { locale: string }[] {
   return LOCALES.map((locale) => ({ locale }));
@@ -33,11 +35,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   }
   const dictionary = getDictionary(locale);
   return (
-    <html
-      lang={locale}
-      dir={directionOf(locale)}
-      className={`${changa.variable} ${alexandria.variable}`}
-    >
+    <html lang={locale} dir={directionOf(locale)} className={alexandria.variable}>
       <body>
         <a href={`#${MAIN_CONTENT_ID}`} className="skip-link">
           {dictionary.nav.skipToContent}

@@ -6,6 +6,8 @@ import styles from "./page-intro.module.css";
 interface PageIntroProps {
   readonly title: string;
   readonly lead: string;
+  /** سطر صغير بالتدرّج فوق العنوان */
+  readonly eyebrow?: string | undefined;
   /** عنصر فوق العنوان، مثل رابط الرجوع. */
   readonly before?: ReactNode;
   /** عناصر بعد السطر التعريفي، مثل تواريخ المقال ومراجعه. */
@@ -19,10 +21,11 @@ interface PageIntroProps {
 /** معرّف رأس الصفحة: شريط الشراء الثابت يظهر بعد أن يغادر الشاشة. */
 export const INTRO_ID = "top";
 
-/** رأس الصفحات الداخلية: عنوان واضح وسطر واحد، وصورة اختيارية، وما يليه مباشرة هو المحتوى. */
+/** رأس الصفحات الداخلية: أرضية فاتحة بإضاءة دافئة، عنوان واضح وسطر واحد، وصورة مستديرة اختيارية. */
 export function PageIntro({
   title,
   lead,
+  eyebrow,
   before,
   children,
   size = "poster",
@@ -33,6 +36,9 @@ export function PageIntro({
       <div className={cx("container", styles.inner)}>
         <div className={styles.text}>
           {before === undefined ? null : <div className={styles.before}>{before}</div>}
+          {eyebrow === undefined ? null : (
+            <p className={cx("eyebrow", styles.eyebrow)}>{eyebrow}</p>
+          )}
           <h1 className={cx(styles.title, size === "article" && styles.articleTitle)}>{title}</h1>
           <p className={styles.lead}>{lead}</p>
           {children}

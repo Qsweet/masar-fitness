@@ -16,7 +16,8 @@
 
 .blocked {
   padding: 1rem 1.25rem;
-  background: var(--energy);
+  border-radius: var(--radius);
+  background: var(--gradient);
   color: var(--ink);
   font-weight: 700;
 }

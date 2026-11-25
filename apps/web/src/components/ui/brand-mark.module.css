@@ -1,0 +1,32 @@
+.mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.tile {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.2rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.onDark .tile {
+  box-shadow: inset 0 0 0 1px var(--rule-on-ink);
+}
+
+.word {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.onDark .word {
+  color: var(--white);
+}

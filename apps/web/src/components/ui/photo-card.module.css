@@ -1,0 +1,95 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: var(--radius);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition:
+    transform 240ms var(--ease),
+    box-shadow 240ms var(--ease);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+}
+
+.media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.media img {
+  object-fit: cover;
+  transition: scale 400ms var(--ease);
+}
+
+.card:hover .media img {
+  scale: 1.04;
+}
+
+/* لوح دافئ بأيقونة كبيرة لمرفق بلا صورة مؤكدة */
+.panel {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  background: var(--wash), var(--surface);
+  color: var(--accent-ink);
+  font-size: 3.5rem;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 0.5rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.title {
+  font-size: 1.1875rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.line {
+  color: var(--grey);
+  font-size: 0.9375rem;
+  line-height: 1.75;
+}
+
+.note {
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--grey);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+/* صف المعلومات يلتصق بأسفل البطاقة فتتحاذى الصفوف في الشبكة */
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: 0.875rem;
+}
+
+.metaText {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--grey);
+}
+
+.badge {
+  color: var(--accent-ink);
+  font-weight: 700;
+}

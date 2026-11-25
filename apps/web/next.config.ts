@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   // الحزم الداخلية تُصدَّر كمصدر TypeScript وتُترجَم هنا
-  transpilePackages: ["@masar/db", "@masar/domain"],
+  transpilePackages: ["@masar/db", "@masar/domain", "@masar/payments"],
   headers() {
     return Promise.resolve([{ source: "/:path*", headers: SECURITY_HEADERS }]);
   },

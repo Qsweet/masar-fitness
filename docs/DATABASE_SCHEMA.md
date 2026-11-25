@@ -17,24 +17,25 @@
 
 ## 2. الكيانات بحسب السياق
 
-| السياق     | الجداول                                                              | القاعدة الحاكمة                                                       | الحالة     |
-| ---------- | -------------------------------------------------------------------- | --------------------------------------------------------------------- | ---------- |
-| المنشأة    | `clubs`                                                              | الهوية والمنطقة الزمنية والعملة والضريبة والسياسات المحسومة           | منفَّذ     |
-| الكتالوج   | `products`, `product_versions`, `product_benefits`, `product_addons` | شروط النسخة لا تتغير أبدًا، ومزايا النسخة المباعة ثابتة               | منفَّذ     |
-| العروض     | `promotions`, `promotion_products`                                   | العرض التلقائي والكوبون جدول واحد؛ الاستخدام هو سطر `order_discounts` | منفَّذ     |
-| العملاء    | `customers`                                                          | الجوال فقط، بلا اسم                                                   | منفَّذ     |
-| الطلبات    | `orders`, `order_items`, `order_discounts`                           | لقطة ثابتة للمنتج والسعر والضريبة والخصم، والتسوية على صف الطلب       | منفَّذ     |
-| الاشتراكات | `memberships`                                                        | طلب مدفوع واحد = اشتراك واحد                                          | منفَّذ     |
-| الاسترداد  | `refunds`                                                            | نموذج بيانات بلا كاتب حتى يُحسم الاسترداد                             | منفَّذ     |
-| الحجوزات   | `assessment_requests`                                                | طلب تقييم ⇒ ليد في الـCRM                                             | منفَّذ     |
-| الامتثال   | `audit_logs`                                                         | إلحاق فقط، بلا جوال ولا اسم                                           | منفَّذ     |
-| المدفوعات  | `payment_attempts`, `payment_transactions`, `provider_events`        | التفعيل فقط بعد تحقق خادمي                                            | المرحلة 4  |
-| التجميد    | `membership_freezes`                                                 | عند حسم قواعد التجميد                                                 | `[لاحقًا]` |
-| الفواتير   | `invoices`                                                           | مرجع الفاتورة الصادرة من النظام المحاسبي                              | `[لاحقًا]` |
-| المحتوى    | `articles`, `article_recommendations`, `media`                       | التوصية تشير لمنتج، لا لسعر                                           | `[لاحقًا]` |
-| الهوية     | `staff`, `roles`, `permissions`                                      | الصلاحيات تُفحص على الخادم                                            | `[لاحقًا]` |
-| الامتثال   | `consents`, `attributions`                                           | إلحاق فقط                                                             | المرحلة 5  |
-| التكامل    | `outbox_events`, `delivery_logs`                                     | تسليم أحداث الـCRM مع إعادة المحاولة                                  | المرحلة 5  |
+| السياق     | الجداول                                                              | القاعدة الحاكمة                                                       | الحالة             |
+| ---------- | -------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------ |
+| المنشأة    | `clubs`                                                              | الهوية والمنطقة الزمنية والعملة والضريبة والسياسات المحسومة           | منفَّذ             |
+| الكتالوج   | `products`, `product_versions`, `product_benefits`, `product_addons` | شروط النسخة لا تتغير أبدًا، ومزايا النسخة المباعة ثابتة               | منفَّذ             |
+| العروض     | `promotions`, `promotion_products`                                   | العرض التلقائي والكوبون جدول واحد؛ الاستخدام هو سطر `order_discounts` | منفَّذ             |
+| العملاء    | `customers`                                                          | الجوال فقط، بلا اسم                                                   | منفَّذ             |
+| الطلبات    | `orders`, `order_items`, `order_discounts`                           | لقطة ثابتة للمنتج والسعر والضريبة والخصم، والتسوية على صف الطلب       | منفَّذ             |
+| الاشتراكات | `memberships`                                                        | طلب مدفوع واحد = اشتراك واحد                                          | منفَّذ             |
+| الاسترداد  | `refunds`                                                            | نموذج بيانات بلا كاتب حتى يُحسم الاسترداد                             | منفَّذ             |
+| الحجوزات   | `assessment_requests`                                                | طلب تقييم ⇒ ليد في الـCRM                                             | منفَّذ             |
+| الامتثال   | `audit_logs`                                                         | إلحاق فقط، بلا جوال ولا اسم                                           | منفَّذ             |
+| المدفوعات  | `payment_attempts`, `payment_incidents`                              | التفعيل فقط بعد تحقق خادمي، والطلب لا يُنهى ومحاولته حيّة             | منفَّذ             |
+| المدفوعات  | `payment_transactions`, `provider_events`                            | التحصيل المنفصل (4ب) وسجل الإشعارات                                   | مؤجَّل (القرار 52) |
+| التجميد    | `membership_freezes`                                                 | عند حسم قواعد التجميد                                                 | `[لاحقًا]`         |
+| الفواتير   | `invoices`                                                           | مرجع الفاتورة الصادرة من النظام المحاسبي                              | `[لاحقًا]`         |
+| المحتوى    | `articles`, `article_recommendations`, `media`                       | التوصية تشير لمنتج، لا لسعر                                           | `[لاحقًا]`         |
+| الهوية     | `staff`, `roles`, `permissions`                                      | الصلاحيات تُفحص على الخادم                                            | `[لاحقًا]`         |
+| الامتثال   | `consents`, `attributions`                                           | إلحاق فقط                                                             | المرحلة 5          |
+| التكامل    | `outbox_events`, `delivery_logs`                                     | تسليم أحداث الـCRM مع إعادة المحاولة                                  | المرحلة 5          |
 
 `products.kind`: `membership` · `digital_program` · `assessed_service` (لا يُشترى مباشرة، ينشئ طلب تقييم) · `addon` (يُباع مع باقة مرتبطة به في `product_addons`).
 
@@ -47,7 +48,7 @@ clubs 1─* customers 1─* orders 1─* order_items *─1 product_versions
 orders 1─0..2 order_discounts *─1 promotions *─* products   عبر promotion_products
 orders 1─0..1 memberships 1─1 order_items(membership)
 orders 1─* refunds            customers 1─* assessment_requests *─1 products(assessed_service)
-audit_logs (append-only)      [المرحلة 4] orders 1─* payment_attempts 1─* payment_transactions
+audit_logs (append-only)      orders 1─* payment_attempts 1─* payment_incidents *─1 orders
 ```
 
 ## 4. القيود والـtriggers المنفَّذة (المرحلة 3)
@@ -136,9 +137,10 @@ Order:      (create) → pending_payment → paid → fulfilled
                         └→ cancelled    (بلا مستدعٍ في المرحلة 3)
             expired و cancelled و refunded نهائية؛ لا expired → paid (القرار 31)
 
-Payment:    created → pending → authorized → captured → refunded       (المرحلة 4)
-                        ├→ failed   ├→ voided
-                        └→ expired
+Payment:    created → pending → authorized → captured → refunded (محجوب: refund_eligibility)
+               │        ├→ failed   ├→ voided    └→ voided (عكس من المزوّد)
+               └→ failed └→ expired
+            «حيّة» = created أو pending أو authorized، أو captured ولم تُسجَّل تسويتها
 
 Membership: scheduled → active ⇄ frozen     (التجميد محجوب: freeze_rules)
                           └→ expired (مشتق عند القراءة) / cancelled (محجوب)
@@ -156,7 +158,9 @@ Refund:     requested → approved → processing → completed
 | ------------------ | ---------------------------------------------------------------------------------------------- |
 | إنشاء طلب          | `customers` + `orders` + `order_items` (اللقطة) + `order_discounts` (الاستخدام) + `audit_logs` |
 | تسجيل الدفع        | `orders → paid` + `memberships` + `orders → fulfilled` + `audit_logs`                          |
-| إنهاء الطلبات      | `orders → expired` + `audit_logs`                                                              |
+| إنهاء الطلبات      | قفل المستحق ثم `orders → expired` (بلا محاولة حيّة) + `audit_logs`: جملتان في معاملة واحدة     |
+| بدء محاولة دفع     | قفل `orders` + `payment_attempts` (`created`) + `audit_logs`؛ استدعاء المزوّد بعدها خارجها     |
+| تطبيق لقطة المزوّد | (1) `payment_attempts` + حوادثها، (2) معاملة `markOrderPaid`، (3) نتيجة التسوية وحادثة الرفض   |
 | `[لاحقًا]` استرداد | `refunds` + تحديث الطلب + `outbox_events`                                                      |
 
 - استدعاء المزوّد الخارجي **خارج** المعاملة؛ داخلها تُكتب النتيجة فقط.
@@ -192,3 +196,19 @@ Refund:     requested → approved → processing → completed
 «النسخة السارية» = أحدث نسخة `valid_from <= الآن` و(`valid_until` فارغ أو بعد الآن). منتج بلا نسخة سارية أو بلا مدة لا يُعرض.
 
 التعريف الدقيق في `packages/db/prisma/schema.prisma` وترحيلاته؛ إن اختلف عن هذا الجدول فالملفات هي المرجع.
+| `payment_attempts` | 4أ | الطلب والمزوّد والبيئة، لقطة المبلغ والعملة، `status`، معرّفا الجلسة والدفعة، `deadline_at`، `sync_lease_until`، `settled_at` و`settlement_result`، عدّاد الفحص وأوقات الانتقال | محاولة حيّة واحدة لكل طلب (T8) |
+| `payment_incidents` | 4أ | الطلب والمحاولة، `kind` (11 نوعًا)، `data` بلا اسم ولا جوال، `opened_at`، أعمدة الحسم الثلاثة | إلحاق فقط، والحسم مرة (T10) |
+
+## 10. قيود المدفوعات (المرحلة 4أ، ترحيل `20261125150000_payments`)
+
+- **UNIQUE:** `payment_attempts(provider, provider_session_id)` و`(provider, provider_payment_id)`، و`payment_incidents(attempt_id, kind)`.
+- **CHECK:** شكل المزوّد، البيئة `test`/`live`، مبلغ موجب، لا جلسة بلا معرّفها ولا تحصيل بلا معرّف دفعته، التسوية كاملة وبدفعة، سبب الفشل مع `failed` فقط، وقت النهاية مع الحالة النهائية فقط؛ ونوع الحادثة معروف وبياناتها كائن وحسمها كامل. و`audit_logs.entity_type` يقبل `payment_attempt`.
+- **الدالة `payment_attempt_is_live(status, settled_at)`:** تعريف واحد للمحاولة الحيّة تستعمله الـtriggers واستعلامات الكود، ويطابق `isLiveAttempt` في المجال (اختبار تطابق شامل).
+
+| الرمز | الدالة                                     | الرسائل الثابتة                                                                                                                                                                                                                          | ما يفرضه                                                                                                                        |
+| ----- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| T8    | `payment_attempts_guard()`                 | `payment_attempt_initial_state`، `…_order_not_pending`، `…_snapshot_mismatch`، `…_deadline_after_expiry`، `…_live_exists`، `…_terms_immutable`، `…_reference_immutable`، `…_settlement_immutable`، `…_status_final`، `…_status_backward` | عند الإدراج يقفل الطلب ويطابقه ويمنع محاولة حيّة ثانية؛ بعده المراجع ثابتة ومعرّفا المزوّد والتسوية تُكتب مرة والحالة تتقدم فقط |
+| T9    | `orders_forbid_expiry_with_live_attempt()` | `order_expiry_blocked_by_live_attempt`                                                                                                                                                                                                   | سدّ احتياطي للشرط الصلب 2 على `orders` عند الانتقال إلى `expired`                                                               |
+| T10   | `payment_incidents_guard()`                | `payment_incident_reference_mismatch`، `…_append_only`، `…_resolution_final`                                                                                                                                                             | الحادثة تطابق طلبها ومحاولتها، ولا يُكتب بعدها إلا الحسم ومرة واحدة                                                             |
+
+الحذف ممنوع من الجدولين (`payment_attempt_delete_forbidden`، `payment_incident_delete_forbidden`). الفهارس: `payment_attempts(order_id)` و`(status, deadline_at)`، و`payment_incidents(order_id)`.

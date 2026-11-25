@@ -4,7 +4,7 @@ import { TEST_CLUB_SLUG_PREFIX } from "./commerce-constants";
 /** اسم قاعدة الاختبار ينتهي بهذه اللاحقة؛ أي قاعدة أخرى لا تُفرَّغ أبدًا. */
 const TEST_DATABASE_SUFFIX = "_test";
 
-async function assertTestDatabase(db: Db): Promise<void> {
+export async function assertTestDatabase(db: Db): Promise<void> {
   const rows = await db.$queryRaw<{ name: string }[]>`SELECT current_database() AS name`;
   const name = rows[0]?.name ?? "";
   if (!name.endsWith(TEST_DATABASE_SUFFIX)) {
@@ -21,7 +21,7 @@ async function assertTestDatabase(db: Db): Promise<void> {
 export async function resetCommerceTables(db: Db): Promise<void> {
   await assertTestDatabase(db);
   await db.$executeRaw`
-    TRUNCATE audit_logs, refunds, memberships, order_discounts, order_items, orders, assessment_requests,
+    TRUNCATE payment_incidents, payment_attempts, audit_logs, refunds, memberships, order_discounts, order_items, orders, assessment_requests,
       promotion_products, promotions, product_addons, customers RESTART IDENTITY CASCADE`;
   const testClubs = { club: { slug: { startsWith: TEST_CLUB_SLUG_PREFIX } } };
   await db.productBenefit.deleteMany({ where: { version: { product: testClubs } } });

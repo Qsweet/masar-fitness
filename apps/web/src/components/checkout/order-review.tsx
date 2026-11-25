@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ButtonLink } from "@/components/ui/button-link";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { cx } from "@/lib/cx";
@@ -9,6 +10,8 @@ import styles from "./order-review.module.css";
 interface OrderReviewProps {
   readonly view: ReviewView;
   readonly labels: Dictionary["checkout"];
+  /** قسم الدفع حين يُضبط مزوّد: يحل محل «الخطوة التالية». غائب ⇒ الصفحة كما كانت. */
+  readonly payment?: ReactNode;
 }
 
 function Buyer({ view, labels }: OrderReviewProps) {
@@ -104,7 +107,7 @@ export function OrderReview(props: OrderReviewProps) {
           </span>
         </p>
         <Buyer {...props} />
-        <NextStep {...props} />
+        {props.payment ?? <NextStep {...props} />}
       </div>
       <Lines {...props} />
     </div>

@@ -29,7 +29,7 @@ const DEMO_PAYMENT_WINDOW_MINUTES = 30;
 const DEMO_START_RULE = "on_payment";
 const DEMO_PERCENT_BPS = 1000;
 
-/** أسماء المرافق كما في القاموس (facilities.items) حرفيًا، حتى يطابق ملخص الاشتراك قسم المرافق. */
+/** أسماء المرافق كما في القاموس (facilities.items وfacilities.recovery.names) حرفيًا، حتى تطابق مزايا الاشتراك قسم المرافق. */
 const BENEFITS = [
   { labelAr: "صالة الحديد", labelEn: "Strength floor" },
   { labelAr: "التمارين الوظيفية", labelEn: "Functional training" },
@@ -47,35 +47,36 @@ interface DemoProduct {
   priceMinor: number;
 }
 
+/** أسماء الاشتراكات التجريبية بمدتها مكتوبة، بنمط واحد في اللغتين (تُحدَّث في كل تشغيل). */
 const PLANS: DemoProduct[] = [
   {
     slug: "one-month",
-    nameAr: "الشهرية",
-    nameEn: "Monthly",
+    nameAr: "شهر واحد",
+    nameEn: "1 month",
     months: 1,
     bonus: 0,
     priceMinor: 35_000,
   },
   {
     slug: "three-months",
-    nameAr: "ربع السنوية",
-    nameEn: "Quarterly",
+    nameAr: "ثلاثة أشهر",
+    nameEn: "3 months",
     months: 3,
     bonus: 0,
     priceMinor: 90_000,
   },
   {
     slug: "six-months",
-    nameAr: "نصف السنوية",
-    nameEn: "Half-year",
+    nameAr: "ستة أشهر",
+    nameEn: "6 months",
     months: 6,
     bonus: 0,
     priceMinor: 160_000,
   },
   {
     slug: "one-year",
-    nameAr: "السنوية",
-    nameEn: "Annual",
+    nameAr: "سنة كاملة",
+    nameEn: "12 months",
     months: 12,
     bonus: 2,
     priceMinor: 280_000,

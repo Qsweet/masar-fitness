@@ -1,23 +1,22 @@
 import Image from "next/image";
+import { LoopVideo } from "@/components/ui/loop-video";
 import { PHOTOS, type PhotoKey } from "@/config/photos";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { cx } from "@/lib/cx";
 import styles from "./story.module.css";
 
-interface SectionProps {
-  readonly dictionary: Dictionary;
-}
-
-/** صور التمرين: الأولى كبيرة، والاثنتان بجانبها. */
+/** صورتا التمرين: الأولى كبيرة، والثانية بجانبها فوق المقطع الصامت. */
 const TRAIN_SHOTS: readonly { key: PhotoKey; sizes: string }[] = [
-  { key: "functionalPress", sizes: "(min-width: 64rem) 58vw, 100vw" },
+  { key: "functionalFront", sizes: "(min-width: 64rem) 58vw, 100vw" },
   { key: "coachFloor", sizes: "(min-width: 64rem) 40vw, 50vw" },
-  { key: "latPulldown", sizes: "(min-width: 64rem) 40vw, 50vw" },
 ];
 
-/** التمرين بالألوان كما هو: ثلاث صور من يوم تمرين في النادي. */
-export function Train({ dictionary }: SectionProps) {
-  const { train, photos } = dictionary;
+/**
+ * التمرين بالألوان كما هو: صورتان من يوم تمرين في النادي ومقطع صامت من أرضيته (خلفية بصرية فقط،
+ * لا يُذكر في أي نص أن الحصص الجماعية ضمن الاشتراك).
+ */
+export function Train({ dictionary }: { readonly dictionary: Dictionary }) {
+  const { train, photos, media } = dictionary;
   return (
     <section id="train" className={cx("container", "section")} aria-labelledby="train-title">
       <div className="section-head">
@@ -32,49 +31,13 @@ export function Train({ dictionary }: SectionProps) {
             <Image src={PHOTOS[key]} alt={photos[key]} fill placeholder="blur" sizes={sizes} />
           </figure>
         ))}
-      </div>
-    </section>
-  );
-}
-
-/**
- * الثقة: نقاط قصيرة بجانب صور فريق النادي. لا أسماء ولا أدوار ولا شهادات لمن في الصور
- * (غير مؤكدة من المالك)، والنص البديل يصف ما يظهر فقط.
- */
-export function Trust({ dictionary }: SectionProps) {
-  const { trust, photos } = dictionary;
-  return (
-    <section className={cx("section", styles.trustWrap)} aria-labelledby="trust-title">
-      <div className={cx("container", styles.trust)}>
-        <div className={styles.trustText}>
-          <h2 id="trust-title" className="title-section">
-            {trust.title}
-          </h2>
-          <p className={styles.trustLead}>{trust.lead}</p>
-          <ul className={styles.points}>
-            {trust.points.map((point) => (
-              <li key={point}>{point}</li>
-            ))}
-          </ul>
-        </div>
-        <figure className={styles.portrait}>
-          <Image
-            src={PHOTOS.trainerPortrait}
-            alt={photos.trainerPortrait}
-            fill
-            placeholder="blur"
-            sizes="(min-width: 64rem) 40vw, 100vw"
-          />
-        </figure>
-        <figure className={styles.consultation}>
-          <Image
-            src={PHOTOS.consultation}
-            alt={photos.consultation}
-            fill
-            placeholder="blur"
-            sizes="(min-width: 64rem) 50vw, 100vw"
-          />
-        </figure>
+        <LoopVideo
+          posterAlt={photos.videoPoster}
+          pauseLabel={media.pauseVideo}
+          playLabel={media.playVideo}
+          className={styles.shot}
+          sizes="(min-width: 64rem) 40vw, 50vw"
+        />
       </div>
     </section>
   );

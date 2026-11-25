@@ -11,7 +11,7 @@ interface SiteHeaderProps {
   readonly locale: Locale;
   /** مسار الصفحة الحالية بلا بادئة لغة، ليقود تبديل اللغة إلى الصفحة نفسها. */
   readonly path: string;
-  /** وجهة «اشترك الآن»: قسم الاشتراكات في الصفحة نفسها إن وُجد، وإلا صفحة الاشتراكات. */
+  /** وجهة «اشترك»: قسم الاشتراكات في الصفحة نفسها إن وُجد، وإلا صفحة الاشتراكات. */
   readonly joinHref: string;
   /** للمدونة مقال ظاهر بهذه اللغة */
   readonly showBlog: boolean;
@@ -71,12 +71,23 @@ function NavLinks({
 }
 
 /**
- * الترويسة السوداء: الشعار على خلفيته الداكنة كما صُمّم، وروابط نصية على الشاشات الواسعة،
+ * الترويسة السوداء بعرض الشاشة ومحتواها داخل إطار المحتوى نفسه (فيحاذي الشعارُ نصَّ الصفحة):
+ * الشعار على خلفيته الداكنة كما صُمّم، وروابط نصية على الشاشات الواسعة،
  * وقائمة <details> على الجوال (تعمل بلا JavaScript) مع تبديل اللغة ظاهرًا بجانبها، وكتلة الاشتراك الصفراء دائمًا ظاهرة.
  */
-export function SiteHeader({ locale, path, joinHref, showBlog, dictionary }: SiteHeaderProps) {
+export function SiteHeader(props: SiteHeaderProps) {
   return (
     <header className={styles.header}>
+      <div className={styles.inner}>
+        <HeaderContent {...props} />
+      </div>
+    </header>
+  );
+}
+
+function HeaderContent({ locale, path, joinHref, showBlog, dictionary }: SiteHeaderProps) {
+  return (
+    <>
       <Link href={localizedPath(locale)} className={styles.brand}>
         <Logo
           height={LOGO_HEIGHT}
@@ -103,6 +114,6 @@ export function SiteHeader({ locale, path, joinHref, showBlog, dictionary }: Sit
       <Link href={joinHref} className={styles.cta}>
         {dictionary.nav.join}
       </Link>
-    </header>
+    </>
   );
 }

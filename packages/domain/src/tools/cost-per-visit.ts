@@ -1,4 +1,4 @@
-import { totalMonths, type MembershipPlan } from "../catalog/membership-plan";
+import { MINOR_PER_MAJOR, totalMonths, type MembershipPlan } from "../catalog/membership-plan";
 import { DomainError } from "../errors";
 import { money, type Money } from "../money";
 
@@ -33,12 +33,13 @@ function divideRounded(numerator: number, denominator: number): number {
 }
 
 /**
- * تكلفة الزيارة الواحدة التقريبية لاشتراك، بالهللة.
+ * تكلفة الزيارة الواحدة التقريبية لاشتراك، بالريال الصحيح (مبلغ بالهللة من مضاعفات الريال).
  *
  * عدد الزيارات خلال المدة = الأشهر × (52 ÷ 12) × زيارات الأسبوع، فتكون:
  *   تكلفة الزيارة = السعر ÷ الزيارات = (السعر × 12) ÷ (الأشهر × 52 × زيارات الأسبوع).
- * البسط والمقام عددان صحيحان، والقسمة تُقرَّب **مرة واحدة** في النهاية لأقرب هللة؛
- * لا نحسب «أسابيع الشهر» عددًا عشريًا ثم نقسم عليه (تقريبان متتاليان يتراكم خطؤهما).
+ * البسط والمقام عددان صحيحان، والقسمة تُقرَّب **مرة واحدة** في النهاية لأقرب ريال (النصف للأعلى):
+ * الرقم تقديري، وإظهار هللاته دقة زائفة. لا نحسب «أسابيع الشهر» عددًا عشريًا ثم نقسم عليه،
+ * ولا نقرّب للهللة ثم للريال (تقريبان متتاليان يتراكم خطؤهما).
  * المدة هي كامل ما يحصل عليه المشترك (المدفوعة مع المجانية). للعرض «تقريبًا» فقط، ولا يُحصَّل بها.
  */
 export function costPerVisit(plan: MembershipPlan, visitsPerWeek: number): Money {
@@ -51,8 +52,8 @@ export function costPerVisit(plan: MembershipPlan, visitsPerWeek: number): Money
     throw new DomainError("invariant", "cost_per_visit.negative_price");
   }
   const numerator = plan.price.amountMinor * MONTHS_PER_YEAR;
-  const denominator = months * WEEKS_PER_YEAR * visitsPerWeek;
-  return money(divideRounded(numerator, denominator), plan.price.currency);
+  const denominator = months * WEEKS_PER_YEAR * visitsPerWeek * MINOR_PER_MAJOR;
+  return money(divideRounded(numerator, denominator) * MINOR_PER_MAJOR, plan.price.currency);
 }
 
 const SINGLE_DIGIT = /^[0-9]$/u;

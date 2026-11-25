@@ -1,6 +1,6 @@
 import { money } from "@masar/domain";
 import { describe, expect, it } from "vitest";
-import { countedMonthsParts, formatMonths, moneyParts, monthsParts } from "./format";
+import { countedMonthsParts, formatList, formatMonths, moneyParts, monthsParts } from "./format";
 
 describe("moneyParts", () => {
   it("ريالات كاملة بلا كسور وبفاصلة الآلاف", () => {
@@ -66,5 +66,15 @@ describe("countedMonthsParts", () => {
   it("الإنجليزية مفرد وجمع", () => {
     expect(countedMonthsParts(1, "en")).toEqual({ count: "1", unit: "month" });
     expect(countedMonthsParts(2, "en")).toEqual({ count: "2", unit: "months" });
+  });
+});
+
+describe("formatList", () => {
+  it("عطف بالواو في العربية وبالفاصلة و and في الإنجليزية", () => {
+    expect(formatList(["المسبح", "الجاكوزي", "البخار"], "ar")).toBe("المسبح والجاكوزي والبخار");
+    expect(formatList(["Pool", "Jacuzzi", "Steam room"], "en")).toBe(
+      "Pool, Jacuzzi, and Steam room",
+    );
+    expect(formatList(["Pool"], "en")).toBe("Pool");
   });
 });

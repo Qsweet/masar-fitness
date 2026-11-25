@@ -26,7 +26,16 @@ test.describe("فهرس المدونة على المعاينة", () => {
     for (const slug of SLUGS) {
       await expect(page.locator(`main a[href="/blog/${slug}"]`)).toHaveCount(1);
     }
-    await expect(page.getByRole("main").getByText(DRAFT_BANNER)).toHaveCount(SLUGS.length);
+    // تنبيه واحد أعلى الفهرس بدل شارة وتاريخ على كل بطاقة، وكل بطاقة بصورة ووسم موضوعها
+    const notice = page.getByRole("main").getByRole("note");
+    await expect(notice).toHaveCount(1);
+    await expect(notice).toContainText("المقالات هنا مسودات لم يراجعها المدرب بعد.");
+    await expect(notice.locator("time")).toHaveCount(1);
+    const cards = page.getByRole("main").locator("li", { has: page.getByRole("heading") });
+    await expect(cards).toHaveCount(SLUGS.length);
+    await expect(cards.locator("img")).toHaveCount(SLUGS.length);
+    await expect(cards.locator("time")).toHaveCount(0);
+    await expect(cards.first()).toContainText("اختيار الاشتراك");
     // الترويسة تطوي روابطها في قائمة على الجوال؛ التذييل يعرضها في كل المقاسات
     await expect(
       page.getByRole("contentinfo").getByRole("link", { name: "المدونة" }),
@@ -39,8 +48,8 @@ test.describe("فهرس المدونة على المعاينة", () => {
     await expect(
       page.locator('main a[href="/en/blog/training-while-fasting-ramadan-guide"]'),
     ).toHaveCount(1);
-    await expect(page.getByRole("main").getByText("Draft awaiting the coach's review")).toHaveCount(
-      SLUGS.length,
+    await expect(page.getByRole("main").getByRole("note")).toContainText(
+      "The articles here are drafts the coach has not reviewed yet.",
     );
   });
 
@@ -96,7 +105,7 @@ test.describe("صفحة المقال على المعاينة", () => {
     const recommendations = page.getByRole("complementary", { name: "اشتراك النادي الآن" });
     await expect(recommendations).toHaveCount(2);
     for (const recommendation of await recommendations.all()) {
-      await expect(recommendation).toContainText("الأوفر شهريًا: السنوية");
+      await expect(recommendation).toContainText("الأوفر شهريًا: سنة كاملة");
       await expect(recommendation).toContainText("2,800");
       await expect(recommendation.getByRole("link", { name: "قارن الاشتراكات" })).toHaveAttribute(
         "href",

@@ -61,7 +61,7 @@
 .summaryLabel {
   margin-top: 0.75rem;
   color: var(--grey-on-ink);
-  font-size: 0.85rem;
+  font-size: 0.9375rem;
 }
 
 .summaryPrice {
@@ -77,11 +77,11 @@
 
 .summaryNote {
   color: var(--grey-on-ink);
-  font-size: 0.85rem;
+  font-size: 0.9375rem;
 }
 
 .summaryFacts {
-  margin-top: 0.75rem;
+  margin-block: 0.75rem 1rem;
   padding-block: 0.75rem;
   border-block: 1px solid var(--rule-on-ink);
 }
@@ -93,17 +93,56 @@
   font-weight: 700;
 }
 
-.includes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.25rem 1rem;
+/* «يشمل جميع مرافق النادي»: سطر واحد بعلامة صح حين تتطابق مزايا كل الاشتراكات */
+.includesAll {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   margin-bottom: 1.25rem;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
+/* قائمة المزايا حين تختلف بين الاشتراكات: عمود واحد على الجوال الضيق، عمودان بعده */
+.includes {
+  display: grid;
+  gap: 0.35rem 1.25rem;
+  margin-block: 0.35rem 1.25rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.includes li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* علامة صح مرسومة بالحدود (لا نص يقرؤه قارئ الشاشة)، صفراء على الحبر */
+.includesAll::before,
 .includes li::before {
-  content: "/ ";
-  color: var(--energy);
-  font-weight: 700;
+  content: "";
+  flex: none;
+  width: 0.4rem;
+  height: 0.75rem;
+  margin-inline: 0.25rem 0.15rem;
+  border: solid var(--energy);
+  border-width: 0 0.18rem 0.18rem 0;
+  transform: translateY(-0.1rem) rotate(45deg);
+}
+
+@media (width >= 26rem) {
+  .includes {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* سطر الاشتراك عبر واتساب بجانب الزر مباشرة: صادق وقابل للقراءة (15px، 11:1) */
+.buyNote {
+  margin-top: 0.5rem;
+  color: var(--grey-on-ink);
+  font-size: 0.9375rem;
+  line-height: 1.7;
 }
 
 .details {
@@ -117,6 +156,7 @@
   text-underline-offset: 0.3em;
 }
 
+/* شريط الشراء الثابت على الجوال: الاسم والإجمالي في سطر واحد، والزر يملأ بقية العرض في متناول الإبهام */
 .sticky {
   position: fixed;
   inset-inline: 0;
@@ -124,12 +164,13 @@
   z-index: 15;
   display: flex;
   align-items: stretch;
-  justify-content: space-between;
   gap: 1rem;
+  min-height: 4rem;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   padding-inline-start: var(--gutter);
   background: var(--ink);
   color: var(--white);
+  border-top: 1px solid var(--rule-on-ink);
 }
 
 .sticky[hidden] {
@@ -138,31 +179,42 @@
 
 .sticky p {
   display: grid;
+  flex: none;
   align-self: center;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .stickyName {
-  color: var(--grey-on-ink);
-  font-size: 0.85rem;
+  color: var(--energy);
+  font-family: var(--display);
+  font-size: 0.9375rem;
+  font-weight: 700;
 }
 
 .stickyPrice {
   font-family: var(--display);
   font-size: 1.3rem;
-  font-weight: 700;
+  font-weight: 800;
+}
+
+.stickyUnit {
+  font-size: 0.75em;
 }
 
 .sticky a {
   display: inline-flex;
+  flex: 1;
   align-items: center;
-  min-height: 3.75rem;
-  padding-inline: 1.5rem;
+  justify-content: center;
+  min-height: 4rem;
+  padding-inline: 1rem;
   background: var(--energy);
   color: var(--ink);
   font-family: var(--display);
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
   text-decoration: none;
 }
 

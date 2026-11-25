@@ -53,15 +53,17 @@
   font-size: clamp(1.0625rem, 0.4vw + 1rem, 1.3rem);
 }
 
+/* الصورة للشاشة الواسعة فقط: على الجوال يلي العنوانَ المحتوى مباشرة (محدِّد المدة بأسعاره) */
 .photo {
+  display: none;
   position: relative;
   margin: 0;
-  aspect-ratio: 21 / 9;
   overflow: hidden;
 }
 
 .photo img {
   object-fit: cover;
+  object-position: 22% center;
 }
 
 @media (width >= 64rem) {
@@ -76,6 +78,7 @@
   }
 
   .photo {
+    display: block;
     aspect-ratio: 16 / 10;
   }
 }

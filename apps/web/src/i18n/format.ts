@@ -48,7 +48,8 @@ export function monthsParts(months: number, locale: Locale): MonthsParts {
 
 /**
  * المدة رقمًا ظاهرًا دائمًا مع وحدتها، لمربعات الاختيار حيث الرقم الكبير عنوان المربع («1» «شهر»).
- * في العربية يُكتب المفرد بعد 1 و2 بصيغة الوسم («2 شهر») لأن المثنى لا يُسبق برقم.
+ * للعين فقط: قارئ الشاشة يسمع الصيغة الصحيحة («شهر واحد»، «شهران») من نص مخفي بجانبها.
+ * في العربية تُكتب الوحدة مفردة بعد 1 و2.
  */
 export function countedMonthsParts(months: number, locale: Locale): Required<MonthsParts> {
   const words = getDictionary(locale).months;
@@ -58,6 +59,11 @@ export function countedMonthsParts(months: number, locale: Locale): Required<Mon
   }
   const { unit } = monthsParts(months, locale);
   return { count: String(months), unit };
+}
+
+/** قائمة في جملة بعطف اللغة الصحيح: «أ وب وج» بالعربية، و“a, b, and c” بالإنجليزية. */
+export function formatList(items: readonly string[], locale: Locale): string {
+  return new Intl.ListFormat(locale, { type: "conjunction" }).format(items);
 }
 
 export function formatMonths(months: number, locale: Locale): string {

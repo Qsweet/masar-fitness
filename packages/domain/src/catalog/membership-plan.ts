@@ -24,7 +24,8 @@ export function totalMonths(plan: Pick<MembershipPlan, "paidMonths" | "bonusMont
   return plan.paidMonths + plan.bonusMonths;
 }
 
-const MINOR_PER_MAJOR = 100;
+/** عدد الهللات في الريال. */
+export const MINOR_PER_MAJOR = 100;
 
 function assertPositiveDuration(months: number): void {
   if (!Number.isInteger(months) || months <= 0) {
@@ -34,7 +35,7 @@ function assertPositiveDuration(months: number): void {
 
 /**
  * تكلفة الشهر التقريبية على كامل المدة، مقرَّبة لأقرب ريال **مرة واحدة** من السعر والمدة.
- * للمقارنة والعرض «حوالي …» فقط، ولا يُحصَّل بها.
+ * للمقارنة والعرض «ما يعادل …» فقط، ولا يُحصَّل بها.
  */
 export function approximateMonthlyCost(plan: MembershipPlan): Money {
   const months = totalMonths(plan);
@@ -66,4 +67,30 @@ export function bestValuePlan(plans: readonly MembershipPlan[]): MembershipPlan 
     (best, plan) => (best === undefined || isBetterValue(plan, best) ? plan : best),
     undefined,
   );
+}
+
+function benefitKey(benefit: LocalizedText): string {
+  return JSON.stringify([benefit.ar, benefit.en]);
+}
+
+/**
+ * المزايا المشتركة حين تشمل كل الباقات المعروضة المزايا نفسها تمامًا (بأي ترتيب)، وإلا undefined.
+ * الواجهة تختصر بها («يشمل جميع مرافق النادي») بدل تكرار القائمة نفسها في كل باقة؛ حقيقة محسوبة
+ * من الكتالوج لا افتراض، فإن اختلفت باقة واحدة عادت القوائم المفصّلة.
+ */
+export function sharedBenefits(
+  plans: readonly Pick<MembershipPlan, "benefits">[],
+): readonly LocalizedText[] | undefined {
+  const [first, ...rest] = plans;
+  if (first === undefined || first.benefits.length === 0) {
+    return undefined;
+  }
+  const keys = new Set(first.benefits.map(benefitKey));
+  const same = rest.every(
+    (plan) =>
+      plan.benefits.length === keys.size &&
+      new Set(plan.benefits.map(benefitKey)).size === keys.size &&
+      plan.benefits.every((benefit) => keys.has(benefitKey(benefit))),
+  );
+  return same && keys.size === first.benefits.length ? first.benefits : undefined;
 }

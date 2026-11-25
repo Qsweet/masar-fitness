@@ -11,7 +11,7 @@ interface SectionProps {
   readonly dictionary: Dictionary;
 }
 
-/** ما يشمله الاشتراك، قائمة بخطوط مائلة صفراء. لا يظهر إن لم تُسجَّل مزايا. */
+/** ما يشمله الاشتراك، قائمة بعلامات صح مرسومة. لا يظهر إن لم تُسجَّل مزايا. */
 export function Benefits({
   title,
   benefits,
@@ -24,7 +24,7 @@ export function Benefits({
   }
   return (
     <section className={cx("container", styles.benefits)} aria-labelledby="benefits-title">
-      <h2 id="benefits-title" className="title-section">
+      <h2 id="benefits-title" className="title-block">
         {title}
       </h2>
       <ul className={styles.benefitList}>
@@ -36,6 +36,10 @@ export function Benefits({
   );
 }
 
+/**
+ * طرق الدفع المفصّلة. تعرضها الصفحة والشراء الإلكتروني مفتوح فقط (isCheckoutEnabled)؛ قبله يكفي سطر
+ * واحد صادق بجانب زر واتساب (plan.buyNote)، حتى لا يبدو أن الموقع يقبل الدفع وهو لا يقبله.
+ */
 export function Payment({ dictionary }: SectionProps) {
   const { payment } = dictionary;
   return (
@@ -56,33 +60,45 @@ export function Payment({ dictionary }: SectionProps) {
   );
 }
 
-/** «موقع النادي»: العنوان مكتوبًا على الأصفر، ثم الخريطة والاتصال وواتساب. */
+/** «موقع النادي»: العنوان والدعوة إلى السؤال على الأصفر، ثم الخريطة والاتصال وواتساب بعرض واحد. */
 export function Visit({ locale, dictionary }: SectionProps & { readonly locale: Locale }) {
-  const { location } = dictionary;
+  const { location, photos } = dictionary;
   return (
     <section id="location" className={styles.visit} aria-labelledby="location-title">
       <div className={cx("container", styles.visitInner)}>
-        <h2 id="location-title" className="title-section">
-          {location.title}
-        </h2>
-        <p className={styles.visitAddress}>{CLUB_CONTACT.address[locale]}</p>
-        <div className={styles.visitActions}>
-          <ButtonLink href={directionsUrl()} external>
-            {location.directions}
-          </ButtonLink>
-          <ButtonLink href={`tel:${CLUB_CONTACT.phoneE164}`} variant="line" external>
-            {location.call} <bdi>{CLUB_CONTACT.phoneDisplay}</bdi>
-          </ButtonLink>
-          <ButtonLink href={whatsappUrl(location.whatsappMessage)} variant="line" external>
-            {location.whatsapp}
-          </ButtonLink>
+        <div className={styles.visitText}>
+          <h2 id="location-title" className="title-section">
+            {location.title}
+          </h2>
+          <p className={styles.visitAddress}>{CLUB_CONTACT.address[locale]}</p>
+          <p className={styles.visitLead}>{location.lead}</p>
+          <div className={styles.visitActions}>
+            <ButtonLink href={directionsUrl()} external>
+              {location.directions}
+            </ButtonLink>
+            <ButtonLink href={`tel:${CLUB_CONTACT.phoneE164}`} variant="line" external>
+              {location.call} <bdi>{CLUB_CONTACT.phoneDisplay}</bdi>
+            </ButtonLink>
+            <ButtonLink href={whatsappUrl(location.whatsappMessage)} variant="line" external>
+              {location.whatsapp}
+            </ButtonLink>
+          </div>
         </div>
+        <figure className={styles.visitPhoto}>
+          <Image
+            src={PHOTOS.consultation}
+            alt={photos.consultation}
+            fill
+            placeholder="blur"
+            sizes="(min-width: 64rem) 40vw, 100vw"
+          />
+        </figure>
       </div>
     </section>
   );
 }
 
-/** الدعوة الأخيرة على الحبر، بجانب شعار النادي مرسومًا على جداره. */
+/** الدعوة الأخيرة على الحبر، بجانب صورة مدرب من النادي بقميصه (بلا اسم ولا صفة غير ما يظهر). */
 export function Final({ dictionary }: SectionProps) {
   const { final, photos } = dictionary;
   return (
@@ -98,8 +114,8 @@ export function Final({ dictionary }: SectionProps) {
         </div>
         <figure className={styles.finalPhoto}>
           <Image
-            src={PHOTOS.logoWall}
-            alt={photos.logoWall}
+            src={PHOTOS.trainerPortrait}
+            alt={photos.trainerPortrait}
             fill
             placeholder="blur"
             sizes="(min-width: 64rem) 45vw, 100vw"

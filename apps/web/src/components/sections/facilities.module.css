@@ -1,22 +1,19 @@
-/* المرافق: بطاقات صور بيضاء بأسمائها، ومربعا الجاكوزي والبخار على الحبر بالبنية نفسها. */
+/* المرافق: ثلاث بطاقات بيضاء بصورها وأسمائها، وبطاقة الاستشفاء تسرد مرافقها الثلاثة. */
 .grid {
   display: grid;
   gap: 1rem;
 }
 
-.photoCard,
-.textCard {
+.card {
   display: grid;
   grid-template-rows: auto 1fr;
-}
-
-.photoCard {
   background: var(--white);
 }
 
+/* 4:3 في البطاقات الثلاث: قصّة المسبح تُظهر شعار الجدار كاملًا والماء بمساراته */
 .photo {
   position: relative;
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
 }
 
@@ -27,7 +24,7 @@
 .body {
   display: grid;
   align-content: start;
-  gap: 0.35rem;
+  gap: 0.5rem;
   padding: 1.25rem 1.5rem 1.5rem;
   border-top: 4px solid var(--energy);
 }
@@ -43,22 +40,20 @@
   color: var(--grey);
 }
 
-.textCard {
+/* أسماء مرافق الاستشفاء: كلمات قصيرة على الحبر، بالأسماء نفسها في مزايا الاشتراك */
+.names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.names li {
+  padding: 0.15rem 0.75rem;
   background: var(--ink);
   color: var(--white);
-}
-
-.textCard .body {
-  align-content: center;
-  padding-block: 1.75rem;
-}
-
-.textCard .name {
-  color: var(--energy);
-}
-
-.textCard .body p {
-  color: var(--grey-on-ink);
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 
 @media (width >= 40rem) {
@@ -66,32 +61,35 @@
     grid-template-columns: 1fr 1fr;
   }
 
-  /* الصورة الثالثة (المسبح) بعرض الشبكة على الشاشة المتوسطة حتى لا يبقى فراغ */
-  .photoCard:nth-child(3) {
+  /* الاستشفاء بعرض الشبكة على الشاشة المتوسطة حتى لا يبقى فراغ: الصورة بجانب النص */
+  .recovery {
     grid-column: 1 / -1;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
   }
 
-  .photoCard:nth-child(3) .photo {
-    aspect-ratio: 21 / 9;
+  .recovery .body {
+    align-content: center;
+    border-top: 0;
+    border-inline-start: 4px solid var(--energy);
   }
 }
 
 @media (width >= 64rem) {
   .grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.25rem;
   }
 
-  .photoCard,
-  .photoCard:nth-child(3) {
-    grid-column: span 2;
+  .recovery {
+    grid-column: auto;
+    grid-template-columns: none;
+    grid-template-rows: auto 1fr;
   }
 
-  .photoCard:nth-child(3) .photo {
-    aspect-ratio: 3 / 2;
-  }
-
-  .textCard {
-    grid-column: span 3;
+  .recovery .body {
+    align-content: start;
+    border-top: 4px solid var(--energy);
+    border-inline-start: 0;
   }
 }

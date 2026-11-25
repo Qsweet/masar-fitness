@@ -29,8 +29,8 @@ describe("costRows", () => {
     expect(
       rows.map((row) => [row.slug, row.perVisit.amount, row.total.amount, row.isBestValue]),
     ).toEqual([
-      ["one-month", "26.92", "350", false],
-      ["one-year", "15.38", "2,800", true],
+      ["one-month", "27", "350", false],
+      ["one-year", "15", "2,800", true],
     ]);
     expect(rows[1]?.href).toBe("/memberships/one-year");
   });

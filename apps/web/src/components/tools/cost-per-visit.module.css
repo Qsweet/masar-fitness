@@ -11,7 +11,9 @@
   justify-items: start;
 }
 
+/* بعرض النموذج كاملًا: المربعات السبعة تتمدد حتى 3.5rem، فلا تضيق عن حجم اللمس على الجوال */
 .fieldset {
+  width: 100%;
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -69,6 +71,13 @@
   outline-offset: 3px;
 }
 
+/* زر «احسب» بديل بلا JavaScript؛ معه يكفي اختيار الرقم فيختفي الزر */
+@media (scripting: enabled) {
+  .submit {
+    display: none;
+  }
+}
+
 .result {
   display: grid;
   gap: 1.25rem;
@@ -114,7 +123,7 @@
   padding: 0.1rem 0.5rem;
   background: var(--ink);
   color: var(--energy);
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -132,7 +141,7 @@
 
 .figures dt {
   color: var(--grey);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
 }
 
 .perVisit {

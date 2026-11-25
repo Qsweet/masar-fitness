@@ -1,3 +1,12 @@
+/* قسم المقارنة آخر الصفحة: مسافة تحت عنوانه، ومسافة قسم قبل التذييل. */
+.compare:last-child {
+  padding-bottom: var(--section-space);
+}
+
+.compare h2 {
+  margin-bottom: 2rem;
+}
+
 /* رابط حاسبة تكلفة الزيارة تحت جدول المقارنة. */
 .toolLink {
   margin-top: 1.5rem;

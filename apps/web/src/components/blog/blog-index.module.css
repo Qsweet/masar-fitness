@@ -1,30 +1,95 @@
-/* فهرس المدونة: بطاقات بيضاء بحافة صفراء، وأداة الحساب في كتلة حبر في النهاية. */
+/* فهرس المدونة: تنبيه المسودات مرة واحدة، بطاقات بصورة من النادي ووسم الموضوع، وأداة الحساب على الحبر. */
+.notice {
+  margin-top: 2rem;
+  padding: 1rem 1.25rem;
+  background: var(--ink);
+  color: var(--white);
+  border-inline-start: 6px solid var(--energy);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.notice strong {
+  color: var(--energy);
+}
+
+.notice time {
+  color: var(--grey-on-ink);
+}
+
+.topic {
+  padding-top: clamp(2.5rem, 5vw, 4rem);
+}
+
 .cards {
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
   margin-top: 1.5rem;
 }
 
 @media (width >= 48rem) {
   .cards {
     grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
   }
 }
 
 .card {
   display: grid;
-  gap: 0.5rem;
-  align-content: start;
-  padding: 1.25rem 1.5rem;
+  grid-template-rows: auto 1fr;
   background: var(--white);
-  border-inline-start: 6px solid var(--energy);
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+/* مقال وحيد في موضوعه: بطاقة بعرض الشبكة، صورتها بجانب نصها، حتى لا يبقى نصف الصف فارغًا */
+@media (width >= 48rem) {
+  .card:only-child {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+
+  .card:only-child .body {
+    align-content: center;
+  }
+}
+
+.photo img {
+  object-fit: cover;
+  object-position: center 35%;
+}
+
+/* وسم الموضوع فوق الصورة: حبر على أصفر (11:1) */
+.chip {
+  position: absolute;
+  bottom: 0;
+  inset-inline-start: 0;
+  padding: 0.2rem 0.85rem;
+  background: var(--energy);
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.body {
+  display: grid;
+  gap: 0.6rem;
+  align-content: start;
+  padding: 1.25rem 1.5rem 1.5rem;
 }
 
 .cardTitle {
   font-family: var(--display);
   font-size: clamp(1.35rem, 1vw + 1rem, 1.75rem);
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 .cardTitle a {
@@ -36,13 +101,9 @@
   text-decoration-color: var(--energy);
 }
 
-.draft {
-  justify-self: start;
-  padding: 0 0.5rem;
-  background: var(--ink);
-  color: var(--energy);
-  font-size: 0.85rem;
-  font-weight: 700;
+.meta {
+  color: var(--grey);
+  font-size: 0.875rem;
 }
 
 .tool {

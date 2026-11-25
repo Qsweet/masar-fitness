@@ -29,25 +29,33 @@ describe("costPerVisit", () => {
   });
 
   it("يحسب كامل المدة مع الأشهر المجانية", () => {
-    // 2800 ر.س × 12 ÷ (14 × 52 × 3) = 15.38... ر.س
-    expect(costPerVisit(plan(280_000, 12, 2), 3)).toEqual(money(1_538));
+    // 2800 ر.س × 12 ÷ (14 × 52 × 3) = 15.38... ⇒ 15 ر.س
+    expect(costPerVisit(plan(280_000, 12, 2), 3)).toEqual(money(1_500));
   });
 
   it("شهر بزيارة كل يوم: 52/12 أسبوعًا × 7", () => {
-    // 350 ر.س × 12 ÷ (1 × 52 × 7) = 11.538... ⇒ 11.54
-    expect(costPerVisit(plan(35_000, 1), 7)).toEqual(money(1_154));
+    // 350 ر.س × 12 ÷ (1 × 52 × 7) = 11.538... ⇒ 12 ر.س
+    expect(costPerVisit(plan(35_000, 1), 7)).toEqual(money(1_200));
   });
 
-  it("تقريب واحد في النهاية لأقرب هللة، والنصف يُقرَّب للأعلى", () => {
-    // 13 هللة × 12 ÷ (1 × 52 × 1) = 3 هللات بالضبط
-    expect(costPerVisit(plan(13, 1), 1)).toEqual(money(3));
-    // 1 هللة × 12 ÷ 52 = 0.23 ⇒ 0
-    expect(costPerVisit(plan(1, 1), 1)).toEqual(money(0));
-    // 26 × 12 ÷ (1 × 52 × 4) = 1.5 ⇒ 2 (نصف للأعلى)
-    expect(costPerVisit(plan(26, 1), 4)).toEqual(money(2));
+  it("تقريب واحد في النهاية لأقرب ريال، والنصف يُقرَّب للأعلى", () => {
+    // 1300 هللة × 12 ÷ (1 × 52 × 1) = 3 ر.س بالضبط
+    expect(costPerVisit(plan(1_300, 1), 1)).toEqual(money(300));
+    // 1 ر.س × 12 ÷ 52 = 0.23 ⇒ 0
+    expect(costPerVisit(plan(100, 1), 1)).toEqual(money(0));
+    // 26 ر.س × 12 ÷ (1 × 52 × 4) = 1.5 ⇒ 2 ر.س (نصف للأعلى)
+    expect(costPerVisit(plan(2_600, 1), 4)).toEqual(money(200));
+    // 337.74 ر.س ÷ 52 = 6.495 ر.س ⇒ 6 ر.س: تقريب واحد، لا تقريب للهللة (6.50) ثم للريال (7)
+    expect(costPerVisit(plan(33_774, 12), 1)).toEqual(money(600));
   });
 
-  it("النتيجة عدد صحيح دائمًا وتتناقص بزيادة الزيارات", () => {
+  it("النتيجة ريالات صحيحة دائمًا", () => {
+    for (const visits of [1, 2, 3, 4, 5, 6, 7]) {
+      expect(costPerVisit(plan(90_000, 3), visits).amountMinor % 100).toBe(0);
+    }
+  });
+
+  it("تتناقص بزيادة الزيارات", () => {
     const year = plan(280_000, 12, 2);
     const costs = [1, 2, 3, 4, 5, 6, 7].map((visits) => costPerVisit(year, visits).amountMinor);
     costs.forEach((cost) => {

@@ -3,6 +3,7 @@ import { money } from "../money";
 import {
   approximateMonthlyCost,
   bestValuePlan,
+  sharedBenefits,
   totalMonths,
   type MembershipPlan,
 } from "./membership-plan";
@@ -105,5 +106,34 @@ describe("bestValuePlan", () => {
   it("باقة واحدة هي الأفضل، ولا شيء عند غياب الباقات", () => {
     expect(bestValuePlan([plan({ slug: "only" })])?.slug).toBe("only");
     expect(bestValuePlan([])).toBeUndefined();
+  });
+});
+
+describe("sharedBenefits", () => {
+  const iron = { ar: "صالة الحديد", en: "Strength floor" };
+  const pool = { ar: "المسبح", en: "Pool" };
+
+  it("كل الباقات بالمزايا نفسها (بأي ترتيب) ⇒ القائمة المشتركة", () => {
+    const plans = [plan({ benefits: [iron, pool] }), plan({ benefits: [pool, iron] })];
+    expect(sharedBenefits(plans)).toEqual([iron, pool]);
+  });
+
+  it("باقة واحدة تختلف ⇒ undefined", () => {
+    expect(
+      sharedBenefits([plan({ benefits: [iron, pool] }), plan({ benefits: [iron] })]),
+    ).toBeUndefined();
+    const other = { ar: "المسبح", en: "Swimming pool" };
+    expect(
+      sharedBenefits([plan({ benefits: [iron, pool] }), plan({ benefits: [iron, other] })]),
+    ).toBeUndefined();
+  });
+
+  it("بلا باقات أو بلا مزايا ⇒ undefined", () => {
+    expect(sharedBenefits([])).toBeUndefined();
+    expect(sharedBenefits([plan(), plan()])).toBeUndefined();
+  });
+
+  it("باقة واحدة بمزايا ⇒ مزاياها", () => {
+    expect(sharedBenefits([plan({ benefits: [iron] })])).toEqual([iron]);
   });
 });

@@ -1,13 +1,62 @@
-/* جدول المقارنة: صف رأس أسود بأسماء الاشتراكات، وخطوط حبر رفيعة، والأرقام بخط Changa. */
-.scroller {
-  position: relative;
-  overflow-x: auto;
-  border-bottom: 2px solid var(--ink);
+/*
+ * المقارنة: على الجوال بطاقة لكل اشتراك بحقائقه وزر بعرض كامل، وعلى الشاشة الواسعة جدول برأس أسود
+ * وخطوط حبر رفيعة والأرقام بخط Changa. يُعرض أحدهما فقط.
+ */
+.comparison {
+  display: grid;
+  gap: 1.5rem;
 }
 
+.list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.item {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 1.5rem;
+  background: var(--white);
+  border-top: 4px solid var(--energy);
+}
+
+.itemName {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.facts {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.facts dt {
+  flex: none;
+  color: var(--grey);
+}
+
+.facts dd {
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: end;
+}
+
+/* أعمدة بعرض ثابت متساوٍ: الجدول لا يتجاوز عرض الصفحة مهما طال نص خلية */
 .table {
+  display: none;
   width: 100%;
-  min-width: 40rem;
+  table-layout: fixed;
   border-collapse: collapse;
 }
 
@@ -16,7 +65,7 @@
   padding: 1rem;
   text-align: start;
   vertical-align: top;
-  border-top: 1px solid rgb(12 16 20 / 14%);
+  border-top: 1px solid var(--rule);
 }
 
 .table tbody th {
@@ -31,8 +80,14 @@
 }
 
 .corner {
+  width: 24%;
   color: var(--grey-on-ink);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
+}
+
+/* زر «اختر» بعرض عموده بهامش داخلي صغير */
+.table tfoot a {
+  padding-inline: 0.5rem;
 }
 
 .table thead .planName {
@@ -40,7 +95,6 @@
   font-family: var(--display);
   font-size: 1.3rem;
   font-weight: 800;
-  white-space: nowrap;
 }
 
 .price {
@@ -49,12 +103,21 @@
   font-weight: 700;
 }
 
-.choose {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  font-family: var(--display);
-  font-weight: 700;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.3em;
+.table tfoot td {
+  border-top: 2px solid var(--ink);
+}
+
+.allIncluded {
+  max-width: var(--measure);
+  font-size: 1.125rem;
+}
+
+@media (width >= 48rem) {
+  .list {
+    display: none;
+  }
+
+  .table {
+    display: table;
+  }
 }

@@ -1,17 +1,23 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState, useSyncExternalStore } from "react";
-import { HERO_VIDEO } from "@/config/media";
-import styles from "./hero.module.css";
+import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
+import { CLASS_VIDEO } from "@/config/media";
+import { cx } from "@/lib/cx";
+import styles from "./loop-video.module.css";
 
-interface HeroMediaProps {
+interface LoopVideoProps {
   readonly posterAlt: string;
   readonly pauseLabel: string;
   readonly playLabel: string;
+  /** أبعاد الإطار ومكانه من القسم الذي يضعه. */
+  readonly className: string | undefined;
+  readonly sizes: string;
 }
 
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+/** يبدأ تحميل المقطع قبل أن يصل إطاره إلى الشاشة بقليل، لا عند فتح الصفحة. */
+const NEAR_VIEWPORT = "300px 0px";
 
 /** طلب توفير البيانات من المتصفح (Save-Data)، إن كان المتصفح يعلنه. */
 function prefersSaveData(): boolean {
@@ -40,7 +46,32 @@ function useMotionAllowed(): boolean {
   );
 }
 
-type VideoLabels = Pick<HeroMediaProps, "pauseLabel" | "playLabel">;
+/** هل اقترب العنصر من الشاشة مرة واحدة على الأقل؟ بعدها يبقى صحيحًا. */
+function useNearViewport(target: RefObject<HTMLElement | null>): boolean {
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const element = target.current;
+    if (element === null) {
+      return undefined;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting === true) {
+          setNear(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: NEAR_VIEWPORT },
+    );
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+    };
+  }, [target]);
+  return near;
+}
+
+type VideoLabels = Pick<LoopVideoProps, "pauseLabel" | "playLabel">;
 
 /**
  * المقطع الصامت فوق الإطار: يظهر بعد أول إطار يعمل ويبقى ظاهرًا بعد الإيقاف (الإطار الأخير لا الصورة)،
@@ -76,7 +107,7 @@ function AmbientVideo({ pauseLabel, playLabel }: VideoLabels) {
         ref={video}
         className={styles.video}
         data-started={started}
-        src={HERO_VIDEO.src}
+        src={CLASS_VIDEO.src}
         autoPlay
         muted
         loop
@@ -94,7 +125,7 @@ function AmbientVideo({ pauseLabel, playLabel }: VideoLabels) {
           setFailed(true);
         }}
       />
-      <button type="button" className={styles.videoToggle} onClick={toggle}>
+      <button type="button" className={styles.toggle} onClick={toggle}>
         <span aria-hidden="true" className={playing ? styles.iconPause : styles.iconPlay} />
         <span className="sr-only">{playing ? pauseLabel : playLabel}</span>
       </button>
@@ -103,23 +134,24 @@ function AmbientVideo({ pauseLabel, playLabel }: VideoLabels) {
 }
 
 /**
- * وسائط الواجهة: إطار الفيديو صورةً (عنصر LCP، يُحمَّل مسبقًا) ثم المقطع الصامت فوقه حين يُسمح:
+ * مقطع صامت متكرر بإطاره: الإطار صورة تُحمَّل كسولة، والمقطع فوقه حين يُسمح ويقترب من الشاشة.
  * لا يُحمَّل المقطع مع تقليل الحركة ولا مع توفير البيانات، ولا على الخادم.
  */
-export function HeroMedia({ posterAlt, pauseLabel, playLabel }: HeroMediaProps) {
+export function LoopVideo({ posterAlt, pauseLabel, playLabel, className, sizes }: LoopVideoProps) {
+  const frame = useRef<HTMLDivElement>(null);
   const allowed = useMotionAllowed();
+  const near = useNearViewport(frame);
   return (
-    <div className={styles.media}>
+    <div ref={frame} className={cx(styles.frame, className)}>
       <Image
-        src={HERO_VIDEO.poster}
+        src={CLASS_VIDEO.poster}
         alt={posterAlt}
         fill
-        preload
         placeholder="blur"
-        blurDataURL={HERO_VIDEO.posterBlur}
-        sizes="(min-width: 64rem) 60vw, 100vw"
+        blurDataURL={CLASS_VIDEO.posterBlur}
+        sizes={sizes}
       />
-      {allowed ? <AmbientVideo pauseLabel={pauseLabel} playLabel={playLabel} /> : null}
+      {allowed && near ? <AmbientVideo pauseLabel={pauseLabel} playLabel={playLabel} /> : null}
     </div>
   );
 }

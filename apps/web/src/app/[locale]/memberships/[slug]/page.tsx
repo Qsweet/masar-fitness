@@ -6,7 +6,6 @@ import { PageShell } from "@/components/page-shell";
 import { toPlanViews } from "@/components/plans/plan-view";
 import { PlansSection } from "@/components/plans/plans-section";
 import { Benefits, Payment, Visit } from "@/components/sections/closing";
-import { PHOTOS } from "@/config/photos";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedPath } from "@/i18n/locales";
 import { getMembershipPlan, getMembershipPlans } from "@/server/catalog";
@@ -40,17 +39,13 @@ export default async function PlanPage({ params }: Props) {
   }
   const dictionary = getDictionary(locale);
   const back = <Link href={localizedPath(locale, "/memberships")}>{dictionary.plan.back}</Link>;
+  const checkoutEnabled = isCheckoutEnabled();
 
   return (
     <PageShell locale={locale} path={`/memberships/${plan.slug}`} hasPlans>
-      <PageIntro
-        title={plan.name[locale]}
-        lead={plan.summary[locale]}
-        before={back}
-        photo={{ src: PHOTOS.coachRest, alt: dictionary.photos.coachRest }}
-      />
+      <PageIntro title={plan.name[locale]} lead={plan.summary[locale]} before={back} />
       <PlansSection
-        plans={toPlanViews(plans, locale, isCheckoutEnabled())}
+        plans={toPlanViews(plans, locale, checkoutEnabled)}
         locale={locale}
         dictionary={dictionary}
         currentSlug={plan.slug}
@@ -61,7 +56,7 @@ export default async function PlanPage({ params }: Props) {
         title={dictionary.plan.includesTitle}
         benefits={plan.benefits.map((benefit) => benefit[locale])}
       />
-      <Payment dictionary={dictionary} />
+      {checkoutEnabled ? <Payment dictionary={dictionary} /> : null}
       <Visit locale={locale} dictionary={dictionary} />
     </PageShell>
   );

@@ -193,7 +193,7 @@ button {
   padding: 0.4rem var(--gutter-end) 0.4rem var(--gutter);
   background: var(--ink-2);
   color: var(--grey-on-ink);
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   text-align: center;
 }
 

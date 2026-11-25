@@ -12,7 +12,7 @@ interface PageIntroProps {
   readonly children?: ReactNode;
   /** «poster» للعناوين القصيرة (الافتراضي)، و«article» لعنوان مقال طويل: أصغر ومتباعد الأسطر. */
   readonly size?: "poster" | "article";
-  /** صورة من النادي بجانب العنوان (تحت النص على الجوال). */
+  /** صورة من النادي بجانب العنوان على الشاشة الواسعة (لا تظهر على الجوال). */
   readonly photo?: { readonly src: StaticImageData; readonly alt: string };
 }
 
@@ -45,7 +45,7 @@ export function PageIntro({
               fill
               preload
               placeholder="blur"
-              sizes="(min-width: 64rem) 45vw, 100vw"
+              sizes="(min-width: 64rem) 45vw, 1px"
             />
           </figure>
         )}

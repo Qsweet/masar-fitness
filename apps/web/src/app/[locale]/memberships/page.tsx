@@ -11,6 +11,7 @@ import { ROUTES } from "@/config/routes";
 import { PHOTOS } from "@/config/photos";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedPath } from "@/i18n/locales";
+import { cx } from "@/lib/cx";
 import { getMembershipPlans } from "@/server/catalog";
 import { isCheckoutEnabled } from "@/server/checkout/flag";
 import { pageMetadata } from "@/server/metadata";
@@ -41,22 +42,27 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
   }
   const dictionary = getDictionary(locale);
   const plans = await getMembershipPlans();
+  const checkoutEnabled = isCheckoutEnabled();
 
   return (
     <PageShell locale={locale} path={PATH} hasPlans={plans.length > 0}>
       <PageIntro
         title={dictionary.memberships.title}
         lead={dictionary.memberships.intro}
-        photo={{ src: PHOTOS.coachRest, alt: dictionary.photos.coachRest }}
+        photo={{ src: PHOTOS.trainerPortrait, alt: dictionary.photos.trainerPortrait }}
       />
       <PlansSection
-        plans={toPlanViews(plans, locale, isCheckoutEnabled())}
+        plans={toPlanViews(plans, locale, checkoutEnabled)}
         locale={locale}
         dictionary={dictionary}
         revealAfterId={INTRO_ID}
       />
       {plans.length > 1 ? (
-        <section id="compare" aria-labelledby="compare-title" className="container section">
+        <section
+          id="compare"
+          aria-labelledby="compare-title"
+          className={cx("container", "section", styles.compare)}
+        >
           <h2 id="compare-title" className="title-section">
             {dictionary.memberships.compareTitle}
           </h2>
@@ -68,7 +74,7 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
           </p>
         </section>
       ) : null}
-      <Payment dictionary={dictionary} />
+      {checkoutEnabled ? <Payment dictionary={dictionary} /> : null}
     </PageShell>
   );
 }

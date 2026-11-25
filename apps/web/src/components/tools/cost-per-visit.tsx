@@ -1,6 +1,5 @@
-import { MAX_VISITS_PER_WEEK, MIN_VISITS_PER_WEEK } from "@masar/domain";
 import Link from "next/link";
-import { buttonClass, ButtonLink } from "@/components/ui/button-link";
+import { ButtonLink } from "@/components/ui/button-link";
 import { Price } from "@/components/ui/price";
 import { ROUTES } from "@/config/routes";
 import { countText } from "@/i18n/count";
@@ -10,40 +9,13 @@ import { localizedPath, type Locale } from "@/i18n/locales";
 import { cx } from "@/lib/cx";
 import type { CostRow } from "./cost-per-visit-view";
 import styles from "./cost-per-visit.module.css";
+import { VisitsForm } from "./visits-form";
 
 interface Props {
   readonly visits: number;
   readonly rows: readonly CostRow[];
   readonly locale: Locale;
   readonly dictionary: Dictionary;
-}
-
-const VISIT_OPTIONS = Array.from(
-  { length: MAX_VISITS_PER_WEEK - MIN_VISITS_PER_WEEK + 1 },
-  (_, index) => MIN_VISITS_PER_WEEK + index,
-);
-
-/** نموذج GET حقيقي: يعمل بلا JavaScript، والنتيجة برابط قابل للمشاركة (‎?visits=3‎). */
-function VisitsForm({ visits, locale, dictionary }: Omit<Props, "rows">) {
-  const text = dictionary.tools.costPerVisit;
-  return (
-    <form method="get" action={localizedPath(locale, ROUTES.costPerVisit)} className={styles.form}>
-      <fieldset className={styles.fieldset}>
-        <legend className={styles.legend}>{text.legend}</legend>
-        <div className={styles.options}>
-          {VISIT_OPTIONS.map((option) => (
-            <label key={option} className={styles.option}>
-              <input type="radio" name="visits" value={option} defaultChecked={option === visits} />
-              <span>{option}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-      <button type="submit" className={buttonClass("ink")}>
-        {text.submit}
-      </button>
-    </form>
-  );
 }
 
 function ResultRow({
@@ -88,9 +60,14 @@ export function CostPerVisit({ visits, rows, locale, dictionary }: Props) {
   const text = dictionary.tools.costPerVisit;
   return (
     <div className={cx("container", styles.tool)}>
-      <VisitsForm visits={visits} locale={locale} dictionary={dictionary} />
+      <VisitsForm
+        visits={visits}
+        action={localizedPath(locale, ROUTES.costPerVisit)}
+        legend={text.legend}
+        submit={text.submit}
+      />
       <section aria-labelledby="result-title" className={styles.result}>
-        <h2 id="result-title" className="title-block">
+        <h2 id="result-title" className="title-block" aria-live="polite">
           {fill(text.resultTitle, { times: countText(visits, text.times) })}
         </h2>
         {rows.length === 0 ? (

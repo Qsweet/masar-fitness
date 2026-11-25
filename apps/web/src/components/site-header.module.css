@@ -1,15 +1,21 @@
-/* شريط أسود صريح، وكتلة «اشترك الآن» صفراء بكامل ارتفاعه في طرفه. */
+/* شريط أسود صريح بعرض الشاشة، ومحتواه داخل إطار المحتوى: الشعار في أوله وكتلة «اشترك» الصفراء في آخره. */
 .header {
   position: sticky;
   top: 0;
   z-index: 20;
-  display: flex;
-  align-items: stretch;
-  min-height: calc(var(--header-height) + env(safe-area-inset-top, 0px));
   padding-top: env(safe-area-inset-top, 0px);
-  padding-inline-start: var(--gutter);
   background: var(--ink);
   color: var(--white);
+}
+
+/* على الجوال تلامس الكتلة الصفراء حافة الشاشة؛ على الشاشة الواسعة تقف عند حافة المحتوى */
+.inner {
+  display: flex;
+  align-items: stretch;
+  max-width: var(--max);
+  min-height: var(--header-height);
+  margin-inline: auto;
+  padding-inline-start: var(--gutter);
 }
 
 .brand {
@@ -106,6 +112,10 @@
   .menu,
   .languageMobile {
     display: none;
+  }
+
+  .inner {
+    padding-inline-end: var(--gutter-end);
   }
 
   .cta {

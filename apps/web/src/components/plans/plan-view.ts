@@ -1,6 +1,7 @@
 import {
   approximateMonthlyCost,
   bestValuePlan,
+  sharedBenefits,
   totalMonths,
   type MembershipPlan,
 } from "@masar/domain";
@@ -35,20 +36,24 @@ export interface PlanView {
   readonly purchase: PurchaseLink;
   /** واتساب النادي برسالة تسمّي الاشتراك: الزر نفسه والشراء مغلق، ورابط ثانوي وهو مفتوح */
   readonly whatsappHref: string;
-  /** المدة المدفوعة رقمًا ووحدة لمربع الاختيار: «12» + «شهرًا»، «1» + «شهر» */
+  /** المدة المدفوعة رقمًا ووحدة لمربع الاختيار، للعين فقط: «12» + «شهرًا»، «1» + «شهر» */
   readonly duration: Required<MonthsParts>;
+  /** المدة المدفوعة كما يسمعها قارئ الشاشة بدل الرقم والوحدة: «12 شهرًا»، «شهر واحد» */
+  readonly term: string;
   /** «+ شهران مجانًا» أو غائب */
   readonly bonusText: string | undefined;
-  /** «14 شهرًا: 12 شهرًا + شهران مجانًا» أو «3 أشهر» */
+  /** «14 شهرًا، منها شهران مجانًا» أو «3 أشهر» */
   readonly durationText: string;
   readonly price: MoneyParts;
-  /** تقريب للمقارنة، لا يظهر لاشتراك الشهر الواحد (تكرار للسعر نفسه) */
+  /** «نحو 200 ر.س شهريًا» في مربع المدة وفي الملخص؛ غائب لاشتراك الشهر الواحد (تكرار للسعر نفسه) */
   readonly monthlyText: string | undefined;
   readonly benefits: readonly string[];
+  /** كل الاشتراكات المعروضة بالمزايا نفسها: يكفي الملخصَ سطر واحد بدل القائمة المكررة */
+  readonly benefitsShared: boolean;
   readonly isBestValue: boolean;
 }
 
-/** «14 شهرًا: 12 شهرًا + شهران مجانًا» أو «3 أشهر»؛ يستعمله ملخص الشراء ومراجعة الطلب أيضًا. */
+/** «14 شهرًا، منها شهران مجانًا» أو «3 أشهر»؛ يستعمله ملخص الشراء ومراجعة الطلب أيضًا. */
 export function durationText(
   plan: Pick<MembershipPlan, "paidMonths" | "bonusMonths">,
   locale: Locale,
@@ -59,11 +64,16 @@ export function durationText(
   }
   return fill(getDictionary(locale).plans.durationBonus, {
     total,
-    paid: formatMonths(plan.paidMonths, locale),
     bonus: formatMonths(plan.bonusMonths, locale),
   });
 }
 
+/** المدة المدفوعة منطوقة: الشهر الواحد بالعدد مكتوبًا («شهر واحد») لا «1 شهر». */
+function termText(paidMonths: number, locale: Locale): string {
+  return paidMonths === 1 ? getDictionary(locale).plans.oneMonth : formatMonths(paidMonths, locale);
+}
+
+/** التكلفة الشهرية التقريبية، للمدد الأطول من شهر فقط (للشهر الواحد هي السعر نفسه). */
 function monthlyText(plan: MembershipPlan, locale: Locale): string | undefined {
   if (totalMonths(plan) <= 1) {
     return undefined;
@@ -93,10 +103,11 @@ interface ViewContext {
   readonly locale: Locale;
   readonly bestSlug: string | undefined;
   readonly checkoutEnabled: boolean;
+  readonly benefitsShared: boolean;
 }
 
 function toPlanView(plan: MembershipPlan, context: ViewContext): PlanView {
-  const { locale, bestSlug, checkoutEnabled } = context;
+  const { locale, bestSlug, checkoutEnabled, benefitsShared } = context;
   const dictionary = getDictionary(locale);
   return {
     slug: plan.slug,
@@ -105,6 +116,7 @@ function toPlanView(plan: MembershipPlan, context: ViewContext): PlanView {
     purchase: purchaseHref(plan, locale, dictionary, checkoutEnabled),
     whatsappHref: planWhatsappUrl(plan, locale, dictionary),
     duration: countedMonthsParts(plan.paidMonths, locale),
+    term: termText(plan.paidMonths, locale),
     bonusText:
       plan.bonusMonths > 0
         ? fill(dictionary.plans.bonus, { bonus: formatMonths(plan.bonusMonths, locale) })
@@ -113,12 +125,14 @@ function toPlanView(plan: MembershipPlan, context: ViewContext): PlanView {
     price: moneyParts(plan.price, locale),
     monthlyText: monthlyText(plan, locale),
     benefits: plan.benefits.map((benefit) => benefit[locale]),
+    benefitsShared,
     isBestValue: plan.slug === bestSlug,
   };
 }
 
 /**
- * الاشتراكات المعروضة بترتيبها، و«الأوفر شهريًا» معلَّم فقط حين توجد مقارنة (أكثر من اشتراك).
+ * الاشتراكات المعروضة بترتيبها، و«الأوفر شهريًا» معلَّم فقط حين توجد مقارنة (أكثر من اشتراك)،
+ * وكذلك اختصار المزايا المشتركة: يُحسب من الكتالوج (sharedBenefits) لا يُفترض.
  * `checkoutEnabled` من علم الخادم (isCheckoutEnabled) تمرّره الصفحة، فلا يُقرأ العلم في المتصفح.
  */
 export function toPlanViews(
@@ -127,7 +141,10 @@ export function toPlanViews(
   checkoutEnabled: boolean,
 ): PlanView[] {
   const bestSlug = plans.length > 1 ? bestValuePlan(plans)?.slug : undefined;
-  return plans.map((plan) => toPlanView(plan, { locale, bestSlug, checkoutEnabled }));
+  const benefitsShared = plans.length > 1 && sharedBenefits(plans) !== undefined;
+  return plans.map((plan) =>
+    toPlanView(plan, { locale, bestSlug, checkoutEnabled, benefitsShared }),
+  );
 }
 
 /** الاختيار الأول في المحدِّد: الاشتراك المطلوب إن وُجد، ثم الأوفر شهريًا، ثم الأول. */

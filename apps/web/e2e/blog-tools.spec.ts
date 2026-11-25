@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-/** الأرقام من البذرة التجريبية: الشهرية 350 ر.س، والسنوية 2800 ر.س لـ12 شهرًا + شهرين. */
+/** الأرقام من البذرة التجريبية: «شهر واحد» 350 ر.س، و«سنة كاملة» 2800 ر.س لـ12 شهرًا + شهرين. */
 const TOOL = "/tools/cost-per-visit";
 
 function result(page: Page) {
@@ -16,13 +16,14 @@ test.describe("حاسبة تكلفة الزيارة", () => {
       "إذا تمرنت 3 مرات في الأسبوع",
     );
     await expect(result(page).getByRole("listitem")).toHaveCount(4);
-    const annual = result(page).getByRole("listitem").filter({ hasText: "السنوية" }).last();
-    await expect(annual).toContainText("15.38");
+    const annual = result(page).getByRole("listitem").filter({ hasText: "سنة كاملة" });
+    // ريالات صحيحة بلا هللات: 15.38 ⇒ 15
+    await expect(annual.locator("dd").first()).toHaveText("15 ر.س");
     await expect(annual).toContainText("2,800");
     await expect(annual).toContainText("الأوفر شهريًا");
     await expect(
-      result(page).getByRole("listitem").filter({ hasText: "الشهرية" }).first(),
-    ).toContainText("26.92");
+      result(page).getByRole("listitem").filter({ hasText: "شهر واحد" }).locator("dd").first(),
+    ).toHaveText("27 ر.س");
     await expect(page.getByRole("radio", { name: "3" })).toBeChecked();
     await expect(result(page)).toContainText("الرقم تقريبي");
   });
@@ -49,9 +50,26 @@ test.describe("حاسبة تكلفة الزيارة", () => {
     await page.getByRole("button", { name: "احسب" }).click();
     await expect(page).toHaveURL(/\/tools\/cost-per-visit\?visits=7$/);
     await expect(
-      result(page).getByRole("listitem").filter({ hasText: "السنوية" }).last(),
-    ).toContainText("6.59");
+      result(page).getByRole("listitem").filter({ hasText: "سنة كاملة" }).locator("dd").first(),
+    ).toHaveText("7 ر.س");
     await context.close();
+  });
+
+  test("مع JavaScript: اختيار الرقم يحدّث النتيجة والرابط في مكانهما، وزر «احسب» مخفي", async ({
+    page,
+  }) => {
+    await page.goto(`${TOOL}?visits=3`);
+    await expect(page.getByRole("button", { name: "احسب" })).toBeHidden();
+    await page.getByRole("radio", { name: "7" }).check();
+    await expect(page).toHaveURL(/\/tools\/cost-per-visit\?visits=7$/);
+    await expect(result(page).getByRole("heading", { level: 2 })).toHaveText(
+      "إذا تمرنت 7 مرات في الأسبوع",
+    );
+    await expect(
+      result(page).getByRole("listitem").filter({ hasText: "سنة كاملة" }).locator("dd").first(),
+    ).toHaveText("7 ر.س");
+    // بلا إعادة تحميل: التركيز يبقى على الرقم المختار
+    await expect(page.getByRole("radio", { name: "7" })).toBeFocused();
   });
 
   test("الإنجليزية: once وtwice", async ({ page }) => {

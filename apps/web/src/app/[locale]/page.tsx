@@ -6,8 +6,8 @@ import { toPlanViews } from "@/components/plans/plan-view";
 import { PlansSection } from "@/components/plans/plans-section";
 import { Final, Payment, Visit } from "@/components/sections/closing";
 import { Facilities } from "@/components/sections/facilities";
-import { Hero, HERO_ID } from "@/components/sections/hero";
-import { Train, Trust } from "@/components/sections/story";
+import { Hero, HERO_ACTIONS_ID } from "@/components/sections/hero";
+import { Train } from "@/components/sections/story";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale } from "@/i18n/locales";
 import { getMembershipPlans } from "@/server/catalog";
@@ -41,7 +41,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     notFound();
   }
   const dictionary = getDictionary(locale);
-  const plans = toPlanViews(await getMembershipPlans(), locale, isCheckoutEnabled());
+  const checkoutEnabled = isCheckoutEnabled();
+  const plans = toPlanViews(await getMembershipPlans(), locale, checkoutEnabled);
 
   return (
     <PageShell locale={locale} path={PATH} hasPlans={plans.length > 0}>
@@ -51,12 +52,11 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         plans={plans}
         locale={locale}
         dictionary={dictionary}
-        revealAfterId={HERO_ID}
+        revealAfterId={HERO_ACTIONS_ID}
         showCompare
       />
       <Train dictionary={dictionary} />
-      <Trust dictionary={dictionary} />
-      <Payment dictionary={dictionary} />
+      {checkoutEnabled ? <Payment dictionary={dictionary} /> : null}
       <Visit locale={locale} dictionary={dictionary} />
       <Final dictionary={dictionary} />
       <JsonLd

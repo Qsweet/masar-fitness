@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { MAIN_CONTENT_ID } from "@/components/page-shell";
-import { isSiteIndexable } from "@/config/indexability";
+import { StagingNote } from "@/components/staging-note";
 import { getDictionary } from "@/i18n/dictionaries";
 import { directionOf, isLocale, LOCALES } from "@/i18n/locales";
 import { alexandria, changa } from "../fonts";
@@ -42,11 +42,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
         <a href={`#${MAIN_CONTENT_ID}`} className="skip-link">
           {dictionary.nav.skipToContent}
         </a>
-        {isSiteIndexable(process.env.SITE_INDEXABLE) ? null : (
-          <p role="note" className="staging-note">
-            {dictionary.staging}
-          </p>
-        )}
+        <StagingNote rawIndexable={process.env.SITE_INDEXABLE} text={dictionary.staging} />
         {children}
       </body>
     </html>

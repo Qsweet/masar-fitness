@@ -10,7 +10,11 @@ interface OptionProps {
   readonly onSelect: () => void;
 }
 
-/** مربع مدة واحد: زر راديو حقيقي شفاف فوق المربع كله، وما يُرى رقم ووحدة ومكافأة وسعر. */
+/**
+ * مربع مدة واحد: زر راديو حقيقي شفاف فوق المربع كله. ما يُرى: رقم كبير ووحدته والمكافأة، ثم الإجمالي
+ * وما يعادله شهريًا تحت فاصل، فيُرى لماذا السنوي هو الأوفر دون فتح الملخص. الرقم والوحدة للعين فقط،
+ * وقارئ الشاشة يسمع المدة بصيغتها الصحيحة («شهر واحد» لا «1 شهر»).
+ */
 export function PlanOption({ plan, selected, bestValueLabel, onSelect }: OptionProps) {
   const { count, unit } = plan.duration;
   return (
@@ -25,12 +29,16 @@ export function PlanOption({ plan, selected, bestValueLabel, onSelect }: OptionP
       />
       <span className={styles.mark} aria-hidden="true" />
       {plan.isBestValue ? <span className={styles.flag}>{bestValueLabel}</span> : null}
-      <span className={styles.duration}>
+      <span className={styles.duration} aria-hidden="true">
         <span className={styles.count}>{count}</span>
         <span className={styles.unit}>{unit}</span>
       </span>
+      <span className="sr-only">{plan.term}</span>
       <span className={styles.bonus}>{plan.bonusText}</span>
-      <Price parts={plan.price} className={styles.optionPrice} unitClassName={styles.optionUnit} />
+      <span className={styles.figures}>
+        <Price parts={plan.price} className={styles.optionPrice} unitClassName={styles.currency} />
+        <span className={styles.perMonth}>{plan.monthlyText}</span>
+      </span>
     </label>
   );
 }

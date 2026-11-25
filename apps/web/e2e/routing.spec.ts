@@ -6,14 +6,18 @@ test.describe("اللغة والاتجاه", () => {
     expect(response?.status()).toBe(200);
     await expect(page.locator("html")).toHaveAttribute("lang", "ar");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("أنت قدها.");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "نادي مسار الأبطال الرياضي للرجال في بريدة",
+    );
   });
 
   test("الإنجليزية تحت ‎/en من اليسار لليمين", async ({ page }) => {
     await page.goto("/en");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("You've got this.");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Masters Way, a men's gym in Buraidah",
+    );
   });
 
   test("تبديل اللغة يبقى على الصفحة نفسها في الاتجاهين", async ({ page }) => {

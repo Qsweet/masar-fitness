@@ -64,7 +64,7 @@ describe("مراجعة الطلب", () => {
     const message = decodeURIComponent(view.whatsappHref.split("text=")[1] ?? "");
     expect(message).toBe("مرحبًا، أرغب في إتمام دفع طلبي رقم MSR-0000042.");
     expect(view.lines[0]).toMatchObject({
-      detail: "14 شهرًا: 12 شهرًا + شهران مجانًا",
+      detail: "14 شهرًا، منها شهران مجانًا",
       benefits: ["المسبح"],
       startRule: "يبدأ الاشتراك من يوم الدفع.",
     });

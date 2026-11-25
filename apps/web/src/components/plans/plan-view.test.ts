@@ -29,21 +29,44 @@ describe("toPlanViews", () => {
   it("يحسب نصوص المدة والسعر والشهر على الخادم بالعربية", () => {
     const [, view] = toPlanViews([monthly, annual], "ar", false);
     expect(view?.duration).toEqual({ count: "12", unit: "شهرًا" });
+    expect(view?.term).toBe("12 شهرًا");
     expect(view?.bonusText).toBe("+ شهران مجانًا");
-    expect(view?.durationText).toBe("14 شهرًا: 12 شهرًا + شهران مجانًا");
+    expect(view?.durationText).toBe("14 شهرًا، منها شهران مجانًا");
     expect(view?.price).toEqual({ amount: "2,800", unit: "ر.س" });
-    expect(view?.monthlyText).toBe("حوالي 200 ر.س للشهر");
+    expect(view?.monthlyText).toBe("نحو 200 ر.س شهريًا");
     expect(view?.href).toBe("/memberships/annual");
     expect(view?.isBestValue).toBe(true);
   });
 
-  it("اشتراك الشهر الواحد بلا تكلفة شهرية ولا أشهر مجانية، ومربعه برقم كبقية المدد", () => {
+  it("اشتراك الشهر الواحد: مربعه برقم كبقية المدد ويُسمع «شهر واحد»، بلا سطر شهري ولا أشهر مجانية", () => {
     const [view] = toPlanViews([monthly, annual], "ar", false);
     expect(view?.duration).toEqual({ count: "1", unit: "شهر" });
+    expect(view?.term).toBe("شهر واحد");
     expect(view?.monthlyText).toBeUndefined();
     expect(view?.bonusText).toBeUndefined();
     expect(view?.durationText).toBe("شهر");
     expect(view?.isBestValue).toBe(false);
+  });
+
+  it("الإنجليزية: المدة والمدة الكاملة بصيغتهما", () => {
+    const [one, twelve] = toPlanViews([monthly, annual], "en", false);
+    expect(one?.term).toBe("1 month");
+    expect(twelve?.duration).toEqual({ count: "12", unit: "months" });
+    expect(twelve?.durationText).toBe("14 months, including 2 months free");
+    expect(twelve?.monthlyText).toBe("About 200 SAR a month");
+  });
+
+  it("المزايا المشتركة تُحسب من الاشتراكات المعروضة: متطابقة ⇒ اختصار، مختلفة أو اشتراك وحيد ⇒ القائمة", () => {
+    expect(toPlanViews([monthly, annual], "ar", false).map((view) => view.benefitsShared)).toEqual([
+      true,
+      true,
+    ]);
+    const fewer = plan({ slug: "basic", benefits: [] });
+    expect(toPlanViews([fewer, annual], "ar", false).map((view) => view.benefitsShared)).toEqual([
+      false,
+      false,
+    ]);
+    expect(toPlanViews([annual], "ar", false)[0]?.benefitsShared).toBe(false);
   });
 
   it("والشراء الإلكتروني مغلق: زر الشراء واتساب برسالة تسمّي الاشتراك بلغة الزائر", () => {

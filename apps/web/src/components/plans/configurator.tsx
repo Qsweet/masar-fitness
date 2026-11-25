@@ -28,6 +28,32 @@ function purchaseLabel(plan: PlanView, planLabels: Dictionary["plan"]): string {
   return plan.purchase.external ? planLabels.buyWhatsapp : planLabels.buyOnline;
 }
 
+/**
+ * ما يشمله الاشتراك في الملخص: سطر واحد حين تتطابق مزايا كل الاشتراكات المعروضة (محسوب في plan-view)،
+ * وإلا قائمة مزايا الاشتراك المختار.
+ */
+function Includes({
+  plan,
+  labels,
+}: Pick<ConfiguratorProps, "labels"> & { readonly plan: PlanView }) {
+  if (plan.benefits.length === 0) {
+    return null;
+  }
+  if (plan.benefitsShared) {
+    return <p className={styles.includesAll}>{labels.includesAll}</p>;
+  }
+  return (
+    <>
+      <p className={styles.summaryLabel}>{labels.includes}</p>
+      <ul className={styles.includes}>
+        {plan.benefits.map((benefit) => (
+          <li key={benefit}>{benefit}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 function Summary({
   plan,
   currentSlug,
@@ -50,12 +76,7 @@ function Summary({
           <p className={styles.summaryNote}>{plan.monthlyText}</p>
         )}
       </div>
-      <p className={styles.summaryLabel}>{labels.includes}</p>
-      <ul className={styles.includes}>
-        {plan.benefits.map((benefit) => (
-          <li key={benefit}>{benefit}</li>
-        ))}
-      </ul>
+      <Includes plan={plan} labels={labels} />
       <ButtonLink
         href={plan.purchase.href}
         external={plan.purchase.external}
@@ -64,6 +85,7 @@ function Summary({
       >
         {purchaseLabel(plan, planLabels)}
       </ButtonLink>
+      {plan.purchase.external ? <p className={styles.buyNote}>{planLabels.buyNote}</p> : null}
       {plan.purchase.external ? null : (
         <a href={plan.whatsappHref} rel="noopener noreferrer" className={styles.details}>
           {planLabels.whatsappAlternative}
@@ -74,7 +96,6 @@ function Summary({
           {labels.details}: {plan.name}
         </a>
       )}
-      {plan.purchase.external ? <p className={styles.summaryNote}>{planLabels.buyNote}</p> : null}
     </div>
   );
 }
@@ -88,7 +109,11 @@ function StickyBar({
     <StickyReveal afterId={revealAfterId} label={planLabels.stickyLabel} className={styles.sticky}>
       <p>
         <span className={styles.stickyName}>{plan.name}</span>
-        <Price parts={plan.price} className={styles.stickyPrice} />
+        <Price
+          parts={plan.price}
+          className={styles.stickyPrice}
+          unitClassName={styles.stickyUnit}
+        />
       </p>
       {plan.purchase.external ? (
         <a href={plan.purchase.href} rel="noopener noreferrer">

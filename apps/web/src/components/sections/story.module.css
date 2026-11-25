@@ -1,6 +1,4 @@
-/* التمرين والثقة: صور النادي بألوانها الحقيقية، بإيقاع الأقسام نفسه. */
-
-/* ———————— التمرين ———————— */
+/* التمرين: صورتان من النادي ومقطع صامت بألوانها الحقيقية، الأولى كبيرة والاثنان بجانبها. */
 .mosaic {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -9,6 +7,7 @@
 
 .shot {
   position: relative;
+  margin: 0;
   aspect-ratio: 1;
   overflow: hidden;
 }
@@ -20,6 +19,11 @@
 .shot:first-child {
   grid-column: 1 / -1;
   aspect-ratio: 16 / 10;
+}
+
+/* الرجل في الوسط يؤدي القرفصاء: يبقى في مركز القصّ */
+.shot:first-child img {
+  object-position: 46% center;
 }
 
 @media (width >= 64rem) {
@@ -37,90 +41,5 @@
     grid-column: auto;
     grid-row: 1 / 3;
     aspect-ratio: auto;
-  }
-}
-
-/* ———————— الثقة ———————— */
-.trustWrap {
-  padding-bottom: 0;
-}
-
-.trust {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: 1fr 1fr;
-}
-
-.trustText {
-  display: grid;
-  grid-column: 1 / -1;
-  gap: 1rem;
-  align-content: center;
-  max-width: var(--measure);
-  margin-bottom: 1rem;
-}
-
-.trustLead {
-  color: var(--grey);
-  font-size: clamp(1.0625rem, 0.3vw + 1rem, 1.25rem);
-}
-
-.points {
-  display: grid;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-.points li {
-  padding-inline-start: 1rem;
-  border-inline-start: 4px solid var(--energy);
-  font-size: 1.125rem;
-}
-
-.portrait,
-.consultation {
-  position: relative;
-  margin: 0;
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
-}
-
-.portrait img,
-.consultation img {
-  object-fit: cover;
-}
-
-/* الصورتان أفقيتان: الحصر على الشخص لا على الفراغ */
-.portrait img {
-  object-position: 28% center;
-}
-
-.consultation img {
-  object-position: 62% center;
-}
-
-@media (width >= 64rem) {
-  .trust {
-    grid-template-columns: 6fr 5fr;
-    grid-template-areas:
-      "text portrait"
-      "consultation portrait";
-    gap: 1.25rem 3rem;
-  }
-
-  .trustText {
-    grid-area: text;
-    margin-bottom: 0;
-  }
-
-  .portrait {
-    grid-area: portrait;
-    aspect-ratio: auto;
-    min-height: 36rem;
-  }
-
-  .consultation {
-    grid-area: consultation;
-    aspect-ratio: 16 / 9;
   }
 }

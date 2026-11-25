@@ -86,10 +86,10 @@ dropped_claims:
 
 الجدول التالي يلخص التوصيات حسب العمر:
 
-| الفئة | النشاط الهوائي أسبوعيًا | تقوية العضلات | إضافة |
-| --- | --- | --- | --- |
-| البالغون 18–64 | 150–300 دقيقة معتدلة، أو 75–150 عالية، أو مزيج مكافئ | يومان أو أكثر، لكل المجموعات العضلية الكبرى | تقليل وقت الجلوس |
-| كبار السن 65+ | مثل البالغين | مثل البالغين | نشاط متعدد المكونات يركز على التوازن والقوة 3 أيام أو أكثر |
+| الفئة          | النشاط الهوائي أسبوعيًا                              | تقوية العضلات                               | إضافة                                                      |
+| -------------- | ---------------------------------------------------- | ------------------------------------------- | ---------------------------------------------------------- |
+| البالغون 18–64 | 150–300 دقيقة معتدلة، أو 75–150 عالية، أو مزيج مكافئ | يومان أو أكثر، لكل المجموعات العضلية الكبرى | تقليل وقت الجلوس                                           |
+| كبار السن 65+  | مثل البالغين                                         | مثل البالغين                                | نشاط متعدد المكونات يركز على التوازن والقوة 3 أيام أو أكثر |
 
 المصدر: إرشادات منظمة الصحة العالمية 2020 كما لخصها فريق إعدادها في مجلة British Journal of Sports Medicine. [2]
 
@@ -173,10 +173,10 @@ What changed in 2020 is that WHO now gives a **range**, not just a minimum. The 
 
 The table below summarises the recommendations by age:
 
-| Group | Aerobic activity per week | Muscle strengthening | Also |
-| --- | --- | --- | --- |
-| Adults 18–64 | 150–300 min moderate, or 75–150 min vigorous, or an equivalent mix | 2+ days, all major muscle groups | Limit sedentary time |
-| Older adults 65+ | As for adults | As for adults | Multicomponent balance and strength work on 3+ days |
+| Group            | Aerobic activity per week                                          | Muscle strengthening             | Also                                                |
+| ---------------- | ------------------------------------------------------------------ | -------------------------------- | --------------------------------------------------- |
+| Adults 18–64     | 150–300 min moderate, or 75–150 min vigorous, or an equivalent mix | 2+ days, all major muscle groups | Limit sedentary time                                |
+| Older adults 65+ | As for adults                                                      | As for adults                    | Multicomponent balance and strength work on 3+ days |
 
 Source: WHO 2020 guidelines as summarised by the guideline team in the British Journal of Sports Medicine. [2]
 

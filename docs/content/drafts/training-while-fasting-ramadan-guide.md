@@ -166,13 +166,13 @@ dropped_claims:
 
 أفضل وقت للتمرين الشاق في رمضان بعد الإفطار بساعتين إلى ثلاث، أو بعد صلاة التراويح؛ وقبل الإفطار يُفضّل النشاط الخفيف فقط. هذا ما تقوله صفحة التوعية في وزارة الصحة ومختص نقلت عنه الوزارة، مع اختلاف بسيط في عدد الساعات، بينما تنصح مراجعة التغذية الرياضية عمومًا بالتمرين في وقت يمكن الأكل والشرب حوله:
 
-| الوقت | ما يناسبه | المرجع |
-| --- | --- | --- |
-| الساعة التي تسبق المغرب | مشي هادئ، إطالة، تمارين خفيفة. لا تمارين عنيفة | رأي مختص نقلته وزارة الصحة [10] |
-| بعد الإفطار بساعتين | التمرين المعتاد، لأن الجسم أنهى الهضم وحصل على الطاقة | صفحة التوعية في وزارة الصحة [9] |
-| بعد الإفطار بثلاث ساعات على الأقل | التمارين المرتفعة الجهد: تمارين القوة والجري والرياضات الجماعية | رأي مختص نقلته وزارة الصحة [10] |
-| بعد التراويح | التمرين الكامل، مع وقت للأكل والشرب بعده | وزارة الصحة [9]؛ Burke وKing [6] |
-| قبل السحور | خيار لمن يناسبه السهر، مع وجبة السحور بعده | Burke وKing [6] |
+| الوقت                             | ما يناسبه                                                       | المرجع                           |
+| --------------------------------- | --------------------------------------------------------------- | -------------------------------- |
+| الساعة التي تسبق المغرب           | مشي هادئ، إطالة، تمارين خفيفة. لا تمارين عنيفة                  | رأي مختص نقلته وزارة الصحة [10]  |
+| بعد الإفطار بساعتين               | التمرين المعتاد، لأن الجسم أنهى الهضم وحصل على الطاقة           | صفحة التوعية في وزارة الصحة [9]  |
+| بعد الإفطار بثلاث ساعات على الأقل | التمارين المرتفعة الجهد: تمارين القوة والجري والرياضات الجماعية | رأي مختص نقلته وزارة الصحة [10]  |
+| بعد التراويح                      | التمرين الكامل، مع وقت للأكل والشرب بعده                        | وزارة الصحة [9]؛ Burke وKing [6] |
+| قبل السحور                        | خيار لمن يناسبه السهر، مع وجبة السحور بعده                      | Burke وKing [6]                  |
 
 والمنطق العلمي وراء ذلك أن إرشادات التغذية الرياضية توصي عادة بتناول البروتين والكربوهيدرات والسوائل بعد الحصة بوقت قصير؛ لذلك نصحت مراجعة Burke وKing في مجلة Journal of Sports Sciences بنقل التمرين قدر الإمكان إلى بداية اليوم أو نهايته أو إلى المساء، حين يمكن الأكل والشرب حوله. [6]
 
@@ -259,13 +259,13 @@ Keep in mind that these studies mostly involve athletes and active people. If yo
 
 The best time for hard training in Ramadan is two to three hours after iftar, or once taraweeh prayers are over; before iftar, stick to light activity. This is what the MOH awareness page and a specialist quoted by the MOH say, with small differences in the exact number of hours, while the sports nutrition review more generally advises training when you can eat and drink around it:
 
-| Time | Best for | Source |
-| --- | --- | --- |
-| The hour before maghrib | Easy walking, stretching, light exercise. No intense training | Specialist view reported by the MOH [10] |
-| Two hours after iftar | Your normal session, once digestion is largely done and energy has been replenished | MOH awareness page [9] |
-| At least three hours after iftar | High-effort work: strength training, running, team sports | Specialist view reported by the MOH [10] |
-| After taraweeh | A full session, with time to eat and drink afterwards | MOH [9]; Burke and King [6] |
-| Before suhoor | An option for night owls, with suhoor afterwards | Burke and King [6] |
+| Time                             | Best for                                                                            | Source                                   |
+| -------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------- |
+| The hour before maghrib          | Easy walking, stretching, light exercise. No intense training                       | Specialist view reported by the MOH [10] |
+| Two hours after iftar            | Your normal session, once digestion is largely done and energy has been replenished | MOH awareness page [9]                   |
+| At least three hours after iftar | High-effort work: strength training, running, team sports                           | Specialist view reported by the MOH [10] |
+| After taraweeh                   | A full session, with time to eat and drink afterwards                               | MOH [9]; Burke and King [6]              |
+| Before suhoor                    | An option for night owls, with suhoor afterwards                                    | Burke and King [6]                       |
 
 The reasoning: sports nutrition guidelines usually call for protein, carbohydrate and fluids soon after a session, so Burke and King's review in the Journal of Sports Sciences recommends moving training, where possible, to the start or end of the day or the evening, when you can eat and drink around it. [6]
 

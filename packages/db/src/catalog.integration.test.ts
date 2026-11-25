@@ -10,6 +10,8 @@ if (url === undefined || url === "") {
 }
 
 const CLUB = "catalog-test-club";
+/** نسبة ضريبة اختبار بنقاط الأساس (العمود إلزامي بلا افتراضي). */
+const TEST_VAT_RATE_BPS = 1500;
 const NOW = new Date("2026-06-15T12:00:00Z");
 const PAST = new Date("2026-01-01T00:00:00Z");
 const RECENT = new Date("2026-06-01T00:00:00Z");
@@ -78,7 +80,11 @@ async function addProduct(
 beforeAll(async () => {
   db = createDb(url);
   await cleanup();
-  clubId = (await db.club.create({ data: { slug: CLUB, nameAr: "نادٍ", nameEn: "Club" } })).id;
+  clubId = (
+    await db.club.create({
+      data: { slug: CLUB, nameAr: "نادٍ", nameEn: "Club", vatRateBps: TEST_VAT_RATE_BPS },
+    })
+  ).id;
 
   await addProduct("year", { sortOrder: 2 }, [
     { priceMinor: 300000, validFrom: PAST, validUntil: RECENT }, // انتهت

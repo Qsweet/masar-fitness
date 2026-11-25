@@ -80,12 +80,12 @@ dropped_claims:
 
 المدة المناسبة تتبع حالتك الحالية مع التمرين، والجدول التالي نقطة بداية للتفكير لا قاعدة ثابتة:
 
-| حالتك الآن | المدة المقترحة للتفكير | لماذا |
-| --- | --- | --- |
-| لم تتمرن من قبل، أو منقطع منذ مدة طويلة | قصيرة أو متوسطة | تختبر هل يناسبك النادي ووقت التمرين قبل التزام طويل |
-| تتمرن في مكان آخر بانتظام وتنتقل إلينا | متوسطة أو طويلة | عادتك ثابتة، والسؤال فقط هل يناسبك المكان |
-| منتظم منذ أشهر وتعرف جدولك | طويلة | التوفير لكل شهر يصبح توفيرًا حقيقيًا لأنك ستحضر |
-| تتوقع سفرًا طويلًا أو تغيرًا في دوامك | قصيرة، أو اسأل عن التجميد قبل الطويلة | لا تدفع مقدمًا عن أشهر لن تحضر فيها |
+| حالتك الآن                              | المدة المقترحة للتفكير                | لماذا                                               |
+| --------------------------------------- | ------------------------------------- | --------------------------------------------------- |
+| لم تتمرن من قبل، أو منقطع منذ مدة طويلة | قصيرة أو متوسطة                       | تختبر هل يناسبك النادي ووقت التمرين قبل التزام طويل |
+| تتمرن في مكان آخر بانتظام وتنتقل إلينا  | متوسطة أو طويلة                       | عادتك ثابتة، والسؤال فقط هل يناسبك المكان           |
+| منتظم منذ أشهر وتعرف جدولك              | طويلة                                 | التوفير لكل شهر يصبح توفيرًا حقيقيًا لأنك ستحضر     |
+| تتوقع سفرًا طويلًا أو تغيرًا في دوامك   | قصيرة، أو اسأل عن التجميد قبل الطويلة | لا تدفع مقدمًا عن أشهر لن تحضر فيها                 |
 
 وتذكير مهم للمبتدئ: إرشادات منظمة الصحة العالمية لعام 2020 توصي البالغين بـ150–300 دقيقة من النشاط الهوائي المعتدل أسبوعيًا، مع تمارين تقوية العضلات يومين أو أكثر، وتنصح من لم يصل إلى ذلك بأن **يبدأ بكميات صغيرة ويزيدها تدريجيًا**. [2] أي أن خطة واقعية من يومين أو ثلاثة أيام في الأسبوع بداية سليمة، وهي ما يجب أن تحسب عليه تكلفة اشتراكك، لا خطة الأيام الستة.
 
@@ -165,12 +165,12 @@ The study is American and two decades old, so its numbers do not transfer to Bur
 
 The right length depends on where you are with training today. Use this table as a starting point, not a rule:
 
-| Where you are now | Length to consider | Why |
-| --- | --- | --- |
-| Never trained, or off for a long time | Short or medium | Test the gym and your training slot before a long commitment |
-| Training regularly elsewhere and switching | Medium or long | The habit is settled; the only question is the place |
-| Consistent for months and know your schedule | Long | The lower monthly cost turns into real savings because you will attend |
-| Long travel or a change in work hours coming | Short, or ask about freezing before a long term | Don't prepay for months you won't be around |
+| Where you are now                            | Length to consider                              | Why                                                                    |
+| -------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------- |
+| Never trained, or off for a long time        | Short or medium                                 | Test the gym and your training slot before a long commitment           |
+| Training regularly elsewhere and switching   | Medium or long                                  | The habit is settled; the only question is the place                   |
+| Consistent for months and know your schedule | Long                                            | The lower monthly cost turns into real savings because you will attend |
+| Long travel or a change in work hours coming | Short, or ask about freezing before a long term | Don't prepay for months you won't be around                            |
 
 A note for beginners: the WHO 2020 guidelines recommend 150–300 minutes of moderate aerobic activity a week for adults, plus muscle-strengthening on two or more days, and advise people who are not there yet to **start small and build up gradually**. [2] A realistic plan of two or three sessions a week is a sound start, and it is the plan your cost-per-visit should be based on, not a six-day ideal.
 

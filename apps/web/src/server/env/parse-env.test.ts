@@ -25,6 +25,7 @@ describe("parseEnv", () => {
       DATABASE_URL: valid.DATABASE_URL,
       SITE_URL: "https://example.com",
       SITE_INDEXABLE: false,
+      CHECKOUT_ENABLED: false,
       APP_VERSION: "dev",
     });
   });
@@ -34,6 +35,35 @@ describe("parseEnv", () => {
       expect(parseEnv({ ...valid, SITE_INDEXABLE: value }).SITE_INDEXABLE).toBe(false);
     }
     expect(parseEnv({ ...valid, SITE_INDEXABLE: "true" }).SITE_INDEXABLE).toBe(true);
+  });
+
+  it("الشراء الإلكتروني مغلق إلا بالقيمة true حرفيًا", () => {
+    for (const value of [undefined, "", "false", "1", "TRUE", "yes"]) {
+      expect(parseEnv({ ...valid, CHECKOUT_ENABLED: value }).CHECKOUT_ENABLED).toBe(false);
+    }
+    expect(parseEnv({ ...valid, CHECKOUT_ENABLED: "true" }).CHECKOUT_ENABLED).toBe(true);
+  });
+
+  it("يرفض فتح الشراء في الإنتاج على رابط عام", () => {
+    expect(problemsOf({ ...valid, NODE_ENV: "production", CHECKOUT_ENABLED: "true" })).toEqual([
+      "CHECKOUT_ENABLED: must stay off in production until payments exist",
+    ]);
+    // مغلقًا يمر الإنتاج العام كما هو
+    expect(parseEnv({ ...valid, NODE_ENV: "production" }).CHECKOUT_ENABLED).toBe(false);
+  });
+
+  it("يقبل فتح الشراء في الإنتاج على عنوان الجهاز نفسه (اختبار البناء الإنتاجي)", () => {
+    const local = {
+      ...valid,
+      SITE_URL: "http://127.0.0.1:3101",
+      NODE_ENV: "production",
+      CHECKOUT_ENABLED: "true",
+    };
+    expect(parseEnv(local).CHECKOUT_ENABLED).toBe(true);
+    // اسم يشبه العنوان المحلي لكنه نطاق عام: مرفوض
+    expect(problemsOf({ ...local, SITE_URL: "https://localhost.example.com" })).toEqual([
+      "CHECKOUT_ENABLED: must stay off in production until payments exist",
+    ]);
   });
 
   it("يرفض غياب المتغيرات المطلوبة ويسمّيها", () => {

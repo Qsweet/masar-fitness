@@ -1,0 +1,42 @@
+/*
+ * صفحة الشراء: الملخص أولًا على الجوال (ما تشتريه وبكم)، ثم الخيارات ثم البيانات.
+ * على الشاشات الواسعة النماذج في عمود والملخص ثابت بجانبها كمحدِّد المدة.
+ */
+.layout {
+  display: grid;
+  gap: 1.5rem;
+  padding-block: var(--section-space);
+}
+
+.forms {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.blocked {
+  padding: 1rem 1.25rem;
+  background: var(--energy);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+@media (width >= 64rem) {
+  .layout {
+    grid-template-columns: 7fr 5fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .aside {
+    position: sticky;
+    top: calc(var(--header-height) + 1rem);
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .forms {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}

@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { buttonClass } from "@/components/ui/button-link";
+import { ButtonLink } from "@/components/ui/button-link";
 import { Price } from "@/components/ui/price";
 import { StickyReveal } from "@/components/ui/sticky-reveal";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -50,6 +51,11 @@ function Option({ plan, selected, bestValueLabel, onSelect }: OptionProps) {
   );
 }
 
+/** نص زر الشراء: «اشترِ الآن» إلى صفحة البيانات، أو واتساب والشراء الإلكتروني مغلق. */
+function purchaseLabel(plan: PlanView, planLabels: Dictionary["plan"]): string {
+  return plan.purchase.external ? planLabels.buyWhatsapp : planLabels.buyOnline;
+}
+
 function Summary({
   plan,
   currentSlug,
@@ -78,15 +84,25 @@ function Summary({
           <li key={benefit}>{benefit}</li>
         ))}
       </ul>
-      <a href={plan.purchaseHref} rel="noopener noreferrer" className={buttonClass("yellow", true)}>
-        {planLabels.buyWhatsapp}
-      </a>
+      <ButtonLink
+        href={plan.purchase.href}
+        external={plan.purchase.external}
+        variant="yellow"
+        block
+      >
+        {purchaseLabel(plan, planLabels)}
+      </ButtonLink>
+      {plan.purchase.external ? null : (
+        <a href={plan.whatsappHref} rel="noopener noreferrer" className={styles.details}>
+          {planLabels.whatsappAlternative}
+        </a>
+      )}
       {plan.slug === currentSlug ? null : (
         <a href={plan.href} className={styles.details}>
           {labels.details}: {plan.name}
         </a>
       )}
-      <p className={styles.summaryNote}>{planLabels.buyNote}</p>
+      {plan.purchase.external ? <p className={styles.summaryNote}>{planLabels.buyNote}</p> : null}
     </div>
   );
 }
@@ -102,9 +118,13 @@ function StickyBar({
         <span className={styles.stickyName}>{plan.name}</span>
         <Price parts={plan.price} className={styles.stickyPrice} />
       </p>
-      <a href={plan.purchaseHref} rel="noopener noreferrer">
-        {planLabels.buyWhatsapp}
-      </a>
+      {plan.purchase.external ? (
+        <a href={plan.purchase.href} rel="noopener noreferrer">
+          {purchaseLabel(plan, planLabels)}
+        </a>
+      ) : (
+        <Link href={plan.purchase.href}>{purchaseLabel(plan, planLabels)}</Link>
+      )}
     </StickyReveal>
   );
 }

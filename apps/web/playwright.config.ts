@@ -2,8 +2,23 @@ import { defineConfig, devices } from "@playwright/test";
 
 const PORT = 3100;
 const BASE_URL = `http://127.0.0.1:${String(PORT)}`;
+/** خادم ثانٍ من البناء نفسه والعلم CHECKOUT_ENABLED مفتوح؛ الخادم الأول يثبت أنه مغلق افتراضيًا. */
+const CHECKOUT_PORT = 3101;
+const CHECKOUT_URL = `http://127.0.0.1:${String(CHECKOUT_PORT)}`;
 const isCi = process.env.CI !== undefined;
 const SCREENS_SPEC = /screens\.spec\.ts/;
+const CHECKOUT_SPEC = /[\\/]checkout\.spec\.ts$/;
+const MOBILE = { width: 390, height: 844 };
+const DESKTOP = { width: 1440, height: 900 };
+
+function server(port: number, url: string, env: Record<string, string>) {
+  return {
+    command: `pnpm exec next start --port ${String(port)} --hostname 127.0.0.1`,
+    url: `${url}/api/health`,
+    reuseExistingServer: !isCi,
+    env: { SITE_URL: url, APP_VERSION: "e2e", ...env },
+  };
+}
 
 /**
  * اختبارات المتصفح تعمل على البناء الإنتاجي (`next build` أولًا) وقاعدة الاختبار ببياناتها التجريبية
@@ -19,24 +34,31 @@ export default defineConfig({
   projects: [
     {
       name: "mobile-390",
-      testIgnore: SCREENS_SPEC,
-      use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 } },
+      testIgnore: [SCREENS_SPEC, CHECKOUT_SPEC],
+      use: { ...devices["Desktop Chrome"], viewport: MOBILE },
     },
     {
       name: "desktop-1440",
-      testIgnore: SCREENS_SPEC,
-      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+      testIgnore: [SCREENS_SPEC, CHECKOUT_SPEC],
+      use: { ...devices["Desktop Chrome"], viewport: DESKTOP },
     },
     // المقاسات السبعة للمراجعة البصرية: يغيّر الاختبار المقاس بنفسه ويحفظ اللقطات
     { name: "screens", testMatch: SCREENS_SPEC, use: { ...devices["Desktop Chrome"] } },
-  ],
-  webServer: {
-    command: `pnpm exec next start --port ${String(PORT)} --hostname 127.0.0.1`,
-    url: `${BASE_URL}/api/health`,
-    reuseExistingServer: !isCi,
-    env: {
-      SITE_URL: BASE_URL,
-      APP_VERSION: "e2e",
+    // مسار الشراء على الخادم الثاني (العلم مفتوح) فقط
+    {
+      name: "checkout-390",
+      testMatch: CHECKOUT_SPEC,
+      use: { ...devices["Desktop Chrome"], viewport: MOBILE, baseURL: CHECKOUT_URL },
     },
-  },
+    {
+      name: "checkout-1440",
+      testMatch: CHECKOUT_SPEC,
+      use: { ...devices["Desktop Chrome"], viewport: DESKTOP, baseURL: CHECKOUT_URL },
+    },
+  ],
+  webServer: [
+    // صراحةً: علم من بيئة الصدفة لا يفتح الشراء على الخادم الذي يثبت أنه مغلق
+    server(PORT, BASE_URL, { CHECKOUT_ENABLED: "false" }),
+    server(CHECKOUT_PORT, CHECKOUT_URL, { CHECKOUT_ENABLED: "true" }),
+  ],
 });

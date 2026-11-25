@@ -1,4 +1,5 @@
 import type { Dictionary } from "./ar";
+import { checkoutEn } from "./checkout-en";
 
 export const en: Dictionary = {
   currency: { SAR: "SAR" },
@@ -113,6 +114,8 @@ export const en: Dictionary = {
     includesTitle: "The membership includes",
     buyWhatsapp: "Join via WhatsApp",
     buyNote: "Online payment is being prepared. For now, you join through the club's WhatsApp.",
+    buyOnline: "Buy now",
+    whatsappAlternative: "Or join via WhatsApp",
     whatsappMessage: "Hello, I'd like to join with the “{plan}” membership.",
     stickyLabel: "Membership summary",
   },
@@ -134,6 +137,7 @@ export const en: Dictionary = {
     lead: "The link you opened is wrong or the page has moved.",
     home: "Back to home",
   },
+  checkout: checkoutEn,
   error: {
     title: "The page couldn't load",
     lead: "Something went wrong on our side. Try again, and if it keeps happening, message us on WhatsApp.",

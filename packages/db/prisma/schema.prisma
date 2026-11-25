@@ -13,16 +13,29 @@ datasource db {
 /// النادي. المنصة اليوم لنادٍ واحد، لكن الجداول الرئيسية تحمل club_id من البداية
 /// ليبقى طريق الترخيص التجاري مفتوحًا بلا إعادة بناء (انظر docs/DECISIONS.md).
 model Club {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  slug      String   @unique
-  nameAr    String   @map("name_ar")
-  nameEn    String   @map("name_en")
-  timezone  String   @default("Asia/Riyadh")
-  currency  String   @default("SAR") @db.Char(3)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                        String               @id @default(uuid(7)) @db.Uuid
+  slug                      String               @unique
+  nameAr                    String               @map("name_ar")
+  nameEn                    String               @map("name_en")
+  timezone                  String               @default("Asia/Riyadh")
+  currency                  String               @default("SAR") @db.Char(3)
+  /// نسبة ضريبة القيمة المضافة بنقاط الأساس (1500 = 15%). بلا افتراضي: القيمة من الترحيل أو من المالك.
+  vatRateBps                Int                  @map("vat_rate_bps")
+  /// مهلة الطلب غير المدفوع بالدقائق. NULL = غير محسوم، فلا يُنشأ أي طلب.
+  orderPaymentWindowMinutes Int?                 @map("order_payment_window_minutes")
+  /// متى يبدأ الاشتراك. NULL = غير محسوم، فلا يُنشأ أي طلب اشتراك.
+  membershipStartRule       MembershipStartRule? @map("membership_start_rule")
+  createdAt                 DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                 DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  products Product[]
+  products           Product[]
+  customers          Customer[]
+  promotions         Promotion[]
+  orders             Order[]
+  memberships        Membership[]
+  refunds            Refund[]
+  assessmentRequests AssessmentRequest[]
+  auditLogs          AuditLog[]
 
   @@map("clubs")
 }
@@ -33,6 +46,8 @@ enum ProductKind {
   membership
   digital_program
   assessed_service
+  /// إضافة تُباع مع باقة مرتبطة بها في product_addons (المرحلة 3)
+  addon
 
   @@map("product_kind")
 }
@@ -63,12 +78,20 @@ model Product {
   club     Club             @relation(fields: [clubId], references: [id], onDelete: Restrict)
   versions ProductVersion[]
 
+  addonsOffered      ProductAddon[]      @relation("ProductAddonMembership")
+  offeredWith        ProductAddon[]      @relation("ProductAddonAddon")
+  promotionProducts  PromotionProduct[]
+  orderItems         OrderItem[]         @relation("OrderItemProductKind")
+  assessmentRequests AssessmentRequest[]
+
+  /// هدف المفاتيح المركّبة التي تشترط نوع المنتج (FK3، FK7)
+  @@unique([id, kind])
   @@index([clubId, kind, status, sortOrder])
   @@map("products")
 }
 
 /// نسخة تسعير: السعر والمدة والمزايا كما تُباع في فترة سريانها.
-/// تغيير السعر = نسخة جديدة؛ النسخة المباعة لا تُعدَّل (يُفرض في المرحلة 3 مع الطلبات).
+/// تغيير السعر = نسخة جديدة؛ أعمدة التسعير لا تُعدَّل أبدًا، ومزايا النسخة المباعة ثابتة (triggers المرحلة 3).
 model ProductVersion {
   id             String    @id @default(uuid(7)) @db.Uuid
   productId      String    @map("product_id") @db.Uuid
@@ -86,6 +109,12 @@ model ProductVersion {
   product  Product          @relation(fields: [productId], references: [id], onDelete: Restrict)
   benefits ProductBenefit[]
 
+  orderItemsByPrice    OrderItem[] @relation("OrderItemVersionPrice")
+  orderItemsByDuration OrderItem[] @relation("OrderItemVersionDuration")
+
+  /// أهداف المفاتيح المركّبة: سطر الطلب لا يخالف سعر نسخته ولا مدتها (FK1، FK2)
+  @@unique([id, productId, priceMinor, currency, bonusMonths])
+  @@unique([id, durationMonths])
   @@index([productId, validFrom])
   @@map("product_versions")
 }
@@ -101,4 +130,376 @@ model ProductBenefit {
 
   @@index([versionId, sortOrder])
   @@map("product_benefits")
+}
+
+// ───────────── المرحلة 3: البيع (docs/PHASE3_COMMERCE_DESIGN.md) ─────────────
+// المال INTEGER بالهللة. كل مفتاح أجنبي جديد RESTRICT للحذف والتحديث.
+// CHECK والتسلسل والـtriggers في ترحيل 20261125090100_commerce لأن Prisma لا يعبّر عنها.
+
+/// متى يبدأ الاشتراك: من تاريخ الدفع أم من أول زيارة (قرار المالك).
+enum MembershipStartRule {
+  on_payment
+  on_first_visit
+
+  @@map("membership_start_rule")
+}
+
+enum PromotionStatus {
+  draft
+  active
+  archived
+
+  @@map("promotion_status")
+}
+
+enum DiscountKind {
+  percentage
+  fixed_amount
+
+  @@map("discount_kind")
+}
+
+enum PromotionAudience {
+  anyone
+  new_customer
+  existing_customer
+
+  @@map("promotion_audience")
+}
+
+enum PromotionScope {
+  all_products
+  listed_products
+
+  @@map("promotion_scope")
+}
+
+enum DiscountSource {
+  automatic
+  coupon
+
+  @@map("discount_source")
+}
+
+enum OrderStatus {
+  pending_payment
+  paid
+  fulfilled
+  expired
+  cancelled
+  partially_refunded
+  refunded
+
+  @@map("order_status")
+}
+
+enum MembershipStatus {
+  scheduled
+  active
+  frozen
+  expired
+  cancelled
+
+  @@map("membership_status")
+}
+
+enum RefundStatus {
+  requested
+  approved
+  rejected
+  processing
+  completed
+  failed
+
+  @@map("refund_status")
+}
+
+/// أي إضافة تُعرض مع أي باقة. بلا صف ربط لا تُعرض الإضافة ولا تُقبل في السلة.
+/// عمودا النوع ثابتان بـCHECK، والمفتاحان المركّبان يمنعان ربط منتج من نوع خاطئ.
+model ProductAddon {
+  membershipProductId String      @map("membership_product_id") @db.Uuid
+  membershipKind      ProductKind @default(membership) @map("membership_kind")
+  addonProductId      String      @map("addon_product_id") @db.Uuid
+  addonKind           ProductKind @default(addon) @map("addon_kind")
+  sortOrder           Int         @default(0) @map("sort_order")
+
+  membership Product @relation("ProductAddonMembership", fields: [membershipProductId, membershipKind], references: [id, kind], onDelete: Restrict, onUpdate: Restrict)
+  addon      Product @relation("ProductAddonAddon", fields: [addonProductId, addonKind], references: [id, kind], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([membershipProductId, addonProductId])
+  @@map("product_addons")
+}
+
+/// المشتري بجواله فقط. لا اسم هنا: من يكتب جوال غيره لا يغيّر شيئًا من بياناته.
+model Customer {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  clubId    String   @map("club_id") @db.Uuid
+  phoneE164 String   @map("phone_e164")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  club               Club                @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  orders             Order[]
+  memberships        Membership[]
+  assessmentRequests AssessmentRequest[]
+
+  @@unique([clubId, phoneE164])
+  @@map("customers")
+}
+
+/// العرض التلقائي والكوبون جدول واحد: code فارغ = عرض تلقائي.
+model Promotion {
+  id                        String            @id @default(uuid(7)) @db.Uuid
+  clubId                    String            @map("club_id") @db.Uuid
+  code                      String?
+  nameAr                    String            @map("name_ar")
+  nameEn                    String            @map("name_en")
+  status                    PromotionStatus   @default(draft)
+  discountKind              DiscountKind      @map("discount_kind")
+  percentBps                Int?              @map("percent_bps")
+  amountMinor               Int?              @map("amount_minor")
+  currency                  String?           @db.Char(3)
+  /// بلا افتراضي: الجمهور والنطاق يُختاران صراحةً
+  audience                  PromotionAudience
+  scope                     PromotionScope
+  stackable                 Boolean           @default(false)
+  startsAt                  DateTime          @map("starts_at") @db.Timestamptz(3)
+  endsAt                    DateTime?         @map("ends_at") @db.Timestamptz(3)
+  maxRedemptions            Int?              @map("max_redemptions")
+  maxRedemptionsPerCustomer Int?              @map("max_redemptions_per_customer")
+  createdAt                 DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  club      Club               @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  products  PromotionProduct[]
+  discounts OrderDiscount[]
+
+  @@unique([clubId, code])
+  @@index([clubId, status, startsAt])
+  @@map("promotions")
+}
+
+/// منتجات عرض نطاقه listed_products. بلا صفوف لا ينطبق على شيء (الاتجاه الآمن).
+model PromotionProduct {
+  promotionId String @map("promotion_id") @db.Uuid
+  productId   String @map("product_id") @db.Uuid
+
+  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([promotionId, productId])
+  @@map("promotion_products")
+}
+
+/// الطلب: الرأس ولقطة العميل والتسوية في صف واحد. اللقطة لا تتغير (trigger)،
+/// والمتغير فقط الحالة وأعمدة paid_* (مرة واحدة) وأوقات الانتقال.
+model Order {
+  id                    String      @id @default(uuid(7)) @db.Uuid
+  clubId                String      @map("club_id") @db.Uuid
+  reference             String      @unique @default(dbgenerated("('MSR-'::text || lpad((nextval('order_reference_seq'::regclass))::text, 7, '0'::text))"))
+  /// 32 بايت عشوائي base64url (43 محرفًا)
+  publicToken           String      @unique @map("public_token")
+  idempotencyKey        String      @unique @map("idempotency_key") @db.Uuid
+  requestFingerprint    String      @map("request_fingerprint") @db.Char(64)
+  customerId            String      @map("customer_id") @db.Uuid
+  customerName          String      @map("customer_name")
+  customerPhoneE164     String      @map("customer_phone_e164")
+  locale                String      @db.Char(2)
+  status                OrderStatus @default(pending_payment)
+  currency              String      @db.Char(3)
+  vatRateBps            Int         @map("vat_rate_bps")
+  subtotalMinor         Int         @map("subtotal_minor")
+  discountMinor         Int         @map("discount_minor")
+  totalMinor            Int         @map("total_minor")
+  vatMinor              Int         @map("vat_minor")
+  createdAt             DateTime    @map("created_at") @db.Timestamptz(3)
+  expiresAt             DateTime    @map("expires_at") @db.Timestamptz(3)
+  paidAt                DateTime?   @map("paid_at") @db.Timestamptz(3)
+  paidProvider          String?     @map("paid_provider")
+  paidProviderPaymentId String?     @map("paid_provider_payment_id")
+  paidAmountMinor       Int?        @map("paid_amount_minor")
+  paidCurrency          String?     @map("paid_currency") @db.Char(3)
+  fulfilledAt           DateTime?   @map("fulfilled_at") @db.Timestamptz(3)
+  expiredAt             DateTime?   @map("expired_at") @db.Timestamptz(3)
+  cancelledAt           DateTime?   @map("cancelled_at") @db.Timestamptz(3)
+
+  club        Club            @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  customer    Customer        @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  items       OrderItem[]
+  discounts   OrderDiscount[]
+  memberships Membership[]
+  refunds     Refund[]
+
+  /// دفعة المزوّد تسوّي طلبًا واحدًا فقط
+  @@unique([paidProvider, paidProviderPaymentId])
+  /// أهداف مفاتيح مركّبة: الخصم لعميل الطلب نفسه (FK4)، والاشتراك لطلب مدفوع (FK6)
+  @@unique([id, customerId])
+  @@unique([id, paidAt])
+  @@index([status, expiresAt])
+  @@index([customerId, createdAt])
+  @@map("orders")
+}
+
+/// سطر اللقطة: وحدة واحدة، بلا كمية. للإدراج فقط.
+model OrderItem {
+  id                  String               @id @default(uuid(7)) @db.Uuid
+  orderId             String               @map("order_id") @db.Uuid
+  position            Int                  @db.SmallInt
+  kind                ProductKind
+  productId           String               @map("product_id") @db.Uuid
+  productVersionId    String               @map("product_version_id") @db.Uuid
+  productSlug         String               @map("product_slug")
+  nameAr              String               @map("name_ar")
+  nameEn              String               @map("name_en")
+  summaryAr           String               @map("summary_ar")
+  summaryEn           String               @map("summary_en")
+  /// [{"ar":..,"en":..}] بترتيب العرض
+  benefits            Json
+  durationMonths      Int?                 @map("duration_months")
+  bonusMonths         Int                  @map("bonus_months")
+  /// قاعدة البدء مختومة على سطر الاشتراك عند الإنشاء
+  membershipStartRule MembershipStartRule? @map("membership_start_rule")
+  currency            String               @db.Char(3)
+  vatRateBps          Int                  @map("vat_rate_bps")
+  listPriceMinor      Int                  @map("list_price_minor")
+  discountMinor       Int                  @map("discount_minor")
+  totalMinor          Int                  @map("total_minor")
+  vatMinor            Int                  @map("vat_minor")
+
+  order           Order           @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  /// FK1: السعر والعملة والأشهر المجانية لا تخالف النسخة المباعة
+  versionPrice    ProductVersion  @relation("OrderItemVersionPrice", fields: [productVersionId, productId, listPriceMinor, currency, bonusMonths], references: [id, productId, priceMinor, currency, bonusMonths], onDelete: Restrict, onUpdate: Restrict)
+  /// FK2: مدة سطر الاشتراك لا تخالف النسخة (MATCH SIMPLE: لا يُفحص إن كانت المدة فارغة)
+  versionDuration ProductVersion? @relation("OrderItemVersionDuration", fields: [productVersionId, durationMonths], references: [id, durationMonths], onDelete: Restrict, onUpdate: Restrict)
+  /// FK3: نوع السطر هو نوع المنتج
+  product         Product         @relation("OrderItemProductKind", fields: [productId, kind], references: [id, kind], onDelete: Restrict, onUpdate: Restrict)
+  /// واحد على الأكثر فعليًا: UNIQUE(memberships.order_item_id)
+  memberships     Membership[]
+
+  @@unique([orderId, position])
+  @@unique([orderId, productId])
+  /// هدف FK5: الاشتراك لسطر اشتراك من الطلب نفسه
+  @@unique([id, orderId, kind])
+  @@map("order_items")
+}
+
+/// الخصم المطبَّق، وهو نفسه سجل استخدام العرض. «نشط» ما دام طلبه ليس expired ولا cancelled.
+model OrderDiscount {
+  id               String         @id @default(uuid(7)) @db.Uuid
+  orderId          String         @map("order_id") @db.Uuid
+  customerId       String         @map("customer_id") @db.Uuid
+  promotionId      String         @map("promotion_id") @db.Uuid
+  source           DiscountSource
+  code             String?
+  nameAr           String         @map("name_ar")
+  nameEn           String         @map("name_en")
+  discountKind     DiscountKind   @map("discount_kind")
+  percentBps       Int?           @map("percent_bps")
+  fixedAmountMinor Int?           @map("fixed_amount_minor")
+  sequence         Int            @db.SmallInt
+  amountMinor      Int            @map("amount_minor")
+  createdAt        DateTime       @map("created_at") @db.Timestamptz(3)
+
+  /// FK4: عميل الاستخدام هو عميل الطلب
+  order     Order     @relation(fields: [orderId, customerId], references: [id, customerId], onDelete: Restrict, onUpdate: Restrict)
+  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([orderId, source])
+  @@unique([orderId, sequence])
+  @@unique([orderId, promotionId])
+  @@index([promotionId, customerId])
+  @@map("order_discounts")
+}
+
+/// الاشتراك: لا يوجد إلا لطلب مدفوع، ومرة واحدة لكل طلب. ends_on حدّ غير مشمول.
+model Membership {
+  id          String              @id @default(uuid(7)) @db.Uuid
+  clubId      String              @map("club_id") @db.Uuid
+  customerId  String              @map("customer_id") @db.Uuid
+  orderId     String              @unique @map("order_id") @db.Uuid
+  orderItemId String              @unique @map("order_item_id") @db.Uuid
+  orderPaidAt DateTime            @map("order_paid_at") @db.Timestamptz(3)
+  itemKind    ProductKind         @default(membership) @map("item_kind")
+  paidMonths  Int                 @map("paid_months")
+  bonusMonths Int                 @map("bonus_months")
+  startRule   MembershipStartRule @map("start_rule")
+  status      MembershipStatus
+  startsOn    DateTime?           @map("starts_on") @db.Date
+  endsOn      DateTime?           @map("ends_on") @db.Date
+  cancelledAt DateTime?           @map("cancelled_at") @db.Timestamptz(3)
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  club      Club      @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  customer  Customer  @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  /// FK5: سطر اشتراك من الطلب نفسه
+  orderItem OrderItem @relation(fields: [orderItemId, orderId, itemKind], references: [id, orderId, kind], onDelete: Restrict, onUpdate: Restrict)
+  /// FK6: لا اشتراك إلا لطلب مدفوع
+  paidOrder Order     @relation(fields: [orderId, orderPaidAt], references: [id, paidAt], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([customerId, status])
+  @@index([status, endsOn])
+  @@map("memberships")
+}
+
+/// نموذج بيانات فقط: لا كاتب له في المرحلة 3 (أهلية الاسترداد غير محسومة).
+model Refund {
+  id               String       @id @default(uuid(7)) @db.Uuid
+  clubId           String       @map("club_id") @db.Uuid
+  orderId          String       @map("order_id") @db.Uuid
+  amountMinor      Int          @map("amount_minor")
+  status           RefundStatus @default(requested)
+  reason           String
+  provider         String?
+  providerRefundId String?      @map("provider_refund_id")
+  requestedAt      DateTime     @map("requested_at") @db.Timestamptz(3)
+  decidedAt        DateTime?    @map("decided_at") @db.Timestamptz(3)
+  completedAt      DateTime?    @map("completed_at") @db.Timestamptz(3)
+
+  club  Club  @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([provider, providerRefundId])
+  @@index([orderId])
+  @@map("refunds")
+}
+
+/// طلب تقييم (ليد) لخدمة بتقييم، لا طلب شراء. لا بيانات صحية هنا.
+model AssessmentRequest {
+  id                 String      @id @default(uuid(7)) @db.Uuid
+  clubId             String      @map("club_id") @db.Uuid
+  customerId         String      @map("customer_id") @db.Uuid
+  productId          String      @map("product_id") @db.Uuid
+  productKind        ProductKind @default(assessed_service) @map("product_kind")
+  customerName       String      @map("customer_name")
+  customerPhoneE164  String      @map("customer_phone_e164")
+  locale             String      @db.Char(2)
+  idempotencyKey     String      @unique @map("idempotency_key") @db.Uuid
+  requestFingerprint String      @map("request_fingerprint") @db.Char(64)
+  createdAt          DateTime    @map("created_at") @db.Timestamptz(3)
+
+  club     Club     @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  /// FK7: المنتج خدمة بتقييم فقط
+  product  Product  @relation(fields: [productId, productKind], references: [id, kind], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([customerId, createdAt])
+  @@map("assessment_requests")
+}
+
+/// سجل تدقيق للإلحاق فقط. data بلا جوال ولا اسم.
+model AuditLog {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  clubId     String   @map("club_id") @db.Uuid
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id") @db.Uuid
+  action     String
+  fromState  String?  @map("from_state")
+  toState    String?  @map("to_state")
+  actor      String
+  data       Json     @default("{}")
+  createdAt  DateTime @map("created_at") @db.Timestamptz(3)
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([entityType, entityId, createdAt])
+  @@map("audit_logs")
 }

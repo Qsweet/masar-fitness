@@ -9,6 +9,8 @@ if (url === undefined || url === "") {
 }
 
 const SLUG = "integration-test-club";
+/** نسبة ضريبة اختبار بنقاط الأساس (العمود إلزامي بلا افتراضي). */
+const TEST_VAT_RATE_BPS = 1500;
 let db: Db;
 
 beforeAll(async () => {
@@ -34,16 +36,24 @@ describe("قاعدة البيانات", () => {
 
   it("تنشئ ناديًا بالقيم الافتراضية الصحيحة", async () => {
     const club = await db.club.create({
-      data: { slug: SLUG, nameAr: "نادي الاختبار", nameEn: "Test Club" },
+      data: {
+        slug: SLUG,
+        nameAr: "نادي الاختبار",
+        nameEn: "Test Club",
+        vatRateBps: TEST_VAT_RATE_BPS,
+      },
     });
     expect(club.id).toMatch(/^[0-9a-f-]{36}$/);
     expect(club.timezone).toBe("Asia/Riyadh");
     expect(club.currency).toBe("SAR");
+    expect(club.vatRateBps).toBe(TEST_VAT_RATE_BPS);
     expect(club.nameAr).toBe("نادي الاختبار");
   });
 
   it("ترفض تكرار المعرّف النصي للنادي", async () => {
-    const duplicate = db.club.create({ data: { slug: SLUG, nameAr: "مكرر", nameEn: "Dup" } });
+    const duplicate = db.club.create({
+      data: { slug: SLUG, nameAr: "مكرر", nameEn: "Dup", vatRateBps: TEST_VAT_RATE_BPS },
+    });
     await expect(duplicate).rejects.toMatchObject({ code: "P2002" });
     await expect(duplicate).rejects.toBeInstanceOf(Prisma.PrismaClientKnownRequestError);
   });

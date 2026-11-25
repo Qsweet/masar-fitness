@@ -9,6 +9,7 @@ import { Benefits, Payment, Visit } from "@/components/sections/closing";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedPath } from "@/i18n/locales";
 import { getMembershipPlan, getMembershipPlans } from "@/server/catalog";
+import { isCheckoutEnabled } from "@/server/checkout/flag";
 import { pageMetadata } from "@/server/metadata";
 
 type Props = PageProps<"/[locale]/memberships/[slug]">;
@@ -43,7 +44,7 @@ export default async function PlanPage({ params }: Props) {
     <PageShell locale={locale} path={`/memberships/${plan.slug}`} hasPlans>
       <PageIntro title={plan.name[locale]} lead={plan.summary[locale]} before={back} />
       <PlansSection
-        plans={toPlanViews(plans, locale)}
+        plans={toPlanViews(plans, locale, isCheckoutEnabled())}
         locale={locale}
         dictionary={dictionary}
         currentSlug={plan.slug}

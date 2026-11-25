@@ -1,0 +1,117 @@
+/*
+ * ملخص الطلب: كتلة حبر كملخص محدِّد المدة، السطور بفاصل «/» أصفر، والإجمالي أبيض ضخم.
+ * يُستعمل في صفحة الشراء ومراجعة الطلب.
+ */
+.summary {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  padding: 1.75rem 1.5rem;
+  background: var(--ink);
+  color: var(--white);
+}
+
+.title {
+  color: var(--energy);
+  font-family: var(--display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.lines {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 1rem;
+  align-items: baseline;
+}
+
+.lineName {
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.lineName::before {
+  content: "/ ";
+  color: var(--energy);
+}
+
+.lineDetail,
+.note {
+  grid-column: 1 / -1;
+  color: var(--grey-on-ink);
+  font-size: 0.875rem;
+}
+
+.amount {
+  font-family: var(--display);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.benefits {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1rem;
+  color: var(--grey-on-ink);
+  font-size: 0.875rem;
+}
+
+.rows {
+  display: grid;
+  gap: 0.35rem;
+  padding-block: 0.75rem;
+  border-block: 1px solid var(--rule-on-ink);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 1rem;
+}
+
+.row dt {
+  color: var(--grey-on-ink);
+}
+
+.code {
+  display: block;
+  font-size: 0.8rem;
+}
+
+.totalLabel {
+  color: var(--grey-on-ink);
+  font-size: 0.875rem;
+}
+
+.total {
+  font-family: var(--display);
+  font-size: clamp(2.5rem, 2vw + 2rem, 3.75rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.totalUnit {
+  font-size: 0.42em;
+}
+
+.notes {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--grey-on-ink);
+  font-size: 0.875rem;
+}
+
+@media (forced-colors: active) {
+  .summary {
+    border: 2px solid CanvasText;
+  }
+}

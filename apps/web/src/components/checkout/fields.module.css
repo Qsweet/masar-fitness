@@ -1,0 +1,193 @@
+/*
+ * حقول نموذجي الشراء (الخيارات والبيانات): لوحات بيضاء حادة على الورق، تسمية بخط العناوين،
+ * حقل بإطار حبر، وتركيز واضح. الخطأ كتلة صفراء بنص حبر (11:1)، لا لون خارج الرموز.
+ */
+.panel {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+  margin: 0;
+  padding: 1.5rem;
+  border: 0;
+  background: var(--white);
+}
+
+.title {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.lead {
+  color: var(--grey);
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.label {
+  font-family: var(--display);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.hint {
+  color: var(--grey);
+  font-size: 0.875rem;
+}
+
+.input {
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.5rem 0.9rem;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+}
+
+.input:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.input[aria-invalid="true"] {
+  border-width: 4px;
+}
+
+.error {
+  padding: 0.4rem 0.75rem;
+  background: var(--energy);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.info {
+  padding-inline-start: 0.75rem;
+  border-inline-start: 4px solid var(--energy);
+  font-weight: 600;
+}
+
+.choices {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-bottom: 0.5rem;
+  font-family: var(--display);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.25rem;
+  padding: 0.5rem 0.9rem;
+  box-shadow: inset 0 0 0 2px var(--ink);
+  cursor: pointer;
+}
+
+.choice:has(input:checked) {
+  background: var(--energy);
+  box-shadow: inset 0 0 0 3px var(--ink);
+}
+
+.choice:has(input:focus-visible) {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.choice input {
+  width: 1.35rem;
+  height: 1.35rem;
+  margin: 0;
+  accent-color: var(--ink);
+}
+
+.choiceName {
+  flex: 1;
+  font-weight: 600;
+}
+
+.choicePrice {
+  font-family: var(--display);
+  font-weight: 700;
+}
+
+.actions {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid var(--ink);
+}
+
+.totalPrice {
+  font-family: var(--display);
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.button:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.summary {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--ink);
+  color: var(--white);
+}
+
+.summary:focus-visible {
+  outline: 3px solid var(--energy);
+  outline-offset: 3px;
+}
+
+.summaryTitle {
+  color: var(--energy);
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.summary ul {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.summary a {
+  color: var(--white);
+  text-underline-offset: 0.25em;
+}
+
+@media (forced-colors: active) {
+  .error,
+  .summary {
+    border: 2px solid CanvasText;
+  }
+
+  .choice {
+    border: 2px solid CanvasText;
+  }
+}

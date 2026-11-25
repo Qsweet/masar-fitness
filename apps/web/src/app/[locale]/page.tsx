@@ -8,6 +8,7 @@ import { FacilityLine, Hero, HERO_ID, Train, Trust, Water } from "@/components/s
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale } from "@/i18n/locales";
 import { getMembershipPlans } from "@/server/catalog";
+import { isCheckoutEnabled } from "@/server/checkout/flag";
 import { pageMetadata } from "@/server/metadata";
 
 const PATH = "/";
@@ -35,7 +36,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     notFound();
   }
   const dictionary = getDictionary(locale);
-  const plans = toPlanViews(await getMembershipPlans(), locale);
+  const plans = toPlanViews(await getMembershipPlans(), locale, isCheckoutEnabled());
 
   return (
     <PageShell locale={locale} path={PATH} hasPlans={plans.length > 0}>

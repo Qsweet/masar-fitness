@@ -13,6 +13,7 @@
     "migrate:deploy": "prisma migrate deploy",
     "migrate:status": "prisma migrate status",
     "seed:demo": "tsx prisma/seed-demo.ts",
+    "orders:expire": "tsx prisma/expire-orders.ts",
     "typecheck": "tsc --noEmit",
     "test:integration": "vitest run"
   },

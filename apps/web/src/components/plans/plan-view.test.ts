@@ -1,6 +1,7 @@
 import { money, type MembershipPlan } from "@masar/domain";
 import { describe, expect, it } from "vitest";
-import { initialPlanSlug, toPlanViews } from "./plan-view";
+import { getDictionary } from "@/i18n/dictionaries";
+import { initialPlanSlug, purchaseHref, toPlanViews } from "./plan-view";
 
 function plan(overrides: Partial<MembershipPlan>): MembershipPlan {
   return {
@@ -26,7 +27,7 @@ const annual = plan({
 
 describe("toPlanViews", () => {
   it("يحسب نصوص المدة والسعر والشهر على الخادم بالعربية", () => {
-    const [, view] = toPlanViews([monthly, annual], "ar");
+    const [, view] = toPlanViews([monthly, annual], "ar", false);
     expect(view?.duration).toEqual({ count: "12", unit: "شهرًا" });
     expect(view?.bonusText).toBe("+ شهران مجانًا");
     expect(view?.durationText).toBe("14 شهرًا: 12 شهرًا + شهران مجانًا");
@@ -37,7 +38,7 @@ describe("toPlanViews", () => {
   });
 
   it("اشتراك الشهر الواحد بلا تكلفة شهرية ولا أشهر مجانية، والمدة كلمة وحدها", () => {
-    const [view] = toPlanViews([monthly, annual], "ar");
+    const [view] = toPlanViews([monthly, annual], "ar", false);
     expect(view?.duration).toEqual({ count: undefined, unit: "شهر" });
     expect(view?.monthlyText).toBeUndefined();
     expect(view?.bonusText).toBeUndefined();
@@ -45,22 +46,44 @@ describe("toPlanViews", () => {
     expect(view?.isBestValue).toBe(false);
   });
 
-  it("رابط الشراء واتساب برسالة تسمّي الاشتراك بلغة الزائر", () => {
-    const [, view] = toPlanViews([monthly, annual], "en");
-    const url = new URL(view?.purchaseHref ?? "");
+  it("والشراء الإلكتروني مغلق: زر الشراء واتساب برسالة تسمّي الاشتراك بلغة الزائر", () => {
+    const [, view] = toPlanViews([monthly, annual], "en", false);
+    expect(view?.purchase.external).toBe(true);
+    expect(view?.purchase.href).toBe(view?.whatsappHref);
+    const url = new URL(view?.purchase.href ?? "");
     expect(url.hostname).toBe("wa.me");
     expect(url.searchParams.get("text")).toContain("“Annual”");
     expect(view?.href).toBe("/en/memberships/annual");
     expect(view?.benefits).toEqual(["Pool"]);
   });
 
+  it("والشراء الإلكتروني مفتوح: زر الشراء صفحة البيانات، وواتساب يبقى بديلًا", () => {
+    const [, view] = toPlanViews([monthly, annual], "ar", true);
+    expect(view?.purchase).toEqual({ href: "/checkout/annual", external: false });
+    expect(new URL(view?.whatsappHref ?? "").hostname).toBe("wa.me");
+  });
+
   it("لا «أوفر شهريًا» حين يُعرض اشتراك واحد فقط", () => {
-    expect(toPlanViews([annual], "ar")[0]?.isBestValue).toBe(false);
+    expect(toPlanViews([annual], "ar", false)[0]?.isBestValue).toBe(false);
+  });
+});
+
+describe("purchaseHref", () => {
+  it("مغلق ⇐ واتساب خارجي، مفتوح ⇐ /checkout/<slug> داخلي بلغة الزائر", () => {
+    const en = getDictionary("en");
+    const off = purchaseHref(annual, "en", en, false);
+    expect(off.external).toBe(true);
+    expect(new URL(off.href).hostname).toBe("wa.me");
+    expect(purchaseHref(annual, "en", en, true)).toEqual({
+      href: "/en/checkout/annual",
+      external: false,
+    });
+    expect(purchaseHref(monthly, "ar", getDictionary("ar"), true).href).toBe("/checkout/monthly");
   });
 });
 
 describe("initialPlanSlug", () => {
-  const views = toPlanViews([monthly, annual], "ar");
+  const views = toPlanViews([monthly, annual], "ar", false);
 
   it("الاشتراك المطلوب أولًا، ثم الأوفر، ولا شيء بلا اشتراكات", () => {
     expect(initialPlanSlug(views, "monthly")).toBe("monthly");
@@ -70,6 +93,6 @@ describe("initialPlanSlug", () => {
   });
 
   it("بلا أوفر يُختار الأول", () => {
-    expect(initialPlanSlug(toPlanViews([monthly], "ar"))).toBe("monthly");
+    expect(initialPlanSlug(toPlanViews([monthly], "ar", false))).toBe("monthly");
   });
 });

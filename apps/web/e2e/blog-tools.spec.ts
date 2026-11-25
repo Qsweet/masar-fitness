@@ -83,21 +83,7 @@ test.describe("حاسبة تكلفة الزيارة", () => {
   });
 });
 
-test.describe("المدونة بلا مقالات", () => {
-  test("الفهرس والخلاصة 404، ولا رابط للمدونة", async ({ page, request }) => {
-    for (const path of [
-      "/blog",
-      "/en/blog",
-      "/blog/feed.xml",
-      "/en/blog/feed.xml",
-      "/blog/any-slug",
-    ]) {
-      expect((await request.get(path)).status(), path).toBe(404);
-    }
-    await page.goto("/");
-    await expect(page.getByRole("link", { name: "المدونة" })).toHaveCount(0);
-  });
-});
+// المدونة على المعاينة (المسودات) في blog.spec.ts
 
 test.describe("ملفات الاكتشاف", () => {
   test("sitemap.xml: الروابط المعتمدة باللغتين وبلا مدونة", async ({ request, baseURL }) => {

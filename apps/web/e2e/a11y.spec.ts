@@ -6,6 +6,8 @@ const PAGES = [
   "/memberships",
   "/memberships/one-year",
   "/tools/cost-per-visit",
+  "/blog",
+  "/blog/how-much-exercise-per-week-who-guidelines",
   "/no-such-page",
 ];
 const WCAG_22_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];

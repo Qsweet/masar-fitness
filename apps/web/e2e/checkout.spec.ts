@@ -86,7 +86,7 @@ test.describe("الشراء والعلم مفتوح", () => {
   test("بالعربية: باقة ← بيانات ← مراجعة، والإجمالي واحد في الخطوات الثلاث", async ({ page }) => {
     const mobile = randomMobile();
     await page.goto("/memberships/one-year");
-    const planSummary = page.locator("#plans [aria-live]");
+    const planSummary = page.locator("#top");
     await expect(planSummary).toContainText("1,499 ر.س");
     await planSummary.getByRole("link", { name: LABELS.ar.buy }).click();
 

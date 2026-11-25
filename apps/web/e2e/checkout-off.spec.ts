@@ -23,7 +23,7 @@ for (const [prefix, label] of [
     page,
   }) => {
     await page.goto(`${prefix}/memberships/one-year`);
-    const buy = page.locator("#plans [aria-live]").getByRole("link", { name: label });
+    const buy = page.locator("#top").getByRole("link", { name: label });
     const href = (await buy.getAttribute("href")) ?? "";
     expect(new URL(href).origin).toBe("https://wa.me");
     await expect(page.locator('a[href*="/checkout/"]')).toHaveCount(0);

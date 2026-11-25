@@ -105,7 +105,7 @@ test.describe("صفحة المقال على المعاينة", () => {
     const recommendations = page.getByRole("complementary", { name: "اشتراك النادي الآن" });
     await expect(recommendations).toHaveCount(2);
     for (const recommendation of await recommendations.all()) {
-      await expect(recommendation).toContainText("الأوفر شهريًا: 12 شهرًا + شهرين مجانًا");
+      await expect(recommendation).toContainText("الأوفر شهريًا: 12 شهرًا + شهران مجانًا");
       await expect(recommendation).toContainText("1,499");
       await expect(recommendation.getByRole("link", { name: "قارن الاشتراكات" })).toHaveAttribute(
         "href",

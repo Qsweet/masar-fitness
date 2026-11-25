@@ -3,16 +3,17 @@ import { expect, test } from "@playwright/test";
 /** محتوى الرئيسية الحقيقي (docs/CLUB_FACTS.md): البرامج والأوقات والآراء والتواصل والتذييل. */
 
 test.describe("البرامج", () => {
-  test("أربع بطاقات: الأسعار من موقع النادي، والتأهيل بتنبيهه، وBE STRONG 45 بلا سعر", async ({
+  test("ثلاث بطاقات بأسعار موقع النادي، والتأهيل بتنبيهه، وBE STRONG 45 سطر «قيد الإعداد» لا بطاقة", async ({
     page,
   }) => {
     await page.goto("/");
     const services = page.locator("#services");
     const cards = services.getByRole("listitem").filter({ has: page.getByRole("heading") });
-    await expect(cards).toHaveCount(4);
+    await expect(cards).toHaveCount(3);
     const training = cards.filter({ hasText: "التدريب الشخصي" });
     await expect(training).toContainText("من 8 إلى 30 حصة");
-    await expect(training).toContainText("من 990 ر.س");
+    // أقل سعر للتدريب الشخصي غير محسوم (مجموعتان في موقع النادي): لا «من … ر.س»
+    await expect(training).not.toContainText("من 990");
     await training.getByText("الباقات والأسعار").click();
     await expect(training).toContainText("2,999");
     const href = await training
@@ -21,11 +22,11 @@ test.describe("البرامج", () => {
     expect(new URL(href ?? "").searchParams.get("text")).toBe(
       "مرحبًا، أرغب في الاستفسار عن «التدريب الشخصي».",
     );
-    await expect(cards.filter({ hasText: "تأهيل" })).toContainText("ليس علاجًا طبيعيًا");
-    const beStrong = cards.filter({ hasText: "BE STRONG 45" });
-    await expect(beStrong).toContainText("قيد الإعداد");
-    await expect(beStrong.getByRole("link")).toHaveCount(0);
-    await expect(beStrong).not.toContainText("ر.س");
+    const rehab = cards.filter({ hasText: "تأهيل" });
+    await expect(rehab).toContainText("ليس علاجًا طبيعيًا");
+    await expect(rehab).toContainText("من 720 ر.س");
+    await expect(cards.filter({ hasText: "BE STRONG 45" })).toHaveCount(0);
+    await expect(services).toContainText("قيد الإعداد: BE STRONG 45");
   });
 });
 
@@ -97,12 +98,14 @@ test.describe("التواصل والتذييل", () => {
     );
   });
 
-  test("التذييل: السجل التجاري كما في موقع النادي، والحسابات الأربعة، والسطر الصادق", async ({
+  test("التذييل: لا رقم سجل قبل تأكيد المالك، والعنوان الظاهر، والحسابات الأربعة، والسطر الصادق", async ({
     page,
   }) => {
     await page.goto("/");
     const footer = page.getByRole("contentinfo");
-    await expect(footer).toContainText("السجل التجاري 7003597346");
+    await expect(footer).not.toContainText("7003597346");
+    await expect(footer).toContainText("4870 الطريق الدائري الشمالي، 8177");
+    await expect(footer).not.toContainText("الغربي");
     await expect(footer.getByRole("list", { name: "حساباتنا" }).getByRole("link")).toHaveCount(4);
     await expect(footer.getByRole("link", { name: "إنستجرام" })).toHaveAttribute(
       "href",
@@ -111,9 +114,42 @@ test.describe("التواصل والتذييل", () => {
     await expect(footer).toContainText("الاشتراك حاليًا عبر واتساب النادي");
   });
 
-  test("زر المحادثة العائم يفتح واتساب النادي", async ({ page }) => {
+  test("زر المحادثة العائم يفتح واتساب النادي، وعلى الهاتف ينتقل إلى الشريط الثابت", async ({
+    page,
+    viewport,
+  }) => {
     await page.goto("/memberships");
-    const href = await page.getByRole("link", { name: "راسلنا على واتساب" }).getAttribute("href");
+    const chat = page.getByRole("link", { name: "راسلنا على واتساب" });
+    if ((viewport?.width ?? 0) < 768) {
+      // لا زر عائم فوق نص الواجهة: واتساب في الشريط الثابت حين يظهر
+      await expect(chat).toHaveCount(0);
+      await page.locator("#compare").scrollIntoViewIfNeeded();
+      const bar = page.getByRole("complementary", { name: "ملخص الاشتراك" });
+      await expect(bar.getByRole("link", { name: "راسلنا على واتساب" })).toBeVisible();
+    }
+    const href = await page
+      .getByRole("link", { name: "راسلنا على واتساب" })
+      .first()
+      .getAttribute("href");
     expect(new URL(href ?? "").origin).toBe("https://wa.me");
+  });
+
+  test("الصفحات بلا قسم اشتراكات: شريط هاتف ثابت بـ«اختر اشتراكك» وواتساب", async ({
+    page,
+    viewport,
+  }) => {
+    test.skip((viewport?.width ?? 0) >= 768, "الشريط خاص بالهاتف");
+    await page.goto("/tools/cost-per-visit");
+    const bar = page.getByRole("complementary", { name: "اختصارات الاشتراك والتواصل" });
+    // مخفي ما دام رأس الصفحة ظاهرًا، ويظهر بعده
+    await expect(bar).toBeHidden();
+    await page.getByRole("contentinfo").scrollIntoViewIfNeeded();
+    await expect(bar.getByRole("link", { name: "اختر اشتراكك" })).toHaveAttribute(
+      "href",
+      "/memberships",
+    );
+    const whatsapp = bar.getByRole("link", { name: "راسلنا على واتساب" });
+    const box = await whatsapp.boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(48);
   });
 });

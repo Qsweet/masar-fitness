@@ -7,8 +7,7 @@ const FACILITY_CARDS = [
   "التمارين الوظيفية",
   "الحصص الجماعية",
   "المسبح",
-  "الساونا",
-  "الجاكوزي والبخار",
+  "الساونا والجاكوزي والبخار",
 ];
 /** مزايا الاشتراك بأسماء شروط النادي الحالية، وهي نفسها أسماء المرافق. */
 const BENEFITS = [
@@ -56,9 +55,12 @@ test.describe("الواجهة", () => {
 });
 
 test.describe("المرافق", () => {
-  test("ست بطاقات بأسماء المرافق، والمسبح بمرساته وعمقه، وكلها ضمن الاشتراك", async ({ page }) => {
+  test("خمس بطاقات بصور النادي، والمسبح بمرساته وعمقه، وكلها ضمن الاشتراك", async ({ page }) => {
     await page.goto("/");
     const section = page.locator("#facilities");
+    // لا عدد في السطر التعريفي، ولا بطاقة بلا صورة
+    await expect(section).toContainText("مرافق النادي كلها ضمن اشتراكك.");
+    await expect(section.locator("li img")).toHaveCount(FACILITY_CARDS.length);
     await expect(section.getByRole("heading", { level: 3 })).toHaveText(FACILITY_CARDS);
     await expect(section.locator("#water")).toContainText("متدرج العمق");
     await expect(section.locator("#water")).toContainText("عمق من 1.5 إلى 3.5 متر");
@@ -67,7 +69,8 @@ test.describe("المرافق", () => {
 
   test("مزايا صفحة الاشتراك بأسماء المرافق نفسها، والملخص يختصرها في سطر", async ({ page }) => {
     await page.goto("/");
-    await expect(summary(page)).toContainText("يشمل جميع مرافق النادي");
+    // المزايا متطابقة: سطر واحد في كل بطاقة، والملخص لا يكررها
+    await expect(durations(page).locator("label").first()).toContainText("يشمل جميع مرافق النادي");
     await expect(summary(page).getByRole("listitem")).toHaveCount(0);
     await page.goto(`/memberships/${ANNUAL.slug}`);
     const benefits = page.locator("section", {
@@ -89,10 +92,14 @@ test.describe("بطاقات الأسعار", () => {
   test("طرق الدفع لا تُعرض والشراء الإلكتروني مغلق: سطر واحد صادق بجانب زر واتساب", async ({
     page,
   }) => {
-    for (const path of ["/", "/memberships", `/memberships/${ANNUAL.slug}`]) {
+    for (const [path, offer] of [
+      ["/", "#plans [aria-live]"],
+      ["/memberships", "#plans [aria-live]"],
+      [`/memberships/${ANNUAL.slug}`, "#top"],
+    ] as const) {
       await page.goto(path);
       await expect(page.getByRole("heading", { name: "طرق الدفع" }), path).toHaveCount(0);
-      await expect(summary(page), path).toContainText(
+      await expect(page.locator(offer), path).toContainText(
         "الدفع الإلكتروني المباشر قيد التجهيز. الاشتراك حاليًا عبر واتساب النادي.",
       );
     }
@@ -104,11 +111,12 @@ test.describe("بطاقات الأسعار", () => {
     await page.goto("/");
     const cards = durations(page).locator("label");
     await expect(cards).toHaveCount(3);
+    // الأوفر شهريًا (12 شهرًا) في الوسط
     await expect(cards.nth(0)).toContainText("4 أشهر، منها شهر مجانًا");
     await expect(cards.nth(0)).toContainText("تجميد حتى 15 يومًا");
-    await expect(cards.nth(1)).toContainText("999");
-    await expect(cards.nth(1)).toContainText("تجميد حتى 30 يومًا");
-    await expect(cards.nth(2)).toContainText("تجميد حتى 60 يومًا");
+    await expect(cards.nth(1)).toContainText("تجميد حتى 60 يومًا");
+    await expect(cards.nth(2)).toContainText("999");
+    await expect(cards.nth(2)).toContainText("تجميد حتى 30 يومًا");
     for (const card of await cards.all()) {
       await expect(card).toContainText("يبدأ من تاريخ التفعيل في النادي");
     }

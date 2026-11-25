@@ -134,11 +134,14 @@
 }
 
 /* ظهور خفيف عند دخول العنصر الشاشة، بالتمرير نفسه بلا JavaScript ولا إزاحة تخطيط (تحويل وشفافية فقط) */
-@supports (animation-timeline: view()) {
-  .reveal {
-    animation: reveal linear both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 40%;
+/* لا حركة لمن طلب تقليلها: المحتوى ظاهر كاملًا من البداية */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
   }
 }
 

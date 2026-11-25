@@ -3,8 +3,6 @@ import { money } from "../money";
 import {
   approximateMonthlyCost,
   bestValuePlan,
-  durationShare,
-  longestDuration,
   totalMonths,
   type MembershipPlan,
 } from "./membership-plan";
@@ -65,32 +63,6 @@ describe("approximateMonthlyCost", () => {
     expect(() => approximateMonthlyCost(plan({ paidMonths: 1.5 }))).toThrow(
       /duration_not_positive/,
     );
-  });
-});
-
-describe("longestDuration و durationShare", () => {
-  const plans = [
-    plan({ paidMonths: 1 }),
-    plan({ paidMonths: 6 }),
-    plan({ paidMonths: 12, bonusMonths: 2 }),
-  ];
-
-  it("أطول مدة تشمل الأشهر المجانية", () => {
-    expect(longestDuration(plans)).toBe(14);
-    expect(longestDuration([])).toBe(0);
-  });
-
-  it("نسبة صحيحة من أطول مدة", () => {
-    expect(durationShare(14, 14)).toBe(100);
-    expect(durationShare(7, 14)).toBe(50);
-    expect(durationShare(1, 12)).toBe(8);
-    expect(durationShare(12, 14)).toBe(86);
-  });
-
-  it("لا تتجاوز 100 ولا تنزل عن 0", () => {
-    expect(durationShare(20, 12)).toBe(100);
-    expect(durationShare(0, 12)).toBe(0);
-    expect(durationShare(3, 0)).toBe(0);
   });
 });
 

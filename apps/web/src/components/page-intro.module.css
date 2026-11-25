@@ -1,0 +1,39 @@
+/* رأس الصفحات الداخلية: امتداد أسود للترويسة بعنوان ضخم وحافة سفلية مائلة. */
+.intro {
+  padding-block: 2rem calc(var(--slant) + 2rem);
+  background: var(--ink);
+  color: var(--white);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--slant)), 0 100%);
+}
+
+.before {
+  margin-bottom: 1rem;
+}
+
+.before a {
+  color: var(--energy);
+  font-family: var(--display);
+  font-weight: 600;
+  text-underline-offset: 0.3em;
+}
+
+.title {
+  max-width: 16ch;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(3.25rem, 9vw, 8rem);
+  line-height: 1;
+}
+
+.lead {
+  max-width: 38rem;
+  margin-top: 1rem;
+  color: var(--grey-on-ink);
+  font-size: clamp(1.05rem, 0.4vw + 1rem, 1.25rem);
+}
+
+@media (width >= 64rem) {
+  .intro {
+    padding-top: 4rem;
+  }
+}

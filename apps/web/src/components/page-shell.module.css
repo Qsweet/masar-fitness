@@ -1,0 +1,11 @@
+/* صفحة فيها شريط شراء ثابت على الجوال: فراغ تحت التذييل بارتفاعه حتى لا يغطي آخر سطر. */
+.barSpace {
+  height: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+  background: var(--ink);
+}
+
+@media (width >= 64rem) {
+  .barSpace {
+    display: none;
+  }
+}

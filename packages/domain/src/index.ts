@@ -1,8 +1,6 @@
 export {
   approximateMonthlyCost,
   bestValuePlan,
-  durationShare,
-  longestDuration,
   totalMonths,
 } from "./catalog/membership-plan";
 export type { LocalizedText, MembershipPlan } from "./catalog/membership-plan";

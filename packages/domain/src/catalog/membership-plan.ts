@@ -19,8 +19,6 @@ export interface MembershipPlan {
   readonly benefits: readonly LocalizedText[];
 }
 
-const FULL_SHARE = 100;
-
 /** المدة التي يحصل عليها المشترك فعلًا: المدفوعة مع المجانية. */
 export function totalMonths(plan: Pick<MembershipPlan, "paidMonths" | "bonusMonths">): number {
   return plan.paidMonths + plan.bonusMonths;
@@ -43,19 +41,6 @@ export function approximateMonthlyCost(plan: MembershipPlan): Money {
   assertPositiveDuration(months);
   const wholeRiyals = Math.round(plan.price.amountMinor / (months * MINOR_PER_MAJOR));
   return money(wholeRiyals * MINOR_PER_MAJOR, plan.price.currency);
-}
-
-/** أطول مدة بين الباقات المعروضة: مرجع رسم «المضمار». */
-export function longestDuration(plans: readonly MembershipPlan[]): number {
-  return plans.reduce((longest, plan) => Math.max(longest, totalMonths(plan)), 0);
-}
-
-/** نسبة مئوية صحيحة (0–100) لعدد أشهر من أطول مدة. */
-export function durationShare(months: number, longest: number): number {
-  if (longest <= 0 || months <= 0) {
-    return 0;
-  }
-  return Math.min(FULL_SHARE, Math.round((months / longest) * FULL_SHARE));
 }
 
 /**

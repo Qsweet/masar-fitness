@@ -1,0 +1,35 @@
+.plans {
+  padding-top: var(--section-space);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.empty {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  padding-block: 2.5rem;
+  border-block: 2px solid var(--ink);
+}
+
+.compare {
+  margin-top: 2rem;
+}
+
+.compare a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+}

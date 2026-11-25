@@ -1,46 +1,43 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { cx } from "@/lib/cx";
+import styles from "./button.module.css";
 
-type Variant = "primary" | "secondary";
-
-const BASE =
-  "inline-flex min-h-13 items-center justify-center rounded-full px-7 text-body font-strong whitespace-nowrap no-underline transition-colors duration-(--duration-press)";
-
-/**
- * الأساسي كهرماني بحبر داكن (تباين 9:1): هو لون الفعل الوحيد في الموقع، فلا يُستعمل إلا للشراء أو الخطوة التالية.
- * الثانوي إطار بلون نص السطح.
- */
-const VARIANTS: Record<Variant, string> = {
-  primary: "bg-lane-500 text-ink-900 hover:bg-lane-600",
-  secondary: "border border-current hover:bg-(--band)",
-};
+export type ButtonVariant = "ink" | "yellow" | "line";
 
 interface ButtonLinkProps {
   readonly href: string;
-  readonly variant?: Variant;
-  /** رابط خارج الموقع (واتساب، الخرائط): وسم a عادي بلا توجيه داخلي. */
+  readonly variant?: ButtonVariant;
+  /** رابط خارج الموقع (واتساب، الخرائط، الهاتف): وسم a عادي بلا توجيه داخلي. */
   readonly external?: boolean;
-  readonly className?: string;
+  /** بعرض الحاوية كاملًا */
+  readonly block?: boolean;
   readonly children: ReactNode;
+}
+
+/** يُرجع أصناف الزر لاستعمالها على عنصر آخر (زر حقيقي مثلًا). */
+export function buttonClass(variant: ButtonVariant, block = false): string {
+  return cx(styles.button, styles[variant], block && styles.block);
 }
 
 export function ButtonLink({
   href,
-  variant = "primary",
+  variant = "ink",
   external = false,
-  className = "",
+  block = false,
   children,
 }: ButtonLinkProps) {
-  const classes = `${BASE} ${VARIANTS[variant]} ${className}`;
+  const className = buttonClass(variant, block);
   if (external) {
+    const isWeb = href.startsWith("https://");
     return (
-      <a href={href} rel="noopener noreferrer" className={classes}>
+      <a href={href} rel={isWeb ? "noopener noreferrer" : undefined} className={className}>
         {children}
       </a>
     );
   }
   return (
-    <Link href={href} className={classes}>
+    <Link href={href} className={className}>
       {children}
     </Link>
   );

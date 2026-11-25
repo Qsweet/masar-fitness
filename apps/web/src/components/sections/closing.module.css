@@ -1,0 +1,107 @@
+/* الختام: المزايا، طرق الدفع، الموقع على الأصفر، والدعوة الأخيرة على الحبر بحافة مائلة. */
+.benefits,
+.payment {
+  padding-top: var(--section-space);
+}
+
+.benefitList {
+  display: grid;
+  margin-top: 1.5rem;
+}
+
+.benefitList li {
+  font-family: var(--display);
+  font-size: clamp(2rem, 4vw + 0.5rem, 3.75rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.benefitList li::before {
+  content: "/ ";
+  color: var(--energy);
+  -webkit-text-stroke: 1px var(--ink);
+}
+
+@media (width >= 64rem) {
+  .benefitList {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 3rem;
+  }
+}
+
+.payment {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.paymentList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.5rem;
+}
+
+.paymentList li {
+  display: grid;
+  padding: 1rem 1.25rem;
+  background: var(--white);
+  border-inline-start: 6px solid var(--energy);
+}
+
+.paymentList strong {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.paymentList span {
+  color: var(--grey);
+  font-size: 0.85rem;
+}
+
+.visit {
+  margin-top: var(--section-space);
+  background: var(--energy);
+}
+
+.visitInner {
+  display: grid;
+  gap: 1.25rem;
+  justify-items: start;
+  padding-block: 4rem calc(var(--slant) + 4rem);
+}
+
+.visitAddress {
+  max-width: 22ch;
+  font-family: var(--display);
+  font-size: clamp(1.75rem, 3vw + 1rem, 3.5rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.visitActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.final {
+  position: relative;
+  margin-top: calc(-1 * var(--slant));
+  background: var(--ink);
+  color: var(--white);
+  clip-path: polygon(0 var(--slant), 100% 0, 100% 100%, 0 100%);
+}
+
+.finalInner {
+  display: grid;
+  gap: 2rem;
+  justify-items: start;
+  padding-block: calc(var(--slant) + 4rem) 5rem;
+}
+
+.finalTitle {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(3.5rem, 11vw, 10rem);
+  line-height: 0.95;
+}

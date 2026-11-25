@@ -1,0 +1,307 @@
+/* القصة: الواجهة، سطر المرافق، التمرين، الماء، والثقة. الصور رمادية إلا الماء. */
+
+/* ———————— الواجهة ———————— */
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  overflow: hidden;
+}
+
+.heroText {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  padding: 2rem var(--gutter-end) 2rem var(--gutter);
+}
+
+.heroTitle {
+  display: grid;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(6rem, 30vw, 16rem);
+  line-height: 0.92;
+}
+
+/* الشعار الإنجليزي أطول: حجم أصغر حتى لا يتجاوز الشاشة */
+.heroTitle:lang(en) {
+  font-size: clamp(4rem, 19vw, 9rem);
+  line-height: 0.95;
+}
+
+.heroNote {
+  color: var(--grey);
+  font-size: 0.85rem;
+}
+
+.heroLead {
+  max-width: 30rem;
+  font-size: clamp(1.05rem, 0.4vw + 1rem, 1.25rem);
+}
+
+.heroPhoto {
+  position: relative;
+  min-height: 24rem;
+  margin: 0;
+  clip-path: polygon(0 var(--slant), 100% 0, 100% 100%, 0 100%);
+}
+
+.heroPhoto img,
+.trainStrip img,
+.trustPhoto img {
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.15);
+}
+
+/* الخط الأصفر المائل من جدران النادي، داخل الصورة فلا يقطع أي نص */
+.heroSlash {
+  position: absolute;
+  z-index: 1;
+  inset-inline: -10%;
+  bottom: 12%;
+  height: 3.5rem;
+  background: var(--energy);
+  transform: rotate(-7deg);
+}
+
+@media (width >= 64rem) {
+  .hero {
+    grid-template-columns: 5fr 6fr;
+    min-height: min(calc(100svh - var(--header-height)), 54rem);
+  }
+
+  .heroText {
+    align-content: center;
+    padding-block: 4rem;
+  }
+
+  .heroTitle {
+    font-size: clamp(9rem, 17vw, 17rem);
+    margin-inline-end: -14rem;
+  }
+
+  .heroTitle:lang(en) {
+    font-size: clamp(6rem, 10vw, 10rem);
+    margin-inline-end: -10rem;
+  }
+
+  .heroPhoto {
+    min-height: 100%;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 14% 100%);
+  }
+
+  .heroPhoto:dir(ltr) {
+    clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%);
+  }
+
+  .heroSlash {
+    bottom: 16%;
+    height: 5rem;
+  }
+}
+
+/* ———————— سطر المرافق ———————— */
+.value {
+  position: relative;
+  z-index: 3;
+  margin-top: calc(-1 * var(--slant));
+  padding: calc(var(--slant) + 2.5rem) var(--gutter-end) 3rem var(--gutter);
+  background: var(--ink);
+  color: var(--white);
+  clip-path: polygon(0 var(--slant), 100% 0, 100% 100%, 0 100%);
+}
+
+.valueLabel {
+  color: var(--energy);
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.valueLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.25rem;
+  font-family: var(--display);
+  font-size: clamp(2.5rem, 7vw, 6.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.valueLine li:not(:last-child)::after {
+  content: "/";
+  margin-inline-start: 1.25rem;
+  color: var(--energy);
+  font-weight: 400;
+}
+
+/* ———————— التمرين ———————— */
+.train {
+  padding-top: var(--section-space);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.trainStrip {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.trainStrip figure {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+}
+
+.trainStrip figcaption {
+  position: absolute;
+  z-index: 1;
+  inset-inline-start: 0;
+  bottom: 0;
+  padding: 0.25rem 1rem;
+  background: var(--energy);
+  font-family: var(--display);
+  font-size: clamp(1.4rem, 2vw + 0.75rem, 2.5rem);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.trainTall {
+  aspect-ratio: 4 / 5;
+}
+
+.trainWide,
+.trainMid {
+  aspect-ratio: 3 / 2;
+}
+
+@media (width >= 64rem) {
+  .trainStrip {
+    grid-template-columns: 4fr 5fr 3fr;
+    align-items: end;
+    gap: 1rem;
+  }
+
+  .trainTall {
+    aspect-ratio: 3 / 4;
+  }
+
+  .trainWide {
+    aspect-ratio: 4 / 3;
+  }
+
+  .trainMid {
+    aspect-ratio: 3 / 4;
+    margin-bottom: 4rem;
+  }
+}
+
+/* ———————— الماء ———————— */
+.water {
+  position: relative;
+  margin-top: var(--section-space);
+  background: var(--ink);
+  color: var(--white);
+  clip-path: polygon(0 var(--slant), 100% 0, 100% 100%, 0 100%);
+}
+
+.waterPhoto {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+}
+
+.waterPhoto img {
+  object-fit: cover;
+}
+
+.waterText {
+  display: grid;
+  gap: 1rem;
+  padding-block: 2.5rem 4rem;
+}
+
+.waterTitle {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(3rem, 8vw, 7.5rem);
+  line-height: 1;
+}
+
+.waterText p {
+  max-width: 32rem;
+  color: var(--grey-on-ink);
+}
+
+@media (width >= 64rem) {
+  .waterPhoto {
+    aspect-ratio: 21 / 9;
+  }
+
+  .waterText {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    padding-bottom: 3.5rem;
+  }
+
+  .waterTitle {
+    text-shadow: 0 2px 24px rgb(12 16 20 / 55%);
+  }
+
+  .waterText p {
+    color: var(--white);
+    text-shadow: 0 1px 12px rgb(12 16 20 / 70%);
+  }
+}
+
+/* ———————— الثقة ———————— */
+.trust {
+  display: grid;
+  margin-top: var(--section-space);
+  background: var(--white);
+}
+
+.trustText {
+  display: grid;
+  gap: 1.5rem;
+  align-content: center;
+  padding: 3rem var(--gutter-end) 3rem var(--gutter);
+}
+
+.trustText ul {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.trustText li {
+  padding-inline-start: 1rem;
+  border-inline-start: 4px solid var(--ink);
+  font-size: 1.1rem;
+}
+
+.trustPhoto {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 3 / 2;
+}
+
+@media (width >= 64rem) {
+  .trust {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .trustPhoto {
+    aspect-ratio: auto;
+    min-height: 32rem;
+  }
+}

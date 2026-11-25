@@ -5,6 +5,7 @@ import { Price } from "@/components/ui/price";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { formatMonths, moneyParts } from "@/i18n/format";
 import { localizedPath, type Locale } from "@/i18n/locales";
+import styles from "./comparison-table.module.css";
 
 interface ComparisonTableProps {
   readonly plans: readonly MembershipPlan[];
@@ -16,8 +17,6 @@ interface Row {
   readonly label: string;
   readonly cell: (plan: MembershipPlan) => ReactNode;
 }
-
-const CELL = "rule border-t px-4 py-4 text-start align-top";
 
 /** كل المزايا التي تظهر في أي باقة، بترتيب أول ظهور. */
 function allBenefits(plans: readonly MembershipPlan[], locale: Locale): string[] {
@@ -52,7 +51,7 @@ function buildRows({ plans, locale, dictionary }: ComparisonTableProps): Row[] {
     { label: labels.rowTotalDuration, cell: (plan) => formatMonths(totalMonths(plan), locale) },
     {
       label: labels.rowPrice,
-      cell: (plan) => <Price parts={moneyParts(plan.price, locale)} className="font-strong" />,
+      cell: (plan) => <Price parts={moneyParts(plan.price, locale)} className={styles.price} />,
     },
     {
       label: labels.rowMonthly,
@@ -75,15 +74,11 @@ function TableHead({ plans, locale, dictionary }: ComparisonTableProps) {
   return (
     <thead>
       <tr>
-        <th scope="col" className="px-4 py-4 text-start text-small font-medium">
+        <th scope="col" className={styles.corner}>
           {dictionary.memberships.rowPlan}
         </th>
         {plans.map((plan) => (
-          <th
-            key={plan.slug}
-            scope="col"
-            className="px-4 py-4 text-start text-heading font-strong whitespace-nowrap"
-          >
+          <th key={plan.slug} scope="col" className={styles.planName}>
             {plan.name[locale]}
           </th>
         ))}
@@ -97,12 +92,12 @@ function TableFoot({ plans, locale, dictionary }: ComparisonTableProps) {
   return (
     <tfoot>
       <tr>
-        <td className={CELL} />
+        <td />
         {plans.map((plan) => (
-          <td key={plan.slug} className={CELL}>
+          <td key={plan.slug}>
             <Link
               href={localizedPath(locale, `/memberships/${plan.slug}`)}
-              className="font-strong underline underline-offset-4"
+              className={styles.choose}
             >
               {dictionary.plans.choose}
               <span className="sr-only">: {plan.name[locale]}</span>
@@ -125,21 +120,17 @@ export function ComparisonTable(props: ComparisonTableProps) {
       role="region"
       aria-label={dictionary.memberships.compareCaption}
       tabIndex={0}
-      className="rule relative overflow-x-auto border-b"
+      className={styles.scroller}
     >
-      <table className="w-full min-w-[40rem] border-collapse">
+      <table className={styles.table}>
         <caption className="sr-only">{dictionary.memberships.compareCaption}</caption>
         <TableHead {...props} />
         <tbody>
           {buildRows(props).map((row) => (
             <tr key={row.label}>
-              <th scope="row" className={`${CELL} text-muted font-medium`}>
-                {row.label}
-              </th>
+              <th scope="row">{row.label}</th>
               {plans.map((plan) => (
-                <td key={plan.slug} className={CELL}>
-                  {row.cell(plan)}
-                </td>
+                <td key={plan.slug}>{row.cell(plan)}</td>
               ))}
             </tr>
           ))}

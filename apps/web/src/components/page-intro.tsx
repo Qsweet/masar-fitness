@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import styles from "./page-intro.module.css";
 
 interface PageIntroProps {
   readonly title: string;
@@ -7,17 +8,17 @@ interface PageIntroProps {
   readonly before?: ReactNode;
 }
 
-/**
- * رأس الصفحة على شريط الماء العميق، امتدادًا للترويسة: عنوان بوزن خفيف وسطر واحد تحته.
- * قصير عمدًا: ما يليه مباشرة هو اختيار الباقة والسعر.
- */
+/** معرّف رأس الصفحة: شريط الشراء الثابت يظهر بعد أن يغادر الشاشة. */
+export const INTRO_ID = "top";
+
+/** رأس الصفحات الداخلية: عنوان بحجم ملصق وسطر واحد، وما يليه مباشرة هو الاختيار والسعر. */
 export function PageIntro({ title, lead, before }: PageIntroProps) {
   return (
-    <section className="surface-deep pt-3 pb-6 md:pt-10 md:pb-14">
-      <div className="page-container">
-        {before}
-        <h1 className="max-w-[18ch] text-display font-display md:max-w-[22ch]">{title}</h1>
-        <p className="text-muted mt-2 max-w-prose md:mt-3 md:text-lead">{lead}</p>
+    <section id={INTRO_ID} className={styles.intro}>
+      <div className="container">
+        {before === undefined ? null : <div className={styles.before}>{before}</div>}
+        <h1 className={styles.title}>{title}</h1>
+        <p className={styles.lead}>{lead}</p>
       </div>
     </section>
   );

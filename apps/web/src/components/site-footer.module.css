@@ -1,0 +1,57 @@
+.footer {
+  background: var(--ink);
+  color: var(--grey-on-ink);
+  border-top: 1px solid var(--rule-on-ink);
+}
+
+.inner {
+  display: grid;
+  gap: 2rem;
+  padding-block: 3rem 2rem;
+}
+
+.slogan {
+  font-family: var(--display);
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 800;
+  color: var(--energy);
+  line-height: 1;
+}
+
+.heading {
+  margin-bottom: 0.5rem;
+  color: var(--white);
+  font-family: var(--display);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.links {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.links a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  text-decoration: none;
+}
+
+.links a:hover {
+  color: var(--energy);
+}
+
+.note {
+  padding-block: 1.25rem 1.5rem;
+  border-top: 1px solid var(--rule-on-ink);
+  font-size: 0.8rem;
+}
+
+@media (width >= 64rem) {
+  .inner {
+    grid-template-columns: auto 1fr auto auto;
+    align-items: start;
+    gap: 4rem;
+  }
+}

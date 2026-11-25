@@ -15,8 +15,8 @@ const SECURITY_HEADERS = [
   },
 ];
 
-/** مختبر التصميم (design-lab) له تخطيط جذري مستقل وخارج نظام اللغات: لا يُعاد توجيهه. */
-const NON_REWRITTEN_PREFIXES = [...LOCALES, "api", "design-lab"].join("|");
+/** المقاطع الأولى التي لا تُعاد كتابتها إلى اللغة الافتراضية: اللغات نفسها والواجهات. */
+const NON_REWRITTEN_PREFIXES = [...LOCALES, "api"].join("|");
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

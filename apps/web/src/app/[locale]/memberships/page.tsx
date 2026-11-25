@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { PageIntro } from "@/components/page-intro";
+import { INTRO_ID, PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
 import { ComparisonTable } from "@/components/plans/comparison-table";
-import { PlanShop } from "@/components/plans/plan-shop";
+import { toPlanViews } from "@/components/plans/plan-view";
+import { PlansSection } from "@/components/plans/plans-section";
+import { Payment } from "@/components/sections/closing";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale } from "@/i18n/locales";
 import { getMembershipPlans } from "@/server/catalog";
@@ -36,28 +38,23 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
   const plans = await getMembershipPlans();
 
   return (
-    <PageShell locale={locale} path={PATH} stickyBar={plans.length > 0}>
+    <PageShell locale={locale} path={PATH} hasPlans>
       <PageIntro title={dictionary.memberships.title} lead={dictionary.memberships.intro} />
-      <section className="surface-light py-4 md:py-14">
-        <div className="page-container">
-          <PlanShop plans={plans} locale={locale} dictionary={dictionary} />
-        </div>
-      </section>
+      <PlansSection
+        plans={toPlanViews(plans, locale)}
+        locale={locale}
+        dictionary={dictionary}
+        revealAfterId={INTRO_ID}
+      />
       {plans.length > 1 ? (
-        <section
-          id="compare"
-          aria-labelledby="compare-title"
-          className="surface-light surface-light-raised rule scroll-mt-4 border-t py-14 md:py-20"
-        >
-          <div className="page-container">
-            <h2 id="compare-title" className="text-title font-display">
-              {dictionary.memberships.compareTitle}
-            </h2>
-            <p className="text-muted mt-3 mb-8 max-w-prose">{dictionary.memberships.lead}</p>
-            <ComparisonTable plans={plans} locale={locale} dictionary={dictionary} />
-          </div>
+        <section id="compare" aria-labelledby="compare-title" className="container section">
+          <h2 id="compare-title" className="title-section">
+            {dictionary.memberships.compareTitle}
+          </h2>
+          <ComparisonTable plans={plans} locale={locale} dictionary={dictionary} />
         </section>
       ) : null}
+      <Payment dictionary={dictionary} />
     </PageShell>
   );
 }

@@ -1,6 +1,7 @@
 import { MINOR_PER_MAJOR, totalMonths, type MembershipPlan } from "../catalog/membership-plan";
 import { DomainError } from "../errors";
 import { money, type Money } from "../money";
+import { divideRounded } from "../rounding";
 
 /** حدود عدد الزيارات في الأسبوع التي تقبلها الأداة: زيارة واحدة إلى زيارة كل يوم. */
 export const MIN_VISITS_PER_WEEK = 1;
@@ -18,18 +19,6 @@ function assertVisitsPerWeek(visitsPerWeek: number): void {
   if (!Number.isInteger(visitsPerWeek) || !inRange) {
     throw new DomainError("invariant", "cost_per_visit.visits_out_of_range");
   }
-}
-
-/**
- * تقسيم صحيح بتقريب نصف الوحدة إلى الأعلى، للقيم غير السالبة فقط:
- * round(n / d) = floor((2n + d) / 2d). كله أعداد صحيحة، فلا خطأ كسور عشرية.
- */
-function divideRounded(numerator: number, denominator: number): number {
-  const doubled = numerator * 2 + denominator;
-  if (!Number.isSafeInteger(doubled) || !Number.isSafeInteger(denominator * 2)) {
-    throw new DomainError("invariant", "cost_per_visit.overflow");
-  }
-  return Math.floor(doubled / (denominator * 2));
 }
 
 /**

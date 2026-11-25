@@ -5,6 +5,7 @@ export {
   totalMonths,
 } from "./catalog/membership-plan";
 export type { LocalizedText, MembershipPlan } from "./catalog/membership-plan";
+export { approximateDailyCost } from "./catalog/daily-cost";
 export { DOMAIN_ERROR_CODES, DomainError } from "./errors";
 export type { DomainErrorCode, DomainErrorOptions } from "./errors";
 export { CURRENCIES, addMoney, money, moneyEquals, subtractMoney } from "./money";

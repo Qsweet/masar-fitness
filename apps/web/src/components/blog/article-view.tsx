@@ -3,7 +3,6 @@ import { readingMinutes } from "@/content/blog/reading-time";
 import type { Article, ArticleTranslation, Reviewer } from "@/content/blog/types";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/locales";
-import { cx } from "@/lib/cx";
 import {
   ArticleMeta,
   ArticleTrail,
@@ -51,27 +50,29 @@ export function ArticleView(props: ArticleViewProps) {
           {...context}
         />
       </PageIntro>
-      <div className={cx("container", styles.body)}>
-        <SummaryBox translation={translation} dictionary={dictionary} />
-        <TableOfContents translation={translation} dictionary={dictionary} />
-        {translation.sections.map((section) => (
-          <section
-            key={section.id}
-            id={section.id}
-            aria-labelledby={`${section.id}-title`}
-            className={styles.block}
-          >
-            <h2 id={`${section.id}-title`} className="title-block">
-              {section.heading}
-            </h2>
-            {section.blocks.map((block, index) => (
-              <BlockView key={index} block={block} {...context} />
-            ))}
-          </section>
-        ))}
-        <MembershipRecommendation {...context} />
-        <Sources translation={translation} {...context} />
-        <Related articles={related} {...context} />
+      <div className="container">
+        <div className={styles.body}>
+          <SummaryBox translation={translation} dictionary={dictionary} />
+          <TableOfContents translation={translation} dictionary={dictionary} />
+          {translation.sections.map((section) => (
+            <section
+              key={section.id}
+              id={section.id}
+              aria-labelledby={`${section.id}-title`}
+              className={styles.block}
+            >
+              <h2 id={`${section.id}-title`} className="title-block">
+                {section.heading}
+              </h2>
+              {section.blocks.map((block, index) => (
+                <BlockView key={index} block={block} {...context} />
+              ))}
+            </section>
+          ))}
+          <MembershipRecommendation {...context} />
+          <Sources translation={translation} {...context} />
+          <Related articles={related} {...context} />
+        </div>
       </div>
     </article>
   );

@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { Fragment, type ReactNode } from "react";
 import { articlePath, ROUTES } from "@/config/routes";
 import { topicText } from "@/content/blog/topics";
 import type { Article, ArticleTranslation, Reviewer } from "@/content/blog/types";
 import { countText } from "@/i18n/count";
 import { formatDate } from "@/i18n/dates";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { fill } from "@/i18n/fill";
+import { fill, fillNodes } from "@/i18n/fill";
 import { localizedPath, type Locale } from "@/i18n/locales";
 import styles from "./article.module.css";
 
@@ -146,14 +147,17 @@ export function Sources({
         {translation.sources.map((source) => (
           <li key={source.url}>
             <a href={source.url} rel="noopener noreferrer">
-              {source.title}
+              <bdi>{source.title}</bdi>
             </a>{" "}
             <span className="muted">
-              {fill(dictionary.blog.sourceLine, {
-                publisher: source.publisher,
+              {fillNodes<ReactNode>(dictionary.blog.sourceLine, {
+                // المرجع قد يكون بلغة أخرى: عزل اتجاهه حتى لا تنقلب الفواصل والأرقام حوله
+                publisher: <bdi>{source.publisher}</bdi>,
                 year: String(source.year),
                 date: formatDate(source.accessed, locale),
-              })}
+              }).map((part, index) => (
+                <Fragment key={index}>{part}</Fragment>
+              ))}
             </span>
           </li>
         ))}

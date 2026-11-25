@@ -109,8 +109,8 @@
  * وحده. الإنجليزية مائلة بالخط نفسه.
  */
 .title:dir(rtl) {
-  transform: skewX(-8deg);
-  transform-origin: bottom right;
+  transform: skewX(-6deg);
+  transform-origin: center;
 }
 
 /* الإنجليزية مائلة كحروف الشعار، وسطورها أضيق */

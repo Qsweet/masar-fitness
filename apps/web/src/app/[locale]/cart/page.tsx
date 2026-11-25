@@ -95,7 +95,12 @@ export default async function CartPage({ params, searchParams }: Props) {
   const [cart, query] = await Promise.all([readCart(), searchParams]);
   const { cart: labels, steps } = getDictionary(locale);
   return (
-    <PageShell locale={locale} path={CART_PATH} mobileAction={null}>
+    <PageShell
+      locale={locale}
+      path={CART_PATH}
+      mobileAction={null}
+      ownPhoneBar={cart.slug !== null}
+    >
       <PageIntro title={labels.intro.title} lead={labels.intro.lead}>
         <CheckoutSteps current="plan" labels={steps} />
         <Note note={parseCartNote(query.note)} locale={locale} />

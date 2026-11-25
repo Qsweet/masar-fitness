@@ -135,6 +135,18 @@ test.describe("الشراء والعلم مفتوح", () => {
     await expect(page).toHaveURL(/\/cart\?note=added$/);
     await expect(page.getByRole("article")).toHaveCount(1);
     await expect(page.getByRole("article")).toContainText("6 أشهر");
+    // كل زر «أكمل الطلب» الظاهر غير محجوب (لا زر محادثة عائم فوق شريط الهاتف)
+    for (const link of await page.getByRole("link", { name: "أكمل الطلب" }).all()) {
+      if (!(await link.isVisible())) {
+        continue;
+      }
+      const box = await link.boundingBox();
+      const hit = await page.evaluate(
+        ([x, y]) => document.elementFromPoint(x ?? 0, y ?? 0)?.closest("a")?.textContent ?? "",
+        [(box?.x ?? 0) + (box?.width ?? 0) * 0.1, (box?.y ?? 0) + (box?.height ?? 0) / 2],
+      );
+      expect(hit).toContain("أكمل الطلب");
+    }
     await expectAxeClean(page);
     await page.getByRole("button", { name: "احذف" }).click();
     await expect(page).toHaveURL(/\/cart\?note=removed$/);

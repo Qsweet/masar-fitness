@@ -176,9 +176,7 @@ test("شريط المزايا: كل اسم لاتيني معزول بلا كسر
   const names = await strip
     .locator("bdi")
     .evaluateAll((elements) =>
-      elements.map(
-        (element) => `${element.textContent}|${getComputedStyle(element).whiteSpace}`,
-      ),
+      elements.map((element) => `${element.textContent}|${getComputedStyle(element).whiteSpace}`),
     );
   expect(names).toEqual(
     ["Life Fitness", "Hammer Strength", "HIIT", "HYROX", "Boot Camp"].map(

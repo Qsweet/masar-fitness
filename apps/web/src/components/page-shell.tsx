@@ -28,6 +28,8 @@ interface PageShellProps {
    * `null` بلا أي شريط سفلي (صفحات الشراء: نموذجها هو الفعل). صفحة فيها قسم اشتراكات لها شريطها الخاص.
    */
   readonly mobileAction?: MobileBarAction | null;
+  /** للصفحة شريط ثابت خاص على الهاتف (إجمالي السلة): زر المحادثة العائم لا يُعرض فوقه على الهاتف. */
+  readonly ownPhoneBar?: boolean;
   readonly children: ReactNode;
 }
 
@@ -67,6 +69,7 @@ export async function PageShell({
   hasPlans = false,
   children,
   mobileAction,
+  ownPhoneBar = false,
 }: PageShellProps) {
   const dictionary = getDictionary(locale);
   const chat = { href: whatsappUrl(dictionary.location.whatsappMessage), label: dictionary.chat };
@@ -93,7 +96,12 @@ export async function PageShell({
         checkoutEnabled={isCheckoutEnabled()}
         dictionary={dictionary}
       />
-      <ChatButton label={chat.label} href={chat.href} phoneBar={phoneBar} tabs={showTabs} />
+      <ChatButton
+        label={chat.label}
+        href={chat.href}
+        phoneBar={phoneBar}
+        tabs={showTabs || ownPhoneBar}
+      />
       {phoneBar === "quick" && mobileAction !== undefined && mobileAction !== null ? (
         <MobileBar label={dictionary.quickBar} action={mobileAction} />
       ) : null}

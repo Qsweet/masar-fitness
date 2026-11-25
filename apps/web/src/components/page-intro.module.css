@@ -5,6 +5,12 @@
   overflow: hidden;
 }
 
+/* الرأس المصوَّر أعلى (الصورة وتظليلها في ui/photo-backdrop) */
+.withPhoto {
+  isolation: isolate;
+  padding-block: 4.5rem 5.5rem;
+}
+
 .intro .track {
   top: auto;
   height: 3.5rem;
@@ -60,5 +66,9 @@
 @media (width >= 64rem) {
   .intro {
     padding-block: 3.5rem 5rem;
+  }
+
+  .withPhoto {
+    padding-block: 7rem 8rem;
   }
 }

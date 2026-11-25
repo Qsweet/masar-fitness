@@ -1,12 +1,17 @@
 import type { StaticImageData } from "next/image";
+import agilityFloor from "@/assets/photos/agility-floor.jpg";
+import benchRow from "@/assets/photos/bench-row.jpg";
 import coachFloor from "@/assets/photos/coach-floor.jpg";
 import coachTalk from "@/assets/photos/coach-talk.jpg";
 import consultation from "@/assets/photos/consultation.jpg";
+import dumbbellRacks from "@/assets/photos/dumbbell-racks.jpg";
 import functionalFront from "@/assets/photos/functional-front.jpg";
 import functionalPress from "@/assets/photos/functional-press.jpg";
 import functionalSquat from "@/assets/photos/functional-squat.jpg";
+import functionalZone from "@/assets/photos/functional-zone.jpg";
 import latPulldown from "@/assets/photos/lat-pulldown.jpg";
 import legPress from "@/assets/photos/leg-press.jpg";
+import machinesTurf from "@/assets/photos/machines-turf.jpg";
 import pool from "@/assets/photos/pool.jpg";
 import sauna from "@/assets/photos/sauna.jpg";
 import trainerPortrait from "@/assets/photos/trainer-portrait.jpg";
@@ -22,6 +27,11 @@ export type PhotoKey = keyof Dictionary["photos"];
  * قصّات محفوظة في الملف نفسه (لا في CSS): المسبح بشعار الجدار كاملًا والماء، بلا بقية جدارية «BE STRONG» المقطوعة في الأصل،
  * وحديث المكتب على الجالس وحده بلا الكتف المموّه في المقدمة، والقرفصاء الأمامية بلا الساق المموّهة،
  * وصورة الواجهة (رفع البار فوق الرأس) على المدرب في وسطها بلا الظهر المموّه في طرفها.
+ *
+ * الصور الخمس الأخيرة (2026-11-25، الطلب الثالث للمالك) لقطات أماكن بإضاءة مسرحية وألوان معالجة بالأسود
+ * والأصفر أرسلها المالك جاهزة: صف مقاعد البنش، والمنطقة الوظيفية، وأرضية الرشاقة، والأجهزة على العشب،
+ * ورفوف الدمبلز. معالجة فنيًا، فلا نص يصفها بأنها بلا تعديل. تُستعمل للأماكن والخلفيات، وصور النادي
+ * الحقيقية أعلاه حيث الحاجة إلى أشخاص ووجوه.
  */
 export const PHOTOS: Readonly<Record<PhotoKey, StaticImageData>> = {
   functionalPress,
@@ -35,4 +45,9 @@ export const PHOTOS: Readonly<Record<PhotoKey, StaticImageData>> = {
   consultation,
   sauna,
   coachTalk,
+  benchRow,
+  functionalZone,
+  agilityFloor,
+  machinesTurf,
+  dumbbellRacks,
 };

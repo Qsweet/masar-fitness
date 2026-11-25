@@ -10,6 +10,7 @@ import { FriendsOffer } from "@/components/plans/friends-offer";
 import { PlansSection } from "@/components/plans/plans-section";
 import { ButtonLink } from "@/components/ui/button-link";
 import { SectionHead } from "@/components/ui/section-head";
+import { PHOTOS } from "@/config/photos";
 import { ROUTES } from "@/config/routes";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedPath } from "@/i18n/locales";
@@ -48,13 +49,18 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
 
   return (
     <PageShell locale={locale} path={PATH} hasPlans={plans.length > 0}>
-      <PageIntro title={dictionary.memberships.title} lead={dictionary.memberships.intro} />
+      <PageIntro
+        title={dictionary.memberships.title}
+        lead={dictionary.memberships.intro}
+        photo={PHOTOS.benchRow}
+      />
       <PlansSection
         plans={toPlanViews(plans, locale, checkoutEnabled)}
         locale={locale}
         dictionary={dictionary}
         revealAfterId={INTRO_ID}
         showEyebrow={false}
+        backdrop={false}
       >
         <FriendsOffer dictionary={dictionary} view={friendsView(dictionary, locale)} />
       </PlansSection>

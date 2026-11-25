@@ -1,8 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ButtonLink } from "@/components/ui/button-link";
 import { SectionHead } from "@/components/ui/section-head";
 import { whatsappUrl } from "@/config/club";
+import { PHOTOS } from "@/config/photos";
 import { ROUTES } from "@/config/routes";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { localizedPath, type Locale } from "@/i18n/locales";
@@ -21,6 +23,8 @@ interface PlansSectionProps {
   readonly showCompare?: boolean;
   /** سطر «الاشتراكات» فوق العنوان؛ يُسقط في صفحة الاشتراكات حيث رأس الصفحة يقوله. */
   readonly showEyebrow?: boolean;
+  /** صورة الأجهزة خلف الرأس؛ تُسقط حيث فوق القسم رأس مصوَّر (صفحة الاشتراكات). */
+  readonly backdrop?: boolean;
   /** ما يلي المحدِّد داخل القسم نفسه (عرض الأصدقاء). */
   readonly children?: ReactNode;
 }
@@ -56,14 +60,26 @@ function MoreLinks({ locale, dictionary }: Pick<PlansSectionProps, "locale" | "d
   );
 }
 
-/** قسم الاشتراكات (#plans): رأس القسم ثم بطاقات الأسعار وملخصها، بالشكل نفسه في كل صفحة. */
+/**
+ * قسم الاشتراكات (#plans): رأس القسم ثم بطاقات الأسعار وملخصها، بالشكل نفسه في كل صفحة. خلف الرأس صورة
+ * الأجهزة الصفراء تتلاشى إلى الأسود قبل البطاقات (زخرفية، alt فارغ).
+ */
 export function PlansSection(props: PlansSectionProps) {
   const { plans, locale, dictionary, revealAfterId, showCompare = false } = props;
-  const { showEyebrow = true } = props;
+  const { showEyebrow = true, backdrop = true } = props;
   const initialSlug = initialPlanSlug(plans);
   return (
     <section id="plans" className={cx("section", styles.plans)} aria-labelledby="plans-title">
-      <div className="container">
+      {backdrop ? (
+        <Image
+          className={styles.backdrop}
+          src={PHOTOS.machinesTurf}
+          alt=""
+          placeholder="blur"
+          sizes="100vw"
+        />
+      ) : null}
+      <div className={cx("container", styles.inner)}>
         <SectionHead
           id="plans-title"
           eyebrow={showEyebrow ? dictionary.plans.eyebrow : undefined}

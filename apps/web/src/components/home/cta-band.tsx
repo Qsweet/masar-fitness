@@ -1,13 +1,18 @@
+import Image from "next/image";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Icon } from "@/components/ui/icon";
 import { TrackArc } from "@/components/ui/track-arc";
 import { CLUB_FACTS } from "@/config/club-facts";
+import { PHOTOS } from "@/config/photos";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
 import type { OfferView } from "./home-view";
 import styles from "./cta-band.module.css";
 
-/** شريط الدعوة بعرض الشاشة بأصفر الشعار ونص أسود (14:1)، ومضمار أسود في أسفله، وزر أسود. */
+/**
+ * شريط الدعوة بعرض الشاشة: صورة المنطقة الوظيفية خلف تظليل أسود كثيف وتوهج أصفر خفيف في الوسط، والمضمار
+ * بخطه المتقطع في أسفله، والزر الأصفر. الصورة زخرفية (alt فارغ) لأن النص يحمل المعنى.
+ */
 export function CtaBand({
   dictionary,
   offer,
@@ -18,7 +23,16 @@ export function CtaBand({
   const { cta } = dictionary;
   return (
     <section className={styles.band} aria-labelledby="cta-title">
-      <TrackArc className={styles.track} solid />
+      <Image
+        className={styles.photo}
+        src={PHOTOS.functionalZone}
+        alt=""
+        fill
+        placeholder="blur"
+        sizes="100vw"
+      />
+      <div className={styles.scrim} aria-hidden="true" />
+      <TrackArc className={styles.track} />
       <div className={styles.inner}>
         {offer === undefined ? null : (
           <p className={styles.pill}>
@@ -30,7 +44,7 @@ export function CtaBand({
           {cta.title}
         </h2>
         <p className={styles.lead}>{cta.lead}</p>
-        <ButtonLink href="#plans" variant="ink" external>
+        <ButtonLink href="#plans" variant="primary" external>
           {cta.action}
           <Icon name="arrow" />
         </ButtonLink>

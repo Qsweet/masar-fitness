@@ -1,4 +1,6 @@
+import type { StaticImageData } from "next/image";
 import type { ReactNode } from "react";
+import { PhotoBackdrop } from "@/components/ui/photo-backdrop";
 import { TrackArc } from "@/components/ui/track-arc";
 import { cx } from "@/lib/cx";
 import styles from "./page-intro.module.css";
@@ -12,15 +14,22 @@ interface PageIntroProps {
   readonly children?: ReactNode;
   /** «poster» للعناوين القصيرة (الافتراضي)، و«article» لعنوان مقال طويل: أصغر ومتباعد الأسطر. */
   readonly size?: "poster" | "article";
+  /** صورة خلفية زخرفية خلف تظليل أسود (alt فارغ): الرأس يصير شريطًا مصوَّرًا أعلى. */
+  readonly photo?: StaticImageData;
 }
 
 /** معرّف رأس الصفحة: شريط الشراء الثابت يظهر بعد أن يغادر الشاشة. */
 export const INTRO_ID = "top";
 
-/** رأس الصفحات الداخلية: شريط مضغوط أسود بمضمار في أسفله، عنوان واضح وسطر واحد. */
-export function PageIntro({ title, lead, before, children, size = "poster" }: PageIntroProps) {
+/**
+ * رأس الصفحات الداخلية: شريط مضغوط أسود بمضمار في أسفله، عنوان واضح وسطر واحد، وصورة خلفية اختيارية
+ * خلف تظليل أسود.
+ */
+export function PageIntro(props: PageIntroProps) {
+  const { title, lead, before, children, size = "poster", photo } = props;
   return (
-    <section id={INTRO_ID} className={cx("on-ink", styles.intro)}>
+    <section id={INTRO_ID} className={cx(styles.intro, photo !== undefined && styles.withPhoto)}>
+      {photo === undefined ? null : <PhotoBackdrop photo={photo} />}
       <TrackArc className={styles.track} />
       <div className={cx("container", styles.inner)}>
         <div className={styles.text}>

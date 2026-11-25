@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Icon, IconTile, type IconName } from "@/components/ui/icon";
+import { PhotoBackdrop } from "@/components/ui/photo-backdrop";
 import { TrackArc } from "@/components/ui/track-arc";
 import { Price } from "@/components/ui/price";
 import { SectionHead } from "@/components/ui/section-head";
 import { CLUB_FACTS } from "@/config/club-facts";
+import { PHOTOS } from "@/config/photos";
 import { ROUTES } from "@/config/routes";
 import { countText } from "@/i18n/count";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -50,11 +52,15 @@ function Offer({ plan, dictionary }: Pick<PlanDetailProps, "plan" | "dictionary"
   );
 }
 
-/** رأس صفحة الاشتراك: الرجوع، ووسم الأوفر إن كان، والعنوان h1 وسطره، وبطاقة السعر. */
+/**
+ * رأس صفحة الاشتراك فوق صورة صف البنش المظللة: الرجوع، ووسم الأوفر إن كان، والعنوان h1 وسطره،
+ * وبطاقة السعر.
+ */
 export function PlanHero(props: PlanDetailProps) {
   const { plan, dictionary, locale } = props;
   return (
-    <section id={props.id} className={cx("on-ink", styles.hero)} aria-labelledby="plan-title">
+    <section id={props.id} className={styles.hero} aria-labelledby="plan-title">
+      <PhotoBackdrop photo={PHOTOS.benchRow} />
       <TrackArc className={styles.track} />
       <div className={cx("container", styles.inner)}>
         <div className={styles.text}>

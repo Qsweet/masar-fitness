@@ -2,7 +2,8 @@
    بإطار أصفر في النهاية. */
 .hero {
   position: relative;
-  padding-block: 2rem 4rem;
+  isolation: isolate;
+  padding-block: 2.5rem 4.5rem;
   overflow: hidden;
 }
 
@@ -62,24 +63,19 @@
   font-size: clamp(1.0625rem, 0.4vw + 1rem, 1.25rem);
 }
 
-/* بطاقة بيضاء داخل القسم الأسود: تعيد ألوان السياق الفاتحة */
+/* بطاقة السعر المرفوعة بإطار أصفر وهالة خلفها */
 .offer {
-  --fg: var(--ink);
-  --muted: var(--grey);
-  --accent-fg: var(--ink);
-  --accent-mark: var(--yellow);
   display: grid;
-  color: var(--ink);
   gap: 0.25rem;
   padding: 1.75rem;
   border: 3px solid var(--yellow);
   border-radius: var(--radius-lg);
-  background: var(--white);
-  box-shadow: var(--glow);
+  background: var(--card);
+  box-shadow: var(--halo);
 }
 
 .label {
-  color: var(--grey);
+  color: var(--muted);
   font-size: 0.9375rem;
   font-weight: 600;
 }
@@ -103,7 +99,7 @@
 
 .monthly {
   margin-bottom: 1rem;
-  color: var(--grey);
+  color: var(--muted);
   font-size: 0.9375rem;
 }
 
@@ -118,7 +114,7 @@
   align-items: center;
   justify-content: center;
   min-height: var(--target);
-  color: var(--ink);
+  color: var(--fg);
   font-weight: 600;
   text-underline-offset: 0.3em;
 }
@@ -135,7 +131,7 @@
   gap: 1rem;
   padding: 1.25rem;
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--card-2);
 }
 
 .terms li > span:last-child {
@@ -148,7 +144,7 @@
 }
 
 .terms li > span:last-child > span {
-  color: var(--grey);
+  color: var(--muted);
   font-size: 0.9375rem;
   line-height: 1.7;
 }
@@ -182,7 +178,7 @@
 
 @media (width >= 64rem) {
   .hero {
-    padding-block: 3rem 4rem;
+    padding-block: 5rem 6rem;
   }
 
   .terms {

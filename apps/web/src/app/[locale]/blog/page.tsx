@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { BlogIndex } from "@/components/blog/blog-index";
 import { PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
+import { PHOTOS } from "@/config/photos";
 import { ROUTES } from "@/config/routes";
 import { articlesInLocale } from "@/content/blog/visibility";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -40,7 +41,11 @@ export default async function BlogPage({ params }: Props) {
   const dictionary = getDictionary(locale);
   return (
     <PageShell locale={locale} path={ROUTES.blog}>
-      <PageIntro title={dictionary.blog.title} lead={dictionary.blog.intro} />
+      <PageIntro
+        title={dictionary.blog.title}
+        lead={dictionary.blog.intro}
+        photo={PHOTOS.dumbbellRacks}
+      />
       <BlogIndex articles={articles} locale={locale} dictionary={dictionary} />
     </PageShell>
   );

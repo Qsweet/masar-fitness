@@ -50,6 +50,9 @@ importers:
       '@masar/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@masar/payments':
+        specifier: workspace:*
+        version: link:../../packages/payments
       next:
         specifier: 16.4.6
         version: 16.4.6(@babel/core@7.29.13)(@playwright/test@1.63.0)(@types/node@22.20.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)

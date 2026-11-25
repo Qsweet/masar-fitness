@@ -1,4 +1,5 @@
 import { checkoutAr } from "./checkout-ar";
+import { paymentAr } from "./payment-ar";
 
 /** القاموس العربي هو المرجع: شكله يحدد المفاتيح المطلوبة من كل لغة أخرى. */
 export const ar = {
@@ -225,6 +226,7 @@ export const ar = {
       membershipsLink: "كم تكلفك الزيارة الواحدة؟ احسبها",
     },
   },
+  onlinePayment: paymentAr,
 } as const;
 
 type Widen<T> = T extends string

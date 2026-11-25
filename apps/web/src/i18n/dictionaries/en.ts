@@ -1,5 +1,6 @@
 import type { Dictionary } from "./ar";
 import { checkoutEn } from "./checkout-en";
+import { paymentEn } from "./payment-en";
 
 export const en: Dictionary = {
   currency: { SAR: "SAR" },
@@ -215,4 +216,5 @@ export const en: Dictionary = {
       membershipsLink: "What does one visit cost? Work it out",
     },
   },
+  onlinePayment: paymentEn,
 };

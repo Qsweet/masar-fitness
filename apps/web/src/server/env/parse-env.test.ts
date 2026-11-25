@@ -6,6 +6,9 @@ const valid = {
   SITE_URL: "https://example.com/",
 };
 
+const CHECKOUT_OFF =
+  "CHECKOUT_ENABLED: must stay off in production unless payments run in test mode on a non-indexable site";
+
 function problemsOf(raw: Record<string, string | undefined>): readonly string[] {
   try {
     parseEnv(raw);
@@ -27,6 +30,7 @@ describe("parseEnv", () => {
       SITE_INDEXABLE: false,
       CHECKOUT_ENABLED: false,
       APP_VERSION: "dev",
+      PAYMENTS: { mode: "off" },
     });
   });
 
@@ -46,7 +50,7 @@ describe("parseEnv", () => {
 
   it("يرفض فتح الشراء في الإنتاج على رابط عام", () => {
     expect(problemsOf({ ...valid, NODE_ENV: "production", CHECKOUT_ENABLED: "true" })).toEqual([
-      "CHECKOUT_ENABLED: must stay off in production until payments exist",
+      CHECKOUT_OFF,
     ]);
     // مغلقًا يمر الإنتاج العام كما هو
     expect(parseEnv({ ...valid, NODE_ENV: "production" }).CHECKOUT_ENABLED).toBe(false);
@@ -62,7 +66,7 @@ describe("parseEnv", () => {
     expect(parseEnv(local).CHECKOUT_ENABLED).toBe(true);
     // اسم يشبه العنوان المحلي لكنه نطاق عام: مرفوض
     expect(problemsOf({ ...local, SITE_URL: "https://localhost.example.com" })).toEqual([
-      "CHECKOUT_ENABLED: must stay off in production until payments exist",
+      CHECKOUT_OFF,
     ]);
   });
 

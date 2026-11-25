@@ -15,7 +15,7 @@ interface OptionProps {
 /**
  * بطاقة سعر واحدة: زر راديو حقيقي شفاف فوق البطاقة كلها (الأسهم ولوحة المفاتيح وقارئ الشاشة تعمل).
  * الاسم والمدة الكاملة، ثم الإجمالي كبيرًا وما يعادله شهريًا، ثم ما يميز الاشتراك. الأوفر شهريًا (محسوب)
- * مرفوع بإطار متدرّج وشريط في أعلاه وسعر بالتدرّج.
+ * مرفوع بإطار متدرّج وشريط في أعلاه وسعر بالتدرّج، وفي أول القائمة على الهاتف والبقية صفوف مختصرة.
  */
 export function PlanOption({ plan, selected, labels, onSelect }: OptionProps) {
   const features = [
@@ -47,7 +47,6 @@ export function PlanOption({ plan, selected, labels, onSelect }: OptionProps) {
           className={cx(styles.price, plan.isBestValue && "gradient-text")}
           unitClassName={styles.currency}
         />
-        <span className={styles.vat}>{labels.vatIncluded}</span>
         {plan.monthlyText === undefined ? null : (
           <span className={styles.perMonth}>{plan.monthlyText}</span>
         )}

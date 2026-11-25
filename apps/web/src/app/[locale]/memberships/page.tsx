@@ -11,7 +11,6 @@ import { PlansSection } from "@/components/plans/plans-section";
 import { ButtonLink } from "@/components/ui/button-link";
 import { SectionHead } from "@/components/ui/section-head";
 import { ROUTES } from "@/config/routes";
-import { PHOTOS } from "@/config/photos";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedPath } from "@/i18n/locales";
 import { cx } from "@/lib/cx";
@@ -49,17 +48,13 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
 
   return (
     <PageShell locale={locale} path={PATH} hasPlans={plans.length > 0}>
-      <PageIntro
-        eyebrow={dictionary.plans.eyebrow}
-        title={dictionary.memberships.title}
-        lead={dictionary.memberships.intro}
-        photo={{ src: PHOTOS.trainerPortrait, alt: dictionary.photos.trainerPortrait }}
-      />
+      <PageIntro title={dictionary.memberships.title} lead={dictionary.memberships.intro} />
       <PlansSection
         plans={toPlanViews(plans, locale, checkoutEnabled)}
         locale={locale}
         dictionary={dictionary}
         revealAfterId={INTRO_ID}
+        showEyebrow={false}
       >
         <FriendsOffer dictionary={dictionary} view={friendsView(dictionary, locale)} />
       </PlansSection>

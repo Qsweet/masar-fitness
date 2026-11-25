@@ -15,12 +15,12 @@ interface PlansSectionProps {
   readonly plans: readonly PlanView[];
   readonly locale: Locale;
   readonly dictionary: Dictionary;
-  /** اشتراك الصفحة الحالية، يُختار أولًا. */
-  readonly currentSlug?: string;
   /** شريط الشراء الثابت يظهر بعد أن يغادر هذا العنصر الشاشة. */
   readonly revealAfterId: string;
   /** رابط «قارن الاشتراكات» (لا يظهر في صفحة المقارنة نفسها). */
   readonly showCompare?: boolean;
+  /** سطر «الاشتراكات» فوق العنوان؛ يُسقط في صفحة الاشتراكات حيث رأس الصفحة يقوله. */
+  readonly showEyebrow?: boolean;
   /** ما يلي المحدِّد داخل القسم نفسه (عرض الأصدقاء). */
   readonly children?: ReactNode;
 }
@@ -58,14 +58,15 @@ function MoreLinks({ locale, dictionary }: Pick<PlansSectionProps, "locale" | "d
 
 /** قسم الاشتراكات (#plans): رأس القسم ثم بطاقات الأسعار وملخصها، بالشكل نفسه في كل صفحة. */
 export function PlansSection(props: PlansSectionProps) {
-  const { plans, locale, dictionary, currentSlug, revealAfterId, showCompare = false } = props;
-  const initialSlug = initialPlanSlug(plans, currentSlug);
+  const { plans, locale, dictionary, revealAfterId, showCompare = false } = props;
+  const { showEyebrow = true } = props;
+  const initialSlug = initialPlanSlug(plans);
   return (
     <section id="plans" className={cx("section", styles.plans)} aria-labelledby="plans-title">
       <div className="container">
         <SectionHead
           id="plans-title"
-          eyebrow={dictionary.plans.eyebrow}
+          eyebrow={showEyebrow ? dictionary.plans.eyebrow : undefined}
           title={dictionary.plans.title}
           lead={dictionary.plans.lead}
         />
@@ -75,10 +76,13 @@ export function PlansSection(props: PlansSectionProps) {
           <Configurator
             plans={plans}
             initialSlug={initialSlug}
-            currentSlug={currentSlug}
             revealAfterId={revealAfterId}
             labels={dictionary.plans}
             planLabels={dictionary.plan}
+            chat={{
+              href: whatsappUrl(dictionary.location.whatsappMessage),
+              label: dictionary.chat,
+            }}
             more={
               showCompare && plans.length > 1 ? (
                 <MoreLinks locale={locale} dictionary={dictionary} />

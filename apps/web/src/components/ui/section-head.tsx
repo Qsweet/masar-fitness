@@ -4,7 +4,8 @@ import { cx } from "@/lib/cx";
 interface SectionHeadProps {
   /** معرّف العنوان ليُسمّى به القسم (aria-labelledby) */
   readonly id: string;
-  readonly eyebrow: string;
+  /** يُترك حين يقوله رأس الصفحة فوقه مباشرة، فلا يتكرر */
+  readonly eyebrow?: string | undefined;
   readonly title: string;
   readonly lead?: string | undefined;
   /** في البداية بدل الوسط (بجانب صورة) */
@@ -23,7 +24,7 @@ export function SectionHead({
 }: SectionHeadProps) {
   return (
     <div className={cx("section-head", start && "start")}>
-      <p className="eyebrow">{eyebrow}</p>
+      {eyebrow === undefined ? null : <p className="eyebrow">{eyebrow}</p>}
       <h2 id={id} className="title-section">
         {title}
       </h2>

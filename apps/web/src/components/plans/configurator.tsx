@@ -8,48 +8,31 @@ import { Price } from "@/components/ui/price";
 import { StickyReveal } from "@/components/ui/sticky-reveal";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { PlanOption } from "./plan-option";
-import type { PlanView } from "./plan-view";
+import { centreBestValue, type PlanView } from "./plan-view";
 import styles from "./configurator.module.css";
 
 export interface ConfiguratorProps {
   readonly plans: readonly PlanView[];
   readonly initialSlug: string;
-  /** اشتراك الصفحة الحالية: لا رابط «تفاصيل» يعود إليها. */
-  readonly currentSlug?: string | undefined;
   /** شريط الشراء الثابت (جوال) يظهر بعد أن يغادر هذا العنصر الشاشة. */
   readonly revealAfterId: string;
   readonly labels: Dictionary["plans"];
   readonly planLabels: Dictionary["plan"];
   /** روابط ثانوية تحت الملخص (المقارنة والحاسبة). */
   readonly more?: ReactNode;
+  /** زر واتساب العام في شريط الجوال (مكان زر المحادثة العائم على الهاتف) */
+  readonly chat: { readonly href: string; readonly label: string };
 }
+
+/** الملخص الحي: شريط الجوال يختفي ما دام ظاهرًا، فلا يتكرر السعر والزر مرتين على الشاشة. */
+const SUMMARY_ID = "plan-summary";
 
 /** نص زر الشراء: «اشترِ الآن» إلى صفحة البيانات، أو واتساب والشراء الإلكتروني مغلق. */
 function purchaseLabel(plan: PlanView, planLabels: Dictionary["plan"]): string {
   return plan.purchase.external ? planLabels.buyWhatsapp : planLabels.buyOnline;
 }
 
-/** المزايا حين تختلف بين الاشتراكات (حين تتطابق يكفي سطر «يشمل جميع مرافق النادي» في البطاقة). */
-function Includes({
-  plan,
-  labels,
-}: Pick<ConfiguratorProps, "labels"> & { readonly plan: PlanView }) {
-  if (plan.benefits.length === 0 || plan.benefitsShared) {
-    return plan.benefitsShared ? <p className={styles.includesAll}>{labels.includesAll}</p> : null;
-  }
-  return (
-    <div className={styles.includes}>
-      <p className={styles.label}>{labels.includes}</p>
-      <ul>
-        {plan.benefits.map((benefit) => (
-          <li key={benefit}>{benefit}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function Secondary({ plan, currentSlug, labels, planLabels }: SummaryProps) {
+function Secondary({ plan, labels, planLabels }: SummaryProps) {
   return (
     <div className={styles.secondary}>
       {plan.purchase.external ? <p className={styles.buyNote}>{planLabels.buyNote}</p> : null}
@@ -58,41 +41,37 @@ function Secondary({ plan, currentSlug, labels, planLabels }: SummaryProps) {
           {planLabels.whatsappAlternative}
         </a>
       )}
-      {plan.slug === currentSlug ? null : (
-        <a href={plan.href} className={styles.details}>
-          {labels.details}: {plan.name}
-        </a>
-      )}
+      <a href={plan.href} className={styles.details}>
+        {labels.details}: {plan.name}
+      </a>
     </div>
   );
 }
 
-type SummaryProps = Pick<ConfiguratorProps, "currentSlug" | "labels" | "planLabels"> & {
+type SummaryProps = Pick<ConfiguratorProps, "labels" | "planLabels"> & {
   readonly plan: PlanView;
 };
 
-/** ملخص الاختيار الحي تحت البطاقات: الاسم والمدة، ثم الإجمالي وزر الشراء. */
+/**
+ * ملخص الاختيار الحي تحت البطاقات، شريط واحد: الاسم والمدة، والإجمالي، وزر الشراء.
+ * المزايا والشهري والتجميد في البطاقات نفسها، فلا تتكرر هنا.
+ */
 function Summary(props: SummaryProps) {
   const { plan, labels, planLabels } = props;
   return (
-    <div className={styles.summary} aria-live="polite">
+    <div id={SUMMARY_ID} className={styles.summary} aria-live="polite">
       <div className={styles.summaryText}>
         <p className={styles.summaryName}>{plan.name}</p>
         <p className={styles.muted}>{plan.durationText}</p>
-        {plan.monthlyText === undefined ? null : <p className={styles.muted}>{plan.monthlyText}</p>}
-        <Includes plan={plan} labels={labels} />
       </div>
-      <div className={styles.summaryBuy}>
-        <p className={styles.label}>{labels.total}</p>
-        <p className={styles.summaryPrice}>
-          <Price parts={plan.price} unitClassName={styles.summaryUnit} />
-        </p>
-        <p className={styles.muted}>{labels.vatIncluded}</p>
-        <ButtonLink href={plan.purchase.href} external={plan.purchase.external} block>
-          {purchaseLabel(plan, planLabels)}
-          <Icon name="arrow" />
-        </ButtonLink>
-      </div>
+      <p className={styles.summaryPrice}>
+        <span className={styles.label}>{labels.total}</span>
+        <Price parts={plan.price} unitClassName={styles.summaryUnit} />
+      </p>
+      <ButtonLink href={plan.purchase.href} external={plan.purchase.external}>
+        {purchaseLabel(plan, planLabels)}
+        <Icon name="arrow" />
+      </ButtonLink>
       <Secondary {...props} />
     </div>
   );
@@ -102,9 +81,17 @@ function StickyBar({
   plan,
   revealAfterId,
   planLabels,
-}: Pick<ConfiguratorProps, "revealAfterId" | "planLabels"> & { readonly plan: PlanView }) {
+  chat,
+}: Pick<ConfiguratorProps, "revealAfterId" | "planLabels" | "chat"> & {
+  readonly plan: PlanView;
+}) {
   return (
-    <StickyReveal afterId={revealAfterId} label={planLabels.stickyLabel} className={styles.sticky}>
+    <StickyReveal
+      afterId={revealAfterId}
+      hideWhileId={SUMMARY_ID}
+      label={planLabels.stickyLabel}
+      className={styles.sticky}
+    >
       <p>
         <span className={styles.stickyName}>{plan.name}</span>
         <Price
@@ -120,6 +107,15 @@ function StickyBar({
       ) : (
         <Link href={plan.purchase.href}>{purchaseLabel(plan, planLabels)}</Link>
       )}
+      <a
+        href={chat.href}
+        rel="noopener noreferrer"
+        aria-label={chat.label}
+        title={chat.label}
+        className={styles.stickyChat}
+      >
+        <Icon name="chat" />
+      </a>
     </StickyReveal>
   );
 }
@@ -139,7 +135,7 @@ export function Configurator(props: ConfiguratorProps) {
     <div className={styles.configurator}>
       <fieldset className={styles.options} data-count={plans.length}>
         <legend className="sr-only">{labels.legend}</legend>
-        {plans.map((plan) => (
+        {centreBestValue(plans).map((plan) => (
           <PlanOption
             key={plan.slug}
             plan={plan}

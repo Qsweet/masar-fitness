@@ -5,6 +5,8 @@ import { useEffect, useState, type ReactNode } from "react";
 interface StickyRevealProps {
   /** معرّف العنصر الذي يُخفي الشريط ما دام ظاهرًا أو تحت الشاشة (فعلا الواجهة، أو رأس الصفحة). */
   readonly afterId: string;
+  /** عنصر يكرر محتوى الشريط (ملخص الاشتراك): الشريط يختفي ما دام ظاهرًا على الشاشة. */
+  readonly hideWhileId?: string;
   readonly className: string | undefined;
   readonly label: string;
   readonly children: ReactNode;
@@ -33,9 +35,30 @@ function useTyping(): boolean {
   return typing;
 }
 
-export function StickyReveal({ afterId, className, label, children }: StickyRevealProps) {
+/** هل العنصر ظاهر الآن في الشاشة؟ بلا معرّف أو بلا عنصر: لا. */
+function useInView(id: string | undefined): boolean {
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const target = id === undefined ? null : document.getElementById(id);
+    if (target === null) {
+      return undefined;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      setInView(entry?.isIntersecting ?? false);
+    });
+    observer.observe(target);
+    return () => {
+      observer.disconnect();
+    };
+  }, [id]);
+  return inView;
+}
+
+export function StickyReveal(props: StickyRevealProps) {
+  const { afterId, className, label, children } = props;
   const [passed, setPassed] = useState(false);
   const typing = useTyping();
+  const duplicateInView = useInView(props.hideWhileId);
 
   useEffect(() => {
     const target = document.getElementById(afterId);
@@ -54,7 +77,12 @@ export function StickyReveal({ afterId, className, label, children }: StickyReve
   }, [afterId]);
 
   return (
-    <aside aria-label={label} className={className} hidden={!passed || typing} data-sticky-bar>
+    <aside
+      aria-label={label}
+      className={className}
+      hidden={!passed || typing || duplicateInView}
+      data-sticky-bar
+    >
       {children}
     </aside>
   );

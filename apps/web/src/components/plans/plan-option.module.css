@@ -120,14 +120,8 @@
   font-weight: 700;
 }
 
-.vat,
 .perMonth {
-  color: var(--grey);
   font-size: 0.875rem;
-}
-
-.perMonth {
-  color: var(--ink);
   font-weight: 600;
 }
 
@@ -167,9 +161,42 @@
   font-weight: 700;
 }
 
-.selected .choose {
+.selected .choose,
+.best .choose {
   background: var(--gradient);
   box-shadow: none;
+}
+
+/*
+ * على الهاتف: الأوفر شهريًا أولًا كاملة، والبقية صفوف مختصرة (الاسم والدائرة، المدة، السعر والشهري)،
+ * فلا يمر الزائر بصفحتين من البطاقات قبل الاشتراك الموصى به. التفاصيل في صفحة كل اشتراك.
+ */
+@media (width < 48rem) {
+  .best {
+    order: -1;
+  }
+
+  .option:not(.best) {
+    gap: 0.15rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .option:not(.best) .figures {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 0.75rem;
+    margin-block: 0.25rem 0;
+  }
+
+  .option:not(.best) .price {
+    font-size: 1.625rem;
+  }
+
+  .option:not(.best) .features,
+  .option:not(.best) .choose {
+    display: none;
+  }
 }
 
 @media (width >= 64rem) {
@@ -189,8 +216,9 @@
     margin: calc(-2rem + 1px) calc(-2rem + 1px) 1rem;
   }
 
-  /* الأوفر شهريًا مرفوعة فوق جاراتها */
+  /* الأوفر شهريًا في الوسط مرفوعة فوق جاراتها بظل أثقل */
   .best {
     transform: translateY(-1rem);
+    box-shadow: var(--glow), var(--shadow-lg);
   }
 }

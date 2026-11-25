@@ -1,7 +1,13 @@
 import { money, type MembershipPlan } from "@masar/domain";
 import { describe, expect, it } from "vitest";
 import { getDictionary } from "@/i18n/dictionaries";
-import { freezeDays, initialPlanSlug, purchaseHref, toPlanViews } from "./plan-view";
+import {
+  centreBestValue,
+  freezeDays,
+  initialPlanSlug,
+  purchaseHref,
+  toPlanViews,
+} from "./plan-view";
 
 function plan(overrides: Partial<MembershipPlan>): MembershipPlan {
   return {
@@ -108,9 +114,7 @@ describe("purchaseHref", () => {
 describe("initialPlanSlug", () => {
   const views = toPlanViews([monthly, annual], "ar", false);
 
-  it("الاشتراك المطلوب أولًا، ثم الأوفر، ولا شيء بلا اشتراكات", () => {
-    expect(initialPlanSlug(views, "monthly")).toBe("monthly");
-    expect(initialPlanSlug(views, "missing")).toBe("annual");
+  it("الأوفر أولًا، ولا شيء بلا اشتراكات", () => {
     expect(initialPlanSlug(views)).toBe("annual");
     expect(initialPlanSlug([])).toBeUndefined();
   });
@@ -123,5 +127,19 @@ describe("initialPlanSlug", () => {
 describe("freezeDays", () => {
   it("5 أيام لكل شهر مدفوع، والأشهر المجانية لا تُحتسب (كما في شروط النادي الحالية)", () => {
     expect([3, 6, 12].map(freezeDays)).toEqual([15, 30, 60]);
+  });
+});
+
+describe("centreBestValue", () => {
+  const card = (slug: string, isBestValue = false) => ({ slug, isBestValue });
+
+  it("الأوفر شهريًا في وسط ثلاث بطاقات، والباقيتان بترتيبهما", () => {
+    const order = centreBestValue([card("3"), card("6"), card("12", true)]);
+    expect(order.map((view) => view.slug)).toEqual(["3", "12", "6"]);
+  });
+
+  it("بلا أوفر أو باشتراك واحد يبقى الترتيب كما هو", () => {
+    expect(centreBestValue([card("3"), card("6")]).map((view) => view.slug)).toEqual(["3", "6"]);
+    expect(centreBestValue([card("12", true)]).map((view) => view.slug)).toEqual(["12"]);
   });
 });

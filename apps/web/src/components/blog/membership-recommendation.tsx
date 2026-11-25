@@ -38,7 +38,7 @@ export async function MembershipRecommendation({ locale, dictionary }: Props) {
   if (plan === undefined) {
     return null;
   }
-  const { blog, plans } = dictionary;
+  const { blog } = dictionary;
   const title = plan.isBestValue ? fill(blog.recommendationTitle, { plan: plan.name }) : plan.name;
   return (
     <aside className={styles.box} aria-label={blog.recommendationLabel}>
@@ -47,9 +47,7 @@ export async function MembershipRecommendation({ locale, dictionary }: Props) {
       <p>
         <Price parts={plan.price} className={styles.price} unitClassName={styles.unit} />
       </p>
-      <p className={styles.detail}>
-        {plan.durationText} / {plans.vatIncluded}
-      </p>
+      <p className={styles.detail}>{plan.durationText}</p>
       {plan.monthlyText === undefined ? null : <p className={styles.detail}>{plan.monthlyText}</p>}
       <div className={styles.action}>
         <ButtonLink href={localizedPath(locale, ROUTES.memberships)} variant="primary">

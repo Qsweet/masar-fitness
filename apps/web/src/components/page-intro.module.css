@@ -1,4 +1,4 @@
-/* رأس الصفحات الداخلية بلغة الواجهة نفسها: أرضية بيضاء بإضاءة دافئة، وصورة مستديرة بتوهج. */
+/* رأس الصفحات الداخلية بلغة الواجهة نفسها: شريط مضغوط بأرضية بيضاء وإضاءة دافئة. */
 .intro {
   padding-block: 2.5rem 3rem;
   background: var(--wash), var(--white);
@@ -28,10 +28,6 @@
   text-underline-offset: 0.3em;
 }
 
-.eyebrow {
-  margin-bottom: 0.5rem;
-}
-
 .title {
   max-width: 20ch;
   font-weight: 800;
@@ -54,34 +50,8 @@
   font-size: clamp(1.0625rem, 0.4vw + 1rem, 1.25rem);
 }
 
-/* الصورة للشاشة الواسعة فقط: على الجوال يلي العنوانَ المحتوى مباشرة */
-.photo {
-  display: none;
-  position: relative;
-  margin: 0;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--glow), var(--shadow-lg);
-}
-
-.photo img {
-  object-fit: cover;
-  object-position: 34% center;
-}
-
 @media (width >= 64rem) {
   .intro {
-    padding-block: 4rem;
-  }
-
-  .withPhoto .inner {
-    grid-template-columns: 6fr 5fr;
-    align-items: center;
-    gap: 4rem;
-  }
-
-  .photo {
-    display: block;
-    aspect-ratio: 16 / 10;
+    padding-block: 3.5rem;
   }
 }

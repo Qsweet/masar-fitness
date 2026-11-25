@@ -154,11 +154,23 @@ export function toPlanViews(
   );
 }
 
-/** الاختيار الأول في المحدِّد: الاشتراك المطلوب إن وُجد، ثم الأوفر شهريًا، ثم الأول. */
-export function initialPlanSlug(
-  views: readonly PlanView[],
-  requested?: string,
-): string | undefined {
-  const match = views.find((view) => view.slug === requested);
-  return (match ?? views.find((view) => view.isBestValue) ?? views[0])?.slug;
+/** الاختيار الأول في المحدِّد: الأوفر شهريًا، ثم الأول. */
+export function initialPlanSlug(views: readonly PlanView[]): string | undefined {
+  return (views.find((view) => view.isBestValue) ?? views[0])?.slug;
+}
+
+/**
+ * ترتيب بطاقات الأسعار في الصف: الأوفر شهريًا في الوسط كما في لغة القالب، وبقية الاشتراكات بترتيبها.
+ * ترتيب الشيفرة هو الترتيب المرئي على الشاشة الواسعة، فيتطابق معه التنقل بلوحة المفاتيح وقارئ الشاشة.
+ */
+export function centreBestValue<T extends { readonly isBestValue: boolean }>(
+  views: readonly T[],
+): T[] {
+  const best = views.find((view) => view.isBestValue);
+  if (best === undefined) {
+    return [...views];
+  }
+  const rest = views.filter((view) => view !== best);
+  const middle = Math.floor(rest.length / 2);
+  return [...rest.slice(0, middle), best, ...rest.slice(middle)];
 }

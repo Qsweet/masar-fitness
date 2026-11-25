@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { INTRO_ID, PageIntro } from "@/components/page-intro";
+import { INTRO_ID } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
+import { PlanHero, PlanTerms } from "@/components/plans/plan-detail";
 import { toPlanViews } from "@/components/plans/plan-view";
-import { PlansSection } from "@/components/plans/plans-section";
 import { Contact } from "@/components/home/contact";
 import { Benefits, Payment } from "@/components/plans/extras";
 import { getDictionary } from "@/i18n/dictionaries";
-import { isLocale, localizedPath } from "@/i18n/locales";
+import { isLocale } from "@/i18n/locales";
 import { getMembershipPlan, getMembershipPlans } from "@/server/catalog";
 import { isCheckoutEnabled } from "@/server/checkout/flag";
 import { pageMetadata } from "@/server/metadata";
@@ -29,40 +28,46 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
+/**
+ * صفحة اشتراك واحد، عرض مركّز لا محدِّد مكرر: السعر والمدة وزر واحد، ثم ما يشمله، ثم شروطه
+ * (التفعيل والتجميد وأنه شخصي) من شروط النادي الحالية، ثم التواصل. المقارنة في صفحة الاشتراكات.
+ */
 export default async function PlanPage({ params }: Props) {
   const { locale, slug } = await params;
   if (!isLocale(locale)) {
     notFound();
   }
   const [plans, plan] = await Promise.all([getMembershipPlans(), getMembershipPlan(slug)]);
-  if (plan === undefined) {
+  const checkoutEnabled = isCheckoutEnabled();
+  // الأوفر شهريًا محسوب بين كل الاشتراكات المعروضة، لا من هذا وحده
+  const view = toPlanViews(plans, locale, checkoutEnabled).find((item) => item.slug === slug);
+  if (plan === undefined || view === undefined) {
     notFound();
   }
   const dictionary = getDictionary(locale);
-  const back = <Link href={localizedPath(locale, "/memberships")}>{dictionary.plan.back}</Link>;
-  const checkoutEnabled = isCheckoutEnabled();
+  const purchaseLabel = view.purchase.external
+    ? dictionary.plan.buyWhatsapp
+    : dictionary.plan.buyOnline;
 
   return (
-    <PageShell locale={locale} path={`/memberships/${plan.slug}`} hasPlans>
-      <PageIntro
-        eyebrow={dictionary.plans.eyebrow}
-        title={plan.name[locale]}
-        lead={plan.summary[locale]}
-        before={back}
-      />
-      <PlansSection
-        plans={toPlanViews(plans, locale, checkoutEnabled)}
+    <PageShell
+      locale={locale}
+      path={`/memberships/${plan.slug}`}
+      mobileAction={{ ...view.purchase, label: purchaseLabel }}
+    >
+      <PlanHero
+        id={INTRO_ID}
+        plan={view}
+        summary={plan.summary[locale]}
         locale={locale}
         dictionary={dictionary}
-        currentSlug={plan.slug}
-        revealAfterId={INTRO_ID}
-        showCompare
       />
       <Benefits
         eyebrow={dictionary.facilities.eyebrow}
         title={dictionary.plan.includesTitle}
-        benefits={plan.benefits.map((benefit) => benefit[locale])}
+        benefits={view.benefits}
       />
+      <PlanTerms plan={view} locale={locale} dictionary={dictionary} />
       {checkoutEnabled ? <Payment dictionary={dictionary} /> : null}
       <Contact locale={locale} dictionary={dictionary} />
     </PageShell>

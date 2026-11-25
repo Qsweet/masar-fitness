@@ -20,7 +20,8 @@ export const en: Dictionary = {
     membershipsTitle: "Memberships",
     membershipsDescription:
       "Masters Way memberships in Buraidah by duration and total price, with a clear comparison.",
-    planDescription: "Membership details: duration, total price including VAT, and what it covers.",
+    planDescription:
+      "Membership details: duration, total price, what it covers, and the activation and freeze terms.",
   },
   nav: {
     skipToContent: "Skip to content",
@@ -41,7 +42,7 @@ export const en: Dictionary = {
     badge: "A men's sports club in Ar Rihab",
     title: "Masters Way Sports Club for men in Buraidah",
     slogan: "You've got this.",
-    lead: "A strength floor, functional training and group classes, with an indoor pool, jacuzzi, sauna and steam room. All in one membership at one total price including VAT.",
+    lead: "A strength floor, functional training and group classes, with an indoor pool, jacuzzi, sauna and steam room. All in one membership at one total price.",
     action: "Choose a membership",
     secondary: "See the facilities",
     founded: "Founded",
@@ -52,7 +53,7 @@ export const en: Dictionary = {
   plans: {
     eyebrow: "Memberships",
     title: "Choose your duration",
-    lead: "One total payment, including VAT.",
+    lead: "One total payment. Prices include VAT under the club's terms.",
     legend: "Membership duration",
     optionsLabel: "Membership durations",
     bestValue: "Lowest per month",
@@ -63,7 +64,6 @@ export const en: Dictionary = {
     total: "Total",
     freeze: "Freeze up to {days}",
     startsOnActivation: "Starts from activation at the club",
-    vatIncluded: "Including VAT",
     includesAll: "Includes all club facilities",
     includes: "Includes",
     details: "Membership details",
@@ -87,7 +87,6 @@ export const en: Dictionary = {
   },
   location: {
     directions: "Open the map",
-    call: "Call",
     whatsapp: "WhatsApp",
     whatsappMessage: "Hello, I have a question about joining Masters Way.",
   },
@@ -116,7 +115,27 @@ export const en: Dictionary = {
     whatsappAlternative: "Or join via WhatsApp",
     whatsappMessage: "Hello, I'd like to join with the “{plan}” membership.",
     stickyLabel: "Membership summary",
+    priceLabel: "Total per person",
+    termsEyebrow: "Before you join",
+    termsTitle: "Membership terms",
+    terms: {
+      activation: {
+        title: "Activation",
+        line: "After you order, the club team contacts you to confirm it and arrange your activation.",
+      },
+      start: { title: "Start date", line: "The membership starts from activation at the club." },
+      freeze: {
+        title: "{freeze}",
+        line: "{days} for every paid month. Ask the club before the freeze starts; free months don't count towards it.",
+      },
+      personal: {
+        title: "Personal membership",
+        line: "The price is per person, and nobody else may use the membership.",
+      },
+      age: { title: "Men", line: "Aged {age} and over." },
+    },
   },
+  quickBar: "Membership and contact shortcuts",
   photos: {
     functionalPress:
       "A man in a club shirt pressing a bar overhead in front of members in the functional area",
@@ -141,7 +160,6 @@ export const en: Dictionary = {
     programs: "Programs",
     contact: "Contact",
     social: "Follow us",
-    registration: "Commercial Registration",
     joinNote: "For now you join through the club's WhatsApp; online payment is being prepared.",
     socialNames: { instagram: "Instagram", x: "X", snapchat: "Snapchat", tiktok: "TikTok" },
   },

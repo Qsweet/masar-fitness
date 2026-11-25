@@ -113,7 +113,7 @@ function ChooseButton({
   readonly plan: MembershipPlan;
 }) {
   return (
-    <ButtonLink href={localizedPath(locale, `/memberships/${plan.slug}`)} block>
+    <ButtonLink href={localizedPath(locale, `/memberships/${plan.slug}`)} variant="outline" block>
       {dictionary.plans.choose}
       <span className="sr-only">: {plan.name[locale]}</span>
     </ButtonLink>

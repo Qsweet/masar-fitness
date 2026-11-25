@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 /** محتوى الرئيسية الحقيقي (docs/CLUB_FACTS.md): البرامج والأوقات والآراء والتواصل والتذييل. */
 
 test.describe("البرامج", () => {
-  test("ثلاث بطاقات بأسعار موقع النادي، والتأهيل بتنبيهه، وBE STRONG 45 سطر «قيد الإعداد» لا بطاقة", async ({
+  test("ثلاث بطاقات بأسعار موقع النادي، والتأهيل بتنبيهه، وBE STRONG 45 غير مذكور ما دام «قيد الإعداد»", async ({
     page,
   }) => {
     await page.goto("/");
@@ -25,8 +25,11 @@ test.describe("البرامج", () => {
     const rehab = cards.filter({ hasText: "تأهيل" });
     await expect(rehab).toContainText("ليس علاجًا طبيعيًا");
     await expect(rehab).toContainText("من 720 ر.س");
+    // السعر مقروء على البطاقة الداكنة: أصفر لا لون الحبر (تباين كان نحو 1:1)
+    await expect(rehab.getByText("من 720 ر.س")).toHaveCSS("color", "rgb(253, 214, 36)");
     await expect(cards.filter({ hasText: "BE STRONG 45" })).toHaveCount(0);
-    await expect(services).toContainText("قيد الإعداد: BE STRONG 45");
+    await expect(services).not.toContainText("BE STRONG 45");
+    await expect(services).not.toContainText("قيد الإعداد");
   });
 });
 

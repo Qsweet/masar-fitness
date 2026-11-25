@@ -72,6 +72,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
+  text-wrap: balance;
   color: var(--white);
   font-size: 0.9375rem;
   font-weight: 600;
@@ -95,8 +96,21 @@
   text-wrap: balance;
 }
 
+/* السطر الأصفر تحته خط المضمار المتقطع من الشعار، بعرض الكلمات لا بعرض العمود */
 .slogan {
+  justify-self: start;
+  padding-bottom: 0.12em;
+  background: var(--track-dash) 0 100% / calc(var(--dash) * 2 + var(--dash-gap) * 2) 0.09em repeat-x;
   color: var(--yellow);
+}
+
+/*
+ * العربية: ميل خفيف إلى الأمام كحروف الشعار المائلة (لا خط مائل عربي في الخط المستعمل)، على العنوان
+ * وحده. الإنجليزية مائلة بالخط نفسه.
+ */
+.title:dir(rtl) {
+  transform: skewX(-8deg);
+  transform-origin: bottom right;
 }
 
 /* الإنجليزية مائلة كحروف الشعار، وسطورها أضيق */
@@ -133,7 +147,13 @@
   color: var(--white);
 }
 
+/*
+ * زر إيقاف الفيديو في الزاوية العليا من جهة النهاية تحت الترويسة: بعيد عن زر المحادثة العائم في الأسفل،
+ * وظاهر على الهاتف فوق شريط التبويب الثابت (WCAG 2.2.2). هدف 44px.
+ */
 .toggle {
+  top: calc(var(--header-height) + 1rem);
+  bottom: auto;
   inset-inline-end: var(--gutter-end);
   border: 1px solid var(--line-hover);
   border-radius: var(--radius-pill);

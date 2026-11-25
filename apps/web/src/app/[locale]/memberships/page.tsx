@@ -73,7 +73,7 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
           <div className="container">
             <SectionHead
               id="compare-title"
-              eyebrow={dictionary.plans.eyebrow}
+              eyebrow={dictionary.memberships.compareEyebrow}
               title={dictionary.memberships.compareTitle}
             />
             <ComparisonTable plans={plans} locale={locale} dictionary={dictionary} />

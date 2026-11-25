@@ -43,7 +43,7 @@ export interface PlanView {
   readonly price: MoneyParts;
   /** «نحو 200 ر.س شهريًا» في مربع المدة وفي الملخص؛ غائب لاشتراك الشهر الواحد (تكرار للسعر نفسه) */
   readonly monthlyText: string | undefined;
-  /** «≈ 3.52 ر.س يوميًا»: الإجمالي على أيام المدة كاملة، محسوب في @masar/domain بتقريب واحد */
+  /** «نحو 3.52 ر.س يوميًا»: الإجمالي على أيام المدة كاملة، محسوب في @masar/domain بتقريب واحد */
   readonly dailyText: string;
   /** «تجميد حتى 60 يومًا»: 5 أيام لكل شهر مدفوع كما في شروط النادي الحالية (config/club-facts.ts) */
   readonly freezeText: string;
@@ -169,20 +169,4 @@ export function toPlanViews(
 /** الاختيار الأول في المحدِّد: الأوفر شهريًا، ثم الأول. */
 export function initialPlanSlug(views: readonly PlanView[]): string | undefined {
   return (views.find((view) => view.isBestValue) ?? views[0])?.slug;
-}
-
-/**
- * ترتيب بطاقات الأسعار في الصف: الأوفر شهريًا في الوسط كما في لغة القالب، وبقية الاشتراكات بترتيبها.
- * ترتيب الشيفرة هو الترتيب المرئي على الشاشة الواسعة، فيتطابق معه التنقل بلوحة المفاتيح وقارئ الشاشة.
- */
-export function centreBestValue<T extends { readonly isBestValue: boolean }>(
-  views: readonly T[],
-): T[] {
-  const best = views.find((view) => view.isBestValue);
-  if (best === undefined) {
-    return [...views];
-  }
-  const rest = views.filter((view) => view !== best);
-  const middle = Math.floor(rest.length / 2);
-  return [...rest.slice(0, middle), best, ...rest.slice(middle)];
 }

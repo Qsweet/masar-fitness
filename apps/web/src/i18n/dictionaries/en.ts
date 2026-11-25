@@ -65,6 +65,7 @@ export const en: Dictionary = {
     emptyAction: "Message us on WhatsApp",
   },
   payment: {
+    eyebrow: "Payment",
     title: "Payment methods",
     methods: [
       { name: "mada", note: "mada card" },
@@ -83,6 +84,7 @@ export const en: Dictionary = {
   memberships: {
     title: "Memberships",
     intro: "Every membership covers all club facilities. Only duration and price differ.",
+    compareEyebrow: "Compare",
     compareTitle: "Compare memberships",
     compareCaption: "Membership comparison by duration, price and benefits",
     rowPlan: "Membership",

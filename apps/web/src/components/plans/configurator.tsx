@@ -8,7 +8,7 @@ import { StickyReveal } from "@/components/ui/sticky-reveal";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { PlanOption } from "./plan-option";
 import { PurchaseButton } from "./purchase-button";
-import { centreBestValue, type PlanView } from "./plan-view";
+import type { PlanView } from "./plan-view";
 import styles from "./configurator.module.css";
 
 export interface ConfiguratorProps {
@@ -132,7 +132,7 @@ export function Configurator(props: ConfiguratorProps) {
     <div className={styles.configurator}>
       <fieldset className={styles.options} data-count={plans.length}>
         <legend className="sr-only">{labels.legend}</legend>
-        {centreBestValue(plans).map((plan) => (
+        {plans.map((plan) => (
           <PlanOption
             key={plan.slug}
             plan={plan}

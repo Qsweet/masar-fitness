@@ -42,7 +42,15 @@ test.describe("الواجهة", () => {
   }) => {
     await page.goto("/");
     const hero = page.locator("#top");
-    await expect(hero.getByRole("button", { name: "أوقف الفيديو" })).toBeVisible();
+    const pause = hero.getByRole("button", { name: "أوقف الفيديو" });
+    await expect(pause).toBeVisible();
+    // الزر غير محجوب بزر المحادثة العائم ولا بشريط التبويب: هو العنصر الأعلى عند مركزه
+    const box = await pause.boundingBox();
+    const hit = await page.evaluate(
+      ([x, y]) => document.elementFromPoint(x ?? 0, y ?? 0)?.closest("button")?.textContent ?? "",
+      [(box?.x ?? 0) + (box?.width ?? 0) / 2, (box?.y ?? 0) + (box?.height ?? 0) / 2],
+    );
+    expect(hit).toContain("أوقف الفيديو");
     await hero.getByRole("button", { name: /شاهد الفيديو/ }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
@@ -58,6 +66,8 @@ test.describe("الواجهة", () => {
     const stats = page.getByRole("region", { name: "النادي بالأرقام" });
     await expect(stats).toContainText("2018");
     await expect(stats).toContainText("4.5");
+    // «أكثر من 60» بالصيغة العربية «+60»
+    await expect(stats).toContainText("+60");
     await expect(stats).toContainText("1,841");
     await expect(stats).not.toContainText(/عضو|%/);
   });
@@ -120,12 +130,12 @@ test.describe("بطاقات الأسعار", () => {
     await page.goto("/");
     const cards = durations(page).locator("label");
     await expect(cards).toHaveCount(3);
-    // الأوفر شهريًا (12 شهرًا) في الوسط
+    // ترتيب واحد بالمدة: 3 ← 6 ← 12 (الأوفر شهريًا آخرها بشارته)
     await expect(cards.nth(0)).toContainText("4 أشهر، منها شهر مجانًا");
     await expect(cards.nth(0)).toContainText("تجميد حتى 15 يومًا");
-    await expect(cards.nth(1)).toContainText("تجميد حتى 60 يومًا");
-    await expect(cards.nth(2)).toContainText("999");
-    await expect(cards.nth(2)).toContainText("تجميد حتى 30 يومًا");
+    await expect(cards.nth(1)).toContainText("999");
+    await expect(cards.nth(1)).toContainText("تجميد حتى 30 يومًا");
+    await expect(cards.nth(2)).toContainText("تجميد حتى 60 يومًا");
     for (const card of await cards.all()) {
       await expect(card).toContainText("يبدأ من تاريخ التفعيل في النادي");
     }
@@ -156,4 +166,23 @@ test.describe("الظهور عند التمرير", () => {
     );
     expect(hidden).toBe(0);
   });
+});
+
+test("شريط المزايا: كل اسم لاتيني معزول بلا كسر سطر، ومفصول بـ«·» لا «و»", async ({ page }) => {
+  await page.goto("/");
+  const strip = page.locator("#highlights");
+  await expect(strip).toContainText("Life Fitness · Hammer Strength");
+  await expect(strip).toContainText("HIIT · HYROX · Boot Camp");
+  const names = await strip
+    .locator("bdi")
+    .evaluateAll((elements) =>
+      elements.map(
+        (element) => `${element.textContent}|${getComputedStyle(element).whiteSpace}`,
+      ),
+    );
+  expect(names).toEqual(
+    ["Life Fitness", "Hammer Strength", "HIIT", "HYROX", "Boot Camp"].map(
+      (name) => `${name}|nowrap`,
+    ),
+  );
 });

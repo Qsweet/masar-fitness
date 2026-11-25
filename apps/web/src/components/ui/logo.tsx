@@ -2,7 +2,10 @@ import Image from "next/image";
 import lockup from "@/assets/brand/logo-lockup.svg";
 import stacked from "@/assets/brand/logo.svg";
 
-/** الشعار الرسمي متجهًا (أبيض وأصفر لخلفية سوداء): الكامل كما رُسم، والأفقي من عناصره نفسها للترويسة. */
+/**
+ * الشعار الرسمي متجهًا (أبيض وأصفر لخلفية سوداء): الكامل كما رُسم، والأفقي من عناصره نفسها للترويسة
+ * (الرمز وMASTERS WAY بلا السطر العربي الذي لا يُقرأ في ارتفاع الترويسة).
+ */
 const ART = { stacked, lockup } as const;
 
 interface LogoProps {

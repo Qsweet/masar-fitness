@@ -37,13 +37,15 @@ test.describe("الرئيسية", () => {
     await expect(annual).toContainText("14 شهرًا، منها شهران مجانًا");
     await expect(annual).toContainText("الأكثر قيمة");
     await expect(annual).toContainText("نحو 107 ر.س شهريًا");
+    // اليومي بالصيغة نفسها: «نحو … يوميًا» لا علامة «≈» منفصلة في طرف السطر
+    await expect(annual).toContainText(/نحو [\d.]+ ر\.س يوميًا/);
     await expect(annual).toContainText("تجميد حتى 60 يومًا");
     await expect(annual.getByRole("radio")).toBeChecked();
     // شارة «الأوفر شهريًا» محسوبة: بطاقة واحدة فقط
     await expect(durations(page).getByText("الأكثر قيمة", { exact: true })).toHaveCount(1);
 
-    // الأوفر في وسط الصف (ترتيب الشيفرة = الترتيب المرئي على الشاشة الواسعة)
-    await expect(options.nth(1)).toHaveValue(ANNUAL.slug);
+    // ترتيب واحد بالمدة في كل المقاسات وفي جدول المقارنة: 3 ← 6 ← 12، والأوفر بشارته وإطاره
+    await expect(options.nth(2)).toHaveValue(ANNUAL.slug);
 
     await expect(summary(page)).toContainText(ANNUAL.nameAr);
     await expect(summary(page)).toContainText(`${ANNUAL.price} ر.س`);
@@ -150,6 +152,9 @@ test.describe("صفحة الاشتراك", () => {
   }) => {
     await page.goto(`/memberships/${ANNUAL.slug}`);
     await expect(durations(page)).toHaveCount(0);
+    // العنوان اسم الباقة التسويقي، والمدة سطر تحته و«+» ملتصق بما بعده (لا «+» وحده في آخر السطر)
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("رحلة الأبطال");
+    await expect(page.locator("#top")).toContainText("12 شهرًا +\u00a0شهران مجانًا");
     const hero = offer(page);
     await expect(hero).toContainText("الإجمالي للشخص");
     await expect(hero).toContainText(`${ANNUAL.price} ر.س`);
@@ -192,7 +197,8 @@ test.describe("صفحة الاشتراك", () => {
 
   test("النسخة الإنجليزية بالاسم والعملة الإنجليزيين", async ({ page }) => {
     await page.goto(`/en/memberships/${ANNUAL.slug}`);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(ANNUAL.nameEn);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Champions' Journey");
+    await expect(page.locator("#top")).toContainText(ANNUAL.nameEn.replace("+ ", "+\u00a0"));
     await expect(offer(page)).toContainText(`${ANNUAL.price} SAR`);
     await expect(offer(page)).toContainText("14 months, including 2 months free");
   });

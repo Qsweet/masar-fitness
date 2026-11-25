@@ -18,12 +18,15 @@ interface StatsProps {
  * مراجعاته بمصدرهما وتاريخ قراءتهما، وعدد أجهزة صالة الحديد. لا أعداد أعضاء ولا مدربين غير مؤكدة.
  */
 export function Stats({ locale, dictionary, rating }: StatsProps) {
-  const { stats } = dictionary;
+  const { stats, about } = dictionary;
   const items = [
     { value: String(CLUB_FACTS.foundedYear), label: stats.founded },
     { value: rating.value, label: stats.rating },
     { value: formatNumber(GOOGLE_RATING.count), label: stats.reviews },
-    { value: `${String(CLUB_FACTS.machinesOver)}+`, label: stats.machines },
+    {
+      value: fill(about.statValue, { count: String(CLUB_FACTS.machinesOver) }),
+      label: stats.machines,
+    },
   ];
   return (
     <section className={styles.band} aria-labelledby="stats-title">

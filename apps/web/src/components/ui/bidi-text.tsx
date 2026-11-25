@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import styles from "./bidi-text.module.css";
 
 /**
  * كلمة لاتينية أو أكثر متصلة بمسافات أو نقطة أو شرطة أو +، مثل «Life Fitness» و«Boot Camp» و«BE STRONG 45».
@@ -7,7 +8,7 @@ import { Fragment } from "react";
 const LATIN_RUN = /([A-Za-z][A-Za-z0-9]*(?:[ .+-][A-Za-z0-9]+)*)/;
 
 /**
- * نص عربي فيه أسماء لاتينية: كل اسم في ‎<bdi>‎ معزول الاتجاه، فلا تنفصل عنه «و» ولا علامة الترقيم ولا تنقلب
+ * نص عربي فيه أسماء لاتينية: كل اسم في ‎<bdi>‎ معزول الاتجاه وبلا كسر سطر داخله، فلا تنفصل عنه «و» ولا علامة الترقيم ولا تنقلب
  * الكلمات حوله. النص نفسه لا يتغير (قارئ الشاشة والنسخ يقرآنه كما هو).
  */
 export function BidiText({ text }: { readonly text: string }) {
@@ -17,6 +18,12 @@ export function BidiText({ text }: { readonly text: string }) {
   }
   return parts.map((part, index) =>
     // التقسيم بمجموعة التقاط: الأجزاء الفردية هي المطابقات اللاتينية
-    index % 2 === 1 ? <bdi key={index}>{part}</bdi> : <Fragment key={index}>{part}</Fragment>,
+    index % 2 === 1 ? (
+      <bdi key={index} className={styles.latin}>
+        {part}
+      </bdi>
+    ) : (
+      <Fragment key={index}>{part}</Fragment>
+    ),
   );
 }

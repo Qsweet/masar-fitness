@@ -26,10 +26,10 @@ export const landingAr = {
   highlights: {
     title: "ما يميز النادي",
     items: [
-      { title: "أجهزة عالمية", line: "Life Fitness و Hammer Strength" },
+      { title: "أجهزة عالمية", line: "Life Fitness · Hammer Strength" },
       { title: "مدربون معتمدون", line: "معك في الصالة من أول يوم" },
       { title: "مرافق متكاملة", line: "مسبح وجاكوزي وساونا وبخار" },
-      { title: "حصص جماعية", line: "HIIT و HYROX و Boot Camp" },
+      { title: "حصص جماعية", line: "HIIT · HYROX · Boot Camp" },
       { title: "موقع مميز في بريدة", line: "حي الرحاب، الطريق الدائري الشمالي" },
     ],
   },
@@ -59,8 +59,8 @@ export const landingAr = {
     "six-months": "مسار التغيير",
     "one-year": "رحلة الأبطال",
   } as Readonly<Record<string, string>>,
-  /** {amount} {unit}: «3.52 ر.س». السعر ÷ أيام المدة كاملة شاملة الأشهر المجانية */
-  daily: "≈ {amount} {unit} يوميًا",
+  /** {amount} {unit}: «3.52 ر.س». السعر ÷ أيام المدة كاملة شاملة الأشهر المجانية. «نحو» كالشهري، لا «≈» */
+  daily: "نحو {amount} {unit} يوميًا",
   dailyNote: "التكلفة اليومية تقريبية: الإجمالي على أيام المدة كاملة.",
   steps: {
     label: "خطوات الاشتراك",

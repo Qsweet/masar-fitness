@@ -26,27 +26,32 @@
   color: var(--ink);
 }
 
+/* طرق الدفع رقائق في صف واحد يلتف: الاسم بالخط العريض وسطره الصغير بجانبه، بلا بطاقات طويلة */
 .payments {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  max-width: 56rem;
+  margin-inline: auto;
 }
 
 .payments li {
-  display: grid;
-  align-content: start;
-  gap: 0.25rem;
-  padding: 1.25rem;
-  border-radius: var(--radius);
-  background: var(--card-2);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--line-hover);
+  border-radius: var(--radius-pill);
+  background: var(--card);
 }
 
 .payments strong {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 800;
 }
 
-.payments span {
+.paymentNote {
   color: var(--muted);
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
 }

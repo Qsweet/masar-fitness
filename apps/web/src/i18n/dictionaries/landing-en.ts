@@ -58,7 +58,7 @@ export const landingEn: LandingDictionary = {
     "six-months": "The Change Path",
     "one-year": "Champions' Journey",
   },
-  daily: "≈ {amount} {unit} a day",
+  daily: "About {amount} {unit} a day",
   dailyNote: "The daily cost is approximate: the total over every day of the full term.",
   steps: {
     label: "Checkout steps",

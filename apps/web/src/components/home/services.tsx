@@ -1,4 +1,3 @@
-import { BidiText } from "@/components/ui/bidi-text";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { PhotoCard } from "@/components/ui/photo-card";
 import { Price } from "@/components/ui/price";
@@ -65,7 +64,7 @@ function ServiceCard({
 
 /**
  * البرامج المدفوعة غير القابلة للشراء من الموقع بعد: ثلاث بطاقات بنمط البرامج، والطلب عبر واتساب.
- * BE STRONG 45 «قيد الإعداد» في موقع النادي: سطر صغير تحت الشبكة لا بطاقة ناقصة.
+ * BE STRONG 45 لا يُذكر ما دام «قيد الإعداد» في موقع النادي: لا سطر عن منتج غير موجود.
  */
 export function Services({
   dictionary,
@@ -89,12 +88,6 @@ export function Services({
             <ServiceCard key={service.id} service={service} dictionary={dictionary} />
           ))}
         </ul>
-        <p className={styles.soon}>
-          <Icon name="calendar" />
-          <span>
-            <BidiText text={copy.soon} />
-          </span>
-        </p>
       </div>
     </section>
   );

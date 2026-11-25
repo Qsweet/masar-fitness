@@ -35,17 +35,17 @@ export function Benefits({
 }
 
 /**
- * طرق الدفع المفصّلة. تعرضها الصفحة والشراء الإلكتروني مفتوح فقط (isCheckoutEnabled)؛ قبله يكفي سطر
+ * طرق الدفع صفًا واحدًا مضغوطًا من الرقائق (الاسم وسطره). تعرضها الصفحة والشراء الإلكتروني مفتوح فقط (isCheckoutEnabled)؛ قبله يكفي سطر
  * واحد صادق بجانب زر واتساب (plan.buyNote)، حتى لا يبدو أن الموقع يقبل الدفع وهو لا يقبله.
  */
 export function Payment({ dictionary }: { readonly dictionary: Dictionary }) {
-  const { payment, plans } = dictionary;
+  const { payment } = dictionary;
   return (
     <section className="section" aria-labelledby="payment-title">
       <div className="container">
         <SectionHead
           id="payment-title"
-          eyebrow={plans.eyebrow}
+          eyebrow={payment.eyebrow}
           title={payment.title}
           lead={payment.note}
         />
@@ -53,7 +53,7 @@ export function Payment({ dictionary }: { readonly dictionary: Dictionary }) {
           {payment.methods.map((method) => (
             <li key={method.name}>
               <strong>{method.name}</strong>
-              <span>{method.note}</span>
+              <span className={styles.paymentNote}>{method.note}</span>
             </li>
           ))}
         </ul>

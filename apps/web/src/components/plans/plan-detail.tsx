@@ -54,8 +54,14 @@ function Offer({ plan, dictionary }: Pick<PlanDetailProps, "plan" | "dictionary"
   );
 }
 
+/** «+» لا يبقى وحده في آخر السطر: مسافة غير قابلة للكسر بينه وبين ما بعده («+ شهران مجانًا»). */
+function keepPlusWithNext(text: string): string {
+  return text.replaceAll("+ ", "+\u00a0");
+}
+
 /**
- * رأس صفحة الاشتراك فوق صورة صف البنش المظللة: الرجوع، ووسم الأوفر إن كان، والعنوان h1 وسطره،
+ * رأس صفحة الاشتراك فوق صورة صف البنش المظللة: الرجوع، ووسم الأوفر إن كان، والعنوان h1 باسم الباقة
+ * التسويقي («رحلة الأبطال») وتحته المدة، وسطره،
  * وبطاقة السعر.
  */
 export function PlanHero(props: PlanDetailProps) {
@@ -71,8 +77,11 @@ export function PlanHero(props: PlanDetailProps) {
           </Link>
           {plan.isBestValue ? <p className={styles.badge}>{dictionary.plans.bestValue}</p> : null}
           <h1 id="plan-title" className={styles.title}>
-            {plan.name}
+            {plan.tier ?? keepPlusWithNext(plan.name)}
           </h1>
+          {plan.tier === undefined ? null : (
+            <p className={styles.subtitle}>{keepPlusWithNext(plan.name)}</p>
+          )}
           <p className={styles.lead}>{props.summary}</p>
         </div>
         <Offer plan={plan} dictionary={dictionary} />

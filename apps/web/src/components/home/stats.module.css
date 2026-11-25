@@ -1,10 +1,18 @@
-/* شريط الأرقام: أرقام كبيرة مائلة كحروف الشعار، بفواصل رفيعة، وتوهّج أصفر خافت خلف الشريط. */
+/* شريط الأرقام: أرقام كبيرة مائلة كحروف الشعار، بفواصل رفيعة، على سطح مسطح وخط المضمار المتقطع أعلاه. */
 .band {
   position: relative;
   padding-block: clamp(3.5rem, 6vw, 5rem);
-  border-block: 1px solid var(--line);
-  background:
-    radial-gradient(60% 120% at 50% 0%, var(--yellow-glow), transparent 70%), var(--bg-alt);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-alt);
+}
+
+.band::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 2px;
+  background: var(--track-dash) 0 0 / calc(var(--dash) + var(--dash-gap)) 100% repeat-x;
 }
 
 .list {
@@ -13,10 +21,14 @@
   gap: 2rem 1rem;
 }
 
-/* الرقم فوق تسميته بصريًا، والتسمية أولًا في الشيفرة (dt ثم dd) */
+/*
+ * الرقم فوق تسميته بصريًا، والتسمية أولًا في الشيفرة (dt ثم dd). flex-end في الاتجاه المعكوس = أعلى
+ * الخانة: الأرقام على خط واحد ولو التفّت تسمية إحداها على سطرين.
+ */
 .item {
   display: flex;
   flex-direction: column-reverse;
+  justify-content: flex-end;
   align-items: center;
   gap: 0.25rem;
   text-align: center;

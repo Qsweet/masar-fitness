@@ -76,7 +76,6 @@ export const homeEn: HomeDictionary = {
     packages: "Packages and prices",
     ask: "Ask on WhatsApp",
     whatsappMessage: "Hello, I'd like to ask about “{service}”.",
-    soon: "In preparation: BE STRONG 45, a 45-day digital program built around your goal and level. It will be announced when ready.",
     units: {
       session: { one: "1 session", two: "2 sessions", few: "sessions", many: "sessions" },
       sitting: { one: "1 session", two: "2 sessions", few: "sessions", many: "sessions" },

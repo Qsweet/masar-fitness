@@ -56,6 +56,13 @@
   text-wrap: balance;
 }
 
+.subtitle {
+  margin-top: 0.5rem;
+  color: var(--yellow);
+  font-size: clamp(1.125rem, 0.8vw + 0.95rem, 1.5rem);
+  font-weight: 800;
+}
+
 .lead {
   max-width: var(--measure);
   margin-top: 0.75rem;

@@ -71,8 +71,8 @@
   --gutter-end: max(16px, env(safe-area-inset-right, 0px));
   --max: 80rem;
   --header-height: 4.5rem;
-  --logo-height: 2.75rem;
-  --footer-logo-height: 7.5rem;
+  --logo-height: 3rem;
+  --footer-logo-height: 8.5rem;
   /* شريط التبويب السفلي على الهاتف */
   --tabbar-height: 4rem;
   /* أقصى عرض لسطر قراءة */
@@ -94,8 +94,8 @@
     --gutter: max(48px, env(safe-area-inset-left, 0px));
     --gutter-end: max(48px, env(safe-area-inset-right, 0px));
     --header-height: 5rem;
-    --logo-height: 3.25rem;
-    --footer-logo-height: 9rem;
+    --logo-height: 3.5rem;
+    --footer-logo-height: 10rem;
   }
 }
 

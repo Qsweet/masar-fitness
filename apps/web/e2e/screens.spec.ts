@@ -9,6 +9,9 @@ const PAGES = [
   ["home", "/"],
   ["memberships", "/memberships"],
   ["plan", "/memberships/one-year"],
+  ["tool", "/tools/cost-per-visit?visits=3"],
+  ["blog", "/blog"],
+  ["article", "/blog/training-while-fasting-ramadan-guide"],
 ] as const;
 
 for (const [locale, prefix] of [

@@ -11,3 +11,10 @@ export type { SaudiMobile } from "./saudi-mobile";
 export * from "./commerce/checkout";
 export * from "./commerce/lifecycle";
 export * from "./commerce/pricing";
+export {
+  costPerVisit,
+  DEFAULT_VISITS_PER_WEEK,
+  MAX_VISITS_PER_WEEK,
+  MIN_VISITS_PER_WEEK,
+  parseVisitsPerWeek,
+} from "./tools/cost-per-visit";

@@ -124,9 +124,9 @@ test.describe("صفحة الاشتراك", () => {
     await expect(summary(page)).toContainText("14 months: 12 months + 2 months free");
   });
 
-  test("الرابط المعتمد وبدائل اللغة", async ({ page }) => {
+  test("الرابط المعتمد وبدائل اللغة", async ({ page, baseURL }) => {
     await page.goto(`/en/memberships/${ANNUAL.slug}`);
-    const origin = "http://127.0.0.1:3100";
+    const origin = baseURL ?? "";
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
       `${origin}/en/memberships/${ANNUAL.slug}`,

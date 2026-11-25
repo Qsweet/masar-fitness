@@ -53,7 +53,7 @@ export function Hero({ dictionary }: SectionProps) {
 export function FacilityLine({ dictionary }: SectionProps) {
   const { facilities } = dictionary;
   return (
-    <section className={heroStyles.value} aria-label={facilities.label}>
+    <section id="facilities" className={heroStyles.value} aria-label={facilities.label}>
       <p className={heroStyles.valueLabel}>{facilities.label}</p>
       <ul className={heroStyles.valueLine}>
         {facilities.items.map((item) => (

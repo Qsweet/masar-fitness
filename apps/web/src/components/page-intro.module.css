@@ -26,6 +26,13 @@
   line-height: 1;
 }
 
+/* عنوان المقال سؤال طويل: بحجم ملصق يملأ الشاشة الأولى، وتتداخل نازلات العربية (ي، ج) مع السطر التالي. */
+.articleTitle {
+  max-width: 22ch;
+  font-size: clamp(2.25rem, 4vw + 1rem, 4.5rem);
+  line-height: 1.2;
+}
+
 .lead {
   max-width: 38rem;
   margin-top: 1rem;

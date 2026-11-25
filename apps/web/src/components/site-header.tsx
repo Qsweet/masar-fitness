@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
+import { ROUTES } from "@/config/routes";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { LOCALES, localizedPath, type Locale } from "@/i18n/locales";
 import { cx } from "@/lib/cx";
@@ -12,6 +13,8 @@ interface SiteHeaderProps {
   readonly path: string;
   /** وجهة «اشترك الآن»: قسم الاشتراكات في الصفحة نفسها إن وُجد، وإلا صفحة الاشتراكات. */
   readonly joinHref: string;
+  /** للمدونة مقال ظاهر بهذه اللغة */
+  readonly showBlog: boolean;
   readonly dictionary: Dictionary;
 }
 
@@ -26,7 +29,9 @@ function LanguageLink({
   path,
   dictionary,
   className,
-}: Omit<SiteHeaderProps, "joinHref"> & { readonly className: string | undefined }) {
+}: Pick<SiteHeaderProps, "locale" | "path" | "dictionary"> & {
+  readonly className: string | undefined;
+}) {
   const alternate = otherLocale(locale);
   return (
     <Link
@@ -40,13 +45,18 @@ function LanguageLink({
   );
 }
 
-function NavLinks({ locale, dictionary }: Pick<SiteHeaderProps, "locale" | "dictionary">) {
+function NavLinks({
+  locale,
+  showBlog,
+  dictionary,
+}: Pick<SiteHeaderProps, "locale" | "showBlog" | "dictionary">) {
   const home = localizedPath(locale);
   const links = [
     { href: localizedPath(locale, "/memberships"), label: dictionary.nav.memberships },
     { href: `${home}#train`, label: dictionary.nav.train },
     { href: `${home}#water`, label: dictionary.nav.water },
     { href: `${home}#location`, label: dictionary.nav.location },
+    ...(showBlog ? [{ href: localizedPath(locale, ROUTES.blog), label: dictionary.blog.nav }] : []),
   ];
   return (
     <>
@@ -63,14 +73,14 @@ function NavLinks({ locale, dictionary }: Pick<SiteHeaderProps, "locale" | "dict
  * الترويسة السوداء: الشعار على خلفيته الداكنة كما صُمّم، وروابط نصية على الشاشات الواسعة،
  * وقائمة <details> على الجوال (تعمل بلا JavaScript) مع تبديل اللغة ظاهرًا بجانبها، وكتلة الاشتراك الصفراء دائمًا ظاهرة.
  */
-export function SiteHeader({ locale, path, joinHref, dictionary }: SiteHeaderProps) {
+export function SiteHeader({ locale, path, joinHref, showBlog, dictionary }: SiteHeaderProps) {
   return (
     <header className={styles.header}>
       <Link href={localizedPath(locale)} className={styles.brand}>
         <Logo height={LOGO_HEIGHT} alt={dictionary.club.logoAlt} preload />
       </Link>
       <nav aria-label={dictionary.nav.main} className={styles.nav}>
-        <NavLinks locale={locale} dictionary={dictionary} />
+        <NavLinks locale={locale} showBlog={showBlog} dictionary={dictionary} />
         <LanguageLink locale={locale} path={path} dictionary={dictionary} className={styles.link} />
       </nav>
       <LanguageLink
@@ -81,7 +91,7 @@ export function SiteHeader({ locale, path, joinHref, dictionary }: SiteHeaderPro
       />
       <MobileMenu label={dictionary.nav.menu} className={styles.menu}>
         <nav aria-label={dictionary.nav.mobile} className={styles.menuPanel}>
-          <NavLinks locale={locale} dictionary={dictionary} />
+          <NavLinks locale={locale} showBlog={showBlog} dictionary={dictionary} />
         </nav>
       </MobileMenu>
       <Link href={joinHref} className={styles.cta}>

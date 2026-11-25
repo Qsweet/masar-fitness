@@ -23,6 +23,8 @@ SEED_DEMO_DATA=yes pnpm db:seed:demo   # بيانات الباقات التجر�
 pnpm build && pnpm e2e                 # المتصفح يحتاج بناءً حديثًا
 ```
 
+لتشغيل نسختين معًا على الجهاز نفسه: `PLAYWRIGHT_PORT=3200` مع `SITE_URL=http://127.0.0.1:3200` (الافتراضي 3100).
+
 قاعدة الاختبار لأول مرة (PostgreSQL محلي):
 
 ```bash

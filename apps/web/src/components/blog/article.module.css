@@ -1,0 +1,285 @@
+/* المقال: عمود قراءة واحد بعرض مريح، خلاصة صفراء، وكتل بخطوط الحبر والفواصل المائلة «/». */
+.draft {
+  padding: 0.75rem var(--gutter-end) 0.75rem var(--gutter);
+  background: var(--energy);
+  color: var(--ink);
+  text-align: center;
+}
+
+.trail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.trail li {
+  min-width: 0;
+}
+
+/* الصفحة الحالية: سطر واحد يُقص بعلامة الحذف إن طال، والنص كاملًا باقٍ في الصفحة */
+.trailCurrent {
+  flex: 1 1 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trail li + li::before {
+  content: "/";
+  margin-inline-end: 0.5rem;
+  color: var(--energy);
+}
+
+.topic {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.1rem 0.6rem;
+  background: var(--energy);
+  color: var(--ink);
+  font-family: var(--display);
+  font-weight: 700;
+}
+
+.meta {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  color: var(--grey-on-ink);
+  font-size: 0.95rem;
+}
+
+.metaLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+
+.metaLine > * + *::before {
+  content: "/ ";
+  color: var(--energy);
+}
+
+.reviewer {
+  color: var(--white);
+  font-weight: 600;
+}
+
+.body {
+  max-width: 50rem;
+  padding-bottom: var(--section-space);
+}
+
+.summary {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--energy);
+  color: var(--ink);
+}
+
+.summaryTitle {
+  font-family: var(--display);
+  font-size: clamp(1.75rem, 2vw + 1rem, 2.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.summaryText {
+  margin-top: 0.75rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.takeawaysTitle {
+  margin-top: 1.25rem;
+  font-family: var(--display);
+  font-weight: 700;
+}
+
+.takeaways li,
+.list li {
+  padding-inline-start: 1.25rem;
+  text-indent: -1.25rem;
+}
+
+.takeaways li::before,
+.list li::before {
+  content: "/ ";
+  font-weight: 800;
+}
+
+.list li::before {
+  color: var(--energy);
+  -webkit-text-stroke: 0.5px var(--ink);
+}
+
+.toc {
+  margin-top: 2rem;
+  padding-block: 1.25rem;
+  border-block: 2px solid var(--ink);
+}
+
+.smallTitle {
+  font-family: var(--display);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.toc ol {
+  margin-top: 0.5rem;
+  padding-inline-start: 1.5rem;
+  list-style: decimal;
+}
+
+.toc a,
+.paragraph a,
+.sources a,
+.related a {
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--energy);
+  text-underline-offset: 0.25em;
+}
+
+.block {
+  padding-top: 3rem;
+}
+
+.block > * + * {
+  margin-top: 1rem;
+}
+
+.paragraph {
+  max-width: 68ch;
+}
+
+.steps {
+  counter-reset: step;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr;
+  counter-increment: step;
+}
+
+.steps li::before {
+  content: counter(step);
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--ink);
+  color: var(--energy);
+  font-family: var(--display);
+  font-weight: 800;
+}
+
+.tableScroller {
+  overflow-x: auto;
+  border-bottom: 2px solid var(--ink);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table caption {
+  padding-bottom: 0.5rem;
+  font-family: var(--display);
+  font-weight: 700;
+  text-align: start;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  text-align: start;
+  vertical-align: top;
+  border-top: 1px solid rgb(12 16 20 / 14%);
+}
+
+.table thead th {
+  background: var(--ink);
+  color: var(--white);
+}
+
+/*
+ * الشاشة الضيقة: ثلاثة أعمدة نصية تصير كلمة في كل سطر. يتكدس كل صف بطاقةً: رأس الصف أولًا،
+ * ثم كل خلية تحت عنوان عمودها (data-label). الرأس الأصلي مخفي بصريًا ويبقى لقارئ الشاشة.
+ */
+@media (width < 40rem) {
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+  }
+
+  .table tbody tr {
+    padding-block: 0.75rem;
+    border-top: 1px solid rgb(12 16 20 / 14%);
+  }
+
+  .table tbody th,
+  .table td {
+    padding: 0.25rem 0;
+    border-top: none;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--grey);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+}
+
+.note {
+  padding: 1.25rem;
+  background: var(--white);
+  border-inline-start: 6px solid var(--ink);
+}
+
+.noteTitle {
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.sources {
+  display: grid;
+  gap: 0.75rem;
+  padding-inline-start: 1.5rem;
+  list-style: decimal;
+  overflow-wrap: anywhere;
+}
+
+/* العنوان سطر مستقل وتحته الناشر والسنة: عنوان لاتيني في صفحة عربية لا يتداخل مع ما بعده. */
+.sourceTitle,
+.sourceLine {
+  display: block;
+}
+
+.related {
+  display: grid;
+  gap: 1rem;
+}
+
+.related a {
+  font-family: var(--display);
+  font-size: 1.25rem;
+  font-weight: 700;
+}

@@ -1,25 +1,23 @@
 import Image from "next/image";
-import logo from "@/assets/brand/logo.png";
+import lockup from "@/assets/brand/logo-lockup.svg";
+import stacked from "@/assets/brand/logo.svg";
+
+/** الشعار الرسمي متجهًا (أبيض وأصفر لخلفية سوداء): الكامل كما رُسم، والأفقي من عناصره نفسها للترويسة. */
+const ART = { stacked, lockup } as const;
 
 interface LogoProps {
-  /** أقصى ارتفاع معروض بالبكسل، لاختيار حجم الصورة المناسب */
-  readonly height: number;
-  /** ارتفاع من رموز التصميم يتغير مع الشاشة (مثل ‎var(--logo-height)‎)؛ بدونه يُعرض بـheight */
-  readonly cssHeight?: string;
-  /** نص بديل؛ فارغ حين يكرر الشعار نصًا مجاورًا */
+  readonly variant: keyof typeof ART;
+  /** ارتفاع من رموز التصميم (مثل ‎var(--logo-height)‎) */
+  readonly height: string;
+  /** نص بديل من القاموس؛ فارغ حين يكرر الشعار نصًا مجاورًا */
   readonly alt: string;
   readonly preload?: boolean;
 }
 
-/** الشعار الأصلي كما هو (أبيض وكهرماني لخلفية داكنة): لا تلوين ولا قص ولا تمديد. */
-export function Logo({ height, cssHeight, alt, preload = false }: LogoProps) {
+/** الشعار الرسمي بلا تلوين ولا قص ولا تمديد؛ ملف SVG يُقدَّم كما هو بلا تحسين صور. */
+export function Logo({ variant, height, alt, preload = false }: LogoProps) {
+  const art = ART[variant];
   return (
-    <Image
-      src={logo}
-      alt={alt}
-      sizes={`${String(Math.ceil((height * logo.width) / logo.height))}px`}
-      preload={preload}
-      style={{ height: cssHeight ?? height, width: "auto" }}
-    />
+    <Image src={art} alt={alt} preload={preload} unoptimized style={{ height, width: "auto" }} />
   );
 }

@@ -1,4 +1,4 @@
-/* ترويسة فاتحة شبه شفافة ثابتة أعلى الصفحة، بخط سفلي خفيف. */
+/* ترويسة سوداء ثابتة أعلى الصفحة (أرضية الشعار الرسمي)، بخط مضمار أصفر متقطع أسفلها. */
 .header {
   position: sticky;
   top: 0;
@@ -6,7 +6,16 @@
   padding-top: env(safe-area-inset-top, 0px);
   background: var(--header-bg);
   backdrop-filter: saturate(180%) blur(12px);
-  border-bottom: 1px solid var(--rule);
+  color: var(--white);
+}
+
+.header::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--track-dash) 0 0 / calc(var(--dash) + var(--dash-gap)) 100% repeat-x;
 }
 
 .inner {
@@ -44,7 +53,7 @@
 }
 
 .link:hover {
-  color: var(--accent-ink);
+  color: var(--yellow);
 }
 
 .actions {
@@ -64,20 +73,20 @@
 }
 
 .language:hover {
-  color: var(--accent-ink);
+  color: var(--yellow);
 }
 
-/* زر الفعل حبة بالتدرّج ونص الحبر؛ يُخفى على أضيق الشاشات (شريط الشراء الثابت يقوم مقامه) */
+/* زر الفعل حبة صفراء بنص أسود؛ يُخفى على أضيق الشاشات (شريط الشراء الثابت يقوم مقامه) */
 .cta {
   display: none;
   align-items: center;
   min-height: var(--target);
   padding-inline: 1.25rem;
   border-radius: var(--radius-pill);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 800;
   text-decoration: none;
   white-space: nowrap;
   box-shadow: var(--glow-sm);
@@ -85,6 +94,7 @@
 }
 
 .cta:hover {
+  background: var(--yellow-hover);
   transform: translateY(-1px);
 }
 
@@ -113,7 +123,7 @@
 }
 
 .menu[open] summary {
-  background: var(--surface);
+  background: var(--ink-2);
 }
 
 .menuPanel {
@@ -123,9 +133,9 @@
   display: grid;
   min-width: 15rem;
   padding: 0.5rem;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--rule-on-ink);
   border-radius: var(--radius);
-  background: var(--white);
+  background: var(--ink-2);
   box-shadow: var(--shadow-lg);
 }
 
@@ -134,7 +144,7 @@
 }
 
 .menuPanel .link:hover {
-  background: var(--surface);
+  background: var(--ink);
 }
 
 @media (width >= 30rem) {

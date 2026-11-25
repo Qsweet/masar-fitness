@@ -75,7 +75,7 @@
   display: inline-flex;
   align-items: center;
   min-height: var(--target);
-  color: var(--accent-ink);
+  color: var(--ink);
   font-size: 0.9375rem;
   font-weight: 600;
   text-underline-offset: 0.3em;
@@ -135,7 +135,7 @@
   min-height: 3.25rem;
   padding-inline: 1rem;
   border-radius: var(--radius-sm);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   font-size: 1rem;
   font-weight: 800;

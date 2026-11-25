@@ -80,7 +80,7 @@
 }
 
 .badge {
-  color: var(--accent-ink);
+  color: var(--ink);
   font-weight: 700;
 }
 

@@ -86,5 +86,5 @@
 .soon svg {
   flex: none;
   margin-top: 0.3em;
-  color: var(--accent-ink);
+  color: var(--ink);
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { BrandMark } from "@/components/ui/brand-mark";
 import { Icon } from "@/components/ui/icon";
+import { Logo } from "@/components/ui/logo";
 import { CLUB_CONTACT, whatsappUrl } from "@/config/club";
 import { CLUB_FACTS, SOCIAL_LINKS } from "@/config/club-facts";
 import { ROUTES } from "@/config/routes";
@@ -65,7 +65,7 @@ function programLinks({ locale, dictionary }: SiteFooterProps): FooterLink[] {
 function Brand({ dictionary }: { readonly dictionary: Dictionary }) {
   return (
     <div className={styles.brand}>
-      <BrandMark dictionary={dictionary} onDark />
+      <Logo variant="stacked" height="var(--footer-logo-height)" alt={dictionary.club.logoAlt} />
       <p>{dictionary.footer.tagline}</p>
       <ul className={styles.social} aria-label={dictionary.footer.social}>
         {SOCIAL_LINKS.map((social) => (

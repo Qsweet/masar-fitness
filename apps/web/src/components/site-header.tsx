@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { BrandMark } from "@/components/ui/brand-mark";
 import { Icon } from "@/components/ui/icon";
+import { Logo } from "@/components/ui/logo";
 import { ROUTES } from "@/config/routes";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { LOCALES, localizedPath, type Locale } from "@/i18n/locales";
@@ -49,8 +49,8 @@ function NavLinks(props: Omit<SiteHeaderProps, "path" | "joinHref">) {
 }
 
 /**
- * الترويسة الفاتحة الثابتة: مربع الشعار والاسم في البداية، والروابط النصية في الوسط على الشاشة الواسعة،
- * وتبديل اللغة وزر «اشترك الآن» بالتدرّج في النهاية. على الجوال قائمة <details> تعمل بلا JavaScript.
+ * الترويسة السوداء الثابتة: الشعار الرسمي الأفقي في البداية، والروابط النصية في الوسط على الشاشة الواسعة،
+ * وتبديل اللغة وزر «اشترك الآن» الأصفر في النهاية. على الجوال قائمة <details> تعمل بلا JavaScript.
  */
 export function SiteHeader({ locale, path, joinHref, showBlog, dictionary }: SiteHeaderProps) {
   const alternate = otherLocale(locale);
@@ -58,7 +58,12 @@ export function SiteHeader({ locale, path, joinHref, showBlog, dictionary }: Sit
     <header className={styles.header}>
       <div className={styles.inner}>
         <Link href={localizedPath(locale)} className={styles.brand}>
-          <BrandMark dictionary={dictionary} preload />
+          <Logo
+            variant="lockup"
+            height="var(--logo-height)"
+            alt={dictionary.club.logoAlt}
+            preload
+          />
         </Link>
         <nav aria-label={dictionary.nav.main} className={styles.nav}>
           <NavLinks locale={locale} showBlog={showBlog} dictionary={dictionary} />

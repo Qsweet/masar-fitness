@@ -1,5 +1,8 @@
+/* التذييل الأسود يبدأ بخط المضمار الأصفر المتقطع بعرض الشاشة */
 .footer {
-  background: var(--ink);
+  background:
+    var(--track-dash) 0 0 / calc(var(--dash) + var(--dash-gap)) 3px repeat-x,
+    var(--ink);
   color: var(--grey-on-ink);
   font-size: 0.975rem;
 }
@@ -38,7 +41,7 @@
 
 .links a:hover,
 .contact a:hover {
-  color: var(--energy);
+  color: var(--yellow);
 }
 
 .contact {
@@ -54,7 +57,7 @@
 }
 
 .contact svg {
-  color: var(--energy);
+  color: var(--yellow);
 }
 
 .social {
@@ -76,7 +79,7 @@
 }
 
 .social a:hover {
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
 }
 

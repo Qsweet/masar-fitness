@@ -12,8 +12,8 @@ import "../patterns.css";
 export const dynamic = "force-dynamic";
 export const dynamicParams = false;
 
-// لون شريط المتصفح على الجوال: الترويسة الفاتحة
-export const viewport: Viewport = { themeColor: "#ffffff" };
+// لون شريط المتصفح على الجوال: أسود الترويسة (--ink في globals.css)
+export const viewport: Viewport = { themeColor: "#0a0a0a" };
 
 export function generateStaticParams(): { locale: string }[] {
   return LOCALES.map((locale) => ({ locale }));

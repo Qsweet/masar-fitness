@@ -8,13 +8,13 @@
   align-content: start;
   padding: 1.75rem 1.5rem;
   border-radius: var(--radius-lg);
-  background: var(--wash), var(--ink);
+  background: var(--ink);
   box-shadow: var(--shadow-lg);
   color: var(--white);
 }
 
 .title {
-  color: var(--energy);
+  color: var(--yellow);
   font-family: var(--font);
   font-size: 1.5rem;
   font-weight: 800;
@@ -41,7 +41,7 @@
 
 .lineName::before {
   content: "/ ";
-  color: var(--energy);
+  color: var(--yellow);
 }
 
 .lineDetail,

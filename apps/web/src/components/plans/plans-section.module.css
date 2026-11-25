@@ -1,5 +1,5 @@
 .plans {
-  background: var(--wash), var(--white);
+  background: var(--white);
 }
 
 .empty {
@@ -23,7 +23,7 @@
   display: inline-flex;
   align-items: center;
   min-height: var(--target);
-  color: var(--accent-ink);
+  color: var(--ink);
   font-weight: 700;
   text-underline-offset: 0.3em;
 }

@@ -16,7 +16,7 @@
   height: 3rem;
   flex-shrink: 0;
   border-radius: var(--radius);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   font-size: 1.25rem;
   box-shadow: var(--glow-sm);

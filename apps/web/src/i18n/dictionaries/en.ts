@@ -10,7 +10,6 @@ export const en: Dictionary = {
   club: {
     name: "Masters Way Sports Club",
     shortName: "Masters Way",
-    wordmark: ["Masters", "Way"],
     logoAlt: "Masters Way Sports Club logo",
     slogan: "You've got this",
   },

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Icon, IconTile, type IconName } from "@/components/ui/icon";
+import { TrackArc } from "@/components/ui/track-arc";
 import { Price } from "@/components/ui/price";
 import { SectionHead } from "@/components/ui/section-head";
 import { CLUB_FACTS } from "@/config/club-facts";
@@ -30,7 +31,7 @@ function Offer({ plan, dictionary }: Pick<PlanDetailProps, "plan" | "dictionary"
     <div className={styles.offer}>
       <p className={styles.label}>{labels.priceLabel}</p>
       <p className={styles.price}>
-        <Price parts={plan.price} className="gradient-text" unitClassName={styles.unit} />
+        <Price parts={plan.price} className="accent-text" unitClassName={styles.unit} />
       </p>
       <p className={styles.duration}>{plan.durationText}</p>
       {plan.monthlyText === undefined ? null : <p className={styles.monthly}>{plan.monthlyText}</p>}
@@ -53,7 +54,8 @@ function Offer({ plan, dictionary }: Pick<PlanDetailProps, "plan" | "dictionary"
 export function PlanHero(props: PlanDetailProps) {
   const { plan, dictionary, locale } = props;
   return (
-    <section id={props.id} className={styles.hero} aria-labelledby="plan-title">
+    <section id={props.id} className={cx("on-ink", styles.hero)} aria-labelledby="plan-title">
+      <TrackArc className={styles.track} />
       <div className={cx("container", styles.inner)}>
         <div className={styles.text}>
           <Link href={localizedPath(locale, ROUTES.memberships)} className={styles.back}>

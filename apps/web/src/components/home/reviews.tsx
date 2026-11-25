@@ -31,7 +31,7 @@ function Rating({
   const { reviews } = dictionary;
   return (
     <div className={cx("reveal", styles.rating)}>
-      <p className={cx("gradient-text", styles.ratingValue)}>{rating.value}</p>
+      <p className={cx("accent-text", styles.ratingValue)}>{rating.value}</p>
       <div>
         <p className={styles.ratingLabel}>{reviews.ratingLabel}</p>
         <p>{rating.count}</p>

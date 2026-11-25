@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { cx } from "@/lib/cx";
 import styles from "./button.module.css";
 
-export type ButtonVariant = "primary" | "outline" | "light";
+export type ButtonVariant = "primary" | "outline" | "ink";
 
 interface ButtonLinkProps {
   readonly href: string;

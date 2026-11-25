@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { buttonClass } from "@/components/ui/button-link";
 import { Icon, IconTile, type IconName } from "@/components/ui/icon";
+import { TrackArc } from "@/components/ui/track-arc";
 import { CLUB_FACTS } from "@/config/club-facts";
 import { PHOTOS } from "@/config/photos";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -49,7 +50,7 @@ function Stats({ dictionary, rating }: Pick<HeroProps, "dictionary" | "rating">)
   );
 }
 
-/** الصورة الكبيرة بتوهّج دافئ، وشارتان عائمتان على زاويتيها: مكافأة الاشتراك الأوفر، وساعات العمل. */
+/** الصورة الكبيرة بظل عميق، وشارتان عائمتان على زاويتيها: مكافأة الاشتراك الأوفر، وساعات العمل. */
 function Visual({ dictionary, offer, weekday }: Omit<HeroProps, "rating">) {
   return (
     <div className={styles.visual}>
@@ -81,13 +82,14 @@ function Visual({ dictionary, offer, weekday }: Omit<HeroProps, "rating">) {
 }
 
 /**
- * الواجهة: شارة صغيرة، ثم العنوان h1 بسطرين (اسم النادي بالفصحى، وشعار الجدار «أنت قدها.» بالتدرّج)،
- * والسطر التعريفي والفعلان وثلاث رقائق حقائق. بجانبها صورة من النادي (عنصر LCP المحمَّل مسبقًا).
+ * الواجهة السوداء بمنحنى المضمار خلفها: شارة صغيرة، ثم العنوان h1 بسطرين (اسم النادي، وشعار الجدار
+ * «أنت قدها.» بالأصفر)، والسطر التعريفي والفعلان وثلاث رقائق حقائق. بجانبها صورة من النادي (عنصر LCP).
  */
 export function Hero(props: HeroProps) {
   const { hero } = props.dictionary;
   return (
-    <section id={HERO_ID} className={styles.hero} aria-labelledby="hero-title">
+    <section id={HERO_ID} className={cx("on-ink", styles.hero)} aria-labelledby="hero-title">
+      <TrackArc className={styles.track} />
       <div className={cx("container", styles.inner)}>
         <div className={styles.text}>
           <p className={styles.badge}>
@@ -96,7 +98,7 @@ export function Hero(props: HeroProps) {
           </p>
           <h1 id="hero-title" className={styles.title}>
             <span className={styles.name}>{hero.title}</span>{" "}
-            <span className={cx("gradient-text", styles.slogan)}>{hero.slogan}</span>
+            <span className={cx("accent-text", styles.slogan)}>{hero.slogan}</span>
           </h1>
           <p className={styles.lead}>{hero.lead}</p>
           <div id={HERO_ACTIONS_ID} className={styles.actions}>

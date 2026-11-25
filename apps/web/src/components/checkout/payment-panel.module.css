@@ -13,6 +13,6 @@
 .demo {
   padding: 0.5rem 1rem;
   background: var(--ink);
-  color: var(--energy);
+  color: var(--yellow);
   font-weight: 700;
 }

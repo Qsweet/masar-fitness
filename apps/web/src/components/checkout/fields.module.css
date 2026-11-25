@@ -53,7 +53,7 @@
 }
 
 .input:focus-visible {
-  border-color: var(--accent-ink);
+  border-color: var(--ink);
   outline: 3px solid var(--focus-ring);
   outline-offset: 0;
 }
@@ -66,14 +66,14 @@
 .error {
   padding: 0.4rem 0.75rem;
   border-radius: var(--radius-sm);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   font-weight: 700;
 }
 
 .info {
   padding-inline-start: 0.75rem;
-  border-inline-start: 4px solid var(--orange);
+  border-inline-start: 4px solid var(--yellow);
   border-radius: var(--radius-sm);
   font-weight: 600;
 }
@@ -107,7 +107,7 @@
 
 .choice:has(input:checked) {
   border-radius: var(--radius-sm);
-  background: var(--gradient);
+  background: var(--yellow);
   box-shadow: inset 0 0 0 2px var(--ink);
 }
 
@@ -169,12 +169,12 @@
 }
 
 .summary:focus-visible {
-  outline: 3px solid var(--energy);
+  outline: 3px solid var(--yellow);
   outline-offset: 3px;
 }
 
 .summaryTitle {
-  color: var(--energy);
+  color: var(--yellow);
   font-family: var(--font);
   font-size: 1.15rem;
   font-weight: 700;

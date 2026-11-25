@@ -22,7 +22,7 @@
 .check {
   padding: 0.2rem;
   border-radius: var(--radius-pill);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
 }
 

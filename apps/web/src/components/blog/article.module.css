@@ -1,7 +1,7 @@
 /* المقال: عمود قراءة واحد بعرض مريح، خلاصة على لوح متدرّج مستدير، وكتل بزوايا مستديرة وظلال ناعمة. */
 .draft {
   padding: 0.75rem var(--gutter-end) 0.75rem var(--gutter);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   text-align: center;
 }
@@ -27,7 +27,7 @@
 .trail li + li::before {
   content: "/";
   margin-inline-end: 0.5rem;
-  color: var(--energy);
+  color: var(--yellow);
 }
 
 .topic {
@@ -35,7 +35,7 @@
   margin-top: 1rem;
   padding: 0.1rem 0.75rem;
   border-radius: var(--radius-pill);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   font-family: var(--font);
   font-weight: 700;
@@ -57,7 +57,7 @@
 
 .metaLine > * + *::before {
   content: "/ ";
-  color: var(--energy);
+  color: var(--yellow);
 }
 
 .reviewer {
@@ -74,7 +74,7 @@
   margin-top: 2rem;
   padding: clamp(1.5rem, 3vw, 2rem);
   border-radius: var(--radius-lg);
-  background: var(--sheen), var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   box-shadow: var(--glow);
 }
@@ -111,7 +111,7 @@
 }
 
 .list li::before {
-  color: var(--energy);
+  color: var(--yellow);
   -webkit-text-stroke: 0.5px var(--ink);
 }
 
@@ -138,7 +138,7 @@
 .sources a,
 .related a {
   text-decoration-thickness: 2px;
-  text-decoration-color: var(--energy);
+  text-decoration-color: var(--yellow);
   text-underline-offset: 0.25em;
 }
 
@@ -173,7 +173,7 @@
   width: 2rem;
   height: 2rem;
   border-radius: var(--radius-pill);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   font-family: var(--font);
   font-weight: 800;

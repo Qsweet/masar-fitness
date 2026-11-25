@@ -11,6 +11,7 @@ import { formatDate } from "@/i18n/dates";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
 import { localizedPath, type Locale } from "@/i18n/locales";
+import { cx } from "@/lib/cx";
 import styles from "./blog-index.module.css";
 
 type Listed = Article & { readonly translation: ArticleTranslation };
@@ -135,7 +136,7 @@ export function BlogIndex({ articles, locale, dictionary }: Props) {
           </section>
         );
       })}
-      <aside className={styles.tool} aria-label={dictionary.tools.costPerVisit.title}>
+      <aside className={cx("on-ink", styles.tool)} aria-label={dictionary.tools.costPerVisit.title}>
         <p className={styles.toolTitle}>{dictionary.tools.costPerVisit.title}</p>
         <p>{dictionary.tools.costPerVisit.lead}</p>
         <ButtonLink href={localizedPath(locale, ROUTES.costPerVisit)} variant="primary">

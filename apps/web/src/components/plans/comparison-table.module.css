@@ -81,7 +81,7 @@
 
 .table thead th {
   border-top: 0;
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
 }
 

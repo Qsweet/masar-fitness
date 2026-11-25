@@ -10,7 +10,7 @@ import styles from "./why.module.css";
 /** أيقونة كل سبب بترتيب القاموس (why.items). */
 const ICONS: readonly IconName[] = ["clock", "sparkle", "award", "snowflake"];
 
-/** القسم الداكن الوحيد: أربعة أسباب بأيقونات متوهجة، والأوقات وأيام التجميد من config لا من النص. */
+/** قسم أسود: أربعة أسباب بأيقونات صفراء، والأوقات وأيام التجميد من config لا من النص. */
 export function Why({
   dictionary,
   weekday,
@@ -25,7 +25,7 @@ export function Why({
     days: String(CLUB_FACTS.freezeDaysPerPaidMonth),
   };
   return (
-    <section className={cx("section", styles.why)} aria-labelledby="why-title">
+    <section className={cx("section", "on-ink", styles.why)} aria-labelledby="why-title">
       <div className="container">
         <SectionHead id="why-title" eyebrow={why.eyebrow} title={why.title} lead={why.lead} />
         <ul className={styles.grid}>

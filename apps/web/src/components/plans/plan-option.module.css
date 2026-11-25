@@ -33,7 +33,7 @@
 
 /* التركيز بلوحة المفاتيح على البطاقة كلها */
 .option:has(.input:focus-visible) {
-  outline: 3px solid var(--accent-ink);
+  outline: 3px solid var(--ink);
   outline-offset: 3px;
 }
 
@@ -47,7 +47,7 @@
   border-color: transparent;
   background:
     linear-gradient(var(--white), var(--white)) padding-box,
-    var(--gradient) border-box;
+    var(--yellow) border-box;
   box-shadow: var(--glow);
 }
 
@@ -60,7 +60,7 @@
   margin: -1.5rem -1.5rem 0.75rem;
   padding: 0.4rem 1rem;
   border-radius: calc(var(--radius-lg) - 2px) calc(var(--radius-lg) - 2px) 0 0;
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   font-size: 0.8125rem;
   font-weight: 800;
@@ -111,7 +111,9 @@
 
 .price {
   font-size: clamp(2.25rem, 2vw + 1.5rem, 3rem);
-  font-weight: 800;
+  width: fit-content;
+  font-weight: var(--weight-display);
+  font-style: var(--slant);
   line-height: 1.15;
 }
 
@@ -144,7 +146,7 @@
   margin-top: 0.3rem;
   padding: 0.15rem;
   border-radius: var(--radius-pill);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
 }
 
@@ -163,7 +165,7 @@
 
 .selected .choose,
 .best .choose {
-  background: var(--gradient);
+  background: var(--yellow);
   box-shadow: none;
 }
 

@@ -74,4 +74,15 @@ describe("buildPageMetadata", () => {
     });
     expect(metadata.robots).toEqual({ index: false, follow: false });
   });
+
+  it("صورة المشاركة: رابط مطلق بأبعادها ونصها البديل", () => {
+    const metadata = buildPageMetadata(
+      ORIGIN,
+      { locale: "ar", path: "/", title: "T", description: "D" },
+      { path: "/_next/static/media/share.png", width: 1200, height: 630, alt: "A" },
+    );
+    expect(metadata.openGraph?.images).toEqual([
+      { url: `${ORIGIN}/_next/static/media/share.png`, width: 1200, height: 630, alt: "A" },
+    ]);
+  });
 });

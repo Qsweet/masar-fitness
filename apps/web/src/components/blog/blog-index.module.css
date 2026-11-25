@@ -10,7 +10,7 @@
 }
 
 .notice strong {
-  color: var(--accent-ink);
+  color: var(--ink);
 }
 
 .notice time {
@@ -82,7 +82,7 @@
   inset-inline-start: 0.75rem;
   padding: 0.2rem 0.85rem;
   border-radius: var(--radius-pill);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   font-family: var(--font);
   font-size: 0.9375rem;
@@ -110,7 +110,7 @@
 
 .cardTitle a:hover {
   text-decoration: underline;
-  text-decoration-color: var(--energy);
+  text-decoration-color: var(--yellow);
 }
 
 .meta {
@@ -125,8 +125,8 @@
   margin-block: var(--section-space);
   padding: clamp(2rem, 4vw, 3rem);
   border-radius: var(--radius-lg);
-  background: var(--sheen), var(--gradient);
-  color: var(--ink);
+  background: var(--ink);
+  color: var(--white);
 }
 
 .toolTitle {

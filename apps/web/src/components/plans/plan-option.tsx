@@ -44,7 +44,7 @@ export function PlanOption({ plan, selected, labels, onSelect }: OptionProps) {
       <span className={styles.figures}>
         <Price
           parts={plan.price}
-          className={cx(styles.price, plan.isBestValue && "gradient-text")}
+          className={cx(styles.price, plan.isBestValue && "accent-text")}
           unitClassName={styles.currency}
         />
         {plan.monthlyText === undefined ? null : (

@@ -13,7 +13,7 @@ interface SectionHeadProps {
   readonly children?: ReactNode;
 }
 
-/** رأس قسم: سطر صغير بالتدرّج، ثم العنوان h2 وشرطته، ثم سطر شارح. */
+/** رأس قسم: سطر صغير بشرطة صفراء، ثم العنوان h2 ومضماره، ثم سطر شارح. */
 export function SectionHead({
   id,
   eyebrow,

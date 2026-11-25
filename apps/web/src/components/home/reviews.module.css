@@ -14,7 +14,8 @@
 
 .ratingValue {
   font-size: 3.5rem;
-  font-weight: 800;
+  font-weight: var(--weight-display);
+  font-style: var(--slant);
   line-height: 1;
 }
 
@@ -43,7 +44,7 @@
 }
 
 .stars {
-  color: var(--energy);
+  color: var(--yellow);
 }
 
 .stars svg {

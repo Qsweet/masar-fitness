@@ -1,6 +1,6 @@
 /*
- * أنماط مشتركة قليلة عمدًا (بجانب الرموز في globals.css): إطار المحتوى، الأقسام ورؤوسها، العناوين،
- * نص التدرّج، وحركة الظهور. المكوّنات تستعملها بأسمائها العامة.
+ * أنماط مشتركة قليلة عمدًا (بجانب الرموز في globals.css): إطار المحتوى، الأقسام ورؤوسها والسوداء منها،
+ * العناوين ومضمارها، تمييز الكلمة، وحركة الظهور. المكوّنات تستعملها بأسمائها العامة.
  */
 /* إطار المحتوى: أقصى عرض مع هوامش جانبية تراعي حواف الشاشة */
 .container {
@@ -10,7 +10,7 @@
   padding-inline: var(--gutter) var(--gutter-end);
 }
 
-/* قسم بمسافته من الأعلى والأسفل، والبديل بأرضية رمادية فاتحة جدًا */
+/* قسم بمسافته من الأعلى والأسفل، والبديل بأرضية رمادية فاتحة */
 .section {
   padding-block: var(--section-space);
 }
@@ -19,7 +19,18 @@
   background: var(--surface);
 }
 
-/* رأس قسم في الوسط: سطر تعريفي صغير بالتدرّج، ثم العنوان وشرطته، ثم السطر الشارح */
+/* قسم أسود بهوية الشعار: يقلب ألوان السياق فيتبعها رأس القسم والتمييز والمضمار */
+.on-ink {
+  --fg: var(--white);
+  --muted: var(--grey-on-ink);
+  --accent-fg: var(--yellow);
+  --accent-mark: transparent;
+  --lane: var(--white);
+  background: var(--ink);
+  color: var(--white);
+}
+
+/* رأس قسم في الوسط: سطر تعريفي صغير بشرطة صفراء، ثم العنوان ومضماره، ثم السطر الشارح */
 .section-head {
   display: grid;
   justify-items: center;
@@ -30,7 +41,7 @@
 }
 
 .section-head .lead {
-  color: var(--grey);
+  color: var(--muted);
   font-size: clamp(1.0625rem, 0.3vw + 1rem, 1.2rem);
 }
 
@@ -41,19 +52,28 @@
 }
 
 .eyebrow {
-  color: var(--accent-ink);
-  background: var(--gradient-text-small);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--fg);
   font-size: 0.9375rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.02em;
 }
 
-/* عنوان قسم بشرطة قصيرة بالتدرّج تحته */
+/* شرطة صفراء مائلة قبل السطر التعريفي، كشرطات المضمار */
+.eyebrow::before {
+  content: "";
+  width: 1.5rem;
+  height: 0.3rem;
+  background: var(--yellow);
+  transform: skewX(-20deg);
+}
+
+/* عنوان قسم بمضمار قصير تحته: شريط بلون السياق وخط أصفر متقطع في وسطه كما في الشعار */
 /* أسطر متوازنة: لا كلمة يتيمة في سطر العنوان الثاني */
 .title-section {
-  font-weight: 800;
+  font-weight: var(--weight-display);
   font-size: clamp(1.875rem, 1.6vw + 1.4rem, 2.875rem);
   line-height: 1.3;
   text-wrap: balance;
@@ -62,16 +82,23 @@
 .title-section::after {
   content: "";
   display: block;
-  width: 4rem;
-  height: 0.25rem;
+  width: 5.5rem;
+  height: 0.5rem;
   margin-block-start: 1rem;
   margin-inline: auto;
   border-radius: var(--radius-pill);
-  background: var(--gradient);
+  background:
+    var(--track-dash) center / calc(var(--dash) + var(--dash-gap)) 2px repeat-x,
+    var(--lane);
 }
 
 .start .title-section::after {
   margin-inline: 0;
+}
+
+/* العناوين اللاتينية مائلة كحروف الشعار؛ العربية قائمة (الميل المصطنع يشوّه الحرف العربي) */
+:lang(en) .title-section {
+  font-style: var(--slant);
 }
 
 .title-block {
@@ -80,16 +107,15 @@
   line-height: 1.35;
 }
 
-/* نص بالتدرّج للعناوين الكبيرة والأسعار فقط (3.2:1)؛ اللون الصلب احتياط وأساس فحص التباين */
-.gradient-text {
-  color: var(--accent-ink);
-  background: var(--gradient-text);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* تمييز كلمة: على الفاتح نص أسود فوق شريط أصفر كقلم التحديد، وعلى الأسود نص أصفر بلا شريط */
+.accent-text {
+  color: var(--accent-fg);
+  background: linear-gradient(transparent 58%, var(--accent-mark) 58% 92%, transparent 92%);
+  box-decoration-break: clone;
 }
 
 .muted {
-  color: var(--grey);
+  color: var(--muted);
 }
 
 .small {

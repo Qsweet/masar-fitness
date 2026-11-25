@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { TrackArc } from "@/components/ui/track-arc";
 import { cx } from "@/lib/cx";
 import styles from "./page-intro.module.css";
 
@@ -16,10 +17,11 @@ interface PageIntroProps {
 /** معرّف رأس الصفحة: شريط الشراء الثابت يظهر بعد أن يغادر الشاشة. */
 export const INTRO_ID = "top";
 
-/** رأس الصفحات الداخلية: شريط مضغوط فاتح بإضاءة دافئة، عنوان واضح وسطر واحد. */
+/** رأس الصفحات الداخلية: شريط مضغوط أسود بمضمار في أسفله، عنوان واضح وسطر واحد. */
 export function PageIntro({ title, lead, before, children, size = "poster" }: PageIntroProps) {
   return (
-    <section id={INTRO_ID} className={styles.intro}>
+    <section id={INTRO_ID} className={cx("on-ink", styles.intro)}>
+      <TrackArc className={styles.track} />
       <div className={cx("container", styles.inner)}>
         <div className={styles.text}>
           {before === undefined ? null : <div className={styles.before}>{before}</div>}

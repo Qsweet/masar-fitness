@@ -12,13 +12,13 @@ const AREAS: readonly { area: HoursArea; icon: "dumbbell" | "waves" }[] = [
 ];
 
 /**
- * أوقات العمل مكان جدول الحصص في المرجع (لا جدول حصص منشور): لوحان برأس بالتدرّج، النادي والمسبح،
+ * أوقات العمل مكان جدول الحصص في المرجع (لا جدول حصص منشور): لوحان أبيضان برأس أصفر على القسم الأسود، النادي والمسبح،
  * وجدول حقيقي لكل منهما. ساعات رمضان غير مذكورة في الموقع الحالي فلا تُعرض.
  */
 export function Hours({ dictionary }: { readonly dictionary: Dictionary }) {
   const { hours } = dictionary;
   return (
-    <section id="hours" className={cx("section", "section-alt")} aria-labelledby="hours-title">
+    <section id="hours" className={cx("section", "on-ink")} aria-labelledby="hours-title">
       <div className="container">
         <SectionHead
           id="hours-title"

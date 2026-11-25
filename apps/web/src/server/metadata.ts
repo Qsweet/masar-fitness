@@ -1,7 +1,9 @@
 import "server-only";
 import type { Metadata } from "next";
+import { getDictionary } from "@/i18n/dictionaries";
 import { DEFAULT_LOCALE, LOCALES, localizedPath, type Locale } from "@/i18n/locales";
 import { getEnv } from "./env";
+import { SHARE_IMAGE } from "./share-image";
 
 interface PageMetadataInput {
   readonly locale: Locale;
@@ -15,6 +17,14 @@ interface PageMetadataInput {
   readonly article?: { readonly publishedTime?: string; readonly modifiedTime: string };
   /** صفحة لا تُفهرس أبدًا (مسودة)، مهما كان إعداد الموقع. */
   readonly noindex?: boolean;
+}
+
+/** صورة المشاركة (OpenGraph): مسار نسبي للأصل وأبعادها ونصها البديل. */
+export interface ShareImage {
+  readonly path: string;
+  readonly width: number;
+  readonly height: number;
+  readonly alt: string;
 }
 
 /**
@@ -36,17 +46,34 @@ export function alternateLanguages(
 }
 
 /** البيانات الوصفية بأصل الموقع صريحًا (للاختبار). الصفحات تستعمل pageMetadata. */
-export function buildPageMetadata(origin: string, input: PageMetadataInput): Metadata {
+export function buildPageMetadata(
+  origin: string,
+  input: PageMetadataInput,
+  shareImage?: ShareImage,
+): Metadata {
   const { locale, path, title, description, article, noindex = false } = input;
   const url = `${origin}${localizedPath(locale, path)}`;
+  // الصورة في كل صفحة صراحةً: openGraph الصفحة يحل محل ما فوقها كاملًا ولا يرث صورة ملف
+  const images =
+    shareImage === undefined
+      ? []
+      : [
+          {
+            url: `${origin}${shareImage.path}`,
+            width: shareImage.width,
+            height: shareImage.height,
+            alt: shareImage.alt,
+          },
+        ];
   const openGraph: Metadata["openGraph"] =
     article === undefined
-      ? { title, description, url, locale, type: "website" }
+      ? { title, description, url, locale, type: "website", images }
       : {
           title,
           description,
           url,
           locale,
+          images,
           type: "article",
           modifiedTime: article.modifiedTime,
           ...(article.publishedTime === undefined ? {} : { publishedTime: article.publishedTime }),
@@ -62,5 +89,8 @@ export function buildPageMetadata(origin: string, input: PageMetadataInput): Met
 
 /** عنوان ووصف ورابط معتمد وبدائل لغوية لكل صفحة: رابط واحد لكل لغة، والعربية هي الافتراضية. */
 export function pageMetadata(input: PageMetadataInput): Metadata {
-  return buildPageMetadata(getEnv().SITE_URL, input);
+  return buildPageMetadata(getEnv().SITE_URL, input, {
+    ...SHARE_IMAGE,
+    alt: getDictionary(input.locale).club.logoAlt,
+  });
 }

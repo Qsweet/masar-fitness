@@ -52,7 +52,7 @@
 .field input:focus-visible,
 .field select:focus-visible,
 .field textarea:focus-visible {
-  border-color: var(--accent-ink);
+  border-color: var(--ink);
   outline: none;
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
@@ -66,7 +66,7 @@
   display: inline-flex;
   align-items: center;
   min-height: var(--target);
-  color: var(--accent-ink);
+  color: var(--ink);
   font-weight: 700;
   text-underline-offset: 0.3em;
 }
@@ -134,7 +134,6 @@
   background:
     linear-gradient(var(--map-line) 2px, transparent 2px) 0 0 / 3rem 3rem,
     linear-gradient(90deg, var(--map-line) 2px, transparent 2px) 0 0 / 3rem 3rem,
-    var(--wash),
     var(--surface);
   text-align: center;
 }
@@ -145,7 +144,7 @@
   width: 3.5rem;
   height: 3.5rem;
   border-radius: var(--radius-pill);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   font-size: 1.5rem;
   box-shadow: var(--glow);

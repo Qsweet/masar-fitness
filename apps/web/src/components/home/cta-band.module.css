@@ -1,18 +1,20 @@
 .band {
   position: relative;
   padding-block: clamp(4rem, 8vw, 6rem);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   overflow: hidden;
 }
 
-/* لمعة بيضاء خفيفة في زاوية الشريط */
-.band::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--sheen);
-  pointer-events: none;
+/* المضمار الأسود بخطه الأصفر المتقطع كما في الشعار على الأرضية الفاتحة */
+.band {
+  --lane: var(--ink);
+}
+
+/* المنحنى في أسفل الشريط تحت النص */
+.band .track {
+  top: auto;
+  height: 45%;
 }
 
 .inner {
@@ -32,14 +34,15 @@
   gap: 0.5rem;
   padding: 0.35rem 1rem;
   border-radius: var(--radius-pill);
-  background: var(--white);
+  background: var(--ink);
+  color: var(--yellow);
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .title {
   font-size: clamp(2.25rem, 3vw + 1.5rem, 3.75rem);
-  font-weight: 800;
+  font-weight: var(--weight-display);
   line-height: 1.2;
 }
 

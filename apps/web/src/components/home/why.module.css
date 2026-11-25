@@ -1,24 +1,11 @@
-/* القسم الداكن بلون حبر النادي، بإضاءتين دافئتين خفيفتين في زاويتيه. */
-.why {
-  background: var(--wash), var(--ink);
-  color: var(--white);
-}
-
+/* القسم الأسود (.on-ink): العناوين بيضاء والسطر التعريفي بشرطة صفراء والثانوي رمادي فاتح (10:1). */
 /* عنوان القسم في سطر واحد على الشاشة الواسعة كما في القالب */
 .why :global(.section-head) {
   max-width: 54rem;
 }
 
-.why :global(.section-head .lead),
 .grid p {
-  color: var(--grey-on-ink);
-}
-
-/* السطر الصغير بالكهرماني على الحبر (11:1)، لا بتدرّج النص الغامق المخصص للأرضية الفاتحة */
-.why :global(.eyebrow) {
-  color: var(--energy);
-  background: none;
-  -webkit-text-fill-color: currentcolor;
+  color: var(--muted);
 }
 
 .grid {
@@ -37,12 +24,11 @@
   width: 3.5rem;
   height: 3.5rem;
   margin-bottom: 0.5rem;
-  box-shadow: var(--glow);
 }
 
 .title {
   font-size: 1.1875rem;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .grid p {

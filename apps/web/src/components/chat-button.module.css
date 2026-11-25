@@ -8,7 +8,7 @@
   width: 3.5rem;
   height: 3.5rem;
   border-radius: var(--radius-pill);
-  background: var(--gradient);
+  background: var(--yellow);
   color: var(--ink);
   font-size: 1.35rem;
   box-shadow: var(--glow);

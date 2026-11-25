@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ButtonLink } from "@/components/ui/button-link";
+import { buttonClass } from "@/components/ui/button-link";
 import { Icon, IconTile, type IconName } from "@/components/ui/icon";
 import { PhotoBackdrop } from "@/components/ui/photo-backdrop";
 import { TrackArc } from "@/components/ui/track-arc";
@@ -14,6 +14,7 @@ import { fill } from "@/i18n/fill";
 import { localizedPath, type Locale } from "@/i18n/locales";
 import { cx } from "@/lib/cx";
 import type { PlanView } from "./plan-view";
+import { PurchaseButton } from "./purchase-button";
 import styles from "./plan-detail.module.css";
 
 interface PlanDetailProps {
@@ -29,6 +30,7 @@ interface PlanDetailProps {
 /** بطاقة السعر بجانب العنوان: الإجمالي للشخص، والمدة والشهري، وزر شراء واحد. */
 function Offer({ plan, dictionary }: Pick<PlanDetailProps, "plan" | "dictionary">) {
   const { plan: labels } = dictionary;
+  const viaWhatsapp = plan.purchase.kind === "whatsapp";
   return (
     <div className={styles.offer}>
       <p className={styles.label}>{labels.priceLabel}</p>
@@ -37,11 +39,11 @@ function Offer({ plan, dictionary }: Pick<PlanDetailProps, "plan" | "dictionary"
       </p>
       <p className={styles.duration}>{plan.durationText}</p>
       {plan.monthlyText === undefined ? null : <p className={styles.monthly}>{plan.monthlyText}</p>}
-      <ButtonLink href={plan.purchase.href} external={plan.purchase.external} block>
-        {plan.purchase.external ? labels.buyWhatsapp : labels.buyOnline}
+      <PurchaseButton purchase={plan.purchase} className={buttonClass("primary", true)}>
+        {viaWhatsapp ? labels.buyWhatsapp : labels.buyOnline}
         <Icon name="arrow" />
-      </ButtonLink>
-      {plan.purchase.external ? (
+      </PurchaseButton>
+      {viaWhatsapp ? (
         <p className={styles.note}>{labels.buyNote}</p>
       ) : (
         <a href={plan.whatsappHref} rel="noopener noreferrer" className={styles.alt}>

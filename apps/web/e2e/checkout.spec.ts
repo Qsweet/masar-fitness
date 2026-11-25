@@ -83,12 +83,21 @@ function expectSingleOrder(page: Page, destinations: readonly string[]) {
 }
 
 test.describe("الشراء والعلم مفتوح", () => {
-  test("بالعربية: باقة ← بيانات ← مراجعة، والإجمالي واحد في الخطوات الثلاث", async ({ page }) => {
+  test("بالعربية: باقة ← سلة ← بيانات ← مراجعة، والإجمالي واحد في كل الخطوات", async ({ page }) => {
     const mobile = randomMobile();
     await page.goto("/memberships/one-year");
     const planSummary = page.locator("#top");
     await expect(planSummary).toContainText("1,499 ر.س");
-    await planSummary.getByRole("link", { name: LABELS.ar.buy }).click();
+    await planSummary.getByRole("button", { name: LABELS.ar.buy }).click();
+
+    // السلة: ملاحظة «أُضيف» وشارة العدد والإجمالي من القاعدة ومساعدة واتساب
+    await expect(page).toHaveURL(/\/cart\?note=added$/);
+    await expect(page.getByRole("status").first()).toHaveText("أُضيف الاشتراك إلى سلتك.");
+    await expect(page.getByRole("link", { name: "السلة، عنصر واحد" })).toBeVisible();
+    await expect(page.getByTestId("order-total")).toContainText("1,499 ر.س");
+    await expect(page.locator("[aria-current=step]")).toContainText("السلة");
+    await expect(page.getByRole("link", { name: /راسلنا على واتساب/ }).first()).toBeVisible();
+    await page.getByRole("link", { name: "أكمل الطلب" }).first().click();
 
     await expect(page).toHaveURL(/\/checkout\/one-year$/);
     await expect(page.getByTestId("order-total")).toContainText("1,499 ر.س");
@@ -109,6 +118,27 @@ test.describe("الشراء والعلم مفتوح", () => {
     const whatsapp = page.getByRole("link", { name: "أرسل رقم الطلب عبر واتساب" });
     expect(decodeURIComponent((await whatsapp.getAttribute("href")) ?? "")).toContain(reference);
     await expectNoPaymentButton(page);
+    // الطلب أُنشئ ⇒ السلة فارغة
+    await expect(page.getByRole("link", { name: "السلة، فارغة" })).toBeVisible();
+  });
+
+  test("السلة: اشتراك واحد يحل محله الثاني، والحذف يفرّغها، والفارغة تقود إلى العضويات", async ({
+    page,
+  }) => {
+    await page.goto("/cart");
+    await expect(page.getByRole("heading", { name: "سلتك فارغة" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "السلة، فارغة" })).toBeVisible();
+    await page.goto("/memberships/three-months");
+    await page.locator("#top").getByRole("button", { name: LABELS.ar.buy }).click();
+    await page.goto("/memberships/six-months");
+    await page.locator("#top").getByRole("button", { name: LABELS.ar.buy }).click();
+    await expect(page).toHaveURL(/\/cart\?note=added$/);
+    await expect(page.getByRole("article")).toHaveCount(1);
+    await expect(page.getByRole("article")).toContainText("6 أشهر");
+    await expectAxeClean(page);
+    await page.getByRole("button", { name: "احذف" }).click();
+    await expect(page).toHaveURL(/\/cart\?note=removed$/);
+    await expect(page.getByRole("heading", { name: "سلتك فارغة" })).toBeVisible();
   });
 
   test("بالإنجليزية مع إضافة وكوبون DEMO10: الخصم باسمه والإجمالي واحد", async ({ page }) => {

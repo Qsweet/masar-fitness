@@ -108,6 +108,7 @@ const PATHS = {
     <path d="M12 6.5C10 5 7 4.5 4 5v13.5c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5ZM12 6.5V20" />
   ),
   grid: <path d="M4 4h7v7H4ZM13 4h7v7h-7ZM4 13h7v7H4ZM13 13h7v7h-7Z" />,
+  bag: <path d="M5.5 8h13l-1 12.5h-11ZM9 10.5V7a3 3 0 0 1 6 0v3.5" />,
 } as const satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof PATHS;

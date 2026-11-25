@@ -45,15 +45,14 @@ export default async function PlanPage({ params }: Props) {
     notFound();
   }
   const dictionary = getDictionary(locale);
-  const purchaseLabel = view.purchase.external
-    ? dictionary.plan.buyWhatsapp
-    : dictionary.plan.buyOnline;
+  const purchaseLabel =
+    view.purchase.kind === "whatsapp" ? dictionary.plan.buyWhatsapp : dictionary.plan.buyOnline;
 
   return (
     <PageShell
       locale={locale}
       path={`/memberships/${plan.slug}`}
-      mobileAction={{ ...view.purchase, label: purchaseLabel }}
+      mobileAction={{ purchase: view.purchase, label: purchaseLabel }}
     >
       <PlanHero
         id={INTRO_ID}

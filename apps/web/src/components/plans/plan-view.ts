@@ -14,11 +14,10 @@ import { fill } from "@/i18n/fill";
 import { formatMonths, moneyParts, type MoneyParts } from "@/i18n/format";
 import { localizedPath, type Locale } from "@/i18n/locales";
 
-/** وجهة زر الشراء: داخلية (صفحة بيانات الشراء) أو خارجية (واتساب). */
-export interface PurchaseLink {
-  readonly href: string;
-  readonly external: boolean;
-}
+/** زر الشراء: نموذج «أضف إلى السلة» (الشراء الإلكتروني مفتوح) أو رابط واتساب خارجي. */
+export type PurchaseLink =
+  | { readonly kind: "cart"; readonly slug: string; readonly locale: Locale }
+  | { readonly kind: "whatsapp"; readonly href: string };
 
 /**
  * اشتراك جاهز للعرض: كل رقم ونص محسوب هنا على الخادم من القاعدة والقاموس،
@@ -31,7 +30,7 @@ export interface PlanView {
   readonly tier: string | undefined;
   /** صفحة الاشتراك */
   readonly href: string;
-  /** زر الشراء: صفحة البيانات والشراء الإلكتروني مفتوح، وإلا واتساب (القرار 18) */
+  /** زر الشراء: السلة والشراء الإلكتروني مفتوح، وإلا واتساب (القرار 18) */
   readonly purchase: PurchaseLink;
   /** واتساب النادي برسالة تسمّي الاشتراك: الزر نفسه والشراء مغلق، ورابط ثانوي وهو مفتوح */
   readonly whatsappHref: string;
@@ -104,7 +103,7 @@ function planWhatsappUrl(plan: MembershipPlan, locale: Locale, dictionary: Dicti
   return whatsappUrl(fill(dictionary.plan.whatsappMessage, { plan: plan.name[locale] }));
 }
 
-/** وجهة زر الشراء. والعلم مغلق تبقى واتساب كما اليوم بلا أي تغيير. */
+/** وجهة زر الشراء: السلة والعلم مفتوح، وإلا واتساب كما اليوم بلا أي تغيير. */
 export function purchaseHref(
   plan: MembershipPlan,
   locale: Locale,
@@ -112,9 +111,9 @@ export function purchaseHref(
   checkoutEnabled: boolean,
 ): PurchaseLink {
   if (checkoutEnabled) {
-    return { href: localizedPath(locale, `/checkout/${plan.slug}`), external: false };
+    return { kind: "cart", slug: plan.slug, locale };
   }
-  return { href: planWhatsappUrl(plan, locale, dictionary), external: true };
+  return { kind: "whatsapp", href: planWhatsappUrl(plan, locale, dictionary) };
 }
 
 interface ViewContext {

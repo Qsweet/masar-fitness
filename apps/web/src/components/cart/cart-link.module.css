@@ -1,0 +1,32 @@
+.link {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--target);
+  min-height: var(--target);
+  border-radius: var(--radius-pill);
+  color: var(--white);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--yellow);
+}
+
+/* شارة العدد: دائرة صفراء بنص أسود في الزاوية العليا */
+.badge {
+  position: absolute;
+  top: 0.2rem;
+  inset-inline-end: 0.1rem;
+  display: grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding-inline: 0.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--yellow);
+  color: var(--ink);
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+}

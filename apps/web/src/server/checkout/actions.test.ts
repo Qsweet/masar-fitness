@@ -18,6 +18,8 @@ const redirect = vi.fn((path: string) => {
 vi.mock("next/navigation", () => ({ redirect }));
 const placeOrder = vi.fn();
 vi.mock("./place-order", () => ({ placeOrder }));
+const saveCart = vi.fn(() => Promise.resolve());
+vi.mock("../cart/cookie", () => ({ saveCart }));
 const limits = { ip: true, mobile: true };
 const allowSubmitFromIp = vi.fn(() => limits.ip);
 const allowSubmitForMobile = vi.fn(() => limits.mobile);
@@ -65,6 +67,7 @@ afterEach(() => {
   limits.ip = true;
   limits.mobile = true;
   placeOrder.mockReset();
+  saveCart.mockClear();
   redirect.mockClear();
   allowSubmitFromIp.mockClear();
   allowSubmitForMobile.mockClear();
@@ -91,6 +94,8 @@ describe("submitCheckout", () => {
       idempotencyKey: KEY,
       quotedTotalMinor: 280_000,
     });
+    // الطلب أُنشئ ⇒ السلة تُفرَّغ قبل التحويل
+    expect(saveCart).toHaveBeenCalledWith({ slug: null });
   });
 
   it("اسم وجوال خاطئان ⇒ كل أخطاء الحقلين معًا، والقيم محفوظة، والمفتاح نفسه", async () => {

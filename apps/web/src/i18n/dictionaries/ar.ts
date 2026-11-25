@@ -1,3 +1,4 @@
+import { cartAr } from "./cart-ar";
 import { checkoutAr } from "./checkout-ar";
 import { homeAr } from "./home-ar";
 import { landingAr } from "./landing-ar";
@@ -188,6 +189,7 @@ export const ar = {
     home: "العودة للرئيسية",
   },
   checkout: checkoutAr,
+  cart: cartAr,
   ...homeAr,
   ...landingAr,
   error: {

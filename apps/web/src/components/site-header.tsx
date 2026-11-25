@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CartLink, type CartLinkView } from "@/components/cart/cart-link";
 import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
 import { ROUTES } from "@/config/routes";
@@ -15,6 +16,8 @@ interface SiteHeaderProps {
   readonly joinHref: string;
   /** للمدونة مقال ظاهر بهذه اللغة */
   readonly showBlog: boolean;
+  /** رابط السلة وعددها؛ null والشراء الإلكتروني مغلق (لا رابط إلى صفحة 404) */
+  readonly cart: CartLinkView | null;
   readonly dictionary: Dictionary;
 }
 
@@ -23,7 +26,9 @@ function otherLocale(locale: Locale): Locale {
 }
 
 /** روابط التنقل بترتيب تصميم المالك: الرئيسية، العضويات، المرافق، البرامج، المدونة، تواصل. */
-function navLinks({ locale, showBlog, dictionary }: Omit<SiteHeaderProps, "path" | "joinHref">) {
+type NavProps = Pick<SiteHeaderProps, "locale" | "showBlog" | "dictionary">;
+
+function navLinks({ locale, showBlog, dictionary }: NavProps) {
   const home = localizedPath(locale);
   const { nav } = dictionary;
   return [
@@ -36,7 +41,7 @@ function navLinks({ locale, showBlog, dictionary }: Omit<SiteHeaderProps, "path"
   ];
 }
 
-function NavLinks(props: Omit<SiteHeaderProps, "path" | "joinHref">) {
+function NavLinks(props: NavProps) {
   return (
     <>
       {navLinks(props).map((link) => (
@@ -53,7 +58,8 @@ function NavLinks(props: Omit<SiteHeaderProps, "path" | "joinHref">) {
  * والروابط النصية في الوسط على الشاشة الواسعة، وتبديل اللغة وزر «اشترك الآن» الأصفر في النهاية.
  * على الجوال قائمة <details> تعمل بلا JavaScript.
  */
-export function SiteHeader({ locale, path, joinHref, showBlog, dictionary }: SiteHeaderProps) {
+export function SiteHeader(props: SiteHeaderProps) {
+  const { locale, path, joinHref, showBlog, cart, dictionary } = props;
   const alternate = otherLocale(locale);
   return (
     <header className={styles.header}>
@@ -78,6 +84,7 @@ export function SiteHeader({ locale, path, joinHref, showBlog, dictionary }: Sit
           >
             {dictionary.nav.switchLanguage}
           </Link>
+          {cart === null ? null : <CartLink {...cart} />}
           <Link href={joinHref} className={styles.cta}>
             {dictionary.nav.join}
           </Link>

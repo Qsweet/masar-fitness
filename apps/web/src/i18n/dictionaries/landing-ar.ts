@@ -64,7 +64,7 @@ export const landingAr = {
   dailyNote: "التكلفة اليومية تقريبية: الإجمالي على أيام المدة كاملة.",
   steps: {
     label: "خطوات الاشتراك",
-    plan: "اختيار الباقة",
+    plan: "السلة",
     details: "البيانات",
     payment: "الدفع",
     /** {current} {total} لقارئ الشاشة */
@@ -74,7 +74,7 @@ export const landingAr = {
     label: "التنقل السريع",
     home: "الرئيسية",
     memberships: "العضويات",
-    services: "الخدمات",
+    services: "البرامج",
     blog: "المدونة",
     whatsapp: "واتساب",
   },

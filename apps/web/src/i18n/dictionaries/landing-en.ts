@@ -62,7 +62,7 @@ export const landingEn: LandingDictionary = {
   dailyNote: "The daily cost is approximate: the total over every day of the full term.",
   steps: {
     label: "Checkout steps",
-    plan: "Choose a plan",
+    plan: "Cart",
     details: "Your details",
     payment: "Payment",
     position: "Step {current} of {total}",
@@ -71,7 +71,7 @@ export const landingEn: LandingDictionary = {
     label: "Quick navigation",
     home: "Home",
     memberships: "Memberships",
-    services: "Services",
+    services: "Programs",
     blog: "Blog",
     whatsapp: "WhatsApp",
   },

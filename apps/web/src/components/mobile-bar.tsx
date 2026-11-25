@@ -1,13 +1,13 @@
-import Link from "next/link";
 import { INTRO_ID } from "@/components/page-intro";
+import type { PurchaseLink } from "@/components/plans/plan-view";
+import { PurchaseButton } from "@/components/plans/purchase-button";
 import { StickyReveal } from "@/components/ui/sticky-reveal";
 import styles from "./mobile-bar.module.css";
 
-/** الفعل الرئيسي في الشريط: صفحة داخلية أو رابط خارجي (واتساب الاشتراك). */
+/** الفعل الرئيسي في الشريط: إضافة الاشتراك إلى السلة أو واتساب الاشتراك. */
 export interface MobileBarAction {
-  readonly href: string;
+  readonly purchase: PurchaseLink;
   readonly label: string;
-  readonly external: boolean;
 }
 
 interface MobileBarProps {
@@ -23,15 +23,9 @@ interface MobileBarProps {
 export function MobileBar({ label, action }: MobileBarProps) {
   return (
     <StickyReveal afterId={INTRO_ID} label={label} className={styles.bar}>
-      {action.external ? (
-        <a href={action.href} rel="noopener noreferrer" className={styles.action}>
-          {action.label}
-        </a>
-      ) : (
-        <Link href={action.href} className={styles.action}>
-          {action.label}
-        </Link>
-      )}
+      <PurchaseButton purchase={action.purchase} className={styles.action}>
+        {action.label}
+      </PurchaseButton>
     </StickyReveal>
   );
 }

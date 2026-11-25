@@ -6,6 +6,8 @@ const TOKEN = "A".repeat(43);
 for (const path of [
   "/checkout/one-year",
   "/en/checkout/one-year",
+  "/cart",
+  "/en/cart",
   `/checkout/orders/${TOKEN}`,
   `/en/checkout/orders/${TOKEN}`,
 ]) {
@@ -27,5 +29,7 @@ for (const [prefix, label] of [
     const href = (await buy.getAttribute("href")) ?? "";
     expect(new URL(href).origin).toBe("https://wa.me");
     await expect(page.locator('a[href*="/checkout/"]')).toHaveCount(0);
+    // لا رابط سلة ولا شارة في الترويسة والشراء مغلق
+    await expect(page.locator('a[href$="/cart"]')).toHaveCount(0);
   });
 }

@@ -1,4 +1,5 @@
 import type { Dictionary } from "./ar";
+import { cartEn } from "./cart-en";
 import { checkoutEn } from "./checkout-en";
 import { homeEn } from "./home-en";
 import { landingEn } from "./landing-en";
@@ -166,6 +167,7 @@ export const en: Dictionary = {
     home: "Back to home",
   },
   checkout: checkoutEn,
+  cart: cartEn,
   ...homeEn,
   ...landingEn,
   error: {

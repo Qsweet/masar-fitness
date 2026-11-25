@@ -19,3 +19,6 @@ export function articlePath(slug: string): string {
 export function planPath(slug: string): string {
   return `${ROUTES.memberships}/${slug}`;
 }
+
+/** السلة: خلف علم الشراء وغير مفهرسة، فليست في ROUTES (خريطة الموقع وروابط المحتوى). */
+export const CART_PATH = "/cart";

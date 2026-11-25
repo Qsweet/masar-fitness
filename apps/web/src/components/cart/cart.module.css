@@ -1,0 +1,176 @@
+/*
+ * صفحة السلة: سطر الاشتراك ثم الملخص على الهاتف، وعمودان على الشاشة الواسعة (الملخص ثابت بجانبه
+ * كصفحة البيانات). على الهاتف شريط الإجمالي والمتابعة ثابت أسفل الشاشة.
+ */
+.layout {
+  display: grid;
+  gap: 1.5rem;
+  padding-block: var(--section-space);
+}
+
+.line,
+.empty {
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+  padding: 1.5rem;
+  border: 1px solid var(--yellow-line);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+}
+
+.tier {
+  color: var(--yellow);
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.lineName {
+  font-size: clamp(1.375rem, 1vw + 1.1rem, 1.75rem);
+  font-weight: var(--weight-display);
+}
+
+.lineName a {
+  text-decoration: none;
+}
+
+.linePrice {
+  margin-top: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.remove {
+  display: flex;
+}
+
+/* زر الحذف رابط نصي (الفعل الثالث): لا يزاحم «أكمل الطلب» */
+.textButton {
+  min-height: var(--target);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+  cursor: pointer;
+}
+
+.textButton:hover {
+  color: var(--yellow);
+}
+
+.aside {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.help {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: var(--target);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+.help:hover {
+  color: var(--yellow);
+}
+
+.empty {
+  justify-items: start;
+  max-width: var(--measure);
+  margin-block: var(--section-space);
+}
+
+.emptyTitle {
+  font-size: 1.5rem;
+  font-weight: var(--weight-display);
+}
+
+.note {
+  margin-top: 1.5rem;
+  padding: 0.9rem 1.25rem;
+  border-inline-start: 3px solid var(--yellow);
+  border-radius: var(--radius-sm);
+  background: var(--yellow-soft);
+  font-weight: 700;
+}
+
+.bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem var(--gutter-end) calc(0.75rem + env(safe-area-inset-bottom, 0px)) var(--gutter);
+  border-top: 1px solid var(--line);
+  background: var(--card);
+}
+
+.barTotal {
+  display: grid;
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.barLabel {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.barAction {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  border-radius: var(--radius-sm);
+  background: var(--yellow);
+  color: var(--ink);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+@media (width < 48rem) {
+  /* مكان الشريط الثابت حتى لا يحجب آخر المحتوى */
+  .layout {
+    padding-bottom: calc(var(--section-space) + 5rem);
+  }
+}
+
+@media (width >= 48rem) {
+  .bar {
+    display: none;
+  }
+}
+
+@media (width >= 64rem) {
+  .layout {
+    grid-template-columns: 7fr 5fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .aside {
+    position: sticky;
+    top: calc(var(--header-height) + 1rem);
+  }
+}

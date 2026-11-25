@@ -22,10 +22,14 @@
   padding-inline: 1rem;
   border-radius: var(--radius-sm);
   background: var(--yellow);
+  border: 0;
   color: var(--ink);
+  font-family: var(--font);
+  font-size: 1rem;
   font-weight: 800;
   text-align: center;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .bar[hidden] {

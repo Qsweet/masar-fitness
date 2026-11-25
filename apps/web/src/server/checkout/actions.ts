@@ -3,6 +3,8 @@
 import { parseBuyer, parseCouponCode } from "@masar/domain";
 import { redirect } from "next/navigation";
 import { localizedPath } from "@/i18n/locales";
+import { EMPTY_CART } from "../cart/codec";
+import { saveCart } from "../cart/cookie";
 import { requireCheckout } from "./flag";
 import { parseCheckoutForm, typedValues } from "./form-schema";
 import { domainFieldErrors, stateAfterRejection, type CheckoutFormState } from "./form-state";
@@ -17,7 +19,7 @@ function throttled(state: CheckoutFormState): CheckoutFormState {
 /**
  * إجراء نموذج بيانات الشراء. الترتيب ثابت: العلم أولًا (404 بلا أي قراءة)، ثم حد العنوان، ثم شكل
  * النموذج، ثم الاسم والجوال والكوبون معًا، ثم حد الجوال، ثم الإنشاء، ثم التحويل إلى صفحة الطلب.
- * لا قيمة من النموذج تُعتمد سعرًا: الإجمالي المرسل للمقارنة فقط، والسعر يُحسب من القاعدة.
+ * بعد النجاح تُفرَّغ السلة. لا قيمة من النموذج تُعتمد سعرًا: الإجمالي المرسل للمقارنة فقط، والسعر يُحسب من القاعدة.
  * الحدّان يبطئان السكربت لا يمنعان منتحل الجوال: التحقق من الجوال شرط قبل فتح البيع للعموم.
  */
 export async function submitCheckout(
@@ -54,5 +56,7 @@ export async function submitCheckout(
   if (!placed.ok) {
     return stateAfterRejection(state, publicSubmitError(placed.error), form.value.locale);
   }
+  // الطلب أُنشئ: السلة أدّت غرضها
+  await saveCart(EMPTY_CART);
   redirect(localizedPath(form.value.locale, `/checkout/orders/${placed.value.publicToken}`));
 }

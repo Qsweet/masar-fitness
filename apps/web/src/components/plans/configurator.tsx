@@ -1,13 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { ButtonLink } from "@/components/ui/button-link";
+import { buttonClass } from "@/components/ui/button-link";
 import { Icon } from "@/components/ui/icon";
 import { Price } from "@/components/ui/price";
 import { StickyReveal } from "@/components/ui/sticky-reveal";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { PlanOption } from "./plan-option";
+import { PurchaseButton } from "./purchase-button";
 import { centreBestValue, type PlanView } from "./plan-view";
 import styles from "./configurator.module.css";
 
@@ -27,16 +27,17 @@ export interface ConfiguratorProps {
 /** الملخص الحي: شريط الجوال يختفي ما دام ظاهرًا، فلا يتكرر السعر والزر مرتين على الشاشة. */
 const SUMMARY_ID = "plan-summary";
 
-/** نص زر الشراء: «اشترِ الآن» إلى صفحة البيانات، أو واتساب والشراء الإلكتروني مغلق. */
+/** نص زر الشراء: «اشترِ الآن» إلى السلة، أو واتساب والشراء الإلكتروني مغلق. */
 function purchaseLabel(plan: PlanView, planLabels: Dictionary["plan"]): string {
-  return plan.purchase.external ? planLabels.buyWhatsapp : planLabels.buyOnline;
+  return plan.purchase.kind === "whatsapp" ? planLabels.buyWhatsapp : planLabels.buyOnline;
 }
 
 function Secondary({ plan, labels, planLabels }: SummaryProps) {
+  const viaWhatsapp = plan.purchase.kind === "whatsapp";
   return (
     <div className={styles.secondary}>
-      {plan.purchase.external ? <p className={styles.buyNote}>{planLabels.buyNote}</p> : null}
-      {plan.purchase.external ? null : (
+      {viaWhatsapp ? <p className={styles.buyNote}>{planLabels.buyNote}</p> : null}
+      {viaWhatsapp ? null : (
         <a href={plan.whatsappHref} rel="noopener noreferrer" className={styles.details}>
           {planLabels.whatsappAlternative}
         </a>
@@ -68,10 +69,10 @@ function Summary(props: SummaryProps) {
         <span className={styles.label}>{labels.total}</span>
         <Price parts={plan.price} unitClassName={styles.summaryUnit} />
       </p>
-      <ButtonLink href={plan.purchase.href} external={plan.purchase.external}>
+      <PurchaseButton purchase={plan.purchase} className={buttonClass("primary")}>
         {purchaseLabel(plan, planLabels)}
         <Icon name="arrow" />
-      </ButtonLink>
+      </PurchaseButton>
       <Secondary {...props} />
     </div>
   );
@@ -100,13 +101,9 @@ function StickyBar({
           unitClassName={styles.stickyUnit}
         />
       </p>
-      {plan.purchase.external ? (
-        <a href={plan.purchase.href} rel="noopener noreferrer">
-          {purchaseLabel(plan, planLabels)}
-        </a>
-      ) : (
-        <Link href={plan.purchase.href}>{purchaseLabel(plan, planLabels)}</Link>
-      )}
+      <PurchaseButton purchase={plan.purchase} className={styles.stickyBuy}>
+        {purchaseLabel(plan, planLabels)}
+      </PurchaseButton>
       <a
         href={chat.href}
         rel="noopener noreferrer"

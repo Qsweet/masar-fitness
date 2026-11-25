@@ -77,18 +77,17 @@ describe("toPlanViews", () => {
 
   it("والشراء الإلكتروني مغلق: زر الشراء واتساب برسالة تسمّي الاشتراك بلغة الزائر", () => {
     const [, view] = toPlanViews([monthly, annual], "en", false);
-    expect(view?.purchase.external).toBe(true);
-    expect(view?.purchase.href).toBe(view?.whatsappHref);
-    const url = new URL(view?.purchase.href ?? "");
+    expect(view?.purchase).toEqual({ kind: "whatsapp", href: view?.whatsappHref });
+    const url = new URL(view?.whatsappHref ?? "");
     expect(url.hostname).toBe("wa.me");
     expect(url.searchParams.get("text")).toContain("“Annual”");
     expect(view?.href).toBe("/en/memberships/annual");
     expect(view?.benefits).toEqual(["Pool"]);
   });
 
-  it("والشراء الإلكتروني مفتوح: زر الشراء صفحة البيانات، وواتساب يبقى بديلًا", () => {
+  it("والشراء الإلكتروني مفتوح: زر الشراء يضيف إلى السلة، وواتساب يبقى بديلًا", () => {
     const [, view] = toPlanViews([monthly, annual], "ar", true);
-    expect(view?.purchase).toEqual({ href: "/checkout/annual", external: false });
+    expect(view?.purchase).toEqual({ kind: "cart", slug: "annual", locale: "ar" });
     expect(new URL(view?.whatsappHref ?? "").hostname).toBe("wa.me");
   });
 
@@ -98,16 +97,15 @@ describe("toPlanViews", () => {
 });
 
 describe("purchaseHref", () => {
-  it("مغلق ⇐ واتساب خارجي، مفتوح ⇐ /checkout/<slug> داخلي بلغة الزائر", () => {
+  it("مغلق ⇐ واتساب خارجي، مفتوح ⇐ سلة بالاشتراك ولغة الزائر", () => {
     const en = getDictionary("en");
     const off = purchaseHref(annual, "en", en, false);
-    expect(off.external).toBe(true);
-    expect(new URL(off.href).hostname).toBe("wa.me");
+    expect(off.kind === "whatsapp" && new URL(off.href).hostname).toBe("wa.me");
     expect(purchaseHref(annual, "en", en, true)).toEqual({
-      href: "/en/checkout/annual",
-      external: false,
+      kind: "cart",
+      slug: "annual",
+      locale: "en",
     });
-    expect(purchaseHref(monthly, "ar", getDictionary("ar"), true).href).toBe("/checkout/monthly");
   });
 });
 

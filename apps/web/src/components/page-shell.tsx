@@ -2,9 +2,12 @@ import type { ReactNode } from "react";
 import { getDictionary } from "@/i18n/dictionaries";
 import { localizedPath, type Locale } from "@/i18n/locales";
 import { hasVisibleBlog } from "@/server/blog";
+import { cartCount } from "@/server/cart/codec";
+import { readCart } from "@/server/cart/cookie";
 import { isCheckoutEnabled } from "@/server/checkout/flag";
+import type { CartLinkView } from "./cart/cart-link";
 import { whatsappUrl } from "@/config/club";
-import { ROUTES } from "@/config/routes";
+import { CART_PATH, ROUTES } from "@/config/routes";
 import { ChatButton } from "./chat-button";
 import { MAIN_CONTENT_ID } from "./main-content-id";
 import { MobileBar, type MobileBarAction } from "./mobile-bar";
@@ -40,11 +43,25 @@ function phoneBarOf(hasPlans: boolean, action: MobileBarAction | null | undefine
   return action === null || action === undefined ? "none" : "quick";
 }
 
+/** رابط السلة في الترويسة والشراء مفتوح: العدد من الكوكي بعد فكّه فقط، بلا قراءة قاعدة. */
+async function cartLink(locale: Locale): Promise<CartLinkView | null> {
+  if (!isCheckoutEnabled()) {
+    return null;
+  }
+  const count = cartCount(await readCart());
+  const { link } = getDictionary(locale).cart;
+  return {
+    href: localizedPath(locale, CART_PATH),
+    count,
+    label: count > 0 ? link.one : link.empty,
+  };
+}
+
 /**
  * إطار كل صفحة: الترويسة والمحتوى والتذييل، وعلى الهاتف شريط التبويب السفلي (إلا في صفحات الشراء).
  * الصفحة تمرر مسارها ليعمل تبديل اللغة والتبويب النشط بلا JavaScript.
  */
-export function PageShell({
+export async function PageShell({
   locale,
   path,
   hasPlans = false,
@@ -58,6 +75,7 @@ export function PageShell({
   const joinHref = hasPlans ? "#plans" : localizedPath(locale, ROUTES.memberships);
   // رابط المدونة لا يظهر ما دامت بلا مقال ظاهر بلغة الزائر (لا صفحة فارغة ولا رابط إلى 404)
   const showBlog = hasVisibleBlog(locale);
+  const cart = await cartLink(locale);
   return (
     <>
       <SiteHeader
@@ -65,6 +83,7 @@ export function PageShell({
         path={path}
         joinHref={joinHref}
         showBlog={showBlog}
+        cart={cart}
         dictionary={dictionary}
       />
       <main id={MAIN_CONTENT_ID}>{children}</main>

@@ -7,6 +7,7 @@ import {
   MAX_COUPON_CHECKS_PER_IP,
   MAX_THROTTLE_KEYS,
 } from "@/config/checkout";
+import { MAX_CART_ACTIONS_PER_IP } from "@/config/cart";
 import { clientIp } from "../http/client-ip";
 import { createRateLimiter, type RateLimiter } from "../rate-limit/fixed-window";
 
@@ -14,6 +15,7 @@ interface CheckoutLimiters {
   readonly submitByIp: RateLimiter;
   readonly submitByMobile: RateLimiter;
   readonly couponByIp: RateLimiter;
+  readonly cartByIp: RateLimiter;
 }
 
 function rule(limit: number) {
@@ -30,6 +32,7 @@ function limiters(): CheckoutLimiters {
     submitByIp: createRateLimiter(rule(MAX_CHECKOUT_SUBMITS_PER_IP), MAX_THROTTLE_KEYS),
     submitByMobile: createRateLimiter(rule(MAX_CHECKOUT_SUBMITS_PER_MOBILE), MAX_THROTTLE_KEYS),
     couponByIp: createRateLimiter(rule(MAX_COUPON_CHECKS_PER_IP), MAX_THROTTLE_KEYS),
+    cartByIp: createRateLimiter(rule(MAX_CART_ACTIONS_PER_IP), MAX_THROTTLE_KEYS),
   };
   return globalForThrottle.masarCheckoutLimiters;
 }
@@ -52,4 +55,9 @@ export function allowSubmitForMobile(mobileE164: string): boolean {
 /** فحص كوبون في صفحة الشراء من هذا العنوان. */
 export function allowCouponCheck(ip: string): boolean {
   return limiters().couponByIp.consume(ip, Date.now());
+}
+
+/** إجراء سلة (إضافة أو حذف) من هذا العنوان. */
+export function allowCartAction(ip: string): boolean {
+  return limiters().cartByIp.consume(ip, Date.now());
 }

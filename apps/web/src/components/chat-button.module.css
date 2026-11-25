@@ -15,7 +15,15 @@
   transition: transform var(--press) var(--ease);
 }
 
-.raised {
+/* على الهاتف: زر واتساب في الشريط الثابت بدله */
+@media (width < 48rem) {
+  .besideBar {
+    display: none;
+  }
+}
+
+/* على اللوح: فوق شريط الشراء */
+.plans {
   bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
 }
 
@@ -25,7 +33,7 @@
 
 @media (width >= 64rem) {
   .chat,
-  .raised {
+  .plans {
     inset-inline-end: 1.5rem;
     bottom: 1.5rem;
     width: 3.75rem;

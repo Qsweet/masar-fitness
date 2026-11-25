@@ -1,26 +1,29 @@
 import { Icon } from "@/components/ui/icon";
-import { whatsappUrl } from "@/config/club";
 import { cx } from "@/lib/cx";
 import styles from "./chat-button.module.css";
 
-/** زر محادثة عائم بالتدرّج في زاوية النهاية: يفتح واتساب النادي برسالة جاهزة. */
+/**
+ * زر محادثة عائم بالتدرّج في زاوية النهاية: يفتح واتساب النادي برسالة جاهزة.
+ * على الهاتف يُخفى حين في الصفحة شريط ثابت فيه زر واتساب (لا يغطي نص الواجهة ولا البطاقات)،
+ * وعلى اللوح يعلو شريط الشراء.
+ */
 export function ChatButton({
   label,
-  message,
-  raised,
+  href,
+  phoneBar,
 }: {
   readonly label: string;
-  readonly message: string;
-  /** الصفحة فيها شريط شراء ثابت على الجوال: الزر فوقه لا فوق محتواه */
-  readonly raised: boolean;
+  readonly href: string;
+  /** شريط الهاتف في الصفحة: شريط الشراء، أو شريط الاختصارات، أو لا شريط */
+  readonly phoneBar: "plans" | "quick" | "none";
 }) {
   return (
     <a
-      href={whatsappUrl(message)}
+      href={href}
       rel="noopener noreferrer"
       aria-label={label}
       title={label}
-      className={cx(styles.chat, raised && styles.raised)}
+      className={cx(styles.chat, phoneBar !== "none" && styles.besideBar, styles[phoneBar])}
     >
       <Icon name="chat" />
     </a>

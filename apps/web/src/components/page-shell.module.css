@@ -1,11 +1,20 @@
-/* صفحة فيها شريط شراء ثابت على الجوال: فراغ تحت التذييل بارتفاعه حتى لا يغطي آخر سطر. */
-.barSpace {
+/* فراغ تحت التذييل بارتفاع شريط الهاتف الثابت حتى لا يغطي آخر سطر. */
+.plans,
+.quick {
   height: calc(4.5rem + env(safe-area-inset-bottom, 0px));
   background: var(--ink);
 }
 
+/* شريط «اختر اشتراكك» للهاتف فقط */
+@media (width >= 48rem) {
+  .quick {
+    display: none;
+  }
+}
+
+/* شريط الشراء حتى عرض سطح المكتب */
 @media (width >= 64rem) {
-  .barSpace {
+  .plans {
     display: none;
   }
 }

@@ -152,7 +152,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
     <CheckoutForms locale={locale} slug={slug} options={options} data={result.value} />
   );
   return (
-    <PageShell locale={locale} path={`/checkout/${slug}`}>
+    <PageShell locale={locale} path={`/checkout/${slug}`} mobileAction={null}>
       <PageIntro title={checkout.intro.title} lead={checkout.intro.lead} before={back} />
       {body}
     </PageShell>

@@ -51,10 +51,12 @@
 }
 
 /* عنوان قسم بشرطة قصيرة بالتدرّج تحته */
+/* أسطر متوازنة: لا كلمة يتيمة في سطر العنوان الثاني */
 .title-section {
   font-weight: 800;
   font-size: clamp(1.875rem, 1.6vw + 1.4rem, 2.875rem);
   line-height: 1.3;
+  text-wrap: balance;
 }
 
 .title-section::after {

@@ -183,6 +183,23 @@
   }
 }
 
+/* من عرض اللوح: عمودان كسطح المكتب، فيبقى العنوان والزران في الشاشة الأولى ولا تملؤها الصورة */
+@media (width >= 48rem) {
+  .inner {
+    grid-template-columns: 1fr 0.9fr;
+    gap: 2rem;
+  }
+
+  .visual {
+    order: 0;
+    margin: 0;
+  }
+
+  .photo {
+    aspect-ratio: 4 / 5;
+  }
+}
+
 @media (width >= 64rem) {
   .hero {
     padding-block: 3rem 5.5rem;
@@ -193,11 +210,6 @@
     grid-template-columns: 1fr 1.1fr;
     gap: 4rem;
     min-height: calc(100svh - var(--header-height) - 10rem);
-  }
-
-  .visual {
-    order: 0;
-    margin: 0;
   }
 
   .photo {

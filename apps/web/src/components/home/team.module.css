@@ -20,12 +20,13 @@
   color: var(--grey);
 }
 
+/* الصورتان بالمقاس والاستدارة والظل نفسها */
 .photo {
   position: relative;
   aspect-ratio: 3 / 4;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-lg);
 }
 
 .photo img {
@@ -44,8 +45,8 @@
     margin: 0;
   }
 
-  /* الصورة الثانية أدنى قليلًا: إيقاع بدل صف جامد */
+  /* إزاحة مقصودة ثابتة (24px) للصورة الثانية، والصورتان بالارتفاع نفسه */
   .photo:last-child {
-    margin-top: 4rem;
+    translate: 0 1.5rem;
   }
 }

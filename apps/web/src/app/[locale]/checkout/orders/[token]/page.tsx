@@ -34,7 +34,7 @@ export default async function OrderPage({ params }: Props) {
   }
   const view = toReviewView(order, locale);
   return (
-    <PageShell locale={locale} path={`/checkout/orders/${token}`}>
+    <PageShell locale={locale} path={`/checkout/orders/${token}`} mobileAction={null}>
       <PageIntro title={view.title} lead={view.lead} />
       <OrderReview view={view} labels={getDictionary(locale).checkout} />
     </PageShell>

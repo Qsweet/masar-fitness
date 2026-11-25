@@ -43,7 +43,7 @@ function InfoCards({ locale, dictionary }: ContactProps) {
       </InfoCard>
       <InfoCard icon="phone" title={contact.call}>
         <a href={`tel:${CLUB_CONTACT.phoneE164}`}>
-          {location.call} <bdi>{CLUB_CONTACT.phoneDisplay}</bdi>
+          <bdi dir="ltr">{CLUB_CONTACT.phoneDisplay}</bdi>
         </a>
         <a href={whatsappUrl(location.whatsappMessage)} rel="noopener noreferrer">
           {location.whatsapp}

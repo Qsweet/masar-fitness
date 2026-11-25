@@ -82,8 +82,10 @@
   gap: 1rem;
 }
 
+/* المحتوى من الأعلى في كل البطاقات: لا تتوزع المسافة الزائدة بين صفوف البطاقة الأقصر */
 .info {
   display: grid;
+  align-content: start;
   justify-items: start;
   gap: 0.5rem;
   padding: 1.25rem;

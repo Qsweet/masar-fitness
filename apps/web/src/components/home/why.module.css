@@ -4,6 +4,11 @@
   color: var(--white);
 }
 
+/* عنوان القسم في سطر واحد على الشاشة الواسعة كما في القالب */
+.why :global(.section-head) {
+  max-width: 54rem;
+}
+
 .why :global(.section-head .lead),
 .grid p {
   color: var(--grey-on-ink);

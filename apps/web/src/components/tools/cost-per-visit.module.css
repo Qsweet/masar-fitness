@@ -25,16 +25,18 @@
   font-weight: 700;
 }
 
+/* سبعة مربعات في صف واحد حتى على أضيق شاشة: تتقلص بالتساوي ولا تتجاوز 3.5rem */
 .options {
-  display: grid;
-  grid-auto-columns: minmax(2.75rem, 3.5rem);
-  grid-auto-flow: column;
+  display: flex;
   gap: 0.375rem;
 }
 
 .option {
   position: relative;
   display: grid;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 3.5rem;
   cursor: pointer;
 }
 

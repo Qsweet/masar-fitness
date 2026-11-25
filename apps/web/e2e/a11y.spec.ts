@@ -1,7 +1,13 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-const PAGES = ["/", "/memberships", "/memberships/one-year", "/no-such-page"];
+const PAGES = [
+  "/",
+  "/memberships",
+  "/memberships/one-year",
+  "/tools/cost-per-visit",
+  "/no-such-page",
+];
 const WCAG_22_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 for (const prefix of ["", "/en"]) {

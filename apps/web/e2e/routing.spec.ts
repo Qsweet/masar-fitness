@@ -37,7 +37,8 @@ test.describe("اللغة والاتجاه", () => {
     }
   });
 
-  test("التحويل لا يخرج من الموقع أبدًا (لا تحويل مفتوح)", async ({ request }) => {
+  test("التحويل لا يخرج من الموقع أبدًا (لا تحويل مفتوح)", async ({ request, baseURL }) => {
+    const origin = new URL(baseURL ?? "http://127.0.0.1");
     for (const path of [
       "/ar//evil.example",
       "/ar/%2F%2Fevil.example",
@@ -47,9 +48,7 @@ test.describe("اللغة والاتجاه", () => {
       const response = await request.get(path, { maxRedirects: 0 });
       const location = response.headers().location;
       if (location !== undefined) {
-        expect(new URL(location, "http://127.0.0.1:3100").host, `${path} ⇒ ${location}`).toBe(
-          "127.0.0.1:3100",
-        );
+        expect(new URL(location, origin).host, `${path} ⇒ ${location}`).toBe(origin.host);
         expect(location.startsWith("//"), `${path} ⇒ ${location}`).toBe(false);
       }
     }

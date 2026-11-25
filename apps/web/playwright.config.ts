@@ -1,6 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 3100;
+/** منفذ خادم الاختبار؛ يُغيَّر بـPLAYWRIGHT_PORT لتشغيل نسختين معًا على الجهاز نفسه دون تصادم. */
+const PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3100);
+if (!Number.isInteger(PORT) || PORT <= 0) {
+  throw new Error("PLAYWRIGHT_PORT must be a positive integer");
+}
 const BASE_URL = `http://127.0.0.1:${String(PORT)}`;
 const isCi = process.env.CI !== undefined;
 const SCREENS_SPEC = /screens\.spec\.ts/;

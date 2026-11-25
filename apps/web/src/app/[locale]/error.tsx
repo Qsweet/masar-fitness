@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { PageIntro } from "@/components/page-intro";
-import { MAIN_CONTENT_ID } from "@/components/page-shell";
+import { MAIN_CONTENT_ID } from "@/components/main-content-id";
 import { ButtonLink, buttonClass } from "@/components/ui/button-link";
 import { whatsappUrl } from "@/config/club";
 import { getDictionary } from "@/i18n/dictionaries";

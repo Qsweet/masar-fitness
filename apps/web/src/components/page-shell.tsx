@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { getDictionary } from "@/i18n/dictionaries";
 import { localizedPath, type Locale } from "@/i18n/locales";
 import { hasVisibleBlog } from "@/server/blog";
+import { MAIN_CONTENT_ID } from "./main-content-id";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 import styles from "./page-shell.module.css";
@@ -15,7 +16,7 @@ interface PageShellProps {
   readonly children: ReactNode;
 }
 
-export const MAIN_CONTENT_ID = "main";
+export { MAIN_CONTENT_ID };
 
 /** إطار كل صفحة: الترويسة والمحتوى والتذييل. الصفحة تمرر مسارها ليعمل تبديل اللغة بلا JavaScript. */
 export function PageShell({ locale, path, hasPlans = false, children }: PageShellProps) {

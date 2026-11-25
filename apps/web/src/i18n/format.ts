@@ -46,24 +46,14 @@ export function monthsParts(months: number, locale: Locale): MonthsParts {
   return { count: String(months), unit: months <= ARABIC_FEW_MAX ? words.few : words.many };
 }
 
-/**
- * المدة رقمًا ظاهرًا دائمًا مع وحدتها، لمربعات الاختيار حيث الرقم الكبير عنوان المربع («1» «شهر»).
- * للعين فقط: قارئ الشاشة يسمع الصيغة الصحيحة («شهر واحد»، «شهران») من نص مخفي بجانبها.
- * في العربية تُكتب الوحدة مفردة بعد 1 و2.
- */
-export function countedMonthsParts(months: number, locale: Locale): Required<MonthsParts> {
-  const words = getDictionary(locale).months;
-  const singular = months === 1 || (locale === "ar" && months === DUAL);
-  if (singular) {
-    return { count: String(months), unit: words.one };
-  }
-  const { unit } = monthsParts(months, locale);
-  return { count: String(months), unit };
-}
-
 /** قائمة في جملة بعطف اللغة الصحيح: «أ وب وج» بالعربية، و“a, b, and c” بالإنجليزية. */
 export function formatList(items: readonly string[], locale: Locale): string {
   return new Intl.ListFormat(locale, { type: "conjunction" }).format(items);
+}
+
+/** عدد بفواصل الآلاف وأرقام لاتينية: «1,841». */
+export function formatNumber(value: number): string {
+  return new Intl.NumberFormat(NUMBER_LOCALE).format(value);
 }
 
 export function formatMonths(months: number, locale: Locale): string {

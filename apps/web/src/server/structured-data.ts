@@ -1,4 +1,6 @@
 import { CLUB_CONTACT, CLUB_POSTAL_ADDRESS } from "@/config/club";
+import { CLUB_FACTS, SOCIAL_LINKS } from "@/config/club-facts";
+import { CLUB_HOURS, DAY_GROUP_DAYS } from "@/config/hours";
 import { articlePath, ROUTES } from "@/config/routes";
 import type { Crumb } from "@/content/blog/crumbs";
 import type { Article, ArticleTranslation, Reviewer } from "@/content/blog/types";
@@ -7,7 +9,9 @@ import type { JsonObject } from "./json-ld";
 
 /**
  * البيانات المنظَّمة (schema.org) تصف ما في الصفحة فقط، وتساعد الفهم لا الترتيب (docs/BLOG.md).
- * لا تقييمات ولا ساعات عمل ولا نطاق أسعار: لم يؤكدها المالك. لا FAQPage (أُلغيت نتائجها في 2026).
+ * ساعات العمل والحسابات الاجتماعية وسنة التأسيس والبريد ظاهرة في الرئيسية (config/، من موقع النادي الحالي).
+ * لا aggregateRating: تقييم Google الظاهر مصدره موقع آخر، وإرشادات Google لا تقبل وسم تقييمات مأخوذة
+ * من موقع آخر (القرار 49). لا نطاق أسعار. لا FAQPage (أُلغيت نتائجها في 2026).
  */
 const CONTEXT = "https://schema.org";
 
@@ -53,7 +57,17 @@ function websiteNode(identity: SiteIdentity): JsonObject {
   };
 }
 
-/** الرئيسية: الجهة، والنادي مكانًا (ExerciseGym)، والموقع. حقائق مؤكدة من config/club.ts فقط. */
+/** ساعات النادي (لا المسبح) بصيغة schema.org؛ الإغلاق قبل الافتتاح يعني بعد منتصف الليل. */
+function openingHours(): JsonObject[] {
+  return CLUB_HOURS.club.map((slot) => ({
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: [...DAY_GROUP_DAYS[slot.days]],
+    opens: slot.opens,
+    closes: slot.closes,
+  }));
+}
+
+/** الرئيسية: الجهة، والنادي مكانًا (ExerciseGym)، والموقع. الحقائق من config/ فقط، كما تظهر في الصفحة. */
 export function homeGraph(
   identity: SiteIdentity,
   page: { readonly description: string; readonly imageUrls: readonly string[] },
@@ -71,6 +85,8 @@ export function homeGraph(
         description: page.description,
         url: absolute(identity, ROUTES.home),
         telephone: CLUB_CONTACT.phoneE164,
+        email: CLUB_FACTS.email,
+        foundingDate: String(CLUB_FACTS.foundedYear),
         logo: identity.logoUrl,
         image: [...page.imageUrls],
         address: {
@@ -85,6 +101,8 @@ export function homeGraph(
           latitude: Number(CLUB_CONTACT.latitude),
           longitude: Number(CLUB_CONTACT.longitude),
         },
+        openingHoursSpecification: openingHours(),
+        sameAs: SOCIAL_LINKS.map((social) => social.url),
         parentOrganization: { "@id": id.organization },
       },
       websiteNode(identity),

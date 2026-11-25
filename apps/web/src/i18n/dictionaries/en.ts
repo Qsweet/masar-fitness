@@ -1,19 +1,22 @@
 import type { Dictionary } from "./ar";
 import { checkoutEn } from "./checkout-en";
+import { homeEn } from "./home-en";
 
 export const en: Dictionary = {
   currency: { SAR: "SAR" },
   months: { one: "month", two: "months", few: "months", many: "months" },
+  days: { one: "1 day", two: "2 days", few: "days", many: "days" },
   club: {
     name: "Masters Way Sports Club",
     shortName: "Masters Way",
+    wordmark: ["Masters", "Way"],
     logoAlt: "Masters Way Sports Club logo",
     slogan: "You've got this",
   },
   meta: {
     homeTitle: "Men's gym in Buraidah",
     homeDescription:
-      "Masters Way Sports Club for men in Ar Rihab, Buraidah: strength, functional training, pool, jacuzzi and steam room. Choose your duration and join.",
+      "Masters Way Sports Club for men in Ar Rihab, Buraidah: strength floor, functional training, group classes, indoor pool, jacuzzi, sauna and steam room. Choose your duration and join.",
     membershipsTitle: "Memberships",
     membershipsDescription:
       "Masters Way memberships in Buraidah by duration and total price, with a clear comparison.",
@@ -25,37 +28,29 @@ export const en: Dictionary = {
     mobile: "Mobile menu",
     menu: "Menu",
     home: "Home",
-    memberships: "Memberships",
+    about: "About",
     facilities: "Facilities",
-    train: "Training",
-    location: "Location",
-    join: "Join",
+    memberships: "Memberships",
+    services: "Programs",
+    contact: "Contact",
+    join: "Join now",
     switchLanguage: "العربية",
   },
   staging: "Preview version: prices and content are for review and not final.",
   hero: {
+    badge: "A men's sports club in Ar Rihab",
+    title: "Masters Way Sports Club for men in Buraidah",
     slogan: "You've got this.",
-    title:
-      "Masters Way, a men's gym in Buraidah: strength floor, functional training, pool, jacuzzi and steam room.",
-    lead: "In Ar Rihab. Every facility is in one membership, at one total price including VAT.",
+    lead: "A strength floor, functional training and group classes, with an indoor pool, jacuzzi, sauna and steam room. All in one membership at one total price including VAT.",
     action: "Choose a membership",
     secondary: "See the facilities",
-  },
-  media: { pauseVideo: "Pause the video", playVideo: "Play the video" },
-  facilities: {
-    title: "Facilities",
-    lead: "Five facilities, all in your membership.",
-    items: [
-      { name: "Strength floor", line: "Resistance machines and free weights." },
-      { name: "Functional training", line: "An open area with barbells, plates and boxes." },
-    ],
-    recovery: {
-      title: "Water and recovery",
-      names: ["Pool", "Jacuzzi", "Steam room"],
-      line: "An indoor pool with swimming lanes, a warm jacuzzi and a steam room.",
-    },
+    founded: "Founded",
+    rating: "Google rating",
+    menOnly: "Men only",
+    offerWith: "With the {term} membership",
   },
   plans: {
+    eyebrow: "Memberships",
     title: "Choose your duration",
     lead: "One total payment, including VAT.",
     legend: "Membership duration",
@@ -66,19 +61,18 @@ export const en: Dictionary = {
     durationBonus: "{total}, including {bonus} free",
     monthly: "About {amount} {unit} a month",
     total: "Total",
+    freeze: "Freeze up to {days}",
+    startsOnActivation: "Starts from activation at the club",
     vatIncluded: "Including VAT",
     includesAll: "Includes all club facilities",
     includes: "Includes",
     details: "Membership details",
     choose: "Choose",
+    selected: "Selected",
     compare: "Compare memberships",
     emptyTitle: "No memberships are listed right now",
     emptyLead: "Message us on WhatsApp and we'll tell you what's available.",
     emptyAction: "Message us on WhatsApp",
-  },
-  train: {
-    title: "Train hard.",
-    lead: "An ordinary training day on the club's floors.",
   },
   payment: {
     title: "Payment methods",
@@ -92,14 +86,11 @@ export const en: Dictionary = {
     note: "Instalment amounts and count are set by the provider at checkout, and approval depends on eligibility.",
   },
   location: {
-    title: "Club location",
-    lead: "Call or message us on WhatsApp with any question before you join.",
     directions: "Open the map",
     call: "Call",
     whatsapp: "WhatsApp",
     whatsappMessage: "Hello, I have a question about joining Masters Way.",
   },
-  final: { title: "Start your membership today.", action: "Choose a membership" },
   memberships: {
     title: "Memberships",
     intro: "Every membership covers all club facilities. Only duration and price differ.",
@@ -127,7 +118,6 @@ export const en: Dictionary = {
     stickyLabel: "Membership summary",
   },
   photos: {
-    videoPoster: "A group training on step boards in the functional area",
     functionalPress:
       "A man in a club shirt pressing a bar overhead in front of members in the functional area",
     legPress: "A member on the leg press machine on the strength floor",
@@ -139,11 +129,21 @@ export const en: Dictionary = {
     latPulldown: "A member on the lat pulldown machine by the gym window",
     trainerPortrait: "A trainer in a club shirt, arms crossed, on the strength floor",
     consultation: "A man in a club jacket talking, seated by the pool's glass wall",
+    sauna: "Hot sauna stones inside a wooden room at the club",
+    coachTalk:
+      "A man in a club shirt talking with members beside a loaded barbell in the functional area",
   },
   footer: {
+    tagline:
+      "A men's sports club in Ar Rihab, Buraidah. Strength, classes, pool and sauna in one membership.",
     rights: "All rights reserved",
+    pages: "Quick links",
+    programs: "Programs",
     contact: "Contact",
-    pages: "Pages",
+    social: "Follow us",
+    registration: "Commercial Registration",
+    joinNote: "For now you join through the club's WhatsApp; online payment is being prepared.",
+    socialNames: { instagram: "Instagram", x: "X", snapchat: "Snapchat", tiktok: "TikTok" },
   },
   notFound: {
     title: "Page not found",
@@ -151,6 +151,7 @@ export const en: Dictionary = {
     home: "Back to home",
   },
   checkout: checkoutEn,
+  ...homeEn,
   error: {
     title: "The page couldn't load",
     lead: "Something went wrong on our side. Try again, and if it keeps happening, message us on WhatsApp.",

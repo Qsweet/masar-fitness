@@ -121,7 +121,7 @@ export const EN: ArticleTranslation = {
           "The written terms. Read the freeze and refund policies and the start-date rule before you pay, not after.",
         ),
         p(
-          `${CLUB.name} is a men's gym in ${CLUB.city}. It has a strength floor, a functional training area, an indoor pool with lanes, a jacuzzi and a steam room. Address: ${CLUB.address}. See the `,
+          `${CLUB.name} is a men's gym in ${CLUB.city}. It has a strength floor, a functional training area with group classes, an indoor pool of graded depth, a jacuzzi, a sauna and a steam room. Address: ${CLUB.address}. See the `,
           link("facilities page", "/#facilities"),
           " and the ",
           link("pool page", "/#water"),

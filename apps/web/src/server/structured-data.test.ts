@@ -101,15 +101,38 @@ describe("homeGraph", () => {
     expect(gym.telephone).toBe("+966163240111");
   });
 
-  it("لا حقائق غير مؤكدة: لا تقييم ولا ساعات عمل ولا نطاق أسعار", () => {
+  it("ساعات النادي الظاهرة في الصفحة، والإغلاق بعد منتصف الليل كما هو", () => {
+    expect(byType(data, "ExerciseGym").openingHoursSpecification).toEqual([
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
+        opens: "06:00",
+        closes: "02:00",
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Friday"],
+        opens: "13:00",
+        closes: "00:00",
+      },
+    ]);
+  });
+
+  it("الحسابات الاجتماعية بروابط التذييل نفسها، والبريد وسنة التأسيس", () => {
     const gym = byType(data, "ExerciseGym");
-    for (const key of [
-      "aggregateRating",
-      "review",
-      "openingHours",
-      "openingHoursSpecification",
-      "priceRange",
-    ]) {
+    expect(gym.sameAs).toEqual([
+      "https://www.instagram.com/Mmastersway",
+      "https://x.com/mmastersway",
+      "https://www.snapchat.com/add/Mmastersway",
+      "https://www.tiktok.com/@Mmastersway",
+    ]);
+    expect(gym.email).toBe("Mmastersway@gmail.com");
+    expect(gym.foundingDate).toBe("2018");
+  });
+
+  it("لا تقييم ولا آراء (مصدرها موقع آخر) ولا نطاق أسعار", () => {
+    const gym = byType(data, "ExerciseGym");
+    for (const key of ["aggregateRating", "review", "priceRange"]) {
       expect(gym).not.toHaveProperty(key);
     }
   });

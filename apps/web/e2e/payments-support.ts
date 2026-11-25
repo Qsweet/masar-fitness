@@ -18,12 +18,17 @@ export function testDb(): Db {
   return createDb(url);
 }
 
+const MOBILE_SUFFIX_DIGITS = 8;
+const MAX_OCTET = 254;
+const DECIMAL_BASE = 10;
+
 export function randomMobile(): string {
-  return `05${String(Math.floor(Math.random() * 1e8)).padStart(8, "0")}`;
+  const suffix = Math.floor(Math.random() * DECIMAL_BASE ** MOBILE_SUFFIX_DIGITS);
+  return `05${String(suffix).padStart(MOBILE_SUFFIX_DIGITS, "0")}`;
 }
 
 export function randomIp(): string {
-  const octet = () => String(Math.floor(Math.random() * 254) + 1);
+  const octet = () => String(Math.floor(Math.random() * MAX_OCTET) + 1);
   return `10.${octet()}.${octet()}.${octet()}`;
 }
 

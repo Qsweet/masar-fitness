@@ -3,6 +3,7 @@ import { Logo } from "@/components/ui/logo";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { LOCALES, localizedPath, type Locale } from "@/i18n/locales";
 import { cx } from "@/lib/cx";
+import { MobileMenu } from "./mobile-menu";
 import styles from "./site-header.module.css";
 
 interface SiteHeaderProps {
@@ -78,12 +79,11 @@ export function SiteHeader({ locale, path, joinHref, dictionary }: SiteHeaderPro
         dictionary={dictionary}
         className={cx(styles.link, styles.languageMobile)}
       />
-      <details className={styles.menu}>
-        <summary>{dictionary.nav.menu}</summary>
+      <MobileMenu label={dictionary.nav.menu} className={styles.menu}>
         <nav aria-label={dictionary.nav.mobile} className={styles.menuPanel}>
           <NavLinks locale={locale} dictionary={dictionary} />
         </nav>
-      </details>
+      </MobileMenu>
       <Link href={joinHref} className={styles.cta}>
         {dictionary.nav.join}
       </Link>

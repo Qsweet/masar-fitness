@@ -165,9 +165,10 @@ test.describe("التركيز بلوحة المفاتيح", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(`/memberships/${ANNUAL.slug}`);
     const steps = 40;
+    let checked = 0;
     for (let step = 0; step < steps; step++) {
       await page.keyboard.press("Tab");
-      const hidden = await page.evaluate(() => {
+      const state = await page.evaluate(() => {
         const focused = document.activeElement;
         const stickyBar = document.querySelector("[data-sticky-bar]:not([hidden])");
         // بعد آخر عنصر يخرج التركيز من الصفحة ويصير جسمها هو العنصر النشط: ليس عنصرًا محجوبًا
@@ -177,11 +178,39 @@ test.describe("التركيز بلوحة المفاتيح", () => {
           stickyBar === null ||
           stickyBar.contains(focused)
         ) {
-          return false;
+          return "skipped";
         }
-        return focused.getBoundingClientRect().bottom > stickyBar.getBoundingClientRect().top + 1;
+        const covered =
+          focused.getBoundingClientRect().bottom > stickyBar.getBoundingClientRect().top + 1;
+        return covered ? "covered" : "clear";
       });
-      expect(hidden, `العنصر رقم ${String(step + 1)} في ترتيب التنقل محجوب تحت الشريط`).toBe(false);
+      expect(state, `العنصر رقم ${String(step + 1)} في ترتيب التنقل محجوب تحت الشريط`).not.toBe(
+        "covered",
+      );
+      checked += state === "clear" ? 1 : 0;
     }
+    // الاختبار لا ينجح فارغًا: عناصر فُحصت فعلًا والشريط ظاهر
+    expect(checked).toBeGreaterThan(0);
+  });
+});
+
+test.describe("قائمة الجوال", () => {
+  test("تُغلق بعد اختيار رابط وعند Escape", async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) >= 1024, "القائمة خاصة بالجوال");
+    await page.goto("/");
+    const menu = page.getByRole("banner").locator("details");
+    await menu.locator("summary").click();
+    await expect(menu).toHaveAttribute("open", "");
+    await page
+      .getByRole("navigation", { name: "قائمة الجوال" })
+      .getByRole("link", { name: "التمرين" })
+      .click();
+    await expect(page).toHaveURL(/#train$/);
+    await expect(menu).not.toHaveAttribute("open");
+
+    await menu.locator("summary").click();
+    await page.keyboard.press("Escape");
+    await expect(menu).not.toHaveAttribute("open");
+    await expect(menu.locator("summary")).toBeFocused();
   });
 });

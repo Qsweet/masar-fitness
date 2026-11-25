@@ -38,7 +38,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const plans = toPlanViews(await getMembershipPlans(), locale);
 
   return (
-    <PageShell locale={locale} path={PATH} hasPlans>
+    <PageShell locale={locale} path={PATH} hasPlans={plans.length > 0}>
       <Hero dictionary={dictionary} />
       <FacilityLine dictionary={dictionary} />
       <PlansSection

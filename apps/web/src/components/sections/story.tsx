@@ -4,6 +4,7 @@ import { buttonClass } from "@/components/ui/button-link";
 import { PHOTOS, type PhotoKey } from "@/config/photos";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { cx } from "@/lib/cx";
+import heroStyles from "./hero.module.css";
 import styles from "./story.module.css";
 
 interface SectionProps {
@@ -17,9 +18,9 @@ export const HERO_ID = "top";
 export function Hero({ dictionary }: SectionProps) {
   const { hero, photos } = dictionary;
   return (
-    <section id={HERO_ID} className={styles.hero} aria-labelledby="hero-title">
-      <div className={styles.heroText}>
-        <h1 id="hero-title" className={styles.heroTitle}>
+    <section id={HERO_ID} className={heroStyles.hero} aria-labelledby="hero-title">
+      <div className={heroStyles.heroText}>
+        <h1 id="hero-title" className={heroStyles.heroTitle}>
           {/* مسافة بين الأسطر حتى يُقرأ العنوان كلمتين (الشبكة تتجاهلها بصريًا) */}
           {hero.titleLines.map((line) => (
             <Fragment key={line}>
@@ -27,13 +28,13 @@ export function Hero({ dictionary }: SectionProps) {
             </Fragment>
           ))}
         </h1>
-        <p className={styles.heroNote}>{hero.wallNote}</p>
-        <p className={styles.heroLead}>{hero.lead}</p>
+        <p className={heroStyles.heroNote}>{hero.wallNote}</p>
+        <p className={heroStyles.heroLead}>{hero.lead}</p>
         <a href="#plans" className={buttonClass("ink")}>
           {hero.action}
         </a>
       </div>
-      <figure className={styles.heroPhoto}>
+      <figure className={heroStyles.heroPhoto}>
         <Image
           src={PHOTOS.ropes}
           alt={photos.ropes}
@@ -42,7 +43,7 @@ export function Hero({ dictionary }: SectionProps) {
           placeholder="blur"
           sizes="(min-width: 64rem) 55vw, 100vw"
         />
-        <span className={styles.heroSlash} aria-hidden="true" />
+        <span className={heroStyles.heroSlash} aria-hidden="true" />
       </figure>
     </section>
   );
@@ -52,9 +53,9 @@ export function Hero({ dictionary }: SectionProps) {
 export function FacilityLine({ dictionary }: SectionProps) {
   const { facilities } = dictionary;
   return (
-    <section className={styles.value} aria-label={facilities.label}>
-      <p className={styles.valueLabel}>{facilities.label}</p>
-      <ul className={styles.valueLine}>
+    <section className={heroStyles.value} aria-label={facilities.label}>
+      <p className={heroStyles.valueLabel}>{facilities.label}</p>
+      <ul className={heroStyles.valueLine}>
         {facilities.items.map((item) => (
           <li key={item}>{item}</li>
         ))}

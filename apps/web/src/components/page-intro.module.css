@@ -21,7 +21,8 @@
   max-width: 16ch;
   font-family: var(--display);
   font-weight: 800;
-  font-size: clamp(3.25rem, 9vw, 8rem);
+  font-size: clamp(2.5rem, 11vw, 8rem);
+  overflow-wrap: break-word;
   line-height: 1;
 }
 

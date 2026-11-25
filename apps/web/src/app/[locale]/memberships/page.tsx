@@ -38,7 +38,7 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
   const plans = await getMembershipPlans();
 
   return (
-    <PageShell locale={locale} path={PATH} hasPlans>
+    <PageShell locale={locale} path={PATH} hasPlans={plans.length > 0}>
       <PageIntro title={dictionary.memberships.title} lead={dictionary.memberships.intro} />
       <PlansSection
         plans={toPlanViews(plans, locale)}

@@ -126,8 +126,8 @@ export function ComparisonTable(props: ComparisonTableProps) {
         <caption className="sr-only">{dictionary.memberships.compareCaption}</caption>
         <TableHead {...props} />
         <tbody>
-          {buildRows(props).map((row) => (
-            <tr key={row.label}>
+          {buildRows(props).map((row, index) => (
+            <tr key={`${String(index)}-${row.label}`}>
               <th scope="row">{row.label}</th>
               {plans.map((plan) => (
                 <td key={plan.slug}>{row.cell(plan)}</td>

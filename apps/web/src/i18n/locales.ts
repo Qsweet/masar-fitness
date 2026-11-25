@@ -20,5 +20,8 @@ export function localizedPath(locale: Locale, path = "/"): string {
   if (locale === DEFAULT_LOCALE) {
     return normalized;
   }
-  return normalized === "/" ? `/${locale}` : `/${locale}${normalized}`;
+  // جذر اللغة مع مرساة أو استعلام (‎/#water‎) بلا شرطة زائدة: ‎/en#water‎ لا ‎/en/#water‎
+  return /^\/(?:[#?]|$)/u.test(normalized)
+    ? `/${locale}${normalized.slice(1)}`
+    : `/${locale}${normalized}`;
 }

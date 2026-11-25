@@ -119,6 +119,8 @@ describe("الشكل", () => {
   it("صفوف الجدول بعدد أعمدة الرأس، وتوصية واحدة على الأكثر في النص", () => {
     const table: Block = { type: "table", caption: "ج", head: ["أ", "ب"], rows: [["1"]] };
     expect(problemsOf(withBlocks([table]))).toEqual([expect.stringContaining("table")]);
+    const uncaptioned: Block = { type: "table", head: ["أ", "ب"], rows: [["1", "2"]] };
+    expect(problemsOf(withBlocks([uncaptioned]))).toEqual([]);
     const recommendation: Block = { type: "recommendation", kind: "memberships" };
     expect(problemsOf(withBlocks([recommendation, recommendation]))).toEqual([
       expect.stringContaining("at most one"),
@@ -141,6 +143,7 @@ describe("الروابط", () => {
 
   it("الداخلية تصل إلى مسار حقيقي بلا بادئة لغة", () => {
     expect(problemsOf(withBlocks([linkTo("/tools/cost-per-visit?visits=3")]))).toEqual([]);
+    expect(problemsOf(withBlocks([linkTo("/#water")]))).toEqual([]);
     for (const href of ["/no-such-page", "/en/memberships", "/ar", "//evil.example", "/blog/x"]) {
       expect(problemsOf(withBlocks([linkTo(href)])), href).not.toEqual([]);
     }

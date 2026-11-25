@@ -61,6 +61,13 @@ describe("القواعد العربية", () => {
     expect(rules("200 ر.س")).toEqual([]);
   });
 
+  it("التطويل الموصول بسابقة قبل رقم أو كلمة لاتينية («بـ150») استثناء؛ غيره مخالفة", () => {
+    expect(rules("توصي بـ150–300 دقيقة، وبطاقة الـ10 زيارات، وتحليل لـ24 دراسة")).toEqual([]);
+    expect(rules("مســار بـ10")).toEqual(["tatweel", "tatweel"]);
+    expect(rules("كتابـ10")).toEqual(["tatweel"]);
+    expect(rules("بـ مسار")).toEqual(["tatweel"]);
+  });
+
   it("المقتطف يُظهر النص المخالف من الأصل", () => {
     const [issue] = lintText("نادي رياضي في بريدة, حي الرحاب", "ar");
     expect(issue?.excerpt).toContain("بريدة, حي");

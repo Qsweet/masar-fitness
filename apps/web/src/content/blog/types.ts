@@ -16,7 +16,8 @@ export type Block =
   | { readonly type: "steps"; readonly items: readonly string[] }
   | {
       readonly type: "table";
-      readonly caption: string;
+      /** عنوان الجدول إن كان له عنوان في النص؛ وإلا تقدّمه فقرة تعرّفه */
+      readonly caption?: string;
       readonly head: readonly string[];
       readonly rows: readonly (readonly string[])[];
     }

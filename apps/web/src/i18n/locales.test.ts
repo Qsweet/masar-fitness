@@ -21,4 +21,11 @@ describe("locales", () => {
     expect(localizedPath("en", "/memberships")).toBe("/en/memberships");
     expect(localizedPath("en", "memberships")).toBe("/en/memberships");
   });
+
+  it("مرساة أو استعلام على الجذر بلا شرطة زائدة بعد بادئة اللغة", () => {
+    expect(localizedPath("ar", "/#water")).toBe("/#water");
+    expect(localizedPath("en", "/#water")).toBe("/en#water");
+    expect(localizedPath("en", "/?a=1")).toBe("/en?a=1");
+    expect(localizedPath("en", "/memberships#compare")).toBe("/en/memberships#compare");
+  });
 });

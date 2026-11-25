@@ -19,7 +19,7 @@ function blockText(block: Block): string[] {
     case "steps":
       return [...block.items];
     case "table":
-      return [block.caption, ...block.head, ...block.rows.flat()];
+      return [block.caption ?? "", ...block.head, ...block.rows.flat()];
     case "note":
       return [block.title, block.text];
     case "recommendation":

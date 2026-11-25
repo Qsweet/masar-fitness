@@ -106,7 +106,9 @@ function checkTable(block: Block, where: string): Problems {
     return [];
   }
   return block.rows.some((row) => row.length !== block.head.length)
-    ? [`${where}: table "${block.caption}" has rows that do not match its header`]
+    ? [
+        `${where}: table "${block.caption ?? block.head.join(" | ")}" has rows that do not match its header`,
+      ]
     : [];
 }
 

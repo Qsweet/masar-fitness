@@ -44,7 +44,7 @@ const block = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("steps"), items }),
   z.strictObject({
     type: z.literal("table"),
-    caption: text,
+    caption: text.optional(),
     head: z.array(text).min(2),
     rows: z.array(z.array(z.string().trim())).min(1),
   }),

@@ -27,8 +27,16 @@ const MASK = "\uE000";
  * - الروابط: فيها نقاط وشرطات وأحرف لاتينية ملاصقة.
  * - العناصر النائبة في قوالب القاموس ({plan}، {amount}).
  * - الاختصارات العربية بالنقطة: «ر.س» (ريال سعودي) نقطة بين حرفين عربيين بلا مسافة.
+ * - حرف السابقة في أول الكلمة (و، ف، ب، ل، ك، أو «ال») موصولًا بتطويل برقم أو كلمة لاتينية:
+ *   «بـ150»، «لـ24»، «الـ10». التطويل هنا وصل إملائي لا زخرفة، ولا بديل له بالمسافات وحدها.
  */
-const PROTECTED: readonly RegExp[] = [/https?:\/\/[^\s«»“”"]+/gu, /\{\w+\}/gu, /ر\.س/gu];
+const WORD_START = "(?<![\\p{L}\\p{N}\u0640])";
+const PROTECTED: readonly RegExp[] = [
+  /https?:\/\/[^\s«»“”"]+/gu,
+  /\{\w+\}/gu,
+  /ر\.س/gu,
+  new RegExp(`${WORD_START}(?:ال|[وفبلك])\u0640(?=[0-9${LATIN}])`, "gu"),
+];
 
 interface PatternRule {
   readonly id: string;
@@ -163,7 +171,11 @@ function blockStrings(block: Block): string[] {
     case "steps":
       return [...block.items];
     case "table":
-      return [block.caption, ...block.head, ...block.rows.flat().filter((cell) => cell !== "")];
+      return [
+        ...(block.caption === undefined ? [] : [block.caption]),
+        ...block.head,
+        ...block.rows.flat().filter((cell) => cell !== ""),
+      ];
     case "note":
       return [block.title, block.text];
     case "recommendation":

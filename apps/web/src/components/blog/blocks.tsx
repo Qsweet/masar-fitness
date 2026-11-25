@@ -29,7 +29,7 @@ function TableView({ block }: { readonly block: Extract<Block, { type: "table" }
   return (
     <div className={styles.tableScroller}>
       <table className={styles.table}>
-        <caption>{block.caption}</caption>
+        {block.caption === undefined ? null : <caption>{block.caption}</caption>}
         <thead>
           <tr>
             {block.head.map((cell, index) => (

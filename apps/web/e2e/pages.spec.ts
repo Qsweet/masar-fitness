@@ -72,7 +72,7 @@ test.describe("الرئيسية", () => {
       .getByRole("link", { name: /تفاصيل الاشتراك/ })
       .click();
     await expect(page).toHaveURL(/\/memberships\/three-months$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(QUARTER.nameAr);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("انطلاقة الأبطال");
   });
 
   test("الاختيار بلوحة المفاتيح: الأسهم تنقل بين المدد", async ({ page }) => {

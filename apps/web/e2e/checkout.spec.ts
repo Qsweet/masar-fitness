@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page, type Route } from "@playwright/test";
+import { expect, test, type Locator, type Page, type Route } from "@playwright/test";
 
 /**
  * مسار الشراء على الخادم الثاني (3101، العلم مفتوح) ببذرة المعاينة: الاشتراكات الثلاثة بأسعار النادي المؤقتة،
@@ -72,6 +72,17 @@ async function sendTwice(page: Page, path: string, destinations: string[]) {
   );
 }
 
+/** نص الرابط الأعلى عند نقطة قرب بداية الرابط من جهة النهاية (حيث يقع زر المحادثة العائم). */
+async function topmostLinkText(page: Page, link: Locator): Promise<string> {
+  await link.scrollIntoViewIfNeeded();
+  const box = await link.boundingBox();
+  const point = [(box?.x ?? 0) + (box?.width ?? 0) * 0.1, (box?.y ?? 0) + (box?.height ?? 0) / 2];
+  return page.evaluate(
+    ([x, y]) => document.elementFromPoint(x ?? 0, y ?? 0)?.closest("a")?.textContent ?? "",
+    point,
+  );
+}
+
 function tokenOf(destination: string): string {
   return /orders\/([A-Za-z0-9_-]{43})/.exec(destination)?.[1] ?? "";
 }
@@ -137,15 +148,9 @@ test.describe("الشراء والعلم مفتوح", () => {
     await expect(page.getByRole("article")).toContainText("6 أشهر");
     // كل زر «أكمل الطلب» الظاهر غير محجوب (لا زر محادثة عائم فوق شريط الهاتف)
     for (const link of await page.getByRole("link", { name: "أكمل الطلب" }).all()) {
-      if (!(await link.isVisible())) {
-        continue;
+      if (await link.isVisible()) {
+        expect(await topmostLinkText(page, link)).toContain("أكمل الطلب");
       }
-      const box = await link.boundingBox();
-      const hit = await page.evaluate(
-        ([x, y]) => document.elementFromPoint(x ?? 0, y ?? 0)?.closest("a")?.textContent ?? "",
-        [(box?.x ?? 0) + (box?.width ?? 0) * 0.1, (box?.y ?? 0) + (box?.height ?? 0) / 2],
-      );
-      expect(hit).toContain("أكمل الطلب");
     }
     await expectAxeClean(page);
     await page.getByRole("button", { name: "احذف" }).click();

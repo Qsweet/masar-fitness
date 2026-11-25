@@ -10,7 +10,7 @@ import { PageShell } from "@/components/page-shell";
 import { PAY_NOTICE_PARAM, orderPath, parsePayNotice } from "@/config/payments";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale } from "@/i18n/locales";
-import { requireCheckout } from "@/server/checkout/flag";
+import { isCheckoutPreview, requireCheckout } from "@/server/checkout/flag";
 import { checkoutMetadata } from "@/server/checkout/metadata";
 import { getOrderView } from "@/server/checkout/order-view";
 import { getPaymentPanelState } from "@/server/payments/panel";
@@ -55,6 +55,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
         view={view}
         labels={dictionary.checkout}
         payment={panel === null ? null : <PaymentPanel view={panel} />}
+        preview={isCheckoutPreview()}
       />
     </PageShell>
   );

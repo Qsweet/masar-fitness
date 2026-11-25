@@ -63,6 +63,7 @@ describe("parseEnv: الدفع اختياري ومغلق افتراضيًا", ()
     expect(Object.keys(env).sort()).toEqual([
       "APP_VERSION",
       "CHECKOUT_ENABLED",
+      "CHECKOUT_PREVIEW",
       "DATABASE_URL",
       "NODE_ENV",
       "PAYMENTS",

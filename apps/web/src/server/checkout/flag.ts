@@ -7,6 +7,12 @@ export function isCheckoutEnabled(): boolean {
   return getEnv().CHECKOUT_ENABLED;
 }
 
+/** معاينة الشراء للمالك (CHECKOUT_PREVIEW): الطلبات للعرض فقط، بلا دفع ولا إرسال إلى النادي. */
+export function isCheckoutPreview(): boolean {
+  const env = getEnv();
+  return env.CHECKOUT_ENABLED && env.CHECKOUT_PREVIEW;
+}
+
 /**
  * حارس كل صفحة شراء وكل Server Action للشراء: أول سطر فيها.
  * والعلم مغلق يرجع 404 قبل أي قراءة أو كتابة، فلا يُعرف حتى أن المسار موجود.

@@ -9,6 +9,9 @@ const valid = {
 const CHECKOUT_OFF =
   "CHECKOUT_ENABLED: must stay off in production: a public sandbox preview needs PAYMENTS_PUBLIC_SANDBOX=yes, Moyasar test mode and SITE_INDEXABLE off";
 
+const PREVIEW_UNSAFE =
+  "CHECKOUT_PREVIEW: needs SITE_INDEXABLE off and PAYMENTS_MODE off: preview orders are never paid";
+
 function problemsOf(raw: Record<string, string | undefined>): readonly string[] {
   try {
     parseEnv(raw);
@@ -33,6 +36,7 @@ describe("parseEnv", () => {
       PAYMENTS: { mode: "off" },
       PAYMENTS_ALLOW_FAKE: false,
       PAYMENTS_PUBLIC_SANDBOX: false,
+      CHECKOUT_PREVIEW: false,
     });
   });
 
@@ -56,6 +60,36 @@ describe("parseEnv", () => {
     ]);
     // مغلقًا يمر الإنتاج العام كما هو
     expect(parseEnv({ ...valid, NODE_ENV: "production" }).CHECKOUT_ENABLED).toBe(false);
+  });
+
+  it("معاينة الشراء بلا دفع تفتح الشراء على رابط عام غير مفهرس", () => {
+    const preview = {
+      ...valid,
+      NODE_ENV: "production",
+      CHECKOUT_ENABLED: "true",
+      CHECKOUT_PREVIEW: "yes",
+    };
+    const env = parseEnv(preview);
+    expect(env.CHECKOUT_ENABLED).toBe(true);
+    expect(env.CHECKOUT_PREVIEW).toBe(true);
+    for (const value of [undefined, "", "true", "YES", "1"]) {
+      expect(problemsOf({ ...preview, CHECKOUT_PREVIEW: value })).toEqual([CHECKOUT_OFF]);
+    }
+  });
+
+  it("يرفض معاينة الشراء مع الفهرسة أو مع مزوّد دفع", () => {
+    const preview = { ...valid, CHECKOUT_PREVIEW: "yes" };
+    expect(problemsOf({ ...preview, SITE_INDEXABLE: "true" })).toEqual([PREVIEW_UNSAFE]);
+    expect(
+      problemsOf({
+        ...preview,
+        PAYMENTS_MODE: "test",
+        PAYMENTS_PROVIDER: "fake",
+        PAYMENTS_MIN_PAYMENT_MINUTES: "10",
+        PAYMENTS_FAKE_WEBHOOK_SECRET: "w".repeat(40),
+        SITE_URL: "http://127.0.0.1:3101",
+      }),
+    ).toEqual([PREVIEW_UNSAFE]);
   });
 
   it("يقبل فتح الشراء في الإنتاج على عنوان الجهاز نفسه (اختبار البناء الإنتاجي)", () => {

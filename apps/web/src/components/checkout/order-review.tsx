@@ -12,6 +12,8 @@ interface OrderReviewProps {
   readonly labels: Dictionary["checkout"];
   /** قسم الدفع حين يُضبط مزوّد: يحل محل «الخطوة التالية». غائب ⇒ الصفحة كما كانت. */
   readonly payment?: ReactNode;
+  /** معاينة الشراء: الطلب تجريبي، فلا خطوة دفع ولا رسالة برقمه إلى النادي. */
+  readonly preview?: boolean;
 }
 
 function Buyer({ view, labels }: OrderReviewProps) {
@@ -43,8 +45,19 @@ function Buyer({ view, labels }: OrderReviewProps) {
 }
 
 /** الخطوة التالية بصدق: لا زر دفع ولا محاكاة. المعلّق واتساب برقم الطلب، والمنتهي بدء جديد. */
-function NextStep({ view, labels }: OrderReviewProps) {
+function NextStep(props: OrderReviewProps) {
+  const { view, labels } = props;
   const { review } = labels;
+  if (props.preview === true) {
+    return (
+      <section role="status" aria-labelledby="next-title" className={styles.panel}>
+        <h2 id="next-title" className={styles.panelTitle}>
+          {review.nextTitle}
+        </h2>
+        <p>{review.previewNotice}</p>
+      </section>
+    );
+  }
   if (view.state === "expired") {
     return (
       <section aria-labelledby="next-title" className={styles.panel}>

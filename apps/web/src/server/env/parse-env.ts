@@ -37,6 +37,11 @@ const rawSchema = z.object({
     .string()
     .optional()
     .transform((value) => value === "true"),
+  /**
+   * معاينة الشراء للمالك على رابط المعاينة: "yes" حرفيًا. تفتح السلة والطلب بلا أي دفع، ولا تُقبل إلا
+   * والفهرسة مغلقة ولا مزوّد دفع مضبوط، فلا يُدفع طلب معاينة أبدًا.
+   */
+  CHECKOUT_PREVIEW: optionalText,
   /** يضبطه النشر (رقم الإصدار أو معرّف الإيداع). */
   APP_VERSION: z.string().min(1).default("dev"),
   /** الدفع الإلكتروني (كلها اختيارية؛ بلا PAYMENTS_MODE لا مزوّد ولا زر دفع). تُفحص في @masar/payments. */
@@ -78,6 +83,7 @@ interface CheckedEnv {
   readonly PAYMENTS: PaymentsConfig;
   readonly PAYMENTS_ALLOW_FAKE: boolean;
   readonly PAYMENTS_PUBLIC_SANDBOX: boolean;
+  readonly CHECKOUT_PREVIEW: boolean;
 }
 
 /**
@@ -88,6 +94,11 @@ function isSandboxPreview(env: CheckedEnv): boolean {
   const { PAYMENTS } = env;
   const sandbox = PAYMENTS.mode === "test" && PAYMENTS.provider === "moyasar";
   return env.PAYMENTS_PUBLIC_SANDBOX && sandbox && !env.SITE_INDEXABLE;
+}
+
+/** معاينة الشراء بلا دفع: فهرسة مغلقة ولا مزوّد دفع إطلاقًا. */
+function isPaymentFreePreview(env: CheckedEnv): boolean {
+  return env.CHECKOUT_PREVIEW && !env.SITE_INDEXABLE && env.PAYMENTS.mode === "off";
 }
 
 /**
@@ -116,6 +127,7 @@ const envSchema = rawSchema
       PAYMENTS: payments.value,
       PAYMENTS_ALLOW_FAKE: env.PAYMENTS_ALLOW_FAKE === EXPLICIT_YES,
       PAYMENTS_PUBLIC_SANDBOX: env.PAYMENTS_PUBLIC_SANDBOX === EXPLICIT_YES,
+      CHECKOUT_PREVIEW: env.CHECKOUT_PREVIEW === EXPLICIT_YES,
     };
   })
   .refine((env) => env.NODE_ENV !== "production" || isSecureOrLoopback(env.SITE_URL), {
@@ -134,13 +146,19 @@ const envSchema = rawSchema
       env.NODE_ENV !== "production" ||
       !env.CHECKOUT_ENABLED ||
       isLoopback(env.SITE_URL) ||
-      isSandboxPreview(env),
+      isSandboxPreview(env) ||
+      isPaymentFreePreview(env),
     {
       path: ["CHECKOUT_ENABLED"],
       error:
         "must stay off in production: a public sandbox preview needs PAYMENTS_PUBLIC_SANDBOX=yes, Moyasar test mode and SITE_INDEXABLE off",
     },
-  );
+  )
+  // المعاينة لا تجتمع مع فهرسة ولا مع مزوّد دفع: إن ضُبط أحدهما يُرفض الإقلاع بدل تجاهل العلم
+  .refine((env) => !env.CHECKOUT_PREVIEW || isPaymentFreePreview(env), {
+    path: ["CHECKOUT_PREVIEW"],
+    error: "needs SITE_INDEXABLE off and PAYMENTS_MODE off: preview orders are never paid",
+  });
 
 export type ServerEnv = z.infer<typeof envSchema>;
 

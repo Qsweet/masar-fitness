@@ -35,6 +35,7 @@ services:
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-}
       # الشراء والدفع مغلقان ما لم تُكتب قيمهما في deploy/.env على الخادم (docs/PAYMENTS.md)
       CHECKOUT_ENABLED: ${CHECKOUT_ENABLED:-}
+      CHECKOUT_PREVIEW: ${CHECKOUT_PREVIEW:-}
       PAYMENTS_MODE: ${PAYMENTS_MODE:-}
       PAYMENTS_PROVIDER: ${PAYMENTS_PROVIDER:-}
       PAYMENTS_MIN_PAYMENT_MINUTES: ${PAYMENTS_MIN_PAYMENT_MINUTES:-}

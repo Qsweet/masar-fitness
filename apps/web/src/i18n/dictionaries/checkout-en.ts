@@ -7,6 +7,9 @@ export const checkoutEn: Dictionary["checkout"] = {
   intro: {
     title: "Complete your order",
     lead: "Review the summary, then enter your name and mobile to reserve the order. No payment at this step.",
+    /** معاينة الشراء (CHECKOUT_PREVIEW) بدل السطر أعلاه. */
+    previewLead:
+      "Preview for review: orders here are tests that aren't paid and don't reach the club. Don't enter your real details; use a test name and a mobile like 0500000000.",
   },
   summary: {
     title: "Order summary",
@@ -83,6 +86,9 @@ export const checkoutEn: Dictionary["checkout"] = {
       "Online payment isn't available yet. Send your order number on WhatsApp and we'll complete the payment with you before the deadline.",
     whatsapp: "Send the order number on WhatsApp",
     whatsappMessage: "Hello, I'd like to complete the payment for my order {reference}.",
+    /** معاينة الشراء (CHECKOUT_PREVIEW): بدل خطوة الدفع عبر واتساب برقم الطلب. */
+    previewNotice:
+      "This is a test order on the preview version: it isn't paid and doesn't reach the club. To actually join, message us on WhatsApp.",
     startAgain: "Start a new order",
   },
   errors: {

@@ -12,10 +12,10 @@ import { UnavailableNotice } from "@/components/checkout/unavailable-notice";
 import { PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
 import { whatsappUrl } from "@/config/club";
-import { getDictionary } from "@/i18n/dictionaries";
+import { type Dictionary, getDictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
 import { isLocale, localizedPath, type Locale } from "@/i18n/locales";
-import { requireCheckout } from "@/server/checkout/flag";
+import { isCheckoutPreview, requireCheckout } from "@/server/checkout/flag";
 import { isSlug, parseCheckoutOptions, type CheckoutOptions } from "@/server/checkout/form-schema";
 import { initialCheckoutState } from "@/server/checkout/form-state";
 import { checkoutMetadata } from "@/server/checkout/metadata";
@@ -122,6 +122,11 @@ function CheckoutForms({ locale, slug, options, data }: BodyProps & { data: Chec
   );
 }
 
+/** سطر الصفحة: في معاينة الشراء تنبيه بأن الطلب تجريبي فلا تُكتب بيانات حقيقية. */
+function introLead(intro: Dictionary["checkout"]["intro"]): string {
+  return isCheckoutPreview() ? intro.previewLead : intro.lead;
+}
+
 /**
  * صفحة الشراء (خلف العلم): الملخص المسعَّر على الخادم، ونموذج GET للإضافات والكوبون،
  * ثم نموذج البيانات. منتج غير قابل للبيع ⇒ 404، وسياسة غير محسومة ⇒ «غير متاح» بلا نموذج.
@@ -154,7 +159,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
   );
   return (
     <PageShell locale={locale} path={`/checkout/${slug}`} mobileAction={null}>
-      <PageIntro title={checkout.intro.title} lead={checkout.intro.lead} before={back}>
+      <PageIntro title={checkout.intro.title} lead={introLead(checkout.intro)} before={back}>
         <CheckoutSteps current="details" labels={steps} />
       </PageIntro>
       {body}

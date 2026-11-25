@@ -2,8 +2,12 @@ import type { Locale } from "@/i18n/locales";
 import type { ArticleTranslation, Block } from "./types";
 
 /**
- * سرعة القراءة الصامتة المتوسطة للبالغين بالكلمة في الدقيقة، من دراسة IReST
- * (Trauzettel-Klosinski & Dietz, 2012): العربية 138 والإنجليزية 228. تقدير للقارئ لا وعد.
+ * سرعة القراءة بالكلمة في الدقيقة من دراسة IReST: Trauzettel-Klosinski S, Dietz K. Standardized
+ * Assessment of Reading Performance: The New International Reading Speed Texts IReST.
+ * Invest Ophthalmol Vis Sci 2012;53(9):5452–5461, doi:10.1167/iovs.11-8284 (PMID 22661485).
+ * الجدول 2: العربية 138 (انحراف معياري 20)، والإنجليزية 228 (30) كلمة في الدقيقة، لقرّاء بلغتهم الأم
+ * سليمي البصر بين 18 و35 سنة (25 لكل لغة). القراءة فيها **جهرية** (بصوت مرتفع) لا صامتة.
+ * [افتراض] نستعملها تقديرًا محافظًا لوقت القراءة الصامتة، على أن الصامتة لا تكون أبطأ منها. تقدير للقارئ لا وعد.
  */
 const WORDS_PER_MINUTE: Readonly<Record<Locale, number>> = { ar: 138, en: 228 };
 

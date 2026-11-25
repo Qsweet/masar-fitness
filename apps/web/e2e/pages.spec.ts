@@ -35,12 +35,12 @@ test.describe("الرئيسية", () => {
     const annual = durations(page).locator("label").filter({ hasText: ANNUAL.nameAr });
     await expect(annual).toContainText(ANNUAL.price);
     await expect(annual).toContainText("14 شهرًا، منها شهران مجانًا");
-    await expect(annual).toContainText("الأوفر شهريًا");
+    await expect(annual).toContainText("الأكثر قيمة");
     await expect(annual).toContainText("نحو 107 ر.س شهريًا");
     await expect(annual).toContainText("تجميد حتى 60 يومًا");
     await expect(annual.getByRole("radio")).toBeChecked();
     // شارة «الأوفر شهريًا» محسوبة: بطاقة واحدة فقط
-    await expect(durations(page).getByText("الأوفر شهريًا", { exact: true })).toHaveCount(1);
+    await expect(durations(page).getByText("الأكثر قيمة", { exact: true })).toHaveCount(1);
 
     // الأوفر في وسط الصف (ترتيب الشيفرة = الترتيب المرئي على الشاشة الواسعة)
     await expect(options.nth(1)).toHaveValue(ANNUAL.slug);
@@ -155,7 +155,7 @@ test.describe("صفحة الاشتراك", () => {
     await expect(hero).toContainText(`${ANNUAL.price} ر.س`);
     await expect(hero).toContainText("14 شهرًا، منها شهران مجانًا");
     await expect(hero).toContainText("نحو 107 ر.س شهريًا");
-    await expect(hero).toContainText("الأوفر شهريًا");
+    await expect(hero).toContainText("الأكثر قيمة");
     await expect(page.getByRole("heading", { name: "يشمل الاشتراك" })).toBeVisible();
     const terms = page.locator("section", {
       has: page.getByRole("heading", { name: "شروط الاشتراك" }),
@@ -171,7 +171,7 @@ test.describe("صفحة الاشتراك", () => {
   test("اشتراك غير الأوفر بلا وسم الأوفر، وتجميده بمدته", async ({ page }) => {
     await page.goto("/memberships/three-months");
     await expect(offer(page)).toContainText(`${QUARTER.price} ر.س`);
-    await expect(offer(page)).not.toContainText("الأوفر شهريًا");
+    await expect(offer(page)).not.toContainText("الأكثر قيمة");
     await expect(page.getByText("تجميد حتى 15 يومًا")).toBeVisible();
   });
 
@@ -247,7 +247,10 @@ test.describe("شريط الشراء الثابت", () => {
 });
 
 test.describe("التركيز بلوحة المفاتيح", () => {
-  test("شريط الشراء الثابت لا يحجب العنصر المركَّز عليه", async ({ page, viewport }) => {
+  test("شريط الشراء وشريط التبويب الثابتان لا يحجبان العنصر المركَّز عليه", async ({
+    page,
+    viewport,
+  }) => {
     test.skip((viewport?.width ?? 0) >= 1024, "الشريط الثابت خاص بالجوال");
     // التمرير الناعم غير متزامن؛ مع تقليل الحركة يصير فوريًا فيُقاس الموضع النهائي
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -258,19 +261,22 @@ test.describe("التركيز بلوحة المفاتيح", () => {
       await page.keyboard.press("Tab");
       const state = await page.evaluate(() => {
         const focused = document.activeElement;
-        const stickyBar = document.querySelector("[data-sticky-bar]:not([hidden])");
+        // الشريطان الثابتان أسفل الهاتف: شريط فعل الصفحة وشريط التبويب
+        const bars = [
+          document.querySelector("[data-sticky-bar]:not([hidden])"),
+          document.querySelector('nav[aria-label="التنقل السريع"]'),
+        ].filter((bar): bar is Element => bar !== null && bar.getBoundingClientRect().height > 0);
         // بعد آخر عنصر يخرج التركيز من الصفحة ويصير جسمها هو العنصر النشط: ليس عنصرًا محجوبًا
         if (
           focused === null ||
           focused === document.body ||
-          stickyBar === null ||
-          stickyBar.contains(focused)
+          bars.length === 0 ||
+          bars.some((bar) => bar.contains(focused))
         ) {
           return "skipped";
         }
-        const covered =
-          focused.getBoundingClientRect().bottom > stickyBar.getBoundingClientRect().top + 1;
-        return covered ? "covered" : "clear";
+        const top = Math.min(...bars.map((bar) => bar.getBoundingClientRect().top));
+        return focused.getBoundingClientRect().bottom > top + 1 ? "covered" : "clear";
       });
       expect(state, `العنصر رقم ${String(step + 1)} في ترتيب التنقل محجوب تحت الشريط`).not.toBe(
         "covered",

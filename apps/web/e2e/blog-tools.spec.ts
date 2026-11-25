@@ -22,7 +22,7 @@ test.describe("حاسبة تكلفة الزيارة", () => {
     // ريالات صحيحة بلا هللات: 1,499 ÷ 182 زيارة = 8.24 ⇒ 8
     await expect(annual.locator("dd").first()).toHaveText("8 ر.س");
     await expect(annual).toContainText("1,499");
-    await expect(annual).toContainText("الأوفر شهريًا");
+    await expect(annual).toContainText("الأكثر قيمة");
     await expect(
       result(page).getByRole("listitem").filter({ hasText: QUARTER }).locator("dd").first(),
     ).toHaveText("13 ر.س");

@@ -28,6 +28,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 async function expectAxeClean(page: Page) {
+  // العنوان يصل مع البيانات الوصفية المتدفقة بعد الانتقال: الفحص بعد وصوله لا قبله
+  await expect(page).toHaveTitle(/\S/);
   const results = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
   const summary = results.violations.map(
     (violation) =>

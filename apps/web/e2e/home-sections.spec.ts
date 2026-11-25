@@ -29,28 +29,37 @@ function summary(page: Page) {
 }
 
 test.describe("الواجهة", () => {
-  test("عنوان الصفحة بالفصحى يسمّي النادي والمدينة، وسطره الثاني شعار الجدار", async ({ page }) => {
+  test("العنوان من تصميم المالك بسطرين، وفوقه سطر يسمّي النادي والمدينة", async ({ page }) => {
     await page.goto("/");
     const title = page.getByRole("heading", { level: 1 });
-    await expect(title).toContainText("نادي مسار الأبطال الرياضي للرجال في بريدة");
-    await expect(title).toContainText("أنت قدها.");
-    await expect(page.locator("#top")).not.toContainText("جدار");
+    await expect(title).toContainText("أقوى نسخة منك");
+    await expect(title).toContainText("تبدأ هنا.");
+    await expect(page.locator("#top")).toContainText("نادي مسار الأبطال الرياضي · للرجال في بريدة");
   });
 
-  test("رقائق الحقائق من موقع النادي فقط: التأسيس والتقييم وللرجال، بلا أعداد أعضاء", async ({
+  test("الفيديو صامت متكرر بزر إيقاف ظاهر، و«شاهد الفيديو» يفتح حوارًا بأدوات التحكم", async ({
     page,
   }) => {
     await page.goto("/");
     const hero = page.locator("#top");
-    await expect(hero).toContainText("2018");
-    await expect(hero).toContainText("4.5");
-    await expect(hero).toContainText("تقييم Google");
-    await expect(hero).toContainText("18+");
-    await expect(hero).toContainText("للرجال فقط");
-    // شارة العرض محسوبة من الكتالوج (مكافأة الاشتراك الأوفر شهريًا)، والساعات من الإعداد
-    await expect(hero).toContainText("+ شهران مجانًا");
-    await expect(hero).toContainText("6:00 ص – 2:00 ص");
-    await expect(hero).not.toContainText(/عضو|%/);
+    await expect(hero.getByRole("button", { name: "أوقف الفيديو" })).toBeVisible();
+    await hero.getByRole("button", { name: /شاهد الفيديو/ }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator("video[controls]")).toHaveCount(1);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+  });
+
+  test("الأرقام حقائق من موقع النادي فقط: التأسيس والتقييم والمراجعات، بلا أعداد أعضاء", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const stats = page.getByRole("region", { name: "النادي بالأرقام" });
+    await expect(stats).toContainText("2018");
+    await expect(stats).toContainText("4.5");
+    await expect(stats).toContainText("1,841");
+    await expect(stats).not.toContainText(/عضو|%/);
   });
 });
 

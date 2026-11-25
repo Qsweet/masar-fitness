@@ -6,9 +6,7 @@ test.describe("اللغة والاتجاه", () => {
     expect(response?.status()).toBe(200);
     await expect(page.locator("html")).toHaveAttribute("lang", "ar");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "نادي مسار الأبطال الرياضي للرجال في بريدة",
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("أقوى نسخة منك");
   });
 
   test("الإنجليزية تحت ‎/en من اليسار لليمين", async ({ page }) => {
@@ -16,7 +14,7 @@ test.describe("اللغة والاتجاه", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Masters Way Sports Club for men in Buraidah",
+      "The strongest version of you",
     );
   });
 

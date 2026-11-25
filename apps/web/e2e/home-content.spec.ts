@@ -134,22 +134,25 @@ test.describe("التواصل والتذييل", () => {
     expect(new URL(href ?? "").origin).toBe("https://wa.me");
   });
 
-  test("الصفحات بلا قسم اشتراكات: شريط هاتف ثابت بـ«اختر اشتراكك» وواتساب", async ({
+  test("شريط التبويب السفلي على الهاتف: العضويات والمدونة وواتساب، والنشط بالأصفر", async ({
     page,
     viewport,
   }) => {
     test.skip((viewport?.width ?? 0) >= 768, "الشريط خاص بالهاتف");
-    await page.goto("/tools/cost-per-visit");
-    const bar = page.getByRole("complementary", { name: "اختصارات الاشتراك والتواصل" });
-    // مخفي ما دام رأس الصفحة ظاهرًا، ويظهر بعده
-    await expect(bar).toBeHidden();
-    await page.getByRole("contentinfo").scrollIntoViewIfNeeded();
-    await expect(bar.getByRole("link", { name: "اختر اشتراكك" })).toHaveAttribute(
+    await page.goto("/blog");
+    const bar = page.getByRole("navigation", { name: "التنقل السريع" });
+    await expect(bar).toBeVisible();
+    await expect(bar.getByRole("link", { name: "العضويات" })).toHaveAttribute(
       "href",
       "/memberships",
     );
-    const whatsapp = bar.getByRole("link", { name: "راسلنا على واتساب" });
+    await expect(bar.getByRole("link", { name: "المدونة" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    const whatsapp = bar.getByRole("link", { name: "واتساب" });
+    expect(new URL((await whatsapp.getAttribute("href")) ?? "").origin).toBe("https://wa.me");
     const box = await whatsapp.boundingBox();
-    expect(box?.height ?? 0).toBeGreaterThanOrEqual(48);
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
   });
 });

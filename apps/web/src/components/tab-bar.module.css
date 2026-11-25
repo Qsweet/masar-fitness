@@ -55,3 +55,8 @@
     display: none;
   }
 }
+
+/* أثناء الكتابة في حقل (لوحة المفاتيح مفتوحة على الهاتف) يختفي الشريط كشريط الشراء، فلا يحجب الحقل */
+:global(html:has(input:not([type="radio"], [type="checkbox"]):focus, textarea:focus)) .bar {
+  display: none;
+}

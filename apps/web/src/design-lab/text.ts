@@ -1,0 +1,7 @@
+/** يملأ القالب: «≈ {amount} {unit}» ← القيم. */
+export function fill(template: string, values: Readonly<Record<string, string>>): string {
+  return Object.entries(values).reduce(
+    (text, [key, value]) => text.replaceAll(`{${key}}`, value),
+    template,
+  );
+}

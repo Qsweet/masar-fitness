@@ -1,6 +1,8 @@
 /**
- * بيانات تجريبية للتطوير والمعاينة فقط: الأسعار والمدد والعروض والإضافة هنا **ليست بيانات النادي**،
- * وسياسات النادي المضبوطة هنا **ليست قرارات المالك**. تُستبدل ببيانات المالك الحقيقية قبل أي إطلاق.
+ * بيانات المعاينة للتطوير والاختبار فقط. الاشتراكات الثلاثة **أسعار النادي الحالية مؤقتًا** كما يعرضها
+ * موقعه اليوم (docs/CLUB_FACTS.md §4.1، قراءة 2026-11-25)، معروضة للمراجعة لا نهائية: تُؤكَّد من المالك
+ * قبل أي إطلاق. اشتراك «4 أشهر» (799) لا يُضاف لأنه يناقض «3 أشهر + شهر مجانًا» بالمدة نفسها، ولا اشتراك
+ * شهر واحد لأنه غير معروض في الموقع. الإضافة والكوبونان وسياسات النادي هنا **تجريبية لاختبار الآلية**.
  * يرفض العمل بلا SEED_DEMO_DATA=yes. تشغيله مرتين متتاليتين لا يغيّر شيئًا (النسخ لا تُحذف ولا تُعدَّل).
  *
  *   SEED_DEMO_DATA=yes DATABASE_URL=... pnpm --filter @masar/db seed:demo
@@ -10,15 +12,18 @@ import type { Prisma } from "../src/generated/prisma/client";
 
 const CLUB_SLUG = "masar-al-abtal";
 const VALID_FROM = new Date("2026-01-01T00:00:00+03:00");
-/**
- * نسخة ثانية بالسعر والمدة نفسيهما وأسماء المزايا الموحَّدة مع القاموس. قواعد سابقة فيها نسخة أولى
- * بالأسماء القديمة (ومزايا النسخة المباعة لا تُعدَّل)، والنسخة الحالية هي الأحدث بدايةً.
- */
+/** بداية النسخة الثانية من البيانات التجريبية القديمة (أسماء المزايا الموحَّدة). */
 const BENEFITS_UNIFIED_FROM = new Date("2026-11-01T00:00:00+03:00");
-/** فترات النسخ المتتالية بلا تراكب (قيد product_versions_no_overlap): الأولى تُغلق عند بداية الثانية. */
-const VERSION_PERIODS: readonly { validFrom: Date; validUntil: Date | null }[] = [
+/** بداية نسخ الأسعار الحقيقية المؤقتة: تاريخ قراءة موقع النادي. */
+const CLUB_PRICES_FROM = new Date("2026-11-25T00:00:00+03:00");
+
+/**
+ * نسخ البيانات التجريبية القديمة (أسعار وهمية) في قواعد بُذرت قبل الأسعار الحقيقية: لا تُحذف (قد تكون مباعة)،
+ * بل تُغلق عند بداية تاليتها فلا تتراكب (قيد product_versions_no_overlap). لا تُنشأ في قاعدة جديدة.
+ */
+const LEGACY_PERIODS: readonly { validFrom: Date; validUntil: Date }[] = [
   { validFrom: VALID_FROM, validUntil: BENEFITS_UNIFIED_FROM },
-  { validFrom: BENEFITS_UNIFIED_FROM, validUntil: null },
+  { validFrom: BENEFITS_UNIFIED_FROM, validUntil: CLUB_PRICES_FROM },
 ];
 
 /** تجريبي، ليس قرار المالك: نسبة الضريبة النظامية الموثقة في docs/SECURITY.md (15%). */
@@ -29,62 +34,63 @@ const DEMO_PAYMENT_WINDOW_MINUTES = 30;
 const DEMO_START_RULE = "on_payment";
 const DEMO_PERCENT_BPS = 1000;
 
-/** أسماء المرافق كما في القاموس (facilities.items وfacilities.recovery.names) حرفيًا، حتى تطابق مزايا الاشتراك قسم المرافق. */
+/**
+ * المرافق المشمولة كما تسمّيها شروط الاستخدام الحالية: «صالة الحديد واللياقة والحصص الجماعية، مع المسبح
+ * والجاكوزي والساونا والبخار ضمن الاشتراك» (CLUB_FACTS §7). الأسماء نفسها في قسم المرافق بالقاموس.
+ */
 const BENEFITS = [
   { labelAr: "صالة الحديد", labelEn: "Strength floor" },
   { labelAr: "التمارين الوظيفية", labelEn: "Functional training" },
+  { labelAr: "الحصص الجماعية", labelEn: "Group classes" },
   { labelAr: "المسبح", labelEn: "Pool" },
   { labelAr: "الجاكوزي", labelEn: "Jacuzzi" },
+  { labelAr: "الساونا", labelEn: "Sauna" },
   { labelAr: "البخار", labelEn: "Steam room" },
 ];
 
-interface DemoProduct {
+interface SeedProduct {
   slug: string;
   nameAr: string;
   nameEn: string;
   months: number | null;
   bonus: number;
+  /** بالهللة */
   priceMinor: number;
 }
 
-/** أسماء الاشتراكات التجريبية بمدتها مكتوبة، بنمط واحد في اللغتين (تُحدَّث في كل تشغيل). */
-const PLANS: DemoProduct[] = [
-  {
-    slug: "one-month",
-    nameAr: "شهر واحد",
-    nameEn: "1 month",
-    months: 1,
-    bonus: 0,
-    priceMinor: 35_000,
-  },
+/** الاشتراكات الثلاثة المعروضة في الرئيسية الحالية بأسمائها وأسعارها (CLUB_FACTS §4.1). */
+const PLANS: SeedProduct[] = [
   {
     slug: "three-months",
-    nameAr: "ثلاثة أشهر",
-    nameEn: "3 months",
+    nameAr: "3 أشهر + شهر مجانًا",
+    nameEn: "3 months + 1 free",
     months: 3,
-    bonus: 0,
-    priceMinor: 90_000,
+    bonus: 1,
+    priceMinor: 69_900,
   },
   {
     slug: "six-months",
-    nameAr: "ستة أشهر",
-    nameEn: "6 months",
+    nameAr: "6 أشهر + شهرين مجانًا",
+    nameEn: "6 months + 2 free",
     months: 6,
-    bonus: 0,
-    priceMinor: 160_000,
+    bonus: 2,
+    priceMinor: 99_900,
   },
   {
     slug: "one-year",
-    nameAr: "سنة كاملة",
-    nameEn: "12 months",
+    nameAr: "12 شهرًا + شهرين مجانًا",
+    nameEn: "12 months + 2 free",
     months: 12,
     bonus: 2,
-    priceMinor: 280_000,
+    priceMinor: 149_900,
   },
 ];
 
+/** منتجات بذرة سابقة لم تعد معروضة (اشتراك شهر واحد تجريبي): تُؤرشف ولا تُحذف. */
+const RETIRED_SLUGS: readonly string[] = ["one-month"];
+
 /** إضافة تجريبية واحدة لاختبار الآلية، مربوطة بكل الباقات. ليست منتجًا للنادي. */
-const DEMO_ADDON: DemoProduct = {
+const DEMO_ADDON: SeedProduct = {
   slug: "demo-addon",
   nameAr: "إضافة تجريبية",
   nameEn: "Demo add-on",
@@ -124,20 +130,23 @@ async function upsertClub(db: Db): Promise<string> {
 
 /**
  * النسخة لا تُحذف ولا يُعدَّل سعرها ولا مدتها ولا مزاياها (قد تكون مباعة، والقاعدة تمنع ذلك):
- * تُنشأ إن لم توجد نسخة بالبداية نفسها، وإلا تُضبط نهايتها فقط (مسموحة لإغلاق نسخة قديمة).
+ * النسخ القديمة تُغلق عند بداية تاليتها إن وُجدت (نهايتها وحدها قابلة للتعديل)، والنسخة الحالية تُنشأ
+ * إن لم توجد نسخة بالبداية نفسها.
  */
-async function ensureVersion(
-  db: Db,
-  productId: string,
-  item: DemoProduct,
-  period: (typeof VERSION_PERIODS)[number],
-): Promise<void> {
-  const { validFrom, validUntil } = period;
-  const existing = await db.productVersion.findFirst({ where: { productId, validFrom } });
-  if (existing !== null) {
-    if (existing.validUntil?.getTime() !== validUntil?.getTime()) {
+async function closeLegacyVersions(db: Db, productId: string): Promise<void> {
+  for (const { validFrom, validUntil } of LEGACY_PERIODS) {
+    const existing = await db.productVersion.findFirst({ where: { productId, validFrom } });
+    if (existing !== null && existing.validUntil?.getTime() !== validUntil.getTime()) {
       await db.productVersion.update({ where: { id: existing.id }, data: { validUntil } });
     }
+  }
+}
+
+async function ensureCurrentVersion(db: Db, productId: string, item: SeedProduct): Promise<void> {
+  const existing = await db.productVersion.findFirst({
+    where: { productId, validFrom: CLUB_PRICES_FROM },
+  });
+  if (existing !== null) {
     return;
   }
   const benefits = item.months === null ? BENEFITS.slice(0, 1) : BENEFITS;
@@ -147,8 +156,8 @@ async function ensureVersion(
       priceMinor: item.priceMinor,
       durationMonths: item.months,
       bonusMonths: item.bonus,
-      validFrom,
-      validUntil,
+      validFrom: CLUB_PRICES_FROM,
+      validUntil: null,
       benefits: { create: benefits.map((benefit, sortOrder) => ({ ...benefit, sortOrder })) },
     },
   });
@@ -158,26 +167,39 @@ async function upsertProduct(
   db: Db,
   clubId: string,
   kind: "membership" | "addon",
-  item: DemoProduct,
+  item: SeedProduct,
   sortOrder: number,
 ): Promise<string> {
-  const names = { status: "active", sortOrder, nameAr: item.nameAr, nameEn: item.nameEn } as const;
+  const summary =
+    kind === "addon"
+      ? { summaryAr: "للتجربة فقط.", summaryEn: "For testing only." }
+      : {
+          summaryAr: "كل مرافق النادي في اشتراك واحد.",
+          summaryEn: "Every club facility in one membership.",
+        };
+  const names = {
+    status: "active",
+    sortOrder,
+    nameAr: item.nameAr,
+    nameEn: item.nameEn,
+    ...summary,
+  } as const;
   const product = await db.product.upsert({
     where: { slug: item.slug },
     update: names,
-    create: {
-      clubId,
-      kind,
-      slug: item.slug,
-      ...names,
-      summaryAr: kind === "addon" ? "للتجربة فقط." : "كل مرافق النادي في اشتراك واحد.",
-      summaryEn: kind === "addon" ? "For testing only." : "Every club facility in one membership.",
-    },
+    create: { clubId, kind, slug: item.slug, ...names },
   });
-  for (const period of VERSION_PERIODS) {
-    await ensureVersion(db, product.id, item, period);
-  }
+  await closeLegacyVersions(db, product.id);
+  await ensureCurrentVersion(db, product.id, item);
   return product.id;
+}
+
+/** منتجات بذرة سابقة لم تعد معروضة: أرشفة لا حذف (قد تكون لها طلبات). */
+async function retireProducts(db: Db): Promise<void> {
+  await db.product.updateMany({
+    where: { slug: { in: [...RETIRED_SLUGS] } },
+    data: { status: "archived" },
+  });
 }
 
 async function linkAddon(db: Db, addonId: string, planIds: string[]): Promise<void> {
@@ -231,8 +253,9 @@ for (const [index, plan] of PLANS.entries()) {
 const addonId = await upsertProduct(db, clubId, "addon", DEMO_ADDON, 0);
 await linkAddon(db, addonId, planIds);
 await upsertDemoCoupons(db, clubId);
+await retireProducts(db);
 
 await db.$disconnect();
 process.stdout.write(
-  `Seeded ${String(PLANS.length)} demo plans, 1 add-on, 2 coupons for ${CLUB_SLUG}.\n`,
+  `Seeded ${String(PLANS.length)} preview plans, 1 demo add-on, 2 demo coupons for ${CLUB_SLUG}.\n`,
 );

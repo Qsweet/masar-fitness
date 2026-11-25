@@ -41,7 +41,7 @@ test("دفع ناجح: مدفوع بعد العودة، واشتراك واحد 
   await openDemoPay(page);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("صفحة دفع تجريبية");
   await expect(page.getByText(order.reference)).toBeVisible();
-  await expect(page.getByTestId("demo-amount")).toContainText("350 ر.س");
+  await expect(page.getByTestId("demo-amount")).toContainText("699 ر.س");
   // قبل اختيار النتيجة: محاولة pending ولا شيء مدفوع
   expect(await orderFacts(db, order.orderId)).toMatchObject({
     status: "pending_payment",
@@ -198,7 +198,7 @@ test("بالإنجليزية: صفحة الدفع التجريبية والعو�
   await page.getByRole("button", { name: "Pay now" }).click();
   await expect(page).toHaveURL(/\/en\/checkout\/demo-pay\/fake_s_/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Demo payment page");
-  await expect(page.getByTestId("demo-amount")).toContainText("350 SAR");
+  await expect(page.getByTestId("demo-amount")).toContainText("699 SAR");
   await page.getByRole("button", { name: "Successful payment" }).click();
   await expect(page).toHaveURL(/\/en\/checkout\/orders\/[A-Za-z0-9_-]{43}$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your order is paid");

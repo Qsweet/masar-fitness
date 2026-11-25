@@ -38,7 +38,7 @@ export interface PlacedOrder {
   readonly orderId: string;
 }
 
-/** ينشئ طلبًا معلّقًا للباقة الشهرية التجريبية (350 ر.س) ويقف على صفحة مراجعته. */
+/** ينشئ طلبًا معلّقًا لاشتراك الثلاثة أشهر في بيانات المعاينة (699 ر.س) ويقف على صفحة مراجعته. */
 export async function placeOrder(
   page: Page,
   db: Db,
@@ -48,7 +48,7 @@ export async function placeOrder(
     prefix === ""
       ? { name: "الاسم", mobile: "رقم الجوال" }
       : { name: "Name", mobile: "Mobile number" };
-  await page.goto(`${prefix}/checkout/one-month`);
+  await page.goto(`${prefix}/checkout/three-months`);
   await page.getByLabel(labels.name, { exact: true }).fill("عميل الدفع");
   await page.getByLabel(labels.mobile, { exact: true }).fill(randomMobile());
   // Enter إرسال ضمني حقيقي للنموذج، ويعمل وJavaScript معطَّل (فحص الثبات قبل النقر لا يعمل بلاه)

@@ -30,7 +30,7 @@ for (const prefix of ["", "/en"]) {
 test("بلا مزوّد مضبوط: لا زر دفع، وصفحة العودة تعرض الطلب كما هو بلا أي كتابة", async ({
   page,
 }) => {
-  await page.goto("/checkout/one-month");
+  await page.goto("/checkout/three-months");
   await page.getByLabel("الاسم", { exact: true }).fill("عميل بلا دفع");
   await page.getByLabel("رقم الجوال", { exact: true }).fill(randomMobile());
   await page.getByRole("button", { name: "أكّد الطلب" }).click();

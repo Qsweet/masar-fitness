@@ -1,0 +1,67 @@
+.offer {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 2px dashed var(--rule-strong);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+}
+
+.offer .tile {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.text {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.title {
+  font-size: 1.3125rem;
+  font-weight: 800;
+}
+
+.line {
+  font-weight: 600;
+}
+
+.note {
+  color: var(--grey);
+  font-size: 0.875rem;
+}
+
+.buy {
+  display: grid;
+  gap: 0.25rem;
+  justify-items: start;
+}
+
+.buy :global(a) {
+  margin-top: 0.75rem;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.unit {
+  font-size: 0.5em;
+}
+
+@media (width >= 64rem) {
+  .offer {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+  }
+
+  .buy {
+    justify-items: end;
+    text-align: end;
+  }
+}

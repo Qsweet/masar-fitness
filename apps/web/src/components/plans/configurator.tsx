@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { ButtonLink } from "@/components/ui/button-link";
+import { Icon } from "@/components/ui/icon";
 import { Price } from "@/components/ui/price";
 import { StickyReveal } from "@/components/ui/sticky-reveal";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -19,7 +20,7 @@ export interface ConfiguratorProps {
   readonly revealAfterId: string;
   readonly labels: Dictionary["plans"];
   readonly planLabels: Dictionary["plan"];
-  /** روابط ثانوية تحت مربعات المدة (المقارنة والحاسبة). */
+  /** روابط ثانوية تحت الملخص (المقارنة والحاسبة). */
   readonly more?: ReactNode;
 }
 
@@ -28,63 +29,29 @@ function purchaseLabel(plan: PlanView, planLabels: Dictionary["plan"]): string {
   return plan.purchase.external ? planLabels.buyWhatsapp : planLabels.buyOnline;
 }
 
-/**
- * ما يشمله الاشتراك في الملخص: سطر واحد حين تتطابق مزايا كل الاشتراكات المعروضة (محسوب في plan-view)،
- * وإلا قائمة مزايا الاشتراك المختار.
- */
+/** المزايا حين تختلف بين الاشتراكات (حين تتطابق يكفي سطر «يشمل جميع مرافق النادي» في البطاقة). */
 function Includes({
   plan,
   labels,
 }: Pick<ConfiguratorProps, "labels"> & { readonly plan: PlanView }) {
-  if (plan.benefits.length === 0) {
-    return null;
-  }
-  if (plan.benefitsShared) {
-    return <p className={styles.includesAll}>{labels.includesAll}</p>;
+  if (plan.benefits.length === 0 || plan.benefitsShared) {
+    return plan.benefitsShared ? <p className={styles.includesAll}>{labels.includesAll}</p> : null;
   }
   return (
-    <>
-      <p className={styles.summaryLabel}>{labels.includes}</p>
-      <ul className={styles.includes}>
+    <div className={styles.includes}>
+      <p className={styles.label}>{labels.includes}</p>
+      <ul>
         {plan.benefits.map((benefit) => (
           <li key={benefit}>{benefit}</li>
         ))}
       </ul>
-    </>
+    </div>
   );
 }
 
-function Summary({
-  plan,
-  currentSlug,
-  labels,
-  planLabels,
-}: Pick<ConfiguratorProps, "currentSlug" | "labels" | "planLabels"> & {
-  readonly plan: PlanView;
-}) {
+function Secondary({ plan, currentSlug, labels, planLabels }: SummaryProps) {
   return (
-    <div className={styles.summary} aria-live="polite">
-      <p className={styles.summaryName}>{plan.name}</p>
-      <p className={styles.summaryLabel}>{labels.total}</p>
-      <p className={styles.summaryPrice}>
-        <Price parts={plan.price} unitClassName={styles.summaryUnit} />
-      </p>
-      <p className={styles.summaryNote}>{labels.vatIncluded}</p>
-      <div className={styles.summaryFacts}>
-        <p>{plan.durationText}</p>
-        {plan.monthlyText === undefined ? null : (
-          <p className={styles.summaryNote}>{plan.monthlyText}</p>
-        )}
-      </div>
-      <Includes plan={plan} labels={labels} />
-      <ButtonLink
-        href={plan.purchase.href}
-        external={plan.purchase.external}
-        variant="yellow"
-        block
-      >
-        {purchaseLabel(plan, planLabels)}
-      </ButtonLink>
+    <div className={styles.secondary}>
       {plan.purchase.external ? <p className={styles.buyNote}>{planLabels.buyNote}</p> : null}
       {plan.purchase.external ? null : (
         <a href={plan.whatsappHref} rel="noopener noreferrer" className={styles.details}>
@@ -96,6 +63,37 @@ function Summary({
           {labels.details}: {plan.name}
         </a>
       )}
+    </div>
+  );
+}
+
+type SummaryProps = Pick<ConfiguratorProps, "currentSlug" | "labels" | "planLabels"> & {
+  readonly plan: PlanView;
+};
+
+/** ملخص الاختيار الحي تحت البطاقات: الاسم والمدة، ثم الإجمالي وزر الشراء. */
+function Summary(props: SummaryProps) {
+  const { plan, labels, planLabels } = props;
+  return (
+    <div className={styles.summary} aria-live="polite">
+      <div className={styles.summaryText}>
+        <p className={styles.summaryName}>{plan.name}</p>
+        <p className={styles.muted}>{plan.durationText}</p>
+        {plan.monthlyText === undefined ? null : <p className={styles.muted}>{plan.monthlyText}</p>}
+        <Includes plan={plan} labels={labels} />
+      </div>
+      <div className={styles.summaryBuy}>
+        <p className={styles.label}>{labels.total}</p>
+        <p className={styles.summaryPrice}>
+          <Price parts={plan.price} unitClassName={styles.summaryUnit} />
+        </p>
+        <p className={styles.muted}>{labels.vatIncluded}</p>
+        <ButtonLink href={plan.purchase.href} external={plan.purchase.external} block>
+          {purchaseLabel(plan, planLabels)}
+          <Icon name="arrow" />
+        </ButtonLink>
+      </div>
+      <Secondary {...props} />
     </div>
   );
 }
@@ -127,8 +125,8 @@ function StickyBar({
 }
 
 /**
- * محدِّد المدة: تختار المدة فيتحدث الملخص فورًا. الاختيار أزرار راديو حقيقية (لوحة المفاتيح
- * وقارئ الشاشة يعملان)، والسعر والنصوص محسوبة على الخادم؛ هنا اختيار وعرض فقط.
+ * محدِّد المدة: بطاقات أسعار هي أزرار راديو حقيقية، والملخص تحتها يتحدث فورًا مع الاختيار.
+ * السعر والنصوص محسوبة على الخادم (plan-view)؛ هنا اختيار وعرض فقط.
  */
 export function Configurator(props: ConfiguratorProps) {
   const { plans, initialSlug, labels, more } = props;
@@ -139,22 +137,22 @@ export function Configurator(props: ConfiguratorProps) {
   }
   return (
     <div className={styles.configurator}>
-      <fieldset className={styles.options}>
-        <legend className={styles.legend}>{labels.legend}</legend>
+      <fieldset className={styles.options} data-count={plans.length}>
+        <legend className="sr-only">{labels.legend}</legend>
         {plans.map((plan) => (
           <PlanOption
             key={plan.slug}
             plan={plan}
             selected={plan.slug === selected.slug}
-            bestValueLabel={labels.bestValue}
+            labels={labels}
             onSelect={() => {
               setSlug(plan.slug);
             }}
           />
         ))}
       </fieldset>
-      {more === undefined ? null : <div className={styles.more}>{more}</div>}
       <Summary plan={selected} {...props} />
+      {more === undefined ? null : <div className={styles.more}>{more}</div>}
       <StickyBar plan={selected} {...props} />
     </div>
   );

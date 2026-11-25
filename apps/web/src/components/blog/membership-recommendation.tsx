@@ -52,7 +52,7 @@ export async function MembershipRecommendation({ locale, dictionary }: Props) {
       </p>
       {plan.monthlyText === undefined ? null : <p className={styles.detail}>{plan.monthlyText}</p>}
       <div className={styles.action}>
-        <ButtonLink href={localizedPath(locale, ROUTES.memberships)} variant="yellow">
+        <ButtonLink href={localizedPath(locale, ROUTES.memberships)} variant="primary">
           {blog.recommendationAction}
         </ButtonLink>
       </div>

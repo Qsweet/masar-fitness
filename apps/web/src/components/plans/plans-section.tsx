@@ -1,12 +1,14 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { ButtonLink } from "@/components/ui/button-link";
+import { SectionHead } from "@/components/ui/section-head";
 import { whatsappUrl } from "@/config/club";
 import { ROUTES } from "@/config/routes";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { localizedPath, type Locale } from "@/i18n/locales";
+import { cx } from "@/lib/cx";
 import { Configurator } from "./configurator";
 import { initialPlanSlug, type PlanView } from "./plan-view";
-import { cx } from "@/lib/cx";
 import styles from "./plans-section.module.css";
 
 interface PlansSectionProps {
@@ -19,6 +21,8 @@ interface PlansSectionProps {
   readonly revealAfterId: string;
   /** رابط «قارن الاشتراكات» (لا يظهر في صفحة المقارنة نفسها). */
   readonly showCompare?: boolean;
+  /** ما يلي المحدِّد داخل القسم نفسه (عرض الأصدقاء). */
+  readonly children?: ReactNode;
 }
 
 /** لا اشتراكات معروضة: نوجّه الزائر لقناة تعمل بدل قائمة فارغة. */
@@ -34,12 +38,12 @@ function EmptyPlans({ dictionary }: { readonly dictionary: Dictionary }) {
   );
 }
 
-/** روابط المقارنة وحاسبة تكلفة الزيارة تحت مربعات المدة (لا تظهر في صفحة المقارنة نفسها). */
+/** روابط المقارنة وحاسبة تكلفة الزيارة تحت الملخص (لا تظهر في صفحة المقارنة نفسها). */
 function MoreLinks({ locale, dictionary }: Pick<PlansSectionProps, "locale" | "dictionary">) {
   return (
     <ul className={styles.more}>
       <li>
-        <Link href={`${localizedPath(locale, "/memberships")}#compare`}>
+        <Link href={`${localizedPath(locale, ROUTES.memberships)}#compare`}>
           {dictionary.plans.compare}
         </Link>
       </li>
@@ -52,35 +56,38 @@ function MoreLinks({ locale, dictionary }: Pick<PlansSectionProps, "locale" | "d
   );
 }
 
-/** قسم الاشتراكات (#plans): العنوان ثم محدِّد المدة، بالشكل نفسه في كل صفحة. */
+/** قسم الاشتراكات (#plans): رأس القسم ثم بطاقات الأسعار وملخصها، بالشكل نفسه في كل صفحة. */
 export function PlansSection(props: PlansSectionProps) {
   const { plans, locale, dictionary, currentSlug, revealAfterId, showCompare = false } = props;
   const initialSlug = initialPlanSlug(plans, currentSlug);
   return (
-    <section id="plans" className={cx("container", styles.plans)} aria-labelledby="plans-title">
-      <div className="section-head">
-        <h2 id="plans-title" className="title-section">
-          {dictionary.plans.title}
-        </h2>
-        <p>{dictionary.plans.lead}</p>
-      </div>
-      {initialSlug === undefined ? (
-        <EmptyPlans dictionary={dictionary} />
-      ) : (
-        <Configurator
-          plans={plans}
-          initialSlug={initialSlug}
-          currentSlug={currentSlug}
-          revealAfterId={revealAfterId}
-          labels={dictionary.plans}
-          planLabels={dictionary.plan}
-          more={
-            showCompare && plans.length > 1 ? (
-              <MoreLinks locale={locale} dictionary={dictionary} />
-            ) : undefined
-          }
+    <section id="plans" className={cx("section", styles.plans)} aria-labelledby="plans-title">
+      <div className="container">
+        <SectionHead
+          id="plans-title"
+          eyebrow={dictionary.plans.eyebrow}
+          title={dictionary.plans.title}
+          lead={dictionary.plans.lead}
         />
-      )}
+        {initialSlug === undefined ? (
+          <EmptyPlans dictionary={dictionary} />
+        ) : (
+          <Configurator
+            plans={plans}
+            initialSlug={initialSlug}
+            currentSlug={currentSlug}
+            revealAfterId={revealAfterId}
+            labels={dictionary.plans}
+            planLabels={dictionary.plan}
+            more={
+              showCompare && plans.length > 1 ? (
+                <MoreLinks locale={locale} dictionary={dictionary} />
+              ) : undefined
+            }
+          />
+        )}
+        {props.children}
+      </div>
     </section>
   );
 }

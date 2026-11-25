@@ -1,0 +1,168 @@
+.layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.form {
+  display: grid;
+  gap: 1.1rem;
+  align-content: start;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.row {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.optional {
+  color: var(--grey);
+  font-weight: 400;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  font-size: 1rem;
+  font-weight: 400;
+  transition:
+    border-color var(--press) ease,
+    box-shadow var(--press) ease;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  border-color: var(--accent-ink);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.privacy {
+  color: var(--grey);
+  font-size: 0.8125rem;
+}
+
+.fallback a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  color: var(--accent-ink);
+  font-weight: 700;
+  text-underline-offset: 0.3em;
+}
+
+.side {
+  display: grid;
+  gap: 1.5rem;
+  align-content: start;
+}
+
+.infos {
+  display: grid;
+  gap: 1rem;
+}
+
+.info {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.infoTitle {
+  font-weight: 700;
+}
+
+.infoBody {
+  display: grid;
+  color: var(--grey);
+  font-size: 0.9375rem;
+}
+
+.infoBody a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  min-height: var(--target);
+  color: var(--ink);
+  text-underline-offset: 0.3em;
+}
+
+.hoursList {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.hoursList dd {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* خريطة مرسومة: شبكة شوارع خفيفة بخطوط CSS، ودبوس بالتدرّج في وسطها */
+.map {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1rem;
+  min-height: 15rem;
+  padding: 2rem 1.25rem;
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(var(--map-line) 2px, transparent 2px) 0 0 / 3rem 3rem,
+    linear-gradient(90deg, var(--map-line) 2px, transparent 2px) 0 0 / 3rem 3rem,
+    var(--wash),
+    var(--surface);
+  text-align: center;
+}
+
+.pin {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--gradient);
+  color: var(--ink);
+  font-size: 1.5rem;
+  box-shadow: var(--glow);
+}
+
+.mapTitle {
+  font-weight: 800;
+}
+
+@media (width >= 40rem) {
+  .row,
+  .infos {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (width >= 64rem) {
+  .layout {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}

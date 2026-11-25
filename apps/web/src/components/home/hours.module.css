@@ -1,0 +1,71 @@
+.boards {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 56rem;
+  margin-inline: auto;
+}
+
+/* لوح بزوايا مستديرة: الحدود منفصلة حتى يقص الإطار رأسه */
+.board {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.caption {
+  padding: 1rem;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--gradient);
+  color: var(--ink);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.boards .tile {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-inline-end: 0.75rem;
+  vertical-align: middle;
+  background: var(--white);
+  box-shadow: none;
+}
+
+.board th,
+.board td {
+  padding: 1.1rem 1.5rem;
+  text-align: start;
+}
+
+.board th {
+  font-weight: 600;
+}
+
+.board td {
+  font-weight: 700;
+  text-align: end;
+  white-space: nowrap;
+}
+
+.board tr + tr > * {
+  border-top: 1px solid var(--rule);
+}
+
+.notes {
+  display: grid;
+  gap: 0.25rem;
+  max-width: 56rem;
+  margin: 1.5rem auto 0;
+  color: var(--grey);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+@media (width >= 48rem) {
+  .boards {
+    grid-template-columns: 1fr 1fr;
+  }
+}

@@ -1,0 +1,89 @@
+import { money } from "@masar/domain";
+import { whatsappUrl } from "@/config/club";
+import { FRIENDS_OFFER, SERVICES, type ServiceId, type ServiceOffer } from "@/config/services";
+import { countText } from "@/i18n/count";
+import type { Dictionary } from "@/i18n/dictionaries";
+import { fill } from "@/i18n/fill";
+import { formatMonths, moneyParts, type MoneyParts } from "@/i18n/format";
+import type { Locale } from "@/i18n/locales";
+
+export interface PackageView {
+  readonly sessions: string;
+  readonly price: MoneyParts;
+}
+
+/** بطاقة خدمة جاهزة للعرض: كل نص ورقم محسوب هنا على الخادم من config/services.ts والقاموس. */
+export interface ServiceView {
+  readonly id: ServiceId;
+  readonly name: string;
+  readonly line: string;
+  readonly note: string;
+  /** «6–24 جلسة»، غائب لبرنامج لا يُباع بعد */
+  readonly range: string | undefined;
+  /** «من 720 ر.س»، غائب لبرنامج لا يُباع بعد */
+  readonly from: string | undefined;
+  readonly packages: readonly PackageView[];
+  /** واتساب برسالة تسمّي الخدمة، غائب لبرنامج قيد الإعداد */
+  readonly askHref: string | undefined;
+}
+
+function priceText(priceMinor: number, template: string, locale: Locale): string {
+  const { amount, unit } = moneyParts(money(priceMinor), locale);
+  return fill(template, { amount, unit });
+}
+
+function toServiceView(service: ServiceOffer, dictionary: Dictionary, locale: Locale): ServiceView {
+  const { services } = dictionary;
+  const copy = services.items[service.id];
+  const forms = services.units[service.unit];
+  const counts = service.packages.map((item) => item.sessions);
+  const prices = service.packages.map((item) => item.priceMinor);
+  const selling = service.packages.length > 0;
+  return {
+    id: service.id,
+    name: copy.name,
+    line: copy.line,
+    note: copy.note,
+    range: selling
+      ? fill(services.range, {
+          min: String(Math.min(...counts)),
+          max: String(Math.max(...counts)),
+          unit: forms.many,
+        })
+      : undefined,
+    from: selling ? priceText(Math.min(...prices), services.from, locale) : undefined,
+    packages: service.packages.map((item) => ({
+      sessions: countText(item.sessions, forms),
+      price: moneyParts(money(item.priceMinor), locale),
+    })),
+    askHref: selling
+      ? whatsappUrl(fill(services.whatsappMessage, { service: copy.name }))
+      : undefined,
+  };
+}
+
+export function serviceViews(dictionary: Dictionary, locale: Locale): ServiceView[] {
+  return SERVICES.map((service) => toServiceView(service, dictionary, locale));
+}
+
+export interface FriendsView {
+  readonly line: string;
+  readonly price: MoneyParts;
+  readonly perPerson: string;
+  readonly href: string;
+}
+
+/** عرض الأصدقاء: المدة لكل شخص، والإجمالي، وحصة الشخص (الإجمالي ÷ العدد، مقرّبًا لأقرب هللة). */
+export function friendsView(dictionary: Dictionary, locale: Locale): FriendsView {
+  const { friends } = dictionary;
+  const perPersonMinor = Math.round(FRIENDS_OFFER.priceMinor / FRIENDS_OFFER.people);
+  return {
+    line: fill(friends.line, {
+      term: formatMonths(FRIENDS_OFFER.paidMonths, locale),
+      bonus: formatMonths(FRIENDS_OFFER.bonusMonths, locale),
+    }),
+    price: moneyParts(money(FRIENDS_OFFER.priceMinor), locale),
+    perPerson: priceText(perPersonMinor, friends.perPerson, locale),
+    href: whatsappUrl(friends.whatsappMessage),
+  };
+}

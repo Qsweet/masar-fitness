@@ -1,7 +1,7 @@
 import { money, type MembershipPlan } from "@masar/domain";
 import { describe, expect, it } from "vitest";
 import { getDictionary } from "@/i18n/dictionaries";
-import { initialPlanSlug, purchaseHref, toPlanViews } from "./plan-view";
+import { freezeDays, initialPlanSlug, purchaseHref, toPlanViews } from "./plan-view";
 
 function plan(overrides: Partial<MembershipPlan>): MembershipPlan {
   return {
@@ -28,8 +28,8 @@ const annual = plan({
 describe("toPlanViews", () => {
   it("يحسب نصوص المدة والسعر والشهر على الخادم بالعربية", () => {
     const [, view] = toPlanViews([monthly, annual], "ar", false);
-    expect(view?.duration).toEqual({ count: "12", unit: "شهرًا" });
     expect(view?.term).toBe("12 شهرًا");
+    expect(view?.freezeText).toBe("تجميد حتى 60 يومًا");
     expect(view?.bonusText).toBe("+ شهران مجانًا");
     expect(view?.durationText).toBe("14 شهرًا، منها شهران مجانًا");
     expect(view?.price).toEqual({ amount: "2,800", unit: "ر.س" });
@@ -38,10 +38,10 @@ describe("toPlanViews", () => {
     expect(view?.isBestValue).toBe(true);
   });
 
-  it("اشتراك الشهر الواحد: مربعه برقم كبقية المدد ويُسمع «شهر واحد»، بلا سطر شهري ولا أشهر مجانية", () => {
+  it("اشتراك الشهر الواحد: «شهر واحد» بلا سطر شهري ولا أشهر مجانية، وتجميده 5 أيام", () => {
     const [view] = toPlanViews([monthly, annual], "ar", false);
-    expect(view?.duration).toEqual({ count: "1", unit: "شهر" });
     expect(view?.term).toBe("شهر واحد");
+    expect(view?.freezeText).toBe("تجميد حتى 5 أيام");
     expect(view?.monthlyText).toBeUndefined();
     expect(view?.bonusText).toBeUndefined();
     expect(view?.durationText).toBe("شهر");
@@ -51,7 +51,7 @@ describe("toPlanViews", () => {
   it("الإنجليزية: المدة والمدة الكاملة بصيغتهما", () => {
     const [one, twelve] = toPlanViews([monthly, annual], "en", false);
     expect(one?.term).toBe("1 month");
-    expect(twelve?.duration).toEqual({ count: "12", unit: "months" });
+    expect(twelve?.freezeText).toBe("Freeze up to 60 days");
     expect(twelve?.durationText).toBe("14 months, including 2 months free");
     expect(twelve?.monthlyText).toBe("About 200 SAR a month");
   });
@@ -117,5 +117,11 @@ describe("initialPlanSlug", () => {
 
   it("بلا أوفر يُختار الأول", () => {
     expect(initialPlanSlug(toPlanViews([monthly], "ar", false))).toBe("monthly");
+  });
+});
+
+describe("freezeDays", () => {
+  it("5 أيام لكل شهر مدفوع، والأشهر المجانية لا تُحتسب (كما في شروط النادي الحالية)", () => {
+    expect([3, 6, 12].map(freezeDays)).toEqual([15, 30, 60]);
   });
 });

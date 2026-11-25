@@ -50,7 +50,7 @@ export function VisitsForm({ visits, action, legend, submit }: VisitsFormProps) 
           ))}
         </div>
       </fieldset>
-      <button type="submit" className={cx(buttonClass("ink"), styles.submit)}>
+      <button type="submit" className={cx(buttonClass("primary"), styles.submit)}>
         {submit}
       </button>
     </form>

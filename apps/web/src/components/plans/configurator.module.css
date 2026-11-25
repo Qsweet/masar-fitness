@@ -1,176 +1,128 @@
-/*
- * محدِّد المدة: مربعات المدة (plan-option.module.css)، والملخص بجانبها كتلة سوداء بسعر ضخم وزر أصفر،
- * وشريط الشراء الثابت على الجوال.
- */
+/* بطاقات الأسعار في صف، وتحتها الملخص الحي شريطًا أبيض بإطار، ثم الروابط الثانوية. */
 .configurator {
   display: grid;
-  grid-template-areas:
-    "options"
-    "summary"
-    "more";
-  gap: 1.5rem;
-}
-
-.options {
-  grid-area: options;
-}
-
-.more {
-  grid-area: more;
-}
-
-.summary {
-  grid-area: summary;
+  gap: 2rem;
 }
 
 .options {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  min-width: 0;
+  gap: 1.25rem;
   margin: 0;
   padding: 0;
   border: 0;
-}
-
-.legend {
-  grid-column: 1 / -1;
-  margin-bottom: 0.75rem;
-  font-family: var(--display);
-  font-size: 1.15rem;
-  font-weight: 700;
+  min-width: 0;
 }
 
 .summary {
   display: grid;
-  gap: 0.35rem;
-  align-content: start;
-  padding: 1.75rem 1.5rem;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
   background: var(--ink);
   color: var(--white);
+  box-shadow: var(--shadow-lg);
+}
+
+.summaryText,
+.summaryBuy {
+  display: grid;
+  align-content: start;
+  gap: 0.15rem;
 }
 
 .summaryName {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.muted {
+  color: var(--grey-on-ink);
+  font-size: 0.9375rem;
+}
+
+.label {
+  color: var(--grey-on-ink);
+  font-size: 0.875rem;
+}
+
+.summaryPrice {
   color: var(--energy);
-  font-family: var(--display);
-  font-size: 1.6rem;
+  font-size: clamp(2.25rem, 2vw + 1.5rem, 2.75rem);
   font-weight: 800;
   line-height: 1.2;
 }
 
-.summaryLabel {
-  margin-top: 0.75rem;
-  color: var(--grey-on-ink);
-  font-size: 0.9375rem;
-}
-
-.summaryPrice {
-  font-family: var(--display);
-  font-size: clamp(3rem, 3vw + 2rem, 4.5rem);
-  font-weight: 800;
-  line-height: 1;
-}
-
 .summaryUnit {
-  font-size: 0.42em;
-}
-
-.summaryNote {
-  color: var(--grey-on-ink);
-  font-size: 0.9375rem;
-}
-
-.summaryFacts {
-  margin-block: 0.75rem 1rem;
-  padding-block: 0.75rem;
-  border-block: 1px solid var(--rule-on-ink);
-}
-
-.summaryFacts > p:first-child {
-  line-height: 1.4;
-  font-family: var(--display);
-  font-size: 1.2rem;
+  font-size: 0.5em;
   font-weight: 700;
 }
 
-/* «يشمل جميع مرافق النادي»: سطر واحد بعلامة صح حين تتطابق مزايا كل الاشتراكات */
+.summaryBuy :global(a) {
+  margin-top: 1rem;
+}
+
 .includesAll {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 1.25rem;
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-/* قائمة المزايا حين تختلف بين الاشتراكات: عمود واحد على الجوال الضيق، عمودان بعده */
-.includes {
-  display: grid;
-  gap: 0.35rem 1.25rem;
-  margin-block: 0.35rem 1.25rem;
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.includes li {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-/* علامة صح مرسومة بالحدود (لا نص يقرؤه قارئ الشاشة)، صفراء على الحبر */
-.includesAll::before,
-.includes li::before {
-  content: "";
-  flex: none;
-  width: 0.4rem;
-  height: 0.75rem;
-  margin-inline: 0.25rem 0.15rem;
-  border: solid var(--energy);
-  border-width: 0 0.18rem 0.18rem 0;
-  transform: translateY(-0.1rem) rotate(45deg);
-}
-
-@media (width >= 26rem) {
-  .includes {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-/* سطر الاشتراك عبر واتساب بجانب الزر مباشرة: صادق وقابل للقراءة (15px، 11:1) */
-.buyNote {
-  margin-top: 0.5rem;
-  color: var(--grey-on-ink);
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  color: var(--energy);
   font-size: 0.9375rem;
-  line-height: 1.7;
+  font-weight: 600;
+}
+
+.includes {
+  margin-top: 0.75rem;
+}
+
+.includes ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  font-size: 0.9375rem;
+}
+
+.secondary {
+  display: grid;
+  gap: 0.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule-on-ink);
+}
+
+.buyNote {
+  color: var(--grey-on-ink);
+  font-size: 0.875rem;
 }
 
 .details {
-  justify-self: start;
   display: inline-flex;
   align-items: center;
-  min-height: 2.75rem;
+  min-height: var(--target);
   color: var(--energy);
-  font-family: var(--display);
+  font-size: 0.9375rem;
   font-weight: 600;
   text-underline-offset: 0.3em;
 }
 
-/* شريط الشراء الثابت على الجوال: الاسم والإجمالي في سطر واحد، والزر يملأ بقية العرض في متناول الإبهام */
+.more {
+  display: flex;
+  justify-content: center;
+}
+
+/* شريط الشراء الثابت للجوال: أبيض بظل، والزر بالتدرّج يملأ بقية العرض */
 .sticky {
   position: fixed;
   inset-inline: 0;
   bottom: 0;
   z-index: 15;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 1rem;
-  min-height: 4rem;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-inline-start: var(--gutter);
-  background: var(--ink);
-  color: var(--white);
-  border-top: 1px solid var(--rule-on-ink);
+  min-height: 4.5rem;
+  padding: 0.6rem var(--gutter-end) calc(0.6rem + env(safe-area-inset-bottom, 0px)) var(--gutter);
+  background: var(--white);
+  border-top: 1px solid var(--rule);
+  box-shadow: var(--shadow-lg);
 }
 
 .sticky[hidden] {
@@ -180,25 +132,22 @@
 .sticky p {
   display: grid;
   flex: none;
-  align-self: center;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 .stickyName {
-  color: var(--energy);
-  font-family: var(--display);
-  font-size: 0.9375rem;
-  font-weight: 700;
+  color: var(--grey);
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .stickyPrice {
-  font-family: var(--display);
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 800;
 }
 
 .stickyUnit {
-  font-size: 0.75em;
+  font-size: 0.7em;
 }
 
 .sticky a {
@@ -206,54 +155,52 @@
   flex: 1;
   align-items: center;
   justify-content: center;
-  min-height: 4rem;
+  min-height: 3.25rem;
   padding-inline: 1rem;
-  background: var(--energy);
+  border-radius: var(--radius-sm);
+  background: var(--gradient);
   color: var(--ink);
-  font-family: var(--display);
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.25;
   text-align: center;
   text-decoration: none;
 }
 
-@media (width >= 40rem) {
-  .options {
-    grid-template-columns: repeat(4, 1fr);
+@media (width >= 48rem) {
+  .summary {
+    grid-template-columns: 1fr minmax(16rem, 20rem);
+    padding: 2rem;
+  }
+
+  .secondary {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 2rem;
   }
 }
 
 @media (width >= 64rem) {
-  .configurator {
-    grid-template-columns: 7fr 5fr;
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-      "options summary"
-      "more summary";
-    gap: 2rem 2.5rem;
-    align-items: start;
-  }
-
-  /* عمود الاختيار أضيق بجانب الملخص: مربعان في الصف حتى تتسع الشاشة */
   .options {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 2rem;
+    padding-top: 1rem;
   }
 
-  .summary {
-    position: sticky;
-    top: calc(var(--header-height) + 1.5rem);
-    padding: 2.25rem;
+  .options[data-count="4"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .options[data-count="2"] {
+    grid-template-columns: repeat(2, minmax(0, 22rem));
+    justify-content: center;
   }
 
   .sticky,
   .sticky[hidden] {
     display: none;
-  }
-}
-
-@media (width >= 80rem) {
-  .options {
-    grid-template-columns: repeat(4, 1fr);
   }
 }

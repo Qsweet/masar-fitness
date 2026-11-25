@@ -1,0 +1,59 @@
+/* القسم الداكن بلون حبر النادي، بإضاءتين دافئتين خفيفتين في زاويتيه. */
+.why {
+  background: var(--wash), var(--ink);
+  color: var(--white);
+}
+
+.why :global(.section-head .lead),
+.grid p {
+  color: var(--grey-on-ink);
+}
+
+/* السطر الصغير بالكهرماني على الحبر (11:1)، لا بتدرّج النص الغامق المخصص للأرضية الفاتحة */
+.why :global(.eyebrow) {
+  color: var(--energy);
+  background: none;
+  -webkit-text-fill-color: currentcolor;
+}
+
+.grid {
+  display: grid;
+  gap: 2.5rem;
+  text-align: center;
+}
+
+.grid li {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+}
+
+.grid .tile {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 0.5rem;
+  box-shadow: var(--glow);
+}
+
+.title {
+  font-size: 1.1875rem;
+  font-weight: 700;
+}
+
+.grid p {
+  max-width: 18rem;
+  font-size: 0.9375rem;
+}
+
+@media (width >= 40rem) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 64rem) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2rem;
+  }
+}

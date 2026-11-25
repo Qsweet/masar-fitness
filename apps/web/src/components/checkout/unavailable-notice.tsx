@@ -32,7 +32,11 @@ export function UnavailableNotice({ title, lead, primary, secondary }: Unavailab
           {primary.label}
         </ButtonLink>
         {secondary === undefined ? null : (
-          <ButtonLink href={secondary.href} external={secondary.external === true} variant="line">
+          <ButtonLink
+            href={secondary.href}
+            external={secondary.external === true}
+            variant="outline"
+          >
             {secondary.label}
           </ButtonLink>
         )}

@@ -138,7 +138,7 @@ export function BlogIndex({ articles, locale, dictionary }: Props) {
       <aside className={styles.tool} aria-label={dictionary.tools.costPerVisit.title}>
         <p className={styles.toolTitle}>{dictionary.tools.costPerVisit.title}</p>
         <p>{dictionary.tools.costPerVisit.lead}</p>
-        <ButtonLink href={localizedPath(locale, ROUTES.costPerVisit)} variant="yellow">
+        <ButtonLink href={localizedPath(locale, ROUTES.costPerVisit)} variant="primary">
           {dictionary.tools.footerLink}
         </ButtonLink>
       </aside>

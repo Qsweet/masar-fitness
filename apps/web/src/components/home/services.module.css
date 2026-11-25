@@ -1,0 +1,72 @@
+.packages {
+  border-top: 1px solid var(--rule);
+}
+
+.packages summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--target);
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  list-style: none;
+}
+
+.packages summary::-webkit-details-marker {
+  display: none;
+}
+
+/* علامة فتح وإغلاق مرسومة بالحدود */
+.packages summary::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  rotate: 45deg;
+  transition: rotate var(--press) ease;
+}
+
+.packages[open] summary::after {
+  rotate: 225deg;
+}
+
+.packages ul {
+  display: grid;
+  padding-bottom: 0.5rem;
+}
+
+.packages li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.4rem;
+  font-size: 0.9375rem;
+}
+
+.packages li + li {
+  border-top: 1px dashed var(--rule);
+}
+
+.price {
+  font-weight: 700;
+}
+
+.ask {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--target);
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 2px var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background var(--press) ease;
+}
+
+.ask:hover {
+  background: var(--surface);
+}

@@ -1,5 +1,5 @@
 /*
- * مراجعة الطلب: رقم الطلب كتلة صفراء ضخمة (ما يحتاجه العميل أولًا)، ثم البيانات والخطوة التالية
+ * مراجعة الطلب: رقم الطلب لوح بالتدرّج ضخم (ما يحتاجه العميل أولًا)، ثم البيانات والخطوة التالية
  * على لوحات بيضاء، والملخص كتلة حبر بجانبها على الشاشات الواسعة.
  */
 .review {
@@ -18,7 +18,8 @@
   display: grid;
   gap: 0.25rem;
   padding: 1.25rem 1.5rem;
-  background: var(--energy);
+  border-radius: var(--radius-lg);
+  background: var(--gradient);
   color: var(--ink);
 }
 
@@ -27,7 +28,7 @@
 }
 
 .referenceValue {
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: clamp(2rem, 4vw + 1rem, 3.5rem);
   font-weight: 800;
   line-height: 1.1;
@@ -38,11 +39,14 @@
   display: grid;
   gap: 0.75rem;
   padding: 1.5rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
   background: var(--white);
+  box-shadow: var(--shadow-sm);
 }
 
 .panelTitle {
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: 1.35rem;
   font-weight: 800;
 }
@@ -71,7 +75,7 @@
   padding-inline: 0.6rem;
   background: var(--ink);
   color: var(--energy);
-  font-family: var(--display);
+  font-family: var(--font);
 }
 
 .deadline {

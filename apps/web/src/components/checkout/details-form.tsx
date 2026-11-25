@@ -218,7 +218,7 @@ export function DetailsForm(props: DetailsFormProps) {
         <button
           type="submit"
           disabled={pending}
-          className={cx(buttonClass("ink", true), styles.button)}
+          className={cx(buttonClass("primary", true), styles.button)}
         >
           {pending ? form.pending : form.submit}
         </button>

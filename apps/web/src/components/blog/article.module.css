@@ -1,7 +1,7 @@
-/* المقال: عمود قراءة واحد بعرض مريح، خلاصة صفراء، وكتل بخطوط الحبر والفواصل المائلة «/». */
+/* المقال: عمود قراءة واحد بعرض مريح، خلاصة على لوح متدرّج مستدير، وكتل بزوايا مستديرة وظلال ناعمة. */
 .draft {
   padding: 0.75rem var(--gutter-end) 0.75rem var(--gutter);
-  background: var(--energy);
+  background: var(--gradient);
   color: var(--ink);
   text-align: center;
 }
@@ -33,10 +33,11 @@
 .topic {
   display: inline-block;
   margin-top: 1rem;
-  padding: 0.1rem 0.6rem;
-  background: var(--energy);
+  padding: 0.1rem 0.75rem;
+  border-radius: var(--radius-pill);
+  background: var(--gradient);
   color: var(--ink);
-  font-family: var(--display);
+  font-family: var(--font);
   font-weight: 700;
 }
 
@@ -71,13 +72,15 @@
 
 .summary {
   margin-top: 2rem;
-  padding: 1.5rem;
-  background: var(--energy);
+  padding: clamp(1.5rem, 3vw, 2rem);
+  border-radius: var(--radius-lg);
+  background: var(--sheen), var(--gradient);
   color: var(--ink);
+  box-shadow: var(--glow);
 }
 
 .summaryTitle {
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: clamp(1.75rem, 2vw + 1rem, 2.5rem);
   font-weight: 800;
   line-height: 1.1;
@@ -91,7 +94,7 @@
 
 .takeawaysTitle {
   margin-top: 1.25rem;
-  font-family: var(--display);
+  font-family: var(--font);
   font-weight: 700;
 }
 
@@ -119,7 +122,7 @@
 }
 
 .smallTitle {
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: 1.25rem;
   font-weight: 700;
 }
@@ -169,15 +172,18 @@
   place-items: center;
   width: 2rem;
   height: 2rem;
-  background: var(--ink);
-  color: var(--energy);
-  font-family: var(--display);
+  border-radius: var(--radius-pill);
+  background: var(--gradient);
+  color: var(--ink);
+  font-family: var(--font);
   font-weight: 800;
 }
 
 .tableScroller {
   overflow-x: auto;
-  border-bottom: 2px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
 }
 
 .table {
@@ -187,7 +193,7 @@
 
 .table caption {
   padding-bottom: 0.5rem;
-  font-family: var(--display);
+  font-family: var(--font);
   font-weight: 700;
   text-align: start;
 }
@@ -197,12 +203,16 @@
   padding: 0.75rem;
   text-align: start;
   vertical-align: top;
-  border-top: 1px solid rgb(12 16 20 / 14%);
+  border-top: 1px solid var(--rule);
+}
+
+.table caption {
+  padding-inline: 0.75rem;
 }
 
 .table thead th {
-  background: var(--ink);
-  color: var(--white);
+  background: var(--surface);
+  color: var(--ink);
 }
 
 /*
@@ -229,7 +239,7 @@
 
   .table tbody tr {
     padding-block: 0.75rem;
-    border-top: 1px solid rgb(12 16 20 / 14%);
+    border-top: 1px solid var(--rule);
   }
 
   .table tbody th,
@@ -248,13 +258,14 @@
 }
 
 .note {
-  padding: 1.25rem;
-  background: var(--white);
-  border-inline-start: 6px solid var(--ink);
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--rule);
 }
 
 .noteTitle {
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: 1.2rem;
   font-weight: 700;
 }
@@ -279,7 +290,7 @@
 }
 
 .related a {
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: 1.25rem;
   font-weight: 700;
 }

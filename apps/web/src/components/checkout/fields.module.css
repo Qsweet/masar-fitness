@@ -1,19 +1,21 @@
 /*
- * حقول نموذجي الشراء (الخيارات والبيانات): لوحات بيضاء حادة على الورق، تسمية بخط العناوين،
- * حقل بإطار حبر، وتركيز واضح. الخطأ كتلة صفراء بنص حبر (11:1)، لا لون خارج الرموز.
+ * حقول نموذجي الشراء (الخيارات والبيانات): لوحات بيضاء مستديرة بظل ناعم، حقل بإطار 3:1 وزوايا مستديرة،
+ * وتركيز واضح. الخطأ كتلة بالتدرّج بنص حبر، لا لون خارج الرموز.
  */
 .panel {
   display: grid;
   gap: 1.25rem;
   min-width: 0;
   margin: 0;
-  padding: 1.5rem;
-  border: 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
   background: var(--white);
+  box-shadow: var(--shadow-sm);
 }
 
 .title {
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: 1.5rem;
   font-weight: 800;
   line-height: 1.2;
@@ -29,7 +31,7 @@
 }
 
 .label {
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: 1.1rem;
   font-weight: 700;
 }
@@ -43,32 +45,36 @@
   width: 100%;
   min-height: 3.25rem;
   padding: 0.5rem 0.9rem;
-  border: 2px solid var(--ink);
-  border-radius: 0;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
   background: var(--white);
   color: var(--ink);
   font: inherit;
 }
 
 .input:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 2px;
+  border-color: var(--accent-ink);
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 0;
 }
 
 .input[aria-invalid="true"] {
-  border-width: 4px;
+  border-width: 3px;
+  border-color: var(--ink);
 }
 
 .error {
   padding: 0.4rem 0.75rem;
-  background: var(--energy);
+  border-radius: var(--radius-sm);
+  background: var(--gradient);
   color: var(--ink);
   font-weight: 700;
 }
 
 .info {
   padding-inline-start: 0.75rem;
-  border-inline-start: 4px solid var(--energy);
+  border-inline-start: 4px solid var(--orange);
+  border-radius: var(--radius-sm);
   font-weight: 600;
 }
 
@@ -83,7 +89,7 @@
 
 .legend {
   margin-bottom: 0.5rem;
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: 1.1rem;
   font-weight: 700;
 }
@@ -94,13 +100,15 @@
   gap: 0.75rem;
   min-height: 3.25rem;
   padding: 0.5rem 0.9rem;
-  box-shadow: inset 0 0 0 2px var(--ink);
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--rule-strong);
   cursor: pointer;
 }
 
 .choice:has(input:checked) {
-  background: var(--energy);
-  box-shadow: inset 0 0 0 3px var(--ink);
+  border-radius: var(--radius-sm);
+  background: var(--gradient);
+  box-shadow: inset 0 0 0 2px var(--ink);
 }
 
 .choice:has(input:focus-visible) {
@@ -121,7 +129,7 @@
 }
 
 .choicePrice {
-  font-family: var(--display);
+  font-family: var(--font);
   font-weight: 700;
 }
 
@@ -141,7 +149,7 @@
 }
 
 .totalPrice {
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: 1.75rem;
   font-weight: 800;
 }
@@ -155,6 +163,7 @@
   display: grid;
   gap: 0.5rem;
   padding: 1rem 1.25rem;
+  border-radius: var(--radius);
   background: var(--ink);
   color: var(--white);
 }
@@ -166,7 +175,7 @@
 
 .summaryTitle {
   color: var(--energy);
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: 1.15rem;
   font-weight: 700;
 }

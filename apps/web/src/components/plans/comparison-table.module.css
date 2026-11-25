@@ -1,6 +1,6 @@
 /*
- * المقارنة: على الجوال بطاقة لكل اشتراك بحقائقه وزر بعرض كامل، وعلى الشاشة الواسعة جدول برأس أسود
- * وخطوط حبر رفيعة والأرقام بخط Changa. يُعرض أحدهما فقط.
+ * المقارنة: على الجوال بطاقة مستديرة لكل اشتراك بحقائقه وزر بعرض كامل، وعلى الشاشة الواسعة جدول في لوح
+ * أبيض مستدير برأس بالتدرّج. يُعرض أحدهما فقط.
  */
 .comparison {
   display: grid;
@@ -16,12 +16,13 @@
   display: grid;
   gap: 1rem;
   padding: 1.25rem 1.25rem 1.5rem;
+  border-radius: var(--radius);
   background: var(--white);
-  border-top: 4px solid var(--energy);
+  box-shadow: var(--shadow-sm);
 }
 
 .itemName {
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: 1.5rem;
   font-weight: 800;
   line-height: 1.2;
@@ -46,7 +47,7 @@
 }
 
 .facts dd {
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: 1rem;
   font-weight: 700;
   text-align: end;
@@ -57,7 +58,12 @@
   display: none;
   width: 100%;
   table-layout: fixed;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
 .table th,
@@ -75,13 +81,13 @@
 
 .table thead th {
   border-top: 0;
-  background: var(--ink);
-  color: var(--white);
+  background: var(--gradient);
+  color: var(--ink);
 }
 
 .corner {
   width: 24%;
-  color: var(--grey-on-ink);
+  color: var(--ink);
   font-size: 0.9375rem;
 }
 
@@ -91,20 +97,20 @@
 }
 
 .table thead .planName {
-  color: var(--energy);
-  font-family: var(--display);
+  color: var(--ink);
+  font-family: var(--font);
   font-size: 1.3rem;
   font-weight: 800;
 }
 
 .price {
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: 1.25rem;
   font-weight: 700;
 }
 
 .table tfoot td {
-  border-top: 2px solid var(--ink);
+  border-top: 1px solid var(--rule);
 }
 
 .allIncluded {

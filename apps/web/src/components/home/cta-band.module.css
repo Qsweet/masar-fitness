@@ -1,0 +1,54 @@
+.band {
+  position: relative;
+  padding-block: clamp(4rem, 8vw, 6rem);
+  background: var(--gradient);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+/* لمعة بيضاء خفيفة في زاوية الشريط */
+.band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--sheen);
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1.25rem;
+  max-width: 48rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter) var(--gutter-end);
+  text-align: center;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1rem;
+  border-radius: var(--radius-pill);
+  background: var(--white);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.title {
+  font-size: clamp(2.25rem, 3vw + 1.5rem, 3.75rem);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.lead {
+  font-size: clamp(1.0625rem, 0.4vw + 1rem, 1.25rem);
+  font-weight: 500;
+}
+
+.note {
+  font-size: 0.875rem;
+  font-weight: 500;
+}

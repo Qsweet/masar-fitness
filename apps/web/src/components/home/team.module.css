@@ -1,0 +1,51 @@
+.inner {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.text {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin-bottom: 1.5rem;
+}
+
+.text :global(.section-head) {
+  margin-bottom: 1rem;
+}
+
+.lead {
+  max-width: 32rem;
+  margin-bottom: 1.75rem;
+  color: var(--grey);
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.photo img {
+  object-fit: cover;
+}
+
+@media (width >= 64rem) {
+  .inner {
+    grid-template-columns: 1.1fr 1fr 1fr;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .text {
+    grid-column: auto;
+    margin: 0;
+  }
+
+  /* الصورة الثانية أدنى قليلًا: إيقاع بدل صف جامد */
+  .photo:last-child {
+    margin-top: 4rem;
+  }
+}

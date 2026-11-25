@@ -70,7 +70,7 @@ export function OptionsForm({ action, addons, coupon, couponMessage, labels }: O
           </p>
         )}
       </div>
-      <button type="submit" className={buttonClass("line", true)}>
+      <button type="submit" className={buttonClass("outline", true)}>
         {labels.apply}
       </button>
     </form>

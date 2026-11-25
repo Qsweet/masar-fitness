@@ -6,15 +6,11 @@ import {
   type MembershipPlan,
 } from "@masar/domain";
 import { whatsappUrl } from "@/config/club";
+import { CLUB_FACTS } from "@/config/club-facts";
+import { countText } from "@/i18n/count";
 import { getDictionary, type Dictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
-import {
-  countedMonthsParts,
-  formatMonths,
-  moneyParts,
-  type MoneyParts,
-  type MonthsParts,
-} from "@/i18n/format";
+import { formatMonths, moneyParts, type MoneyParts } from "@/i18n/format";
 import { localizedPath, type Locale } from "@/i18n/locales";
 
 /** وجهة زر الشراء: داخلية (صفحة بيانات الشراء) أو خارجية (واتساب). */
@@ -36,9 +32,7 @@ export interface PlanView {
   readonly purchase: PurchaseLink;
   /** واتساب النادي برسالة تسمّي الاشتراك: الزر نفسه والشراء مغلق، ورابط ثانوي وهو مفتوح */
   readonly whatsappHref: string;
-  /** المدة المدفوعة رقمًا ووحدة لمربع الاختيار، للعين فقط: «12» + «شهرًا»، «1» + «شهر» */
-  readonly duration: Required<MonthsParts>;
-  /** المدة المدفوعة كما يسمعها قارئ الشاشة بدل الرقم والوحدة: «12 شهرًا»، «شهر واحد» */
+  /** المدة المدفوعة مكتوبة: «12 شهرًا»، «شهر واحد» */
   readonly term: string;
   /** «+ شهران مجانًا» أو غائب */
   readonly bonusText: string | undefined;
@@ -47,6 +41,8 @@ export interface PlanView {
   readonly price: MoneyParts;
   /** «نحو 200 ر.س شهريًا» في مربع المدة وفي الملخص؛ غائب لاشتراك الشهر الواحد (تكرار للسعر نفسه) */
   readonly monthlyText: string | undefined;
+  /** «تجميد حتى 60 يومًا»: 5 أيام لكل شهر مدفوع كما في شروط النادي الحالية (config/club-facts.ts) */
+  readonly freezeText: string;
   readonly benefits: readonly string[];
   /** كل الاشتراكات المعروضة بالمزايا نفسها: يكفي الملخصَ سطر واحد بدل القائمة المكررة */
   readonly benefitsShared: boolean;
@@ -82,6 +78,17 @@ function monthlyText(plan: MembershipPlan, locale: Locale): string | undefined {
   return fill(getDictionary(locale).plans.monthly, { amount, unit });
 }
 
+/** أيام التجميد المتاحة: لكل شهر مدفوع عدد ثابت، والأشهر المجانية لا تُحتسب (شروط النادي الحالية). */
+export function freezeDays(paidMonths: number): number {
+  return paidMonths * CLUB_FACTS.freezeDaysPerPaidMonth;
+}
+
+function freezeText(paidMonths: number, dictionary: Dictionary): string {
+  return fill(dictionary.plans.freeze, {
+    days: countText(freezeDays(paidMonths), dictionary.days),
+  });
+}
+
 function planWhatsappUrl(plan: MembershipPlan, locale: Locale, dictionary: Dictionary): string {
   return whatsappUrl(fill(dictionary.plan.whatsappMessage, { plan: plan.name[locale] }));
 }
@@ -115,7 +122,6 @@ function toPlanView(plan: MembershipPlan, context: ViewContext): PlanView {
     href: localizedPath(locale, `/memberships/${plan.slug}`),
     purchase: purchaseHref(plan, locale, dictionary, checkoutEnabled),
     whatsappHref: planWhatsappUrl(plan, locale, dictionary),
-    duration: countedMonthsParts(plan.paidMonths, locale),
     term: termText(plan.paidMonths, locale),
     bonusText:
       plan.bonusMonths > 0
@@ -124,6 +130,7 @@ function toPlanView(plan: MembershipPlan, context: ViewContext): PlanView {
     durationText: durationText(plan, locale),
     price: moneyParts(plan.price, locale),
     monthlyText: monthlyText(plan, locale),
+    freezeText: freezeText(plan.paidMonths, dictionary),
     benefits: plan.benefits.map((benefit) => benefit[locale]),
     benefitsShared,
     isBestValue: plan.slug === bestSlug,

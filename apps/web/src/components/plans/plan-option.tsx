@@ -1,4 +1,6 @@
+import { Icon } from "@/components/ui/icon";
 import { Price } from "@/components/ui/price";
+import type { Dictionary } from "@/i18n/dictionaries";
 import { cx } from "@/lib/cx";
 import type { PlanView } from "./plan-view";
 import styles from "./plan-option.module.css";
@@ -6,19 +8,25 @@ import styles from "./plan-option.module.css";
 interface OptionProps {
   readonly plan: PlanView;
   readonly selected: boolean;
-  readonly bestValueLabel: string;
+  readonly labels: Dictionary["plans"];
   readonly onSelect: () => void;
 }
 
 /**
- * مربع مدة واحد: زر راديو حقيقي شفاف فوق المربع كله. ما يُرى: رقم كبير ووحدته والمكافأة، ثم الإجمالي
- * وما يعادله شهريًا تحت فاصل، فيُرى لماذا السنوي هو الأوفر دون فتح الملخص. الرقم والوحدة للعين فقط،
- * وقارئ الشاشة يسمع المدة بصيغتها الصحيحة («شهر واحد» لا «1 شهر»).
+ * بطاقة سعر واحدة: زر راديو حقيقي شفاف فوق البطاقة كلها (الأسهم ولوحة المفاتيح وقارئ الشاشة تعمل).
+ * الاسم والمدة الكاملة، ثم الإجمالي كبيرًا وما يعادله شهريًا، ثم ما يميز الاشتراك. الأوفر شهريًا (محسوب)
+ * مرفوع بإطار متدرّج وشريط في أعلاه وسعر بالتدرّج.
  */
-export function PlanOption({ plan, selected, bestValueLabel, onSelect }: OptionProps) {
-  const { count, unit } = plan.duration;
+export function PlanOption({ plan, selected, labels, onSelect }: OptionProps) {
+  const features = [
+    plan.freezeText,
+    plan.benefitsShared ? labels.includesAll : undefined,
+    labels.startsOnActivation,
+  ].filter((feature) => feature !== undefined);
   return (
-    <label className={cx(styles.option, selected && styles.selected)}>
+    <label
+      className={cx(styles.option, plan.isBestValue && styles.best, selected && styles.selected)}
+    >
       <input
         type="radio"
         name="plan"
@@ -27,17 +35,34 @@ export function PlanOption({ plan, selected, bestValueLabel, onSelect }: OptionP
         onChange={onSelect}
         className={styles.input}
       />
-      <span className={styles.mark} aria-hidden="true" />
-      {plan.isBestValue ? <span className={styles.flag}>{bestValueLabel}</span> : null}
-      <span className={styles.duration} aria-hidden="true">
-        <span className={styles.count}>{count}</span>
-        <span className={styles.unit}>{unit}</span>
+      {plan.isBestValue ? <span className={styles.ribbon}>{labels.bestValue}</span> : null}
+      <span className={styles.head}>
+        <span className={styles.name}>{plan.name}</span>
+        <span className={styles.mark} aria-hidden="true" />
       </span>
-      <span className="sr-only">{plan.term}</span>
-      <span className={styles.bonus}>{plan.bonusText}</span>
+      <span className={styles.duration}>{plan.durationText}</span>
       <span className={styles.figures}>
-        <Price parts={plan.price} className={styles.optionPrice} unitClassName={styles.currency} />
-        <span className={styles.perMonth}>{plan.monthlyText}</span>
+        <Price
+          parts={plan.price}
+          className={cx(styles.price, plan.isBestValue && "gradient-text")}
+          unitClassName={styles.currency}
+        />
+        <span className={styles.vat}>{labels.vatIncluded}</span>
+        {plan.monthlyText === undefined ? null : (
+          <span className={styles.perMonth}>{plan.monthlyText}</span>
+        )}
+      </span>
+      <span className={styles.features}>
+        {features.map((feature) => (
+          <span key={feature}>
+            <Icon name="check" className={styles.check} />
+            {feature}
+          </span>
+        ))}
+      </span>
+      <span className={styles.choose} aria-hidden="true">
+        {selected ? <Icon name="check" /> : null}
+        {selected ? labels.selected : labels.choose}
       </span>
     </label>
   );

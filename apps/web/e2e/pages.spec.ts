@@ -1,65 +1,73 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 /** البيانات من البذرة التجريبية (packages/db/prisma/seed-demo.ts). */
 const ANNUAL = { slug: "one-year", nameAr: "السنوية", nameEn: "Annual", price: "2,800" };
+const BAR = "ملخص الاشتراك";
+
+function durations(page: Page) {
+  return page.getByRole("group", { name: "مدة الاشتراك" });
+}
+
+function summary(page: Page) {
+  return page.locator("#plans [aria-live]");
+}
 
 test.describe("الرئيسية", () => {
-  test("تعرض المدد الأربع من قاعدة البيانات، والأقل تكلفة شهريًا مختارة مع ملخصها", async ({
-    page,
-  }) => {
+  test("تعرض المدد الأربع من القاعدة، والأوفر شهريًا مختار مع ملخصه", async ({ page }) => {
     await page.goto("/");
-    const rows = page.getByRole("list", { name: "باقات الاشتراك" }).getByRole("listitem");
-    await expect(rows).toHaveCount(4);
-
-    const annual = rows.filter({ hasText: "12 شهرًا" });
+    const options = durations(page).getByRole("radio");
+    await expect(options).toHaveCount(4);
+    const annual = durations(page).locator("label").filter({ hasText: "شهرًا" });
     await expect(annual).toContainText(ANNUAL.price);
     await expect(annual).toContainText("+ شهران مجانًا");
-    await expect(annual).toContainText("الأقل تكلفة شهريًا");
-    await expect(annual.getByRole("link")).toHaveAttribute("aria-current", "true");
-    await expect(rows.locator('a[aria-current="true"]')).toHaveCount(1);
+    await expect(annual).toContainText("الأوفر شهريًا");
+    await expect(annual.getByRole("radio")).toBeChecked();
 
-    const main = page.getByRole("main");
-    await expect(main).toContainText(`${ANNUAL.nameAr}: الإجمالي`);
-    await expect(main).toContainText("شامل ضريبة القيمة المضافة");
-    await expect(main).toContainText("حوالي 200 ر.س شهريًا");
+    await expect(summary(page)).toContainText(ANNUAL.nameAr);
+    await expect(summary(page)).toContainText(`${ANNUAL.price} ر.س`);
+    await expect(summary(page)).toContainText("شامل ضريبة القيمة المضافة");
+    await expect(summary(page)).toContainText("14 شهرًا: 12 شهرًا + شهران مجانًا");
+    await expect(summary(page)).toContainText("حوالي 200 ر.س للشهر");
   });
 
-  test("اختيار مدة ينقل إلى صفحة باقتها ويحدّث الملخص", async ({ page }) => {
+  test("اختيار مدة يحدّث الملخص فورًا بلا انتقال", async ({ page }) => {
     await page.goto("/");
-    const rows = page.getByRole("list", { name: "باقات الاشتراك" }).getByRole("listitem");
-    await rows.filter({ hasText: "3 أشهر" }).getByRole("link").click();
+    await durations(page)
+      .locator("label")
+      .filter({ hasText: "أشهر" })
+      .first()
+      .getByRole("radio")
+      .check();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(summary(page)).toContainText("ربع السنوية");
+    await expect(summary(page)).toContainText("900 ر.س");
+    await expect(summary(page)).toContainText("حوالي 300 ر.س للشهر");
+    await summary(page)
+      .getByRole("link", { name: /تفاصيل الاشتراك/ })
+      .click();
     await expect(page).toHaveURL(/\/memberships\/three-months$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("ربع السنوية");
-    await expect(page.locator('a[aria-current="true"]')).toContainText("3 أشهر");
-    await expect(page.getByRole("main")).toContainText("ربع السنوية: الإجمالي");
-    await expect(page.getByRole("main")).toContainText("حوالي 300 ر.س شهريًا");
   });
 
-  test("الشاشة الأولى على الجوال: المدد الأربع بأسعارها وزر الشراء ظاهرة بلا تمرير", async ({
-    page,
-    viewport,
-  }) => {
-    test.skip((viewport?.width ?? 0) >= 768, "خاص بالجوال");
+  test("الاختيار بلوحة المفاتيح: الأسهم تنقل بين المدد", async ({ page }) => {
     await page.goto("/");
-    const rows = page.getByRole("list", { name: "باقات الاشتراك" }).getByRole("listitem");
-    for (const price of ["350", "900", "1,600", ANNUAL.price]) {
-      await expect(
-        rows.filter({ hasText: price }).getByText(price, { exact: true }),
-      ).toBeInViewport({ ratio: 1 });
-    }
-    const bar = page.getByRole("complementary", { name: "ملخص الباقة والاشتراك" });
-    await expect(bar.getByRole("link", { name: "اشترك عبر واتساب" })).toBeInViewport({ ratio: 1 });
-    await expect(bar).toContainText(ANNUAL.price);
+    await durations(page).getByRole("radio", { checked: true }).focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(durations(page).getByRole("radio", { checked: true })).toBeFocused();
+    await expect(durations(page).getByRole("radio", { checked: true })).not.toHaveValue(
+      ANNUAL.slug,
+    );
+    await expect(summary(page)).toContainText("نصف السنوية");
   });
 
-  test("روابط الموقع الحقيقية: الاتجاهات والهاتف", async ({ page }) => {
+  test("روابط الموقع الحقيقية: الخريطة والهاتف", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("link", { name: "افتح الاتجاهات" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "افتح الخريطة" })).toHaveAttribute(
       "href",
       /google\.com\/maps\/dir\/\?api=1&destination=26\.4077931/,
     );
     await expect(
-      page.getByRole("main").getByRole("link", { name: "016 324 0111" }),
+      page.getByRole("main").getByRole("link", { name: "اتصل 016 324 0111" }),
     ).toHaveAttribute("href", "tel:+966163240111");
   });
 
@@ -71,8 +79,8 @@ test.describe("الرئيسية", () => {
   });
 });
 
-test.describe("صفحة الباقات", () => {
-  test("جدول المقارنة: عمود لكل باقة وصف لكل صفة", async ({ page }) => {
+test.describe("صفحة الاشتراكات", () => {
+  test("جدول المقارنة: عمود لكل اشتراك وصف لكل صفة", async ({ page }) => {
     await page.goto("/memberships");
     const table = page.getByRole("table");
     await expect(table.getByRole("columnheader")).toHaveCount(5);
@@ -84,42 +92,36 @@ test.describe("صفحة الباقات", () => {
   });
 });
 
-test.describe("صفحة الباقة", () => {
-  test("الإجمالي شامل الضريبة ظاهر قبل زر الشراء", async ({ page }) => {
-    await page.goto(`/memberships/${ANNUAL.slug}`);
-    const main = page.getByRole("main");
-    await expect(main).toContainText(`${ANNUAL.price} ر.س`);
-    await expect(main).toContainText("شامل ضريبة القيمة المضافة");
-    await expect(main).toContainText("14 شهرًا: 12 شهرًا + شهران مجانًا");
-    await expect(main.getByRole("listitem").filter({ hasText: "المسبح" })).toBeVisible();
+test.describe("صفحة الاشتراك", () => {
+  test("اشتراك الصفحة مختار، والإجمالي ظاهر قبل زر الشراء", async ({ page }) => {
+    await page.goto("/memberships/three-months");
+    await expect(durations(page).getByRole("radio", { checked: true })).toHaveValue("three-months");
+    await expect(summary(page)).toContainText("900 ر.س");
+    await expect(summary(page).getByRole("link", { name: /تفاصيل الاشتراك/ })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "يشمل الاشتراك" })).toBeVisible();
   });
 
-  test("باقة الشهر الواحد بلا سطر «تكلفة الشهر» المكرر", async ({ page }) => {
+  test("اشتراك الشهر الواحد بلا سطر «تكلفة الشهر» المكرر", async ({ page }) => {
     await page.goto("/memberships/one-month");
-    const main = page.getByRole("main");
-    await expect(main).toContainText("الشهرية: الإجمالي");
-    await expect(main).not.toContainText("حوالي");
+    await expect(summary(page)).toContainText("الشهرية");
+    await expect(summary(page)).not.toContainText("حوالي");
   });
 
-  test("زر الشراء يفتح واتساب النادي برسالة تسمّي الباقة", async ({ page }) => {
+  test("زر الشراء يفتح واتساب النادي برسالة تسمّي الاشتراك", async ({ page }) => {
     await page.goto(`/memberships/${ANNUAL.slug}`);
-    const href = await page
-      .getByRole("main")
+    const href = await summary(page)
       .getByRole("link", { name: "اشترك عبر واتساب" })
-      .first()
       .getAttribute("href");
     const url = new URL(href ?? "");
     expect(`${url.origin}${url.pathname}`).toBe("https://wa.me/966553240111");
-    expect(url.searchParams.get("text")).toBe(
-      `مرحبًا، أرغب في الاشتراك في باقة «${ANNUAL.nameAr}».`,
-    );
+    expect(url.searchParams.get("text")).toBe(`مرحبًا، أرغب في اشتراك «${ANNUAL.nameAr}».`);
   });
 
   test("النسخة الإنجليزية بالاسم والعملة الإنجليزيين", async ({ page }) => {
     await page.goto(`/en/memberships/${ANNUAL.slug}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(ANNUAL.nameEn);
-    await expect(page.getByRole("main")).toContainText(`${ANNUAL.price} SAR`);
-    await expect(page.getByRole("main")).toContainText("14 months: 12 months + 2 months free");
+    await expect(summary(page)).toContainText(`${ANNUAL.price} SAR`);
+    await expect(summary(page)).toContainText("14 months: 12 months + 2 months free");
   });
 
   test("الرابط المعتمد وبدائل اللغة", async ({ page }) => {
@@ -141,12 +143,15 @@ test.describe("صفحة الباقة", () => {
 });
 
 test.describe("شريط الشراء الثابت", () => {
-  test("يظهر على الجوال فقط", async ({ page, viewport }) => {
-    await page.goto(`/memberships/${ANNUAL.slug}`);
-    const bar = page.getByRole("complementary", { name: "ملخص الباقة والاشتراك" });
-    if ((viewport?.width ?? 0) < 768) {
+  test("على الجوال: مخفي في الواجهة، ويظهر بعدها بالاشتراك المختار", async ({ page, viewport }) => {
+    await page.goto("/");
+    const bar = page.getByRole("complementary", { name: BAR });
+    await expect(bar).toBeHidden();
+    await page.locator("#plans").scrollIntoViewIfNeeded();
+    if ((viewport?.width ?? 0) < 1024) {
       await expect(bar).toBeVisible();
       await expect(bar).toContainText(ANNUAL.price);
+      await expect(bar.getByRole("link", { name: "اشترك عبر واتساب" })).toBeInViewport();
     } else {
       await expect(bar).toBeHidden();
     }
@@ -155,17 +160,16 @@ test.describe("شريط الشراء الثابت", () => {
 
 test.describe("التركيز بلوحة المفاتيح", () => {
   test("شريط الشراء الثابت لا يحجب العنصر المركَّز عليه", async ({ page, viewport }) => {
-    test.skip((viewport?.width ?? 0) >= 768, "الشريط الثابت خاص بالجوال");
+    test.skip((viewport?.width ?? 0) >= 1024, "الشريط الثابت خاص بالجوال");
     // التمرير الناعم غير متزامن؛ مع تقليل الحركة يصير فوريًا فيُقاس الموضع النهائي
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(`/memberships/${ANNUAL.slug}`);
-    const bar = page.getByRole("complementary", { name: "ملخص الباقة والاشتراك" });
-    const steps = 30;
+    const steps = 40;
     for (let step = 0; step < steps; step++) {
       await page.keyboard.press("Tab");
       const hidden = await page.evaluate(() => {
         const focused = document.activeElement;
-        const stickyBar = document.querySelector("[data-sticky-bar]");
+        const stickyBar = document.querySelector("[data-sticky-bar]:not([hidden])");
         // بعد آخر عنصر يخرج التركيز من الصفحة ويصير جسمها هو العنصر النشط: ليس عنصرًا محجوبًا
         if (
           focused === null ||
@@ -179,6 +183,5 @@ test.describe("التركيز بلوحة المفاتيح", () => {
       });
       expect(hidden, `العنصر رقم ${String(step + 1)} في ترتيب التنقل محجوب تحت الشريط`).toBe(false);
     }
-    await expect(bar).toBeVisible();
   });
 });

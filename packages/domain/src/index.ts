@@ -1,8 +1,4 @@
-export {
-  approximateMonthlyCost,
-  bestValuePlan,
-  totalMonths,
-} from "./catalog/membership-plan";
+export { approximateMonthlyCost, bestValuePlan, totalMonths } from "./catalog/membership-plan";
 export type { LocalizedText, MembershipPlan } from "./catalog/membership-plan";
 export { DOMAIN_ERROR_CODES, DomainError } from "./errors";
 export type { DomainErrorCode, DomainErrorOptions } from "./errors";

@@ -121,7 +121,7 @@ export const ar = {
     buyWhatsapp: "اشترك عبر واتساب",
     buyNote: "الدفع الإلكتروني المباشر قيد التجهيز. الاشتراك حاليًا عبر واتساب النادي.",
     /** {plan}: اسم الاشتراك. */
-    whatsappMessage: "مرحبًا، أرغب في الاشتراك «{plan}».",
+    whatsappMessage: "مرحبًا، أرغب في اشتراك «{plan}».",
     stickyLabel: "ملخص الاشتراك",
   },
   photos: {

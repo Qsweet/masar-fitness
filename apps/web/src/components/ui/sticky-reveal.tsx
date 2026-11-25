@@ -32,7 +32,7 @@ export function StickyReveal({ afterId, className, label, children }: StickyReve
   }, [afterId]);
 
   return (
-    <aside aria-label={label} className={className} hidden={!visible}>
+    <aside aria-label={label} className={className} hidden={!visible} data-sticky-bar>
       {children}
     </aside>
   );

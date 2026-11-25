@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Fragment } from "react";
 import { buttonClass } from "@/components/ui/button-link";
 import { PHOTOS, type PhotoKey } from "@/config/photos";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -19,8 +20,11 @@ export function Hero({ dictionary }: SectionProps) {
     <section id={HERO_ID} className={styles.hero} aria-labelledby="hero-title">
       <div className={styles.heroText}>
         <h1 id="hero-title" className={styles.heroTitle}>
+          {/* مسافة بين الأسطر حتى يُقرأ العنوان كلمتين (الشبكة تتجاهلها بصريًا) */}
           {hero.titleLines.map((line) => (
-            <span key={line}>{line}</span>
+            <Fragment key={line}>
+              <span>{line}</span>{" "}
+            </Fragment>
           ))}
         </h1>
         <p className={styles.heroNote}>{hero.wallNote}</p>

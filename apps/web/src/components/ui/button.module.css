@@ -3,6 +3,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.4em;
   min-height: 3.5rem;
   padding-inline: 2rem;
   border: 0;

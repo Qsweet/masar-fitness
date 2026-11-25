@@ -6,18 +6,14 @@ test.describe("اللغة والاتجاه", () => {
     expect(response?.status()).toBe(200);
     await expect(page.locator("html")).toHaveAttribute("lang", "ar");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "حديد ومسبح وجاكوزي وبخار في اشتراك واحد",
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("أنت قدها.");
   });
 
   test("الإنجليزية تحت ‎/en من اليسار لليمين", async ({ page }) => {
     await page.goto("/en");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Strength, pool, jacuzzi and steam room in one membership",
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("You've got this.");
   });
 
   test("تبديل اللغة يبقى على الصفحة نفسها في الاتجاهين", async ({ page }) => {

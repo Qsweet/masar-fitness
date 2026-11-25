@@ -53,6 +53,11 @@
   white-space: nowrap;
 }
 
+.languageMobile {
+  padding-inline: 0.75rem;
+  font-size: 1rem;
+}
+
 .menu {
   position: relative;
   display: flex;
@@ -98,7 +103,8 @@
     margin-inline-end: 1rem;
   }
 
-  .menu {
+  .menu,
+  .languageMobile {
     display: none;
   }
 

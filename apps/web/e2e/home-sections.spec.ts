@@ -142,3 +142,18 @@ test.describe("بطاقات الأسعار", () => {
     expect(new URL(href ?? "").origin).toBe("https://wa.me");
   });
 });
+
+test.describe("الظهور عند التمرير", () => {
+  test("بطاقات الأقسام مرئية بلا تمرير: لا شفافية صفرية تنتظر التمرير (لقطة كاملة، زاحف)", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const reveals = page.locator(".reveal");
+    expect(await reveals.count()).toBeGreaterThan(0);
+    const hidden = await reveals.evaluateAll(
+      (elements) =>
+        elements.filter((element) => Number(getComputedStyle(element).opacity) < 1).length,
+    );
+    expect(hidden).toBe(0);
+  });
+});

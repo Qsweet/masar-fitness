@@ -6,7 +6,7 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { Price } from "@/components/ui/price";
 import { StickyReveal } from "@/components/ui/sticky-reveal";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { cx } from "@/lib/cx";
+import { PlanOption } from "./plan-option";
 import type { PlanView } from "./plan-view";
 import styles from "./configurator.module.css";
 
@@ -21,37 +21,6 @@ export interface ConfiguratorProps {
   readonly planLabels: Dictionary["plan"];
   /** روابط ثانوية تحت مربعات المدة (المقارنة والحاسبة). */
   readonly more?: ReactNode;
-}
-
-interface OptionProps {
-  readonly plan: PlanView;
-  readonly selected: boolean;
-  readonly bestValueLabel: string;
-  readonly onSelect: () => void;
-}
-
-function Option({ plan, selected, bestValueLabel, onSelect }: OptionProps) {
-  const { count, unit } = plan.duration;
-  return (
-    <label className={cx(styles.option, selected && styles.selected)}>
-      <input
-        type="radio"
-        name="plan"
-        value={plan.slug}
-        checked={selected}
-        onChange={onSelect}
-        className={styles.input}
-      />
-      <span className={styles.mark} aria-hidden="true" />
-      {plan.isBestValue ? <span className={styles.flag}>{bestValueLabel}</span> : null}
-      <span className={styles.duration}>
-        <span className={styles.count}>{count}</span>
-        <span className={styles.unit}>{unit}</span>
-      </span>
-      <span className={styles.bonus}>{plan.bonusText}</span>
-      <Price parts={plan.price} className={styles.optionPrice} unitClassName={styles.optionUnit} />
-    </label>
-  );
 }
 
 /** نص زر الشراء: «اشترِ الآن» إلى صفحة البيانات، أو واتساب والشراء الإلكتروني مغلق. */
@@ -148,7 +117,7 @@ export function Configurator(props: ConfiguratorProps) {
       <fieldset className={styles.options}>
         <legend className={styles.legend}>{labels.legend}</legend>
         {plans.map((plan) => (
-          <Option
+          <PlanOption
             key={plan.slug}
             plan={plan}
             selected={plan.slug === selected.slug}

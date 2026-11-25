@@ -52,19 +52,19 @@
 
 ## 5. المكوّنات
 
-| المكوّن                        | المكان                                    |
-| ------------------------------ | ----------------------------------------- |
-| الترويسة والتذييل وإطار الصفحة | `components/site-*.tsx`, `page-shell.tsx` |
-| رأس الصفحات الداخلية           | `components/page-intro.tsx`               |
-| الواجهة ووسائطها               | `components/sections/hero*.tsx`           |
-| المرافق الخمسة                 | `components/sections/facilities.tsx`      |
-| التمرين والثقة                 | `components/sections/story.tsx`           |
-| المزايا، الدفع، الموقع، الختام | `components/sections/closing.tsx`         |
-| محدِّد المدة وملخصه وشريطه     | `components/plans/configurator.tsx`       |
-| بيانات العرض (على الخادم)      | `components/plans/plan-view.ts`           |
-| جدول المقارنة                  | `components/plans/comparison-table.tsx`   |
-| المقال والمدونة (`BLOG.md`)    | `components/blog/*.tsx`                   |
-| حاسبة تكلفة الزيارة            | `components/tools/cost-per-visit.tsx`     |
+| المكوّن                        | المكان                                                 |
+| ------------------------------ | ------------------------------------------------------ |
+| الترويسة والتذييل وإطار الصفحة | `components/site-*.tsx`, `page-shell.tsx`              |
+| رأس الصفحات الداخلية           | `components/page-intro.tsx`                            |
+| الواجهة ووسائطها               | `components/sections/hero*.tsx`                        |
+| المرافق الخمسة                 | `components/sections/facilities.tsx`                   |
+| التمرين والثقة                 | `components/sections/story.tsx`                        |
+| المزايا، الدفع، الموقع، الختام | `components/sections/closing.tsx`                      |
+| محدِّد المدة وملخصه وشريطه     | `components/plans/configurator.tsx`, `plan-option.tsx` |
+| بيانات العرض (على الخادم)      | `components/plans/plan-view.ts`                        |
+| جدول المقارنة                  | `components/plans/comparison-table.tsx`                |
+| المقال والمدونة (`BLOG.md`)    | `components/blog/*.tsx`                                |
+| حاسبة تكلفة الزيارة            | `components/tools/cost-per-visit.tsx`                  |
 
 `[متطلب]` كل مكوّن له وحدة CSS بجانبه تستعمل رموز `globals.css` فقط. الأنماط المشتركة القليلة (`container`، `title-section`، `title-block`، `muted`، `section`، `sr-only`) في `globals.css`.
 

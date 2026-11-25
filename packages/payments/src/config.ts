@@ -11,6 +11,7 @@ export const PAYMENT_ENV_VARIABLES = [
   "PAYMENTS_MIN_PAYMENT_MINUTES",
   "MOYASAR_SECRET_KEY",
   "MOYASAR_WEBHOOK_SECRET",
+  "MOYASAR_HOSTED_PAGE_ORIGIN",
   "PAYMENTS_FAKE_WEBHOOK_SECRET",
 ] as const;
 
@@ -34,6 +35,11 @@ export type PaymentsConfig =
       readonly provider: "moyasar";
       readonly moyasarSecretKey: string;
       readonly moyasarWebhookSecret: string;
+      /**
+       * أصل صفحة الدفع المستضافة (`https://host`) لسياسة CSP `form-action`، أو null. بلا قيمة افتراضية:
+       * نطاق الصفحة غير موثق ويُقرأ من رابط فاتورة حقيقية في التجربة (WP0).
+       */
+      readonly moyasarHostedPageOrigin: string | null;
     })
   /** مزوّد اختبار في الذاكرة: للاختبارات والعرض التجريبي المحلي فقط، لا مال حقيقي. */
   | (ActiveBase & { readonly provider: "fake"; readonly fakeWebhookSecret: string });
@@ -78,6 +84,24 @@ function minPaymentMinutes(env: PaymentEnv, problems: ConfigProblem[]): number {
   return minutes;
 }
 
+/** أصل https بلا مسار ولا استعلام، كما يُكتب في سياسة CSP. */
+export function isHttpsOrigin(value: string): boolean {
+  return URL.canParse(value) && new URL(value).origin === value && value.startsWith("https://");
+}
+
+function hostedPageOrigin(env: PaymentEnv, problems: ConfigProblem[]): string | null {
+  const origin = env.MOYASAR_HOSTED_PAGE_ORIGIN;
+  if (!present(origin)) {
+    return null;
+  }
+  if (!isHttpsOrigin(origin)) {
+    const message = "must be an https origin without a path, like https://host.example";
+    problems.push({ variable: "MOYASAR_HOSTED_PAGE_ORIGIN", message });
+    return null;
+  }
+  return origin;
+}
+
 function moyasarConfig(env: PaymentEnv, base: ActiveBase, problems: ConfigProblem[]) {
   const secretKey = env.MOYASAR_SECRET_KEY;
   const webhookSecret = env.MOYASAR_WEBHOOK_SECRET;
@@ -99,6 +123,7 @@ function moyasarConfig(env: PaymentEnv, base: ActiveBase, problems: ConfigProble
     provider: "moyasar" as const,
     moyasarSecretKey: secretKey ?? "",
     moyasarWebhookSecret: webhookSecret ?? "",
+    moyasarHostedPageOrigin: hostedPageOrigin(env, problems),
   };
 }
 

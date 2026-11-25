@@ -18,7 +18,8 @@ import { getOrderView, isPublicToken } from "../checkout/order-view";
 import { requestIp } from "../checkout/throttle";
 import { getEnv } from "../env";
 import { getPayments } from "./runtime";
-import { allowPaymentStart } from "./throttle";
+import { requireDemoPayments } from "./demo-guard";
+import { allowPaymentStart, allowPaymentStartGlobally } from "./throttle";
 
 function field(formData: FormData, name: string): string {
   const value = formData.get(name);
@@ -51,7 +52,8 @@ export async function payOrder(formData: FormData): Promise<void> {
   if (!isPublicToken(token)) {
     notFound();
   }
-  if (!allowPaymentStart(await requestIp())) {
+  const real = payments.deps.provider.id !== FAKE_PROVIDER_ID;
+  if (!allowPaymentStart(await requestIp()) || (real && !allowPaymentStartGlobally())) {
     redirect(noticePath(locale, token, "throttled"));
   }
   const order = await getOrderView(token);
@@ -95,16 +97,13 @@ function demoPayment(outcome: DemoOutcome, amountMinor: number): FakePaymentInpu
 }
 
 /**
- * أزرار صفحة الدفع التجريبية (مزوّد الاختبار فقط، وإلا 404): تسجّل نتيجة المحاكاة في ذاكرة المزوّد
+ * أزرار صفحة الدفع التجريبية (مزوّد الاختبار وعلى عنوان الجهاز نفسه فقط، وإلا 404): تسجّل نتيجة المحاكاة في ذاكرة المزوّد
  * ثم تعيد العميل إلى رابط العودة كما يفعل المزوّد الحقيقي. لا تمسّ الطلب: حالته تتغير بالتحقق وحده.
  */
 export async function completeDemoPayment(formData: FormData): Promise<void> {
   requireCheckout();
-  const payments = getPayments();
-  if (payments?.deps.provider.id !== FAKE_PROVIDER_ID || payments.fakeStore === null) {
-    notFound();
-  }
-  const session = payments.fakeStore.get(field(formData, "session"));
+  const { store } = await requireDemoPayments();
+  const session = store.get(field(formData, "session"));
   const outcome = DEMO_OUTCOMES.find((known) => known === field(formData, "outcome"));
   if (session === undefined || outcome === undefined) {
     notFound();
@@ -112,7 +111,7 @@ export async function completeDemoPayment(formData: FormData): Promise<void> {
   // الحد نفسه لزر الدفع: تجاوزه يعيد العميل بلا تسجيل دفعة
   if (allowPaymentStart(await requestIp())) {
     const payment = demoPayment(outcome, session.request.amountMinor);
-    payments.fakeStore.addPayment(session.sessionId, payment);
+    store.addPayment(session.sessionId, payment);
   }
   redirect(session.request.successUrl);
 }

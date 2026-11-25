@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCsp } from "./csp";
+import { buildCsp, paymentFormActionOrigins } from "./csp";
 
 describe("buildCsp", () => {
   const production = buildCsp("abc123", false);
@@ -30,5 +30,37 @@ describe("buildCsp", () => {
 
   it("لا مصدر خارجي في أي توجيه", () => {
     expect(production).not.toMatch(/https?:|\*/);
+  });
+});
+
+describe("form-action وصفحة الدفع المستضافة", () => {
+  const moyasar = {
+    PAYMENTS_MODE: "test",
+    PAYMENTS_PROVIDER: "moyasar",
+    MOYASAR_HOSTED_PAGE_ORIGIN: "https://pay.example",
+  };
+
+  function formAction(env: Record<string, string | undefined>): string | undefined {
+    return buildCsp("abc123", false, paymentFormActionOrigins(env))
+      .split("; ")
+      .find((directive) => directive.startsWith("form-action"));
+  }
+
+  it("مع Moyasar وأصل معلن: الأصل يضاف إلى form-action وحده", () => {
+    expect(formAction(moyasar)).toBe("form-action 'self' https://pay.example");
+    expect(buildCsp("abc123", false, ["https://pay.example"])).toContain("connect-src 'self';");
+  });
+
+  it.each([
+    ["بلا إعداد دفع", {}],
+    ["الدفع مغلق", { ...moyasar, PAYMENTS_MODE: "off" }],
+    ["مزوّد الاختبار", { ...moyasar, PAYMENTS_PROVIDER: "fake" }],
+    ["بلا أصل معلن", { ...moyasar, MOYASAR_HOSTED_PAGE_ORIGIN: undefined }],
+    ["أصل http", { ...moyasar, MOYASAR_HOSTED_PAGE_ORIGIN: "http://pay.example" }],
+    ["أصل بمسار", { ...moyasar, MOYASAR_HOSTED_PAGE_ORIGIN: "https://pay.example/x" }],
+    ["حقن توجيه", { ...moyasar, MOYASAR_HOSTED_PAGE_ORIGIN: "https://a.example; script-src *" }],
+    ["نجمة", { ...moyasar, MOYASAR_HOSTED_PAGE_ORIGIN: "*" }],
+  ])("%s: form-action يبقى 'self'", (_name, env) => {
+    expect(formAction(env)).toBe("form-action 'self'");
   });
 });

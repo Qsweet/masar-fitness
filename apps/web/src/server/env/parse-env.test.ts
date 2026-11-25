@@ -7,7 +7,7 @@ const valid = {
 };
 
 const CHECKOUT_OFF =
-  "CHECKOUT_ENABLED: must stay off in production unless payments run in test mode on a non-indexable site";
+  "CHECKOUT_ENABLED: must stay off in production: a public sandbox preview needs PAYMENTS_PUBLIC_SANDBOX=yes, Moyasar test mode and SITE_INDEXABLE off";
 
 function problemsOf(raw: Record<string, string | undefined>): readonly string[] {
   try {
@@ -31,6 +31,8 @@ describe("parseEnv", () => {
       CHECKOUT_ENABLED: false,
       APP_VERSION: "dev",
       PAYMENTS: { mode: "off" },
+      PAYMENTS_ALLOW_FAKE: false,
+      PAYMENTS_PUBLIC_SANDBOX: false,
     });
   });
 

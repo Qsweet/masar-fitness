@@ -43,8 +43,26 @@ describe("parsePaymentsConfig", () => {
         minPaymentMinutes: 10,
         moyasarSecretKey: MOYASAR.MOYASAR_SECRET_KEY,
         moyasarWebhookSecret: WEBHOOK_SECRET,
+        moyasarHostedPageOrigin: null,
       },
     });
+  });
+
+  it("أصل صفحة الدفع المستضافة اختياري وبلا افتراضي، ويُقبل أصل https فقط", () => {
+    const origin = "https://pay.example";
+    const parsed = parsePaymentsConfig({ ...MOYASAR, MOYASAR_HOSTED_PAGE_ORIGIN: origin });
+    expect(parsed).toMatchObject({ ok: true, value: { moyasarHostedPageOrigin: origin } });
+    for (const bad of [
+      "http://pay.example",
+      "https://pay.example/",
+      "https://pay.example/x",
+      "pay.example",
+      "*",
+    ]) {
+      expect(problems({ ...MOYASAR, MOYASAR_HOSTED_PAGE_ORIGIN: bad })).toEqual([
+        "MOYASAR_HOSTED_PAGE_ORIGIN: must be an https origin without a path, like https://host.example",
+      ]);
+    }
   });
 
   it("مزوّد الاختبار بإعداد كامل", () => {

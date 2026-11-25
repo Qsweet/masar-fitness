@@ -11,7 +11,9 @@ vi.mock("next/server", () => ({
     deferred.push(work);
   },
 }));
-const handlePaymentNotification = vi.fn(() => Promise.resolve({ kind: "synced" }));
+const handlePaymentNotification = vi.fn(
+  (): Promise<Record<string, unknown>> => Promise.resolve({ kind: "synced" }),
+);
 vi.mock("@masar/payments", () => ({ handlePaymentNotification }));
 vi.mock("../checkout/failure", () => ({ logCheckoutFailure: vi.fn() }));
 
@@ -87,7 +89,7 @@ describe("handleWebhook", () => {
     expect(deferred).toHaveLength(1);
     await deferred[0]?.();
     expect(handlePaymentNotification).toHaveBeenCalledTimes(1);
-    expect(logs).toEqual([
+    expect(logs.slice(0, 1)).toEqual([
       {
         level: "info",
         event: "payment.webhook_received",
@@ -168,6 +170,34 @@ describe("handleWebhook", () => {
       runtime.current = configured;
     }
     expect(deferred).toHaveLength(0);
+  });
+
+  it.each([
+    [{ kind: "synced" }, "synced"],
+    [{ kind: "busy" }, "busy"],
+    [{ kind: "unknown_reference" }, "unknown_reference"],
+    [{ kind: "skipped", reason: "other_provider" }, "skipped:other_provider"],
+  ])("نتيجة المعالجة تُسجَّل بنوعها بلا بيانات شخصية: %j", async (result, reason) => {
+    handlePaymentNotification.mockResolvedValueOnce(result);
+    await handleWebhook(json({ secret: SECRET, kind: "payment" }), "moyasar");
+    await deferred[0]?.();
+    expect(logs.at(-1)).toEqual({
+      level: "info",
+      event: "payment.webhook_processed",
+      fields: { provider: "moyasar", eventId: "e-1", eventType: "payment_paid", reason },
+    });
+  });
+
+  it("تعذّر قراءة المزوّد يُسجَّل بنوع الخطأ ورمزه", async () => {
+    const error = { kind: "unreachable", code: "network_or_timeout" };
+    handlePaymentNotification.mockResolvedValueOnce({ kind: "provider_error", error });
+    await handleWebhook(json({ secret: SECRET, kind: "payment" }), "moyasar");
+    await deferred[0]?.();
+    expect(logs.at(-1)?.fields).toMatchObject({
+      reason: "provider_error",
+      errorKind: "unreachable",
+      errorCode: "network_or_timeout",
+    });
   });
 
   it("عطل في المعالجة بعد الرد لا يُرمى: يُسجَّل والمطابقة تعيد", async () => {

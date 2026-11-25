@@ -47,7 +47,17 @@ type PaymentUpdate = Extract<ProviderNotification, { kind: "payment_update" }>;
 /** يعمل بعد إرسال الرد: القراءة من المزوّد والتسوية لا تؤخّران 2xx. أي عطل يُسجَّل، والمطابقة تعيد. */
 async function process(payments: PaymentRuntime, update: PaymentUpdate): Promise<void> {
   try {
-    await handlePaymentNotification(payments.deps, update);
+    const result = await handlePaymentNotification(payments.deps, update);
+    // النتيجة تُسجَّل دائمًا: busy و skipped و unknown_reference و provider_error ليست تسوية، والمطابقة تحسمها
+    payments.deps.logger.info("payment.webhook_processed", {
+      provider: payments.deps.provider.id,
+      eventId: update.eventId,
+      eventType: update.eventType,
+      reason: result.kind === "skipped" ? `skipped:${result.reason}` : result.kind,
+      ...(result.kind === "provider_error"
+        ? { errorKind: result.error.kind, errorCode: result.error.code }
+        : {}),
+    });
   } catch (error) {
     logCheckoutFailure("payment.webhook_processing_failed", error);
   }

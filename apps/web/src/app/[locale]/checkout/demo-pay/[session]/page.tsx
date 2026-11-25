@@ -1,4 +1,3 @@
-import { FAKE_PROVIDER_ID } from "@masar/payments";
 import { money } from "@masar/domain";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -11,7 +10,7 @@ import { moneyParts } from "@/i18n/format";
 import { isLocale } from "@/i18n/locales";
 import { requireCheckout } from "@/server/checkout/flag";
 import { checkoutMetadata } from "@/server/checkout/metadata";
-import { getPayments } from "@/server/payments/runtime";
+import { requireDemoPayments } from "@/server/payments/demo-guard";
 
 type Props = PageProps<"/[locale]/checkout/demo-pay/[session]">;
 
@@ -25,16 +24,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /**
  * صفحة الدفع التجريبية: تقوم مقام صفحة المزوّد المستضافة حين يكون المزوّد المضبوط مزوّد الاختبار
- * (عنوان الجهاز نفسه فقط، يفرضه parse-env). مع أي مزوّد آخر أو بلا مزوّد ⇒ 404. لا مال ولا بطاقة.
+ * (يفرضه parse-env)، والطلب نفسه على عنوان الجهاز. غير ذلك ⇒ 404. لا مال ولا بطاقة.
  */
 export default async function DemoPayPage({ params }: Props) {
   requireCheckout();
   const { locale, session: sessionId } = await params;
-  const payments = getPayments();
-  if (!isLocale(locale) || payments?.deps.provider.id !== FAKE_PROVIDER_ID) {
+  if (!isLocale(locale)) {
     notFound();
   }
-  const session = payments.fakeStore?.get(sessionId);
+  const { payments, store } = await requireDemoPayments();
+  const session = store.get(sessionId);
   if (session === undefined) {
     notFound();
   }

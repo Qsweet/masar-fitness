@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { buildCsp } from "./config/csp";
+import { buildCsp, paymentFormActionOrigins } from "./config/csp";
 import { isSiteIndexable, NOINDEX_HEADER } from "./config/indexability";
 
 const CSP_HEADER = "Content-Security-Policy";
@@ -26,7 +26,11 @@ export function proxy(request: NextRequest): NextResponse {
     return new NextResponse(null, { status: HTTP_BAD_REQUEST });
   }
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-  const csp = buildCsp(nonce, process.env.NODE_ENV === "development");
+  const csp = buildCsp(
+    nonce,
+    process.env.NODE_ENV === "development",
+    paymentFormActionOrigins(process.env),
+  );
 
   // Next يقرأ الـnonce من ترويسة السياسة في الطلب ويضعه على سكربتاته
   const requestHeaders = new Headers(request.headers);

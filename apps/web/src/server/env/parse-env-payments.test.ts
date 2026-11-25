@@ -24,7 +24,7 @@ const fake = {
   PAYMENTS_FAKE_WEBHOOK_SECRET: WEBHOOK_SECRET,
 };
 const CHECKOUT_OFF =
-  "CHECKOUT_ENABLED: must stay off in production unless payments run in test mode on a non-indexable site";
+  "CHECKOUT_ENABLED: must stay off in production: a public sandbox preview needs PAYMENTS_PUBLIC_SANDBOX=yes, Moyasar test mode and SITE_INDEXABLE off";
 
 function failureOf(raw: Record<string, string | undefined>): InvalidEnvError {
   try {
@@ -58,6 +58,7 @@ describe("parseEnv: الدفع اختياري ومغلق افتراضيًا", ()
       minPaymentMinutes: 10,
       moyasarSecretKey: SECRET_KEY,
       moyasarWebhookSecret: WEBHOOK_SECRET,
+      moyasarHostedPageOrigin: null,
     });
     expect(Object.keys(env).sort()).toEqual([
       "APP_VERSION",
@@ -65,6 +66,8 @@ describe("parseEnv: الدفع اختياري ومغلق افتراضيًا", ()
       "DATABASE_URL",
       "NODE_ENV",
       "PAYMENTS",
+      "PAYMENTS_ALLOW_FAKE",
+      "PAYMENTS_PUBLIC_SANDBOX",
       "SITE_INDEXABLE",
       "SITE_URL",
     ]);
@@ -95,28 +98,58 @@ describe("parseEnv: الدفع اختياري ومغلق افتراضيًا", ()
     expect(failure.message).not.toContain("tiny");
   });
 
-  it("مزوّد الاختبار يعمل على عنوان الجهاز نفسه فقط", () => {
+  const FAKE_REJECTED =
+    "PAYMENTS_PROVIDER: fake is a local simulation: SITE_URL must be a loopback address, and production builds also need PAYMENTS_ALLOW_FAKE=yes";
+
+  it("مزوّد الاختبار: عنوان الجهاز نفسه دائمًا، وعلى بناء إنتاجي بإذن صريح أيضًا", () => {
     expect(parseEnv(fake).PAYMENTS).toMatchObject({ provider: "fake" });
-    expect(
-      parseEnv({ ...fake, NODE_ENV: "production", CHECKOUT_ENABLED: "true" }).PAYMENTS,
-    ).toMatchObject({
-      provider: "fake",
-    });
     expect(problemsOf({ ...fake, SITE_URL: "https://preview.example.com" })).toEqual([
-      "PAYMENTS_PROVIDER: fake is a local simulation: SITE_URL must be a loopback address",
+      FAKE_REJECTED,
     ]);
+    const production = { ...fake, NODE_ENV: "production", CHECKOUT_ENABLED: "true" };
+    expect(problemsOf(production)).toEqual([FAKE_REJECTED]);
+    for (const value of ["true", "1", "YES", ""]) {
+      expect(problemsOf({ ...production, PAYMENTS_ALLOW_FAKE: value })).toEqual([FAKE_REJECTED]);
+    }
+    const allowed = parseEnv({ ...production, PAYMENTS_ALLOW_FAKE: "yes" });
+    expect(allowed).toMatchObject({ PAYMENTS_ALLOW_FAKE: true, PAYMENTS: { provider: "fake" } });
+    // الإذن لا يغني عن عنوان الجهاز
+    const publicUrl = {
+      ...production,
+      PAYMENTS_ALLOW_FAKE: "yes",
+      SITE_URL: "https://preview.example.com",
+    };
+    expect(problemsOf(publicUrl)).toContain(FAKE_REJECTED);
   });
 });
 
 describe("parseEnv: فتح الشراء في الإنتاج (القرار 51)", () => {
   const production = { ...moyasar, NODE_ENV: "production", CHECKOUT_ENABLED: "true" };
 
-  it("معاينة عامة غير مفهرسة مع Moyasar التجريبي: مقبول", () => {
-    expect(parseEnv(production)).toMatchObject({ CHECKOUT_ENABLED: true, SITE_INDEXABLE: false });
+  const sandbox = { ...production, PAYMENTS_PUBLIC_SANDBOX: "yes" };
+
+  it("الافتراضي آمن: Moyasar التجريبي وحده لا يفتح الشراء على رابط عام", () => {
+    expect(problemsOf(production)).toEqual([CHECKOUT_OFF]);
+    for (const value of ["true", "1", "YES"]) {
+      expect(problemsOf({ ...production, PAYMENTS_PUBLIC_SANDBOX: value })).toEqual([CHECKOUT_OFF]);
+    }
+  });
+
+  it("بالإذن الصريح مع Moyasar التجريبي وفهرسة مغلقة: مقبول", () => {
+    expect(parseEnv(sandbox)).toMatchObject({
+      CHECKOUT_ENABLED: true,
+      SITE_INDEXABLE: false,
+      PAYMENTS_PUBLIC_SANDBOX: true,
+    });
+  });
+
+  it("الإذن الصريح بلا Moyasar التجريبي لا يكفي", () => {
+    const noProvider = { ...base, NODE_ENV: "production", CHECKOUT_ENABLED: "true" };
+    expect(problemsOf({ ...noProvider, PAYMENTS_PUBLIC_SANDBOX: "yes" })).toEqual([CHECKOUT_OFF]);
   });
 
   it("الموقع المفهرس لا يفتح الشراء ولو مع Moyasar التجريبي", () => {
-    expect(problemsOf({ ...production, SITE_INDEXABLE: "true" })).toEqual([CHECKOUT_OFF]);
+    expect(problemsOf({ ...sandbox, SITE_INDEXABLE: "true" })).toEqual([CHECKOUT_OFF]);
   });
 
   it("بلا مزوّد دفع يبقى الشراء مغلقًا على الرابط العام كما كان", () => {

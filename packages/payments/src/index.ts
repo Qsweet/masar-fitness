@@ -1,4 +1,4 @@
-export { PAYMENT_ENV_VARIABLES, parsePaymentsConfig } from "./config";
+export { PAYMENT_ENV_VARIABLES, isHttpsOrigin, parsePaymentsConfig } from "./config";
 export type {
   ActivePaymentsConfig,
   ConfigProblem,

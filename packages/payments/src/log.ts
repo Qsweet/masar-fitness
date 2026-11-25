@@ -32,6 +32,7 @@ export type PaymentLogEvent =
   | "payment.webhook_received"
   | "payment.webhook_auth_failed"
   | "payment.webhook_ignored"
+  | "payment.webhook_processed"
   | "payment.webhook_verification_received"
   | "payment.needs_sandbox_verification"
   | "payment.reconcile";

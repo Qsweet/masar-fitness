@@ -9,6 +9,22 @@ export const MAX_PAYMENT_STARTS_PER_IP = 20;
 /** أقصى مرات التحقق من الدفع عند العودة من عنوان واحد في النافذة: كل تحقق يقرأ من المزوّد. */
 export const MAX_PAYMENT_CHECKS_PER_IP = 60;
 
+/**
+ * سقف عام لمرات بدء الدفع في النافذة مع مزوّد حقيقي (البيئة التجريبية): كل بدء ينشئ فاتورة عند
+ * المزوّد، وحد العنوان وحده يُتجاوز بعناوين كثيرة. بلوغه يعرض «محاولات كثيرة» للجميع حتى تنقضي النافذة.
+ */
+export const MAX_PAYMENT_STARTS_GLOBAL = 120;
+
+const LOOPBACK_HOSTNAMES: readonly string[] = ["localhost", "127.0.0.1", "[::1]"];
+
+/** هل ترويسة Host (باسم ومنفذ اختياري) عنوان الجهاز نفسه؟ */
+export function isLoopbackHost(host: string | null): boolean {
+  if (host === null || !URL.canParse(`http://${host}`)) {
+    return false;
+  }
+  return LOOPBACK_HOSTNAMES.includes(new URL(`http://${host}`).hostname);
+}
+
 const KIBIBYTE = 1_024;
 const WEBHOOK_MAX_BODY_KIB = 64;
 /** أقصى حجم لجسم الإشعار. إشعار الدفعة بضعة كيلوبايتات؛ ما فوق الحد يُرفض 413 قبل تحليله. */

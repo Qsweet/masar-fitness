@@ -11,20 +11,47 @@
 
 ## متغيرات البيئة
 
-| المتغير                   | الغرض                           | ملاحظة                                                                                                    |
-| ------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`            | اتصال PostgreSQL                | سر                                                                                                        |
-| `SITE_URL`                | الرابط العام                    | https إلزامي في الإنتاج (يرفضه الإقلاع غير ذلك)                                                           |
-| `SITE_INDEXABLE`          | فتح الفهرسة                     | `true` على النطاق الرسمي فقط وبأمر المالك؛ غيابه = مغلق                                                   |
-| `APP_VERSION`             | الإصدار الظاهر في `/api/health` | يضبطه النشر                                                                                               |
-| `CHECKOUT_ENABLED`        | فتح الشراء                      | مغلق افتراضيًا. على رابط عام: فقط مع Moyasar التجريبي وفهرسة مغلقة (القرار 51)                            |
-| `PAYMENTS_*`، `MOYASAR_*` | الدفع الإلكتروني                | اختيارية كلها وأسرار؛ الأسماء وخطوات الربط في `PAYMENTS.md` §9–§10. تُكتب في `deploy/.env` على الخادم فقط |
+| المتغير                   | الغرض                           | ملاحظة                                                                                                                                      |
+| ------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`            | اتصال PostgreSQL                | سر                                                                                                                                          |
+| `SITE_URL`                | الرابط العام                    | https إلزامي في الإنتاج (يرفضه الإقلاع غير ذلك)                                                                                             |
+| `SITE_INDEXABLE`          | فتح الفهرسة                     | `true` على النطاق الرسمي فقط وبأمر المالك؛ غيابه = مغلق                                                                                     |
+| `APP_VERSION`             | الإصدار الظاهر في `/api/health` | يضبطه النشر                                                                                                                                 |
+| `CHECKOUT_ENABLED`        | فتح الشراء                      | مغلق افتراضيًا. على رابط عام مرفوض إلا بإذن صريح `PAYMENTS_PUBLIC_SANDBOX=yes` مع Moyasar التجريبي وفهرسة مغلقة (القرار 51، بانتظار المالك) |
+| `PAYMENTS_*`، `MOYASAR_*` | الدفع الإلكتروني                | اختيارية كلها وأسرار؛ الأسماء وخطوات الربط في `PAYMENTS.md` §9–§10. تُكتب في `deploy/.env` على الخادم فقط                                   |
 
 ## قيود معروفة للتشغيل
 
 - الخادم يُربط بـ`127.0.0.1` خلف خادم عكسي يتولى TLS. توجيه اللغات مصمَّم ومختبَر على هذا الربط (القرار 8).
 - `/api/health` يرجع 200 والإصدار إن كانت القاعدة تجيب، و503 إن لم تجب: يُستعمل لفحص ما بعد النشر والمراقبة.
 - الترحيلات تُطبَّق بـ`pnpm db:migrate` قبل تشغيل الإصدار الجديد.
+
+## المهام المجدولة (إلزامية مع الدفع، غير مثبَّتة بعد)
+
+**مهمة المطابقة إلزامية متى ضُبط مزوّد دفع.** الإشعار يُرد عليه 2xx ثم يُعالَج بعد الرد؛ إن أُعيد تشغيل العملية في تلك اللحظة، أو لم يصل الإشعار، أو لم يعد العميل، فالمطابقة وحدها تحسم المحاولة. بلاها تبقى المحاولة حيّة وطلبها محجوزًا، ولا يُفعَّل اشتراك دُفع ثمنه. ومعها `orders:expire` (القرار 41). كل سطر `payment.webhook_processed` في السجل يذكر نتيجة معالجة الإشعار (`synced` أو `busy` أو `skipped:…` أو `unknown_reference` أو `provider_error`).
+
+مثال بمؤقت systemd (**غير مثبَّت**: يُنشأ على الخادم عند ربط المزوّد، والمسار واسم الخدمة بحسب الحزمة):
+
+```ini
+# /etc/systemd/system/masar-payments-reconcile.service
+[Unit]
+Description=Masar payments reconcile
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/masar/deploy
+ExecStart=/usr/bin/docker compose exec -T app pnpm --filter @masar/payments payments:reconcile
+
+# /etc/systemd/system/masar-payments-reconcile.timer
+[Unit]
+Description=Run payments reconcile every 2 minutes
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+[Install]
+WantedBy=timers.target
+```
+
+ثم `systemctl enable --now masar-payments-reconcile.timer`، ومثله لـ`orders:expire` (`pnpm --filter @masar/db orders:expire`). الدورة تقفل نفسها فلا تتداخل دورتان، وتقرأ الإعداد من بيئة الحاوية نفسها. يُتحقق بعد التثبيت من `journalctl -u masar-payments-reconcile` أن السطر `Payments reconcile {…}` يظهر كل دورة.
 
 ## خادم المعاينة
 

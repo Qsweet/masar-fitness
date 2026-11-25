@@ -92,6 +92,16 @@ test("إشعار لمرجع لا نعرفه: 200 بلا أثر (نظام آخر 
   expect(await db.paymentIncident.count()).toBe(before);
 });
 
+test("صفحة الدفع التجريبية 404 لطلب لا يصل على عنوان الجهاز نفسه", async ({ page }) => {
+  await placeOrder(page, db);
+  await openDemoPay(page);
+  const demoPath = new URL(page.url()).pathname;
+  const local = await page.request.get(demoPath);
+  expect(local.status()).toBe(200);
+  const proxied = await page.request.get(demoPath, { headers: { host: "preview.example.com" } });
+  expect(proxied.status()).toBe(404);
+});
+
 test("مبلغ لا يطابق: حادثة للإدارة، والطلب لا يُفعَّل ولا يُعرض زر دفع", async ({ page }) => {
   const order = await placeOrder(page, db);
   await openDemoPay(page);

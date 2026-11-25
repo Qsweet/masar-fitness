@@ -45,7 +45,12 @@ const rawSchema = z.object({
   PAYMENTS_MIN_PAYMENT_MINUTES: optionalText,
   MOYASAR_SECRET_KEY: optionalText,
   MOYASAR_WEBHOOK_SECRET: optionalText,
+  MOYASAR_HOSTED_PAGE_ORIGIN: optionalText,
   PAYMENTS_FAKE_WEBHOOK_SECRET: optionalText,
+  /** إذن صريح ("yes") لتشغيل مزوّد الاختبار على بناء إنتاجي (اختبارات المتصفح على عنوان الجهاز). */
+  PAYMENTS_ALLOW_FAKE: optionalText,
+  /** إذن صريح ("yes") لفتح الشراء على معاينة عامة بمفاتيح التجربة. ينتظر موافقة المالك (القرار 51). */
+  PAYMENTS_PUBLIC_SANDBOX: optionalText,
 });
 
 type RawEnv = z.infer<typeof rawSchema>;
@@ -64,13 +69,36 @@ const CORE_KEYS = [
   "APP_VERSION",
 ] as const;
 
+const EXPLICIT_YES = "yes";
+
+interface CheckedEnv {
+  readonly NODE_ENV: RawEnv["NODE_ENV"];
+  readonly SITE_URL: string;
+  readonly SITE_INDEXABLE: boolean;
+  readonly PAYMENTS: PaymentsConfig;
+  readonly PAYMENTS_ALLOW_FAKE: boolean;
+  readonly PAYMENTS_PUBLIC_SANDBOX: boolean;
+}
+
 /**
- * هل يُسمح بفتح الشراء على رابط عام في الإنتاج؟ فقط مع Moyasar التجريبي وفهرسة مغلقة: معاينة تستقبل
- * إشعارات البيئة التجريبية بلا مال حقيقي (القرار 51، يعدّل القرار 37). الدفع الحي مرفوض في الكود.
+ * هل يُسمح بفتح الشراء على رابط عام في الإنتاج؟ فقط بإذن صريح `PAYMENTS_PUBLIC_SANDBOX=yes` ومعه
+ * Moyasar التجريبي وفهرسة مغلقة. الافتراضي مرفوض: القرار 51 ينتظر موافقة المالك. الدفع الحي مرفوض في الكود.
  */
-function isSandboxPreview(env: { SITE_INDEXABLE: boolean; PAYMENTS: PaymentsConfig }): boolean {
+function isSandboxPreview(env: CheckedEnv): boolean {
   const { PAYMENTS } = env;
-  return PAYMENTS.mode === "test" && PAYMENTS.provider === "moyasar" && !env.SITE_INDEXABLE;
+  const sandbox = PAYMENTS.mode === "test" && PAYMENTS.provider === "moyasar";
+  return env.PAYMENTS_PUBLIC_SANDBOX && sandbox && !env.SITE_INDEXABLE;
+}
+
+/**
+ * مزوّد الاختبار محاكاة في ذاكرة العملية: عنوان الجهاز نفسه دائمًا، وعلى بناء إنتاجي يلزمه أيضًا إذن
+ * صريح `PAYMENTS_ALLOW_FAKE=yes`، فلا يفعّله نشر حقيقي خلف وسيط بخطأ في SITE_URL.
+ */
+function isFakeAllowed(env: CheckedEnv): boolean {
+  if (env.PAYMENTS.mode === "off" || env.PAYMENTS.provider !== "fake") {
+    return true;
+  }
+  return isLoopback(env.SITE_URL) && (env.NODE_ENV !== "production" || env.PAYMENTS_ALLOW_FAKE);
 }
 
 const envSchema = rawSchema
@@ -83,23 +111,24 @@ const envSchema = rawSchema
       return z.NEVER;
     }
     // مفاتيح الدفع لا تبقى حقولًا خامًا في الإعداد: تُحمل داخل PAYMENTS وحده
-    return { ...pick(env, CORE_KEYS), PAYMENTS: payments.value };
+    return {
+      ...pick(env, CORE_KEYS),
+      PAYMENTS: payments.value,
+      PAYMENTS_ALLOW_FAKE: env.PAYMENTS_ALLOW_FAKE === EXPLICIT_YES,
+      PAYMENTS_PUBLIC_SANDBOX: env.PAYMENTS_PUBLIC_SANDBOX === EXPLICIT_YES,
+    };
   })
   .refine((env) => env.NODE_ENV !== "production" || isSecureOrLoopback(env.SITE_URL), {
     path: ["SITE_URL"],
     error: "must use https in production",
   })
-  // مزوّد الاختبار محاكاة في ذاكرة العملية: لا يعمل إلا على عنوان الجهاز نفسه، فلا تفعّله معاينة عامة
-  .refine(
-    (env) =>
-      env.PAYMENTS.mode === "off" || env.PAYMENTS.provider !== "fake" || isLoopback(env.SITE_URL),
-    {
-      path: ["PAYMENTS_PROVIDER"],
-      error: "fake is a local simulation: SITE_URL must be a loopback address",
-    },
-  )
-  // لا دفع حيًّا بعد: في الإنتاج يُفتح الشراء على عنوان الجهاز نفسه (اختبار البناء الإنتاجي)، أو على
-  // معاينة غير مفهرسة مربوطة بـMoyasar التجريبي. النطاق الرسمي المفهرس لا يستطيع تفعيله.
+  .refine(isFakeAllowed, {
+    path: ["PAYMENTS_PROVIDER"],
+    error:
+      "fake is a local simulation: SITE_URL must be a loopback address, and production builds also need PAYMENTS_ALLOW_FAKE=yes",
+  })
+  // لا دفع حيًّا بعد: في الإنتاج يُفتح الشراء على عنوان الجهاز نفسه (اختبار البناء الإنتاجي) فقط، إلا
+  // بإذن صريح لمعاينة غير مفهرسة مربوطة بـMoyasar التجريبي. النطاق الرسمي المفهرس لا يستطيع تفعيله.
   .refine(
     (env) =>
       env.NODE_ENV !== "production" ||
@@ -108,7 +137,8 @@ const envSchema = rawSchema
       isSandboxPreview(env),
     {
       path: ["CHECKOUT_ENABLED"],
-      error: "must stay off in production unless payments run in test mode on a non-indexable site",
+      error:
+        "must stay off in production: a public sandbox preview needs PAYMENTS_PUBLIC_SANDBOX=yes, Moyasar test mode and SITE_INDEXABLE off",
     },
   );
 

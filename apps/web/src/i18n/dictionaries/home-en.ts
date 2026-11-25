@@ -51,17 +51,6 @@ export const homeEn: HomeDictionary = {
       },
     ],
   },
-  why: {
-    eyebrow: "Why Masters Way",
-    title: "Train on your time, with everything you need",
-    lead: "What makes it easier to keep going from week one.",
-    items: [
-      { title: "Long hours", line: "From {opens} to {closes}, Saturday to Thursday." },
-      { title: "One membership", line: "Strength, classes, pool, jacuzzi, sauna and steam room." },
-      { title: "Coaches with you", line: "Certified coaches on the floor from day one." },
-      { title: "Freeze when you need", line: "{days} freeze days for every paid month." },
-    ],
-  },
   team: {
     eyebrow: "Coaching team",
     title: "Certified coaches with you from day one",

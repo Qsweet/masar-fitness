@@ -3,7 +3,7 @@
   flex-direction: column;
   min-width: 0;
   border-radius: var(--radius);
-  background: var(--white);
+  background: var(--card);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   transition:
@@ -46,7 +46,7 @@
 }
 
 .line {
-  color: var(--grey);
+  color: var(--muted);
   font-size: 0.9375rem;
   line-height: 1.75;
 }
@@ -54,8 +54,8 @@
 .note {
   padding: 0.6rem 0.8rem;
   border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--grey);
+  background: var(--card-2);
+  color: var(--muted);
   font-size: 0.8125rem;
   line-height: 1.6;
 }
@@ -76,7 +76,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  color: var(--grey);
+  color: var(--muted);
 }
 
 .badge {

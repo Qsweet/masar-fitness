@@ -3,9 +3,9 @@
   gap: 1.25rem;
   margin-top: 2rem;
   padding: 1.5rem;
-  border: 2px dashed var(--rule-strong);
+  border: 2px dashed var(--line-strong);
   border-radius: var(--radius-lg);
-  background: var(--white);
+  background: var(--card);
 }
 
 .offer .tile {
@@ -28,7 +28,7 @@
 }
 
 .note {
-  color: var(--grey);
+  color: var(--muted);
   font-size: 0.875rem;
 }
 

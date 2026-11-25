@@ -1,0 +1,237 @@
+/*
+ * الواجهة بعرض الشاشة كاملًا: صورة ثابتة (LCP) ثم الفيديو فوقها ثم تظليل أسود ثم النص.
+ * الارتفاع: الشاشة كلها حتى 900px على الحاسوب، وطويلة على الهاتف. التظليل يضمن تباين AA للنص الأبيض
+ * فوق أفتح إطار (أرضية الصالة الخضراء اللامعة): أسود 80% في جهة النص و92% في الأسفل.
+ */
+.hero {
+  position: relative;
+  display: grid;
+  align-items: end;
+  min-height: min(100svh, 56.25rem);
+  margin-top: calc(var(--header-height) * -1);
+  padding-block: calc(var(--header-height) + 3rem) 6.5rem;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--ink);
+}
+
+.poster,
+.video {
+  z-index: -3;
+  object-fit: cover;
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 900ms var(--ease);
+}
+
+.videoOn {
+  opacity: 1;
+}
+
+/* تظليل من جهة النص (البداية) ومن الأسفل، وظل خفيف تحت الترويسة */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(to top, var(--ink) 0%, rgb(10 10 10 / 70%) 38%, transparent 70%),
+    linear-gradient(to bottom, rgb(10 10 10 / 75%) 0%, transparent 25%),
+    linear-gradient(
+      to left,
+      rgb(10 10 10 / 82%) 0%,
+      rgb(10 10 10 / 45%) 55%,
+      rgb(10 10 10 / 25%) 100%
+    );
+}
+
+.scrim:dir(ltr) {
+  background:
+    linear-gradient(to top, var(--ink) 0%, rgb(10 10 10 / 70%) 38%, transparent 70%),
+    linear-gradient(to bottom, rgb(10 10 10 / 75%) 0%, transparent 25%),
+    linear-gradient(
+      to right,
+      rgb(10 10 10 / 82%) 0%,
+      rgb(10 10 10 / 45%) 55%,
+      rgb(10 10 10 / 25%) 100%
+    );
+}
+
+.inner {
+  display: grid;
+  justify-items: start;
+  gap: 1.5rem;
+}
+
+.place {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--white);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+/* خط المضمار المتقطع قبل السطر الصغير */
+.place::before {
+  content: "";
+  width: 2.5rem;
+  height: 2px;
+  background: var(--track-dash) 0 0 / calc(var(--dash) + var(--dash-gap)) 2px repeat-x;
+}
+
+.title {
+  display: grid;
+  max-width: 15ch;
+  font-size: clamp(2.25rem, 6.5vw + 0.75rem, 6.25rem);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--display-tracking);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.slogan {
+  color: var(--yellow);
+}
+
+/* الإنجليزية مائلة كحروف الشعار، وسطورها أضيق */
+.title:dir(ltr) {
+  max-width: 14ch;
+  font-style: var(--slant);
+  line-height: 1;
+}
+
+.lead {
+  max-width: 34rem;
+  color: var(--white);
+  font-size: clamp(1.0625rem, 0.6vw + 0.95rem, 1.375rem);
+  line-height: 1.7;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.toggle,
+.scroll {
+  position: absolute;
+  bottom: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: var(--target);
+  min-height: var(--target);
+  color: var(--white);
+}
+
+.toggle {
+  inset-inline-end: var(--gutter-end);
+  border: 1px solid var(--line-hover);
+  border-radius: var(--radius-pill);
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+}
+
+.toggle:hover {
+  border-color: var(--yellow);
+}
+
+.scroll {
+  inset-inline-start: 50%;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  translate: 50% 0;
+}
+
+.scroll:dir(ltr) {
+  translate: -50% 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scroll svg {
+    animation: nudge 1.8s var(--ease) 3;
+  }
+}
+
+@keyframes nudge {
+  50% {
+    transform: translateY(0.35rem);
+  }
+}
+
+/* حوار المقطع: إطار داكن بحد رفيع، والمقطع بعرض الحوار */
+.dialog {
+  width: min(64rem, calc(100vw - 2rem));
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  color: var(--white);
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 85%);
+  backdrop-filter: blur(6px);
+}
+
+.dialogHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.dialogTitle {
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.dialogClose {
+  display: grid;
+  place-items: center;
+  width: var(--target);
+  height: var(--target);
+  border: 1px solid var(--line-hover);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  cursor: pointer;
+}
+
+.dialogVideo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  background: var(--ink);
+}
+
+.dialogNote {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+@media (width < 48rem) {
+  .hero {
+    min-height: 100svh;
+    padding-bottom: 7rem;
+  }
+
+  .actions > * {
+    flex: 1 1 100%;
+  }
+}

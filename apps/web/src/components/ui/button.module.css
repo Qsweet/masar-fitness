@@ -1,4 +1,4 @@
-/* الأزرار: أصفر الشعار بنص أسود (الفعل)، إطار بلون السياق (البديل)، أسود بنص أبيض (فوق الأصفر). */
+/* الأزرار: أصفر الشعار بنص أسود (الفعل)، وزجاجي بحد رفيع (البديل)، وأسود بنص أبيض (فوق الأصفر). */
 .button {
   display: inline-flex;
   align-items: center;
@@ -40,13 +40,14 @@
 }
 
 .outline {
-  background: transparent;
+  background: var(--glass);
   color: var(--fg);
-  box-shadow: inset 0 0 0 2px currentColor;
+  box-shadow: inset 0 0 0 1px var(--line-hover);
+  backdrop-filter: blur(12px);
 }
 
 .outline:hover {
-  box-shadow: inset 0 0 0 2px var(--yellow);
+  box-shadow: inset 0 0 0 1px var(--yellow);
 }
 
 .ink {

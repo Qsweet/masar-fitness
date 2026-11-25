@@ -99,6 +99,15 @@ const PATHS = {
     <path d="M12 3.5c3 0 5 2.2 5 5.2v2.2l1.8-.5c.6.6.3 1.3-.4 1.6l-1.5.6c.5 1.9 1.9 3.3 3.6 3.8-.4.8-1.4 1.1-2.6 1.2l-.3 1.3c-1-.2-2.1-.2-3 .3-.8.5-1.6 1.3-2.6 1.3s-1.8-.8-2.6-1.3c-.9-.5-2-.5-3-.3l-.3-1.3c-1.2-.1-2.2-.4-2.6-1.2 1.7-.5 3.1-1.9 3.6-3.8l-1.5-.6c-.7-.3-1-1-.4-1.6l1.8.5V8.7c0-3 2-5.2 5-5.2Z" />
   ),
   tiktok: <path d="M14 3.5v11.2a3.8 3.8 0 1 1-3.8-3.8M14 3.5c.4 2.6 2.3 4.4 5 4.6" />,
+  play: <path d="M7.5 5v14l11-7Z" />,
+  pause: <path d="M8 5v14M16 5v14" />,
+  close: <path d="M6 6l12 12M18 6 6 18" />,
+  down: <path d="M12 5v14M6 13l6 6 6-6" />,
+  home: <path d="M4 11 12 4l8 7M6 9.5V20h12V9.5M10 20v-6h4v6" />,
+  book: (
+    <path d="M12 6.5C10 5 7 4.5 4 5v13.5c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5ZM12 6.5V20" />
+  ),
+  grid: <path d="M4 4h7v7H4ZM13 4h7v7h-7ZM4 13h7v7H4ZM13 13h7v7h-7Z" />,
 } as const satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof PATHS;
@@ -126,7 +135,7 @@ export function Icon({ name, className }: IconProps) {
   );
 }
 
-/** مربع مستدير بالتدرّج وأيقونة بالحبر داخله (رقائق الإحصاءات والمزايا). */
+/** مربع مستدير بأرضية صفراء شفيفة وحد أصفر رفيع وأيقونة صفراء (المزايا وبطاقات المعلومات). */
 export function IconTile({ name, className }: IconProps) {
   return (
     <span className={cx(styles.tile, className)} aria-hidden="true">

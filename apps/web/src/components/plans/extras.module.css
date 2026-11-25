@@ -14,7 +14,7 @@
   gap: 0.6rem;
   padding: 0.7rem 1.25rem;
   border-radius: var(--radius-pill);
-  background: var(--white);
+  background: var(--card);
   box-shadow: var(--shadow-sm);
   font-weight: 600;
 }
@@ -38,7 +38,7 @@
   gap: 0.25rem;
   padding: 1.25rem;
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--card-2);
 }
 
 .payments strong {
@@ -47,6 +47,6 @@
 }
 
 .payments span {
-  color: var(--grey);
+  color: var(--muted);
   font-size: 0.9375rem;
 }

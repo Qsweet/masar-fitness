@@ -18,7 +18,7 @@ const AREAS: readonly { area: HoursArea; icon: "dumbbell" | "waves" }[] = [
 export function Hours({ dictionary }: { readonly dictionary: Dictionary }) {
   const { hours } = dictionary;
   return (
-    <section id="hours" className={cx("section", "on-ink")} aria-labelledby="hours-title">
+    <section id="hours" className={"section"} aria-labelledby="hours-title">
       <div className="container">
         <SectionHead
           id="hours-title"

@@ -14,8 +14,8 @@ interface OptionProps {
 
 /**
  * بطاقة سعر واحدة: زر راديو حقيقي شفاف فوق البطاقة كلها (الأسهم ولوحة المفاتيح وقارئ الشاشة تعمل).
- * الاسم والمدة الكاملة، ثم الإجمالي كبيرًا وما يعادله شهريًا، ثم ما يميز الاشتراك. الأوفر شهريًا (محسوب)
- * مرفوع بإطار متدرّج وشريط في أعلاه وسعر بالتدرّج، وفي أول القائمة على الهاتف والبقية صفوف مختصرة.
+ * اسم الباقة ثم المدة، ثم الإجمالي كبيرًا وما يعادله يوميًا وشهريًا (محسوبان على الخادم)، ثم ما يميز
+ * الاشتراك. الأكثر قيمة (الأقل تكلفة شهريًا، محسوب) بإطار أصفر وهالة وشارة، وأولى على الهاتف.
  */
 export function PlanOption({ plan, selected, labels, onSelect }: OptionProps) {
   const features = [
@@ -37,7 +37,10 @@ export function PlanOption({ plan, selected, labels, onSelect }: OptionProps) {
       />
       {plan.isBestValue ? <span className={styles.ribbon}>{labels.bestValue}</span> : null}
       <span className={styles.head}>
-        <span className={styles.name}>{plan.name}</span>
+        <span className={styles.titles}>
+          {plan.tier === undefined ? null : <span className={styles.tier}>{plan.tier}</span>}
+          <span className={styles.name}>{plan.name}</span>
+        </span>
         <span className={styles.mark} aria-hidden="true" />
       </span>
       <span className={styles.duration}>{plan.durationText}</span>
@@ -47,6 +50,7 @@ export function PlanOption({ plan, selected, labels, onSelect }: OptionProps) {
           className={cx(styles.price, plan.isBestValue && "accent-text")}
           unitClassName={styles.currency}
         />
+        <span className={styles.perDay}>{plan.dailyText}</span>
         {plan.monthlyText === undefined ? null : (
           <span className={styles.perMonth}>{plan.monthlyText}</span>
         )}

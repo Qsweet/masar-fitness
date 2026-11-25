@@ -22,14 +22,14 @@ function otherLocale(locale: Locale): Locale {
   return LOCALES.find((candidate) => candidate !== locale) ?? locale;
 }
 
-/** روابط التنقل: أقسام الرئيسية بمراسيها، وصفحتا الاشتراكات والمدونة. */
+/** روابط التنقل بترتيب تصميم المالك: الرئيسية، العضويات، المرافق، البرامج، المدونة، تواصل. */
 function navLinks({ locale, showBlog, dictionary }: Omit<SiteHeaderProps, "path" | "joinHref">) {
   const home = localizedPath(locale);
   const { nav } = dictionary;
   return [
-    { href: `${home}#about`, label: nav.about },
-    { href: `${home}#facilities`, label: nav.facilities },
+    { href: home, label: nav.home },
     { href: localizedPath(locale, ROUTES.memberships), label: nav.memberships },
+    { href: `${home}#facilities`, label: nav.facilities },
     { href: `${home}#services`, label: nav.services },
     ...(showBlog ? [{ href: localizedPath(locale, ROUTES.blog), label: dictionary.blog.nav }] : []),
     { href: `${home}#contact`, label: nav.contact },
@@ -49,8 +49,9 @@ function NavLinks(props: Omit<SiteHeaderProps, "path" | "joinHref">) {
 }
 
 /**
- * الترويسة السوداء الثابتة: الشعار الرسمي الأفقي في البداية، والروابط النصية في الوسط على الشاشة الواسعة،
- * وتبديل اللغة وزر «اشترك الآن» الأصفر في النهاية. على الجوال قائمة <details> تعمل بلا JavaScript.
+ * الترويسة الثابتة: شفافة فوق الواجهة ثم سوداء زجاجية مع التمرير. الشعار الرسمي الأفقي في البداية،
+ * والروابط النصية في الوسط على الشاشة الواسعة، وتبديل اللغة وزر «اشترك الآن» الأصفر في النهاية.
+ * على الجوال قائمة <details> تعمل بلا JavaScript.
  */
 export function SiteHeader({ locale, path, joinHref, showBlog, dictionary }: SiteHeaderProps) {
   const alternate = otherLocale(locale);

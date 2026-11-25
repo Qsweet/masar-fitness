@@ -57,7 +57,7 @@
 }
 
 .paragraph {
-  color: var(--grey);
+  color: var(--muted);
 }
 
 .paragraph + .paragraph {
@@ -86,7 +86,7 @@
 }
 
 .features li > span > span {
-  color: var(--grey);
+  color: var(--muted);
   font-size: 0.9375rem;
 }
 

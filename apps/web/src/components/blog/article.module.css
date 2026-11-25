@@ -45,7 +45,7 @@
   display: grid;
   gap: 0.5rem;
   margin-top: 1.5rem;
-  color: var(--grey-on-ink);
+  color: var(--muted);
   font-size: 0.95rem;
 }
 
@@ -112,13 +112,12 @@
 
 .list li::before {
   color: var(--yellow);
-  -webkit-text-stroke: 0.5px var(--ink);
 }
 
 .toc {
   margin-top: 2rem;
   padding-block: 1.25rem;
-  border-block: 2px solid var(--ink);
+  border-block: 1px solid var(--line);
 }
 
 .smallTitle {
@@ -182,7 +181,7 @@
 .tableScroller {
   overflow-x: auto;
   border-radius: var(--radius);
-  background: var(--white);
+  background: var(--card);
   box-shadow: var(--shadow-sm);
 }
 
@@ -203,7 +202,7 @@
   padding: 0.75rem;
   text-align: start;
   vertical-align: top;
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid var(--line);
 }
 
 .table caption {
@@ -211,8 +210,8 @@
 }
 
 .table thead th {
-  background: var(--surface);
-  color: var(--ink);
+  background: var(--card-2);
+  color: var(--fg);
 }
 
 /*
@@ -239,7 +238,7 @@
 
   .table tbody tr {
     padding-block: 0.75rem;
-    border-top: 1px solid var(--rule);
+    border-top: 1px solid var(--line);
   }
 
   .table tbody th,
@@ -251,7 +250,7 @@
   .table td::before {
     content: attr(data-label);
     display: block;
-    color: var(--grey);
+    color: var(--muted);
     font-size: 0.875rem;
     font-weight: 700;
   }
@@ -260,8 +259,8 @@
 .note {
   padding: 1.25rem 1.5rem;
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--rule);
+  background: var(--card-2);
+  border: 1px solid var(--line);
 }
 
 .noteTitle {

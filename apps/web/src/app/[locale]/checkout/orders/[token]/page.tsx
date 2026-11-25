@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { CheckoutSteps } from "@/components/checkout/checkout-steps";
 import { OrderReview } from "@/components/checkout/order-review";
 import { PaymentPanel } from "@/components/checkout/payment-panel";
 import { toPaymentPanelView, withPaymentHeadline } from "@/components/checkout/payment-view";
@@ -42,14 +43,17 @@ export default async function OrderPage({ params, searchParams }: Props) {
   const payment = await getPaymentPanelState(order);
   const notice = parsePayNotice((await searchParams)[PAY_NOTICE_PARAM]);
   const view = payment === null ? review : withPaymentHeadline(review, payment.state, locale);
+  const dictionary = getDictionary(locale);
   const panel =
     payment === null ? null : toPaymentPanelView(order, { ...payment, notice }, locale, token);
   return (
     <PageShell locale={locale} path={orderPath(token)} mobileAction={null}>
-      <PageIntro title={view.title} lead={view.lead} />
+      <PageIntro title={view.title} lead={view.lead}>
+        <CheckoutSteps current="payment" labels={dictionary.steps} />
+      </PageIntro>
       <OrderReview
         view={view}
-        labels={getDictionary(locale).checkout}
+        labels={dictionary.checkout}
         payment={panel === null ? null : <PaymentPanel view={panel} />}
       />
     </PageShell>

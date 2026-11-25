@@ -17,7 +17,7 @@
 .lead {
   max-width: 32rem;
   margin-bottom: 1.75rem;
-  color: var(--grey);
+  color: var(--muted);
 }
 
 /* الصورتان بالمقاس والاستدارة والظل نفسها */

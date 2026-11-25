@@ -10,24 +10,14 @@
   padding-inline: var(--gutter) var(--gutter-end);
 }
 
-/* قسم بمسافته من الأعلى والأسفل، والبديل بأرضية رمادية فاتحة */
+/* قسم بمسافته من الأعلى والأسفل، والبديل بأرضية أفتح بدرجة لا تكاد تُرى وحد رفيع يفصله */
 .section {
   padding-block: var(--section-space);
 }
 
 .section-alt {
-  background: var(--surface);
-}
-
-/* قسم أسود بهوية الشعار: يقلب ألوان السياق فيتبعها رأس القسم والتمييز والمضمار */
-.on-ink {
-  --fg: var(--white);
-  --muted: var(--grey-on-ink);
-  --accent-fg: var(--yellow);
-  --accent-mark: transparent;
-  --lane: var(--white);
-  background: var(--ink);
-  color: var(--white);
+  border-block: 1px solid var(--line);
+  background: var(--bg-alt);
 }
 
 /* رأس قسم في الوسط: سطر تعريفي صغير بشرطة صفراء، ثم العنوان ومضماره، ثم السطر الشارح */
@@ -107,11 +97,9 @@
   line-height: 1.35;
 }
 
-/* تمييز كلمة: على الفاتح نص أسود فوق شريط أصفر كقلم التحديد، وعلى الأسود نص أصفر بلا شريط */
+/* تمييز كلمة أو رقم بأصفر الشعار */
 .accent-text {
   color: var(--accent-fg);
-  background: linear-gradient(transparent 58%, var(--accent-mark) 58% 92%, transparent 92%);
-  box-decoration-break: clone;
 }
 
 .muted {
@@ -154,7 +142,7 @@
 .staging-note {
   padding: 0.4rem var(--gutter-end) 0.4rem var(--gutter);
   background: var(--ink);
-  color: var(--grey-on-ink);
+  color: var(--muted);
   font-size: 0.875rem;
   text-align: center;
 }

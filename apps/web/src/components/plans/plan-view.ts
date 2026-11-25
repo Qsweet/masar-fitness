@@ -1,4 +1,5 @@
 import {
+  approximateDailyCost,
   approximateMonthlyCost,
   bestValuePlan,
   sharedBenefits,
@@ -26,6 +27,8 @@ export interface PurchaseLink {
 export interface PlanView {
   readonly slug: string;
   readonly name: string;
+  /** اسم الباقة التسويقي من تصميم المالك («رحلة الأبطال»)؛ غائب لاشتراك بلا اسم في القاموس */
+  readonly tier: string | undefined;
   /** صفحة الاشتراك */
   readonly href: string;
   /** زر الشراء: صفحة البيانات والشراء الإلكتروني مفتوح، وإلا واتساب (القرار 18) */
@@ -41,6 +44,8 @@ export interface PlanView {
   readonly price: MoneyParts;
   /** «نحو 200 ر.س شهريًا» في مربع المدة وفي الملخص؛ غائب لاشتراك الشهر الواحد (تكرار للسعر نفسه) */
   readonly monthlyText: string | undefined;
+  /** «≈ 3.52 ر.س يوميًا»: الإجمالي على أيام المدة كاملة، محسوب في @masar/domain بتقريب واحد */
+  readonly dailyText: string;
   /** «تجميد حتى 60 يومًا»: 5 أيام لكل شهر مدفوع كما في شروط النادي الحالية (config/club-facts.ts) */
   readonly freezeText: string;
   readonly benefits: readonly string[];
@@ -76,6 +81,12 @@ function monthlyText(plan: MembershipPlan, locale: Locale): string | undefined {
   }
   const { amount, unit } = moneyParts(approximateMonthlyCost(plan), locale);
   return fill(getDictionary(locale).plans.monthly, { amount, unit });
+}
+
+/** التكلفة اليومية التقريبية على كامل المدة شاملة الأشهر المجانية. */
+function dailyText(plan: MembershipPlan, locale: Locale): string {
+  const { amount, unit } = moneyParts(approximateDailyCost(plan), locale);
+  return fill(getDictionary(locale).daily, { amount, unit });
 }
 
 /** أيام التجميد المتاحة: لكل شهر مدفوع عدد ثابت، والأشهر المجانية لا تُحتسب (شروط النادي الحالية). */
@@ -119,6 +130,7 @@ function toPlanView(plan: MembershipPlan, context: ViewContext): PlanView {
   return {
     slug: plan.slug,
     name: plan.name[locale],
+    tier: dictionary.tiers[plan.slug],
     href: localizedPath(locale, `/memberships/${plan.slug}`),
     purchase: purchaseHref(plan, locale, dictionary, checkoutEnabled),
     whatsappHref: planWhatsappUrl(plan, locale, dictionary),
@@ -130,6 +142,7 @@ function toPlanView(plan: MembershipPlan, context: ViewContext): PlanView {
     durationText: durationText(plan, locale),
     price: moneyParts(plan.price, locale),
     monthlyText: monthlyText(plan, locale),
+    dailyText: dailyText(plan, locale),
     freezeText: freezeText(plan.paidMonths, dictionary),
     benefits: plan.benefits.map((benefit) => benefit[locale]),
     benefitsShared,

@@ -1,20 +1,36 @@
-/* فراغ تحت التذييل بارتفاع شريط الهاتف الثابت حتى لا يغطي آخر سطر. */
-.plans,
-.quick {
-  height: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+/*
+ * فراغ تحت التذييل بارتفاع الأشرطة الثابتة حتى لا تغطي آخر سطر: شريط التبويب على الهاتف، وفوقه شريط
+ * الشراء أو فعل الصفحة إن وُجد. شريط شراء الاشتراكات وحده على اللوح.
+ */
+.spacer {
+  --bar: 0rem;
+  --tabs: 0rem;
+  height: calc(var(--bar) + var(--tabs) + env(safe-area-inset-bottom, 0px));
   background: var(--ink);
 }
 
-/* شريط «اختر اشتراكك» للهاتف فقط */
+.plans,
+.quick {
+  --bar: 4.5rem;
+}
+
+.tabs {
+  --tabs: var(--tabbar-height);
+}
+
 @media (width >= 48rem) {
+  .tabs,
   .quick {
-    display: none;
+    --tabs: 0rem;
+  }
+
+  .quick {
+    --bar: 0rem;
   }
 }
 
-/* شريط الشراء حتى عرض سطح المكتب */
 @media (width >= 64rem) {
-  .plans {
+  .spacer {
     display: none;
   }
 }

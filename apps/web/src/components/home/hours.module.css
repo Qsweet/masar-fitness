@@ -8,11 +8,11 @@
 /* لوح بزوايا مستديرة: الحدود منفصلة حتى يقص الإطار رأسه */
 .board {
   width: 100%;
-  color: var(--ink);
+  color: var(--fg);
   border-collapse: separate;
   border-spacing: 0;
   border-radius: var(--radius-lg);
-  background: var(--white);
+  background: var(--card);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -53,7 +53,7 @@
 }
 
 .board tr + tr > * {
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid var(--line);
 }
 
 .notes {

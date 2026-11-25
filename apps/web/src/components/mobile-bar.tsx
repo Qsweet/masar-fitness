@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { INTRO_ID } from "@/components/page-intro";
-import { Icon } from "@/components/ui/icon";
 import { StickyReveal } from "@/components/ui/sticky-reveal";
 import styles from "./mobile-bar.module.css";
 
@@ -14,15 +13,14 @@ export interface MobileBarAction {
 interface MobileBarProps {
   readonly label: string;
   readonly action: MobileBarAction;
-  readonly chat: { readonly href: string; readonly label: string };
 }
 
 /**
- * شريط الهاتف الثابت في الصفحات بلا قسم اشتراكات (المدونة، الحاسبة، صفحة الاشتراك، 404): الفعل الرئيسي
- * في منطقة الإبهام، وزر واتساب مكان زر المحادثة العائم الذي يُخفى على الهاتف. يظهر بعد أن يتجاوز الزائر
- * رأس الصفحة (#top)، فلا يكرر زر بطاقة السعر ولا يحجب ما تحتها. بلا JavaScript يبقى مخفيًا كشريط الشراء.
+ * شريط فعل الصفحة على الهاتف فوق شريط التبويب (صفحة الاشتراك الواحد: زر الشراء) في منطقة الإبهام.
+ * يظهر بعد أن يتجاوز الزائر رأس الصفحة (#top)، فلا يكرر زر بطاقة السعر ولا يحجب ما تحتها.
+ * بلا JavaScript يبقى مخفيًا كشريط الشراء. واتساب في شريط التبويب تحته.
  */
-export function MobileBar({ label, action, chat }: MobileBarProps) {
+export function MobileBar({ label, action }: MobileBarProps) {
   return (
     <StickyReveal afterId={INTRO_ID} label={label} className={styles.bar}>
       {action.external ? (
@@ -34,15 +32,6 @@ export function MobileBar({ label, action, chat }: MobileBarProps) {
           {action.label}
         </Link>
       )}
-      <a
-        href={chat.href}
-        rel="noopener noreferrer"
-        aria-label={chat.label}
-        title={chat.label}
-        className={styles.chat}
-      >
-        <Icon name="chat" />
-      </a>
     </StickyReveal>
   );
 }

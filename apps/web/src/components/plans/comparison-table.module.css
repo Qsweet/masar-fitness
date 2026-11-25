@@ -17,7 +17,7 @@
   gap: 1rem;
   padding: 1.25rem 1.25rem 1.5rem;
   border-radius: var(--radius);
-  background: var(--white);
+  background: var(--card);
   box-shadow: var(--shadow-sm);
 }
 
@@ -38,12 +38,12 @@
   justify-content: space-between;
   gap: 1rem;
   padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 1px solid var(--line);
 }
 
 .facts dt {
   flex: none;
-  color: var(--grey);
+  color: var(--muted);
 }
 
 .facts dd {
@@ -61,7 +61,7 @@
   border-collapse: separate;
   border-spacing: 0;
   border-radius: var(--radius-lg);
-  background: var(--white);
+  background: var(--card);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -71,11 +71,11 @@
   padding: 1rem;
   text-align: start;
   vertical-align: top;
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid var(--line);
 }
 
 .table tbody th {
-  color: var(--grey);
+  color: var(--muted);
   font-weight: 400;
 }
 
@@ -87,7 +87,7 @@
 
 .corner {
   width: 24%;
-  color: var(--ink);
+  color: var(--fg);
   font-size: 0.9375rem;
 }
 
@@ -110,7 +110,7 @@
 }
 
 .table tfoot td {
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid var(--line);
 }
 
 .allIncluded {

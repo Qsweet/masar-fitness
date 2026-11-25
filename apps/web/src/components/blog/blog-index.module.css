@@ -3,18 +3,18 @@
   margin-top: 2rem;
   padding: 1rem 1.25rem;
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--rule);
+  background: var(--card-2);
+  border: 1px solid var(--line);
   font-size: 1rem;
   line-height: 1.7;
 }
 
 .notice strong {
-  color: var(--ink);
+  color: var(--fg);
 }
 
 .notice time {
-  color: var(--grey);
+  color: var(--muted);
 }
 
 .topic {
@@ -38,7 +38,7 @@
   display: grid;
   grid-template-rows: auto 1fr;
   border-radius: var(--radius);
-  background: var(--white);
+  background: var(--card);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   transition:
@@ -114,7 +114,7 @@
 }
 
 .meta {
-  color: var(--grey);
+  color: var(--muted);
   font-size: 0.875rem;
 }
 

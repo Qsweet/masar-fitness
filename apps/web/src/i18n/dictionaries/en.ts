@@ -1,6 +1,7 @@
 import type { Dictionary } from "./ar";
 import { checkoutEn } from "./checkout-en";
 import { homeEn } from "./home-en";
+import { landingEn } from "./landing-en";
 import { paymentEn } from "./payment-en";
 
 export const en: Dictionary = {
@@ -38,25 +39,13 @@ export const en: Dictionary = {
     switchLanguage: "العربية",
   },
   staging: "Preview version: prices and content are for review and not final.",
-  hero: {
-    badge: "A men's sports club in Ar Rihab",
-    title: "Masters Way Sports Club for men in Buraidah",
-    slogan: "You've got this.",
-    lead: "A strength floor, functional training and group classes, with an indoor pool, jacuzzi, sauna and steam room. All in one membership at one total price.",
-    action: "Choose a membership",
-    secondary: "See the facilities",
-    founded: "Founded",
-    rating: "Google rating",
-    menOnly: "Men only",
-    offerWith: "With the {term} membership",
-  },
   plans: {
     eyebrow: "Memberships",
     title: "Choose your duration",
     lead: "One total payment. Prices include VAT under the club's terms.",
     legend: "Membership duration",
     optionsLabel: "Membership durations",
-    bestValue: "Lowest per month",
+    bestValue: "Best value",
     bonus: "+ {bonus} free",
     oneMonth: "1 month",
     durationBonus: "{total}, including {bonus} free",
@@ -151,6 +140,14 @@ export const en: Dictionary = {
     sauna: "Hot sauna stones inside a wooden room at the club",
     coachTalk:
       "A man in a club shirt talking with members beside a loaded barbell in the functional area",
+    benchRow:
+      "A row of bench-press stations loaded with 20 kg plates before a yellow-and-black striped wall",
+    functionalZone:
+      "Members in the functional area: box jumps, a kettlebell swing and a barbell between yellow rigs",
+    agilityFloor: "A green group-training floor set with cones, agility ladders, hoops and balls",
+    machinesTurf: "Yellow weight machines on green turf beneath the runner mural",
+    dumbbellRacks:
+      "Long dumbbell racks on yellow stands with training benches on the strength floor",
   },
   footer: {
     tagline:
@@ -170,6 +167,7 @@ export const en: Dictionary = {
   },
   checkout: checkoutEn,
   ...homeEn,
+  ...landingEn,
   error: {
     title: "The page couldn't load",
     lead: "Something went wrong on our side. Try again, and if it keeps happening, message us on WhatsApp.",

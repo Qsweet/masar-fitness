@@ -15,9 +15,9 @@
   width: 3rem;
   height: 3rem;
   flex-shrink: 0;
+  border: 1px solid var(--yellow-line);
   border-radius: var(--radius);
-  background: var(--yellow);
-  color: var(--ink);
+  background: var(--yellow-soft);
+  color: var(--yellow);
   font-size: 1.25rem;
-  box-shadow: var(--glow-sm);
 }

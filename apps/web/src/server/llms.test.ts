@@ -10,7 +10,7 @@ describe("buildLlmsTxt", () => {
     expect(text.startsWith("# مسار الأبطال الرياضي\n\n> ")).toBe(true);
     expect(text).toContain("بريدة 52581");
     expect(text).toContain("+966163240111");
-    expect(text).toContain(`- [الاشتراكات](${ORIGIN}/memberships)`);
+    expect(text).toContain(`- [العضويات](${ORIGIN}/memberships)`);
     expect(text).toContain(`(${ORIGIN}/en/tools/cost-per-visit)`);
     expect(text).not.toContain("/blog");
   });

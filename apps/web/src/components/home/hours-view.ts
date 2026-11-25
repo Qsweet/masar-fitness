@@ -27,12 +27,3 @@ function toRow(slot: OpeningSlot, dictionary: Dictionary): HoursRow {
 export function hoursRows(area: HoursArea, dictionary: Dictionary): HoursRow[] {
   return CLUB_HOURS[area].map((slot) => toRow(slot, dictionary));
 }
-
-/** الأيام العادية (السبت – الخميس) للنادي: أول صف في الجدول. */
-export function weekdayHours(dictionary: Dictionary): HoursRow {
-  const [first] = hoursRows("club", dictionary);
-  if (first === undefined) {
-    throw new Error("CLUB_HOURS.club is empty");
-  }
-  return first;
-}

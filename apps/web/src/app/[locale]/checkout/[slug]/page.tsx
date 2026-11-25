@@ -2,6 +2,7 @@ import type { DomainError } from "@masar/domain";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CheckoutSteps } from "@/components/checkout/checkout-steps";
 import { DetailsForm } from "@/components/checkout/details-form";
 import { errorText } from "@/components/checkout/error-text";
 import { OptionsForm } from "@/components/checkout/options-form";
@@ -136,7 +137,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
   if (!result.ok && result.error.code === "not_found") {
     notFound();
   }
-  const { checkout } = getDictionary(locale);
+  const { checkout, steps } = getDictionary(locale);
   const back = (
     <Link href={localizedPath(locale, `/memberships/${slug}`)}>{checkout.backToPlan}</Link>
   );
@@ -153,7 +154,9 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
   );
   return (
     <PageShell locale={locale} path={`/checkout/${slug}`} mobileAction={null}>
-      <PageIntro title={checkout.intro.title} lead={checkout.intro.lead} before={back} />
+      <PageIntro title={checkout.intro.title} lead={checkout.intro.lead} before={back}>
+        <CheckoutSteps current="details" labels={steps} />
+      </PageIntro>
       {body}
     </PageShell>
   );

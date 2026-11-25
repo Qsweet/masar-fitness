@@ -1,21 +1,32 @@
-/* ترويسة سوداء ثابتة أعلى الصفحة (أرضية الشعار الرسمي)، بخط مضمار أصفر متقطع أسفلها. */
+/*
+ * ترويسة ثابتة أعلى الصفحة: سوداء زجاجية بحد سفلي رفيع. حيث يدعم المتصفح الحركة المرتبطة بالتمرير
+ * تبدأ شفافة فوق الواجهة وتعتم خلال أول 120px من التمرير (بلا JavaScript).
+ */
 .header {
   position: sticky;
   top: 0;
   z-index: 20;
   padding-top: env(safe-area-inset-top, 0px);
+  border-bottom: 1px solid var(--line);
   background: var(--header-bg);
   backdrop-filter: saturate(180%) blur(12px);
   color: var(--white);
 }
 
-.header::after {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  height: 2px;
-  background: var(--track-dash) 0 0 / calc(var(--dash) + var(--dash-gap)) 100% repeat-x;
+@supports (animation-timeline: scroll()) {
+  .header {
+    animation: solidify linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 7.5rem;
+  }
+}
+
+@keyframes solidify {
+  from {
+    border-bottom-color: transparent;
+    background: transparent;
+    backdrop-filter: none;
+  }
 }
 
 .inner {
@@ -123,7 +134,7 @@
 }
 
 .menu[open] summary {
-  background: var(--ink-2);
+  background: var(--card);
 }
 
 .menuPanel {
@@ -133,9 +144,9 @@
   display: grid;
   min-width: 15rem;
   padding: 0.5rem;
-  border: 1px solid var(--rule-on-ink);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: var(--ink-2);
+  background: var(--card);
   box-shadow: var(--shadow-lg);
 }
 
@@ -144,7 +155,7 @@
 }
 
 .menuPanel .link:hover {
-  background: var(--ink);
+  background: var(--card-2);
 }
 
 @media (width >= 30rem) {

@@ -47,7 +47,7 @@
 .lineDetail,
 .note {
   grid-column: 1 / -1;
-  color: var(--grey-on-ink);
+  color: var(--muted);
   font-size: 0.875rem;
 }
 
@@ -62,7 +62,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0 1rem;
-  color: var(--grey-on-ink);
+  color: var(--muted);
   font-size: 0.875rem;
 }
 
@@ -70,7 +70,7 @@
   display: grid;
   gap: 0.35rem;
   padding-block: 0.75rem;
-  border-block: 1px solid var(--rule-on-ink);
+  border-block: 1px solid var(--line);
 }
 
 .row {
@@ -81,7 +81,7 @@
 }
 
 .row dt {
-  color: var(--grey-on-ink);
+  color: var(--muted);
 }
 
 .code {
@@ -90,7 +90,7 @@
 }
 
 .totalLabel {
-  color: var(--grey-on-ink);
+  color: var(--muted);
   font-size: 0.875rem;
 }
 
@@ -108,7 +108,7 @@
 .notes {
   display: grid;
   gap: 0.35rem;
-  color: var(--grey-on-ink);
+  color: var(--muted);
   font-size: 0.875rem;
 }
 

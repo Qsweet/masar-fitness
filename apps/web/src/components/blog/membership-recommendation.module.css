@@ -11,7 +11,7 @@
 }
 
 .label {
-  color: var(--grey-on-ink);
+  color: var(--muted);
   font-size: 0.875rem;
 }
 
@@ -35,7 +35,7 @@
 }
 
 .detail {
-  color: var(--grey-on-ink);
+  color: var(--muted);
   font-size: 0.95rem;
 }
 

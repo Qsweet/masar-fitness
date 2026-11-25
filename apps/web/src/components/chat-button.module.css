@@ -15,7 +15,7 @@
   transition: transform var(--press) var(--ease);
 }
 
-/* على الهاتف: زر واتساب في الشريط الثابت بدله */
+/* على الهاتف: واتساب في شريط التبويب بدله */
 @media (width < 48rem) {
   .besideBar {
     display: none;

@@ -39,9 +39,9 @@
   display: grid;
   gap: 0.75rem;
   padding: 1.5rem;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  background: var(--white);
+  background: var(--card);
   box-shadow: var(--shadow-sm);
 }
 
@@ -64,7 +64,7 @@
 }
 
 .facts dt {
-  color: var(--grey);
+  color: var(--muted);
 }
 
 .facts dd {

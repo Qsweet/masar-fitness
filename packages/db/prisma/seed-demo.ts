@@ -10,6 +10,16 @@ import type { Prisma } from "../src/generated/prisma/client";
 
 const CLUB_SLUG = "masar-al-abtal";
 const VALID_FROM = new Date("2026-01-01T00:00:00+03:00");
+/**
+ * نسخة ثانية بالسعر والمدة نفسيهما وأسماء المزايا الموحَّدة مع القاموس. قواعد سابقة فيها نسخة أولى
+ * بالأسماء القديمة (ومزايا النسخة المباعة لا تُعدَّل)، والنسخة الحالية هي الأحدث بدايةً.
+ */
+const BENEFITS_UNIFIED_FROM = new Date("2026-11-01T00:00:00+03:00");
+/** فترات النسخ المتتالية بلا تراكب (قيد product_versions_no_overlap): الأولى تُغلق عند بداية الثانية. */
+const VERSION_PERIODS: readonly { validFrom: Date; validUntil: Date | null }[] = [
+  { validFrom: VALID_FROM, validUntil: BENEFITS_UNIFIED_FROM },
+  { validFrom: BENEFITS_UNIFIED_FROM, validUntil: null },
+];
 
 /** تجريبي، ليس قرار المالك: نسبة الضريبة النظامية الموثقة في docs/SECURITY.md (15%). */
 const DEMO_VAT_RATE_BPS = 1500;
@@ -19,11 +29,13 @@ const DEMO_PAYMENT_WINDOW_MINUTES = 30;
 const DEMO_START_RULE = "on_payment";
 const DEMO_PERCENT_BPS = 1000;
 
+/** أسماء المرافق كما في القاموس (facilities.items) حرفيًا، حتى يطابق ملخص الاشتراك قسم المرافق. */
 const BENEFITS = [
-  { labelAr: "صالة الحديد واللياقة", labelEn: "Strength and fitness floor" },
-  { labelAr: "المسبح", labelEn: "Swimming pool" },
+  { labelAr: "صالة الحديد", labelEn: "Strength floor" },
+  { labelAr: "التمارين الوظيفية", labelEn: "Functional training" },
+  { labelAr: "المسبح", labelEn: "Pool" },
   { labelAr: "الجاكوزي", labelEn: "Jacuzzi" },
-  { labelAr: "غرفة البخار", labelEn: "Steam room" },
+  { labelAr: "البخار", labelEn: "Steam room" },
 ];
 
 interface DemoProduct {
@@ -109,12 +121,22 @@ async function upsertClub(db: Db): Promise<string> {
   return club.id;
 }
 
-/** النسخة لا تُحذف ولا تُعدَّل (قد تكون مباعة): تُنشأ إن لم توجد نسخة بالبداية نفسها. */
-async function ensureVersion(db: Db, productId: string, item: DemoProduct): Promise<void> {
-  const existing = await db.productVersion.findFirst({
-    where: { productId, validFrom: VALID_FROM },
-  });
+/**
+ * النسخة لا تُحذف ولا يُعدَّل سعرها ولا مدتها ولا مزاياها (قد تكون مباعة، والقاعدة تمنع ذلك):
+ * تُنشأ إن لم توجد نسخة بالبداية نفسها، وإلا تُضبط نهايتها فقط (مسموحة لإغلاق نسخة قديمة).
+ */
+async function ensureVersion(
+  db: Db,
+  productId: string,
+  item: DemoProduct,
+  period: (typeof VERSION_PERIODS)[number],
+): Promise<void> {
+  const { validFrom, validUntil } = period;
+  const existing = await db.productVersion.findFirst({ where: { productId, validFrom } });
   if (existing !== null) {
+    if (existing.validUntil?.getTime() !== validUntil?.getTime()) {
+      await db.productVersion.update({ where: { id: existing.id }, data: { validUntil } });
+    }
     return;
   }
   const benefits = item.months === null ? BENEFITS.slice(0, 1) : BENEFITS;
@@ -124,7 +146,8 @@ async function ensureVersion(db: Db, productId: string, item: DemoProduct): Prom
       priceMinor: item.priceMinor,
       durationMonths: item.months,
       bonusMonths: item.bonus,
-      validFrom: VALID_FROM,
+      validFrom,
+      validUntil,
       benefits: { create: benefits.map((benefit, sortOrder) => ({ ...benefit, sortOrder })) },
     },
   });
@@ -150,7 +173,9 @@ async function upsertProduct(
       summaryEn: kind === "addon" ? "For testing only." : "Every club facility in one membership.",
     },
   });
-  await ensureVersion(db, product.id, item);
+  for (const period of VERSION_PERIODS) {
+    await ensureVersion(db, product.id, item, period);
+  }
   return product.id;
 }
 

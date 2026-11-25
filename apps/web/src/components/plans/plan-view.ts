@@ -8,9 +8,9 @@ import { whatsappUrl } from "@/config/club";
 import { getDictionary, type Dictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
 import {
+  countedMonthsParts,
   formatMonths,
   moneyParts,
-  monthsParts,
   type MoneyParts,
   type MonthsParts,
 } from "@/i18n/format";
@@ -35,8 +35,8 @@ export interface PlanView {
   readonly purchase: PurchaseLink;
   /** واتساب النادي برسالة تسمّي الاشتراك: الزر نفسه والشراء مغلق، ورابط ثانوي وهو مفتوح */
   readonly whatsappHref: string;
-  /** المدة المدفوعة مقسومة رقمًا ووحدة: «12» + «شهرًا»، أو «شهر» وحدها */
-  readonly duration: MonthsParts;
+  /** المدة المدفوعة رقمًا ووحدة لمربع الاختيار: «12» + «شهرًا»، «1» + «شهر» */
+  readonly duration: Required<MonthsParts>;
   /** «+ شهران مجانًا» أو غائب */
   readonly bonusText: string | undefined;
   /** «14 شهرًا: 12 شهرًا + شهران مجانًا» أو «3 أشهر» */
@@ -104,7 +104,7 @@ function toPlanView(plan: MembershipPlan, context: ViewContext): PlanView {
     href: localizedPath(locale, `/memberships/${plan.slug}`),
     purchase: purchaseHref(plan, locale, dictionary, checkoutEnabled),
     whatsappHref: planWhatsappUrl(plan, locale, dictionary),
-    duration: monthsParts(plan.paidMonths, locale),
+    duration: countedMonthsParts(plan.paidMonths, locale),
     bonusText:
       plan.bonusMonths > 0
         ? fill(dictionary.plans.bonus, { bonus: formatMonths(plan.bonusMonths, locale) })

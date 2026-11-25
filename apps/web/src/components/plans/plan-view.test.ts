@@ -37,9 +37,9 @@ describe("toPlanViews", () => {
     expect(view?.isBestValue).toBe(true);
   });
 
-  it("اشتراك الشهر الواحد بلا تكلفة شهرية ولا أشهر مجانية، والمدة كلمة وحدها", () => {
+  it("اشتراك الشهر الواحد بلا تكلفة شهرية ولا أشهر مجانية، ومربعه برقم كبقية المدد", () => {
     const [view] = toPlanViews([monthly, annual], "ar", false);
-    expect(view?.duration).toEqual({ count: undefined, unit: "شهر" });
+    expect(view?.duration).toEqual({ count: "1", unit: "شهر" });
     expect(view?.monthlyText).toBeUndefined();
     expect(view?.bonusText).toBeUndefined();
     expect(view?.durationText).toBe("شهر");

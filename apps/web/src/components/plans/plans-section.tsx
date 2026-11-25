@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button-link";
 import { whatsappUrl } from "@/config/club";
+import { ROUTES } from "@/config/routes";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { localizedPath, type Locale } from "@/i18n/locales";
 import { Configurator } from "./configurator";
@@ -33,17 +34,35 @@ function EmptyPlans({ dictionary }: { readonly dictionary: Dictionary }) {
   );
 }
 
+/** روابط المقارنة وحاسبة تكلفة الزيارة تحت مربعات المدة (لا تظهر في صفحة المقارنة نفسها). */
+function MoreLinks({ locale, dictionary }: Pick<PlansSectionProps, "locale" | "dictionary">) {
+  return (
+    <ul className={styles.more}>
+      <li>
+        <Link href={`${localizedPath(locale, "/memberships")}#compare`}>
+          {dictionary.plans.compare}
+        </Link>
+      </li>
+      <li>
+        <Link href={localizedPath(locale, ROUTES.costPerVisit)}>
+          {dictionary.tools.costPerVisit.membershipsLink}
+        </Link>
+      </li>
+    </ul>
+  );
+}
+
 /** قسم الاشتراكات (#plans): العنوان ثم محدِّد المدة، بالشكل نفسه في كل صفحة. */
 export function PlansSection(props: PlansSectionProps) {
   const { plans, locale, dictionary, currentSlug, revealAfterId, showCompare = false } = props;
   const initialSlug = initialPlanSlug(plans, currentSlug);
   return (
     <section id="plans" className={cx("container", styles.plans)} aria-labelledby="plans-title">
-      <div className={styles.head}>
+      <div className="section-head">
         <h2 id="plans-title" className="title-section">
           {dictionary.plans.title}
         </h2>
-        <p className="muted">{dictionary.plans.lead}</p>
+        <p>{dictionary.plans.lead}</p>
       </div>
       {initialSlug === undefined ? (
         <EmptyPlans dictionary={dictionary} />
@@ -55,15 +74,13 @@ export function PlansSection(props: PlansSectionProps) {
           revealAfterId={revealAfterId}
           labels={dictionary.plans}
           planLabels={dictionary.plan}
+          more={
+            showCompare && plans.length > 1 ? (
+              <MoreLinks locale={locale} dictionary={dictionary} />
+            ) : undefined
+          }
         />
       )}
-      {showCompare && plans.length > 1 ? (
-        <p className={styles.compare}>
-          <Link href={`${localizedPath(locale, "/memberships")}#compare`}>
-            {dictionary.plans.compare}
-          </Link>
-        </p>
-      ) : null}
     </section>
   );
 }

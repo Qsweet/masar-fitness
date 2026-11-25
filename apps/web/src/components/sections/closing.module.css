@@ -6,14 +6,17 @@
 
 .benefitList {
   display: grid;
+  gap: 0.5rem 2rem;
   margin-top: 1.5rem;
 }
 
 .benefitList li {
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--rule);
   font-family: var(--display);
-  font-size: clamp(2rem, 4vw + 0.5rem, 3.75rem);
+  font-size: clamp(1.375rem, 1vw + 1.1rem, 1.75rem);
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 .benefitList li::before {
@@ -22,10 +25,15 @@
   -webkit-text-stroke: 1px var(--ink);
 }
 
-@media (width >= 64rem) {
+@media (width >= 40rem) {
   .benefitList {
     grid-template-columns: 1fr 1fr;
-    column-gap: 3rem;
+  }
+}
+
+@media (width >= 64rem) {
+  .benefitList {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -36,26 +44,42 @@
 
 .paymentList {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (width >= 40rem) {
+  .paymentList {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (width >= 64rem) {
+  .paymentList {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 .paymentList li {
   display: grid;
-  padding: 1rem 1.25rem;
+  align-content: start;
+  gap: 0.25rem;
+  padding: 1.1rem 1.25rem;
   background: var(--white);
   border-inline-start: 6px solid var(--energy);
 }
 
 .paymentList strong {
   font-family: var(--display);
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
+  line-height: 1.3;
 }
 
 .paymentList span {
   color: var(--grey);
-  font-size: 0.85rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
 }
 
 .visit {
@@ -71,11 +95,11 @@
 }
 
 .visitAddress {
-  max-width: 22ch;
+  max-width: 28ch;
   font-family: var(--display);
-  font-size: clamp(1.75rem, 3vw + 1rem, 3.5rem);
+  font-size: clamp(1.5rem, 1.5vw + 1.1rem, 2.5rem);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.3;
 }
 
 .visitActions {
@@ -95,13 +119,42 @@
 .finalInner {
   display: grid;
   gap: 2rem;
+  padding-block: calc(var(--slant) + 3.5rem) 4rem;
+}
+
+.finalText {
+  display: grid;
+  gap: 1.75rem;
   justify-items: start;
-  padding-block: calc(var(--slant) + 4rem) 5rem;
+  align-content: center;
 }
 
 .finalTitle {
   font-family: var(--display);
   font-weight: 800;
-  font-size: clamp(3.5rem, 11vw, 10rem);
-  line-height: 0.95;
+  font-size: clamp(2.75rem, 4vw + 1.5rem, 5.5rem);
+  line-height: 1.05;
+}
+
+.finalPhoto {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 21 / 9;
+  overflow: hidden;
+}
+
+.finalPhoto img {
+  object-fit: cover;
+}
+
+@media (width >= 64rem) {
+  .finalInner {
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .finalPhoto {
+    aspect-ratio: 16 / 9;
+  }
 }

@@ -1,0 +1,97 @@
+/* المرافق: بطاقات صور بيضاء بأسمائها، ومربعا الجاكوزي والبخار على الحبر بالبنية نفسها. */
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.photoCard,
+.textCard {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.photoCard {
+  background: var(--white);
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+}
+
+.photo img {
+  object-fit: cover;
+}
+
+.body {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-top: 4px solid var(--energy);
+}
+
+.name {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.body p {
+  color: var(--grey);
+}
+
+.textCard {
+  background: var(--ink);
+  color: var(--white);
+}
+
+.textCard .body {
+  align-content: center;
+  padding-block: 1.75rem;
+}
+
+.textCard .name {
+  color: var(--energy);
+}
+
+.textCard .body p {
+  color: var(--grey-on-ink);
+}
+
+@media (width >= 40rem) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* الصورة الثالثة (المسبح) بعرض الشبكة على الشاشة المتوسطة حتى لا يبقى فراغ */
+  .photoCard:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .photoCard:nth-child(3) .photo {
+    aspect-ratio: 21 / 9;
+  }
+}
+
+@media (width >= 64rem) {
+  .grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1.25rem;
+  }
+
+  .photoCard,
+  .photoCard:nth-child(3) {
+    grid-column: span 2;
+  }
+
+  .photoCard:nth-child(3) .photo {
+    aspect-ratio: 3 / 2;
+  }
+
+  .textCard {
+    grid-column: span 3;
+  }
+}

@@ -18,7 +18,8 @@ interface SiteHeaderProps {
   readonly dictionary: Dictionary;
 }
 
-const LOGO_HEIGHT = 48;
+/** أقصى ارتفاع للشعار (الشاشة الواسعة)؛ الارتفاع الفعلي من الرمز ‎--logo-height‎. */
+const LOGO_HEIGHT = 88;
 
 function otherLocale(locale: Locale): Locale {
   return LOCALES.find((candidate) => candidate !== locale) ?? locale;
@@ -53,8 +54,8 @@ function NavLinks({
   const home = localizedPath(locale);
   const links = [
     { href: localizedPath(locale, "/memberships"), label: dictionary.nav.memberships },
+    { href: `${home}#facilities`, label: dictionary.nav.facilities },
     { href: `${home}#train`, label: dictionary.nav.train },
-    { href: `${home}#water`, label: dictionary.nav.water },
     { href: `${home}#location`, label: dictionary.nav.location },
     ...(showBlog ? [{ href: localizedPath(locale, ROUTES.blog), label: dictionary.blog.nav }] : []),
   ];
@@ -77,7 +78,12 @@ export function SiteHeader({ locale, path, joinHref, showBlog, dictionary }: Sit
   return (
     <header className={styles.header}>
       <Link href={localizedPath(locale)} className={styles.brand}>
-        <Logo height={LOGO_HEIGHT} alt={dictionary.club.logoAlt} preload />
+        <Logo
+          height={LOGO_HEIGHT}
+          cssHeight="var(--logo-height)"
+          alt={dictionary.club.logoAlt}
+          preload
+        />
       </Link>
       <nav aria-label={dictionary.nav.main} className={styles.nav}>
         <NavLinks locale={locale} showBlog={showBlog} dictionary={dictionary} />

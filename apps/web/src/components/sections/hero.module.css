@@ -1,136 +1,166 @@
-/* الواجهة وسطر المرافق: الشعار بحجم ملصق فوق صورة رمادية مائلة، ثم المرافق على الحبر. */
-
-/* ———————— الواجهة ———————— */
+/*
+ * الواجهة على الحبر امتدادًا للترويسة: الوسائط أولًا بحافة سفلية مائلة على الجوال،
+ * وبجانب النص بحافة جانبية مائلة على الشاشة الواسعة. الصورة والفيديو بألوانهما الحقيقية.
+ */
 .hero {
-  position: relative;
-  isolation: isolate;
   display: grid;
+  background: var(--ink);
+  color: var(--white);
   overflow: hidden;
 }
 
-.heroText {
+.media {
   position: relative;
-  z-index: 2;
-  display: grid;
-  gap: 1rem;
-  justify-items: start;
-  padding: 2rem var(--gutter-end) 2rem var(--gutter);
+  aspect-ratio: 16 / 10;
+  max-height: 62svh;
+  width: 100%;
+  background: var(--ink-2);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--slant)), 0 100%);
 }
 
-.heroTitle {
-  display: grid;
-  font-family: var(--display);
-  font-weight: 800;
-  font-size: clamp(6rem, 30vw, 16rem);
-  line-height: 0.92;
-}
-
-/* الشعار الإنجليزي أطول: حجم أصغر حتى لا يتجاوز الشاشة */
-.heroTitle:lang(en) {
-  font-size: clamp(4rem, 19vw, 9rem);
-  line-height: 0.95;
-}
-
-.heroNote {
-  color: var(--grey);
-  font-size: 0.85rem;
-}
-
-.heroLead {
-  max-width: 30rem;
-  font-size: clamp(1.05rem, 0.4vw + 1rem, 1.25rem);
-}
-
-.heroPhoto {
-  position: relative;
-  min-height: 24rem;
-  margin: 0;
-  clip-path: polygon(0 var(--slant), 100% 0, 100% 100%, 0 100%);
-}
-
-.heroPhoto img {
+.media img {
   object-fit: cover;
-  filter: grayscale(1) contrast(1.15);
 }
 
-/* الخط الأصفر المائل من جدران النادي، داخل الصورة فلا يقطع أي نص */
-.heroSlash {
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+}
+
+.video[data-started="true"] {
+  opacity: 1;
+}
+
+/* زر الإيقاف والتشغيل: مربع حاد بحجم لمس مريح فوق الصورة، والرمز وظيفي لا زخرفي */
+.videoToggle {
   position: absolute;
   z-index: 1;
-  inset-inline: -10%;
-  bottom: 12%;
-  height: 3.5rem;
-  background: var(--energy);
-  transform: rotate(-7deg);
+  top: 0.75rem;
+  inset-inline-end: 0.75rem;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 2px solid var(--white);
+  background: var(--ink-veil);
+  color: var(--white);
+  cursor: pointer;
+}
+
+.videoToggle:hover {
+  border-color: var(--energy);
+  color: var(--energy);
+}
+
+.iconPause {
+  width: 0.85rem;
+  height: 1rem;
+  border-inline: 0.28rem solid currentcolor;
+}
+
+/* المثلث يتجه يمينًا في اللغتين: رموز التشغيل لا تنعكس مع اتجاه النص */
+.iconPlay {
+  width: 0;
+  height: 0;
+  margin-left: 0.2rem;
+  border-top: 0.55rem solid transparent;
+  border-bottom: 0.55rem solid transparent;
+  border-left: 0.9rem solid currentcolor;
+}
+
+.text {
+  display: grid;
+  gap: 1.25rem;
+  justify-items: start;
+  padding: 0.5rem var(--gutter-end) 3rem var(--gutter);
+}
+
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.22em;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(3.25rem, 12vw, 4.75rem);
+  line-height: 1.05;
+}
+
+.title span:last-child {
+  color: var(--energy);
+}
+
+/* العنوان الإنجليزي أطول: حجم أصغر حتى يبقى في سطرين على الأكثر */
+.title:lang(en) {
+  font-size: clamp(2.5rem, 9vw, 4rem);
+}
+
+.lead {
+  max-width: 34rem;
+  color: var(--grey-on-ink);
+  font-size: clamp(1.0625rem, 0.4vw + 1rem, 1.3rem);
+  line-height: 1.75;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.note {
+  color: var(--grey-on-ink);
+  font-size: 0.875rem;
+}
+
+@media (width >= 40rem) {
+  .media {
+    aspect-ratio: 16 / 8;
+  }
 }
 
 @media (width >= 64rem) {
   .hero {
-    grid-template-columns: 5fr 6fr;
-    min-height: min(calc(100svh - var(--header-height)), 54rem);
+    grid-template-columns: 5fr 7fr;
+    grid-template-areas: "text media";
+    min-height: min(calc(100svh - var(--header-height)), 46rem);
   }
 
-  .heroText {
-    align-content: center;
-    padding-block: 4rem;
-  }
-
-  .heroTitle {
-    font-size: clamp(9rem, 17vw, 17rem);
-    margin-inline-end: -14rem;
-  }
-
-  .heroTitle:lang(en) {
-    font-size: clamp(6rem, 10vw, 10rem);
-    margin-inline-end: -10rem;
-  }
-
-  .heroPhoto {
+  .media {
+    grid-area: media;
+    aspect-ratio: auto;
+    max-height: none;
     min-height: 100%;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 14% 100%);
+    /* الحافة المائلة على جانب النص: يمين الوسائط في العربية، ويسارها في الإنجليزية */
+    clip-path: polygon(0 0, 100% 0, 91% 100%, 0 100%);
   }
 
-  .heroPhoto:dir(ltr) {
-    clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%);
+  .media:dir(ltr) {
+    clip-path: polygon(9% 0, 100% 0, 100% 100%, 0 100%);
   }
 
-  .heroSlash {
-    bottom: 16%;
-    height: 5rem;
+  .videoToggle {
+    top: auto;
+    bottom: 1.5rem;
   }
-}
 
-/* ———————— سطر المرافق ———————— */
-.value {
-  position: relative;
-  z-index: 3;
-  margin-top: calc(-1 * var(--slant));
-  padding: calc(var(--slant) + 2.5rem) var(--gutter-end) 3rem var(--gutter);
-  background: var(--ink);
-  color: var(--white);
-  clip-path: polygon(0 var(--slant), 100% 0, 100% 100%, 0 100%);
-}
+  .text {
+    grid-area: text;
+    align-content: center;
+    gap: 1.5rem;
+    padding-block: 4rem;
+    padding-inline: max(var(--gutter), calc((100vw - var(--max)) / 2 + var(--gutter))) 2rem;
+  }
 
-.valueLabel {
-  color: var(--energy);
-  font-family: var(--display);
-  font-size: 1.15rem;
-  font-weight: 600;
-}
+  .title {
+    font-size: clamp(4.5rem, 6vw, 6rem);
+  }
 
-.valueLine {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 1.25rem;
-  font-family: var(--display);
-  font-size: clamp(2.5rem, 7vw, 6.5rem);
-  font-weight: 800;
-  line-height: 1.15;
-}
-
-.valueLine li:not(:last-child)::after {
-  content: "/";
-  margin-inline-start: 1.25rem;
-  color: var(--energy);
-  font-weight: 400;
+  .title:lang(en) {
+    font-size: clamp(3.5rem, 4.4vw, 5.25rem);
+  }
 }

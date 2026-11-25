@@ -1,5 +1,7 @@
+import Image from "next/image";
 import { ButtonLink } from "@/components/ui/button-link";
 import { CLUB_CONTACT, directionsUrl, whatsappUrl } from "@/config/club";
+import { PHOTOS } from "@/config/photos";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/locales";
 import { cx } from "@/lib/cx";
@@ -9,7 +11,7 @@ interface SectionProps {
   readonly dictionary: Dictionary;
 }
 
-/** ما يشمله الاشتراك، قائمة ضخمة بخطوط مائلة. لا يظهر إن لم تُسجَّل مزايا. */
+/** ما يشمله الاشتراك، قائمة بخطوط مائلة صفراء. لا يظهر إن لم تُسجَّل مزايا. */
 export function Benefits({
   title,
   benefits,
@@ -54,7 +56,7 @@ export function Payment({ dictionary }: SectionProps) {
   );
 }
 
-/** «وين نحن»: العنوان بحجم كبير على الأصفر، ثم الخريطة والاتصال وواتساب. */
+/** «موقع النادي»: العنوان مكتوبًا على الأصفر، ثم الخريطة والاتصال وواتساب. */
 export function Visit({ locale, dictionary }: SectionProps & { readonly locale: Locale }) {
   const { location } = dictionary;
   return (
@@ -80,17 +82,29 @@ export function Visit({ locale, dictionary }: SectionProps & { readonly locale: 
   );
 }
 
+/** الدعوة الأخيرة على الحبر، بجانب شعار النادي مرسومًا على جداره. */
 export function Final({ dictionary }: SectionProps) {
-  const { final } = dictionary;
+  const { final, photos } = dictionary;
   return (
     <section className={styles.final} aria-labelledby="final-title">
       <div className={cx("container", styles.finalInner)}>
-        <h2 id="final-title" className={styles.finalTitle}>
-          {final.title}
-        </h2>
-        <ButtonLink href="#plans" variant="yellow" external>
-          {final.action}
-        </ButtonLink>
+        <div className={styles.finalText}>
+          <h2 id="final-title" className={styles.finalTitle}>
+            {final.title}
+          </h2>
+          <ButtonLink href="#plans" variant="yellow" external>
+            {final.action}
+          </ButtonLink>
+        </div>
+        <figure className={styles.finalPhoto}>
+          <Image
+            src={PHOTOS.logoWall}
+            alt={photos.logoWall}
+            fill
+            placeholder="blur"
+            sizes="(min-width: 64rem) 45vw, 100vw"
+          />
+        </figure>
       </div>
     </section>
   );

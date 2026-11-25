@@ -6,6 +6,7 @@ import { PageShell } from "@/components/page-shell";
 import { toPlanViews } from "@/components/plans/plan-view";
 import { PlansSection } from "@/components/plans/plans-section";
 import { Benefits, Payment, Visit } from "@/components/sections/closing";
+import { PHOTOS } from "@/config/photos";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedPath } from "@/i18n/locales";
 import { getMembershipPlan, getMembershipPlans } from "@/server/catalog";
@@ -42,7 +43,12 @@ export default async function PlanPage({ params }: Props) {
 
   return (
     <PageShell locale={locale} path={`/memberships/${plan.slug}`} hasPlans>
-      <PageIntro title={plan.name[locale]} lead={plan.summary[locale]} before={back} />
+      <PageIntro
+        title={plan.name[locale]}
+        lead={plan.summary[locale]}
+        before={back}
+        photo={{ src: PHOTOS.coachRest, alt: dictionary.photos.coachRest }}
+      />
       <PlansSection
         plans={toPlanViews(plans, locale, isCheckoutEnabled())}
         locale={locale}

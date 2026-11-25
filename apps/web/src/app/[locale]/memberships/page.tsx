@@ -8,6 +8,7 @@ import { PlansSection } from "@/components/plans/plans-section";
 import { Payment } from "@/components/sections/closing";
 import { ButtonLink } from "@/components/ui/button-link";
 import { ROUTES } from "@/config/routes";
+import { PHOTOS } from "@/config/photos";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedPath } from "@/i18n/locales";
 import { getMembershipPlans } from "@/server/catalog";
@@ -43,7 +44,11 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
 
   return (
     <PageShell locale={locale} path={PATH} hasPlans={plans.length > 0}>
-      <PageIntro title={dictionary.memberships.title} lead={dictionary.memberships.intro} />
+      <PageIntro
+        title={dictionary.memberships.title}
+        lead={dictionary.memberships.intro}
+        photo={{ src: PHOTOS.coachRest, alt: dictionary.photos.coachRest }}
+      />
       <PlansSection
         plans={toPlanViews(plans, locale, isCheckoutEnabled())}
         locale={locale}

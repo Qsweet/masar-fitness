@@ -5,7 +5,9 @@ import { PageShell } from "@/components/page-shell";
 import { toPlanViews } from "@/components/plans/plan-view";
 import { PlansSection } from "@/components/plans/plans-section";
 import { Final, Payment, Visit } from "@/components/sections/closing";
-import { FacilityLine, Hero, HERO_ID, Train, Trust, Water } from "@/components/sections/story";
+import { Facilities } from "@/components/sections/facilities";
+import { Hero, HERO_ID } from "@/components/sections/hero";
+import { Train, Trust } from "@/components/sections/story";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale } from "@/i18n/locales";
 import { getMembershipPlans } from "@/server/catalog";
@@ -44,7 +46,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   return (
     <PageShell locale={locale} path={PATH} hasPlans={plans.length > 0}>
       <Hero dictionary={dictionary} />
-      <FacilityLine dictionary={dictionary} />
+      <Facilities dictionary={dictionary} />
       <PlansSection
         plans={plans}
         locale={locale}
@@ -53,9 +55,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         showCompare
       />
       <Train dictionary={dictionary} />
-      <Water dictionary={dictionary} />
-      <Payment dictionary={dictionary} />
       <Trust dictionary={dictionary} />
+      <Payment dictionary={dictionary} />
       <Visit locale={locale} dictionary={dictionary} />
       <Final dictionary={dictionary} />
       <JsonLd

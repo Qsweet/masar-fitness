@@ -79,6 +79,45 @@ test.describe("الرئيسية", () => {
   });
 });
 
+test.describe("الواجهة والمرافق", () => {
+  const FACILITIES = ["صالة الحديد", "التمارين الوظيفية", "المسبح", "الجاكوزي", "البخار"];
+
+  test("المرافق بالأسماء نفسها في قسمها وفي ملخص الاشتراك", async ({ page }) => {
+    await page.goto("/");
+    const names = page.locator("#facilities").getByRole("heading", { level: 3 });
+    await expect(names).toHaveText(FACILITIES);
+    await expect(summary(page).getByRole("listitem")).toHaveText(FACILITIES);
+  });
+
+  test("مربعات المدة بالبنية نفسها: رقم ووحدة، حتى الشهر الواحد", async ({ page }) => {
+    await page.goto("/");
+    const monthly = durations(page).locator("label").first();
+    await expect(monthly).toContainText("1");
+    await expect(monthly).toContainText("شهر");
+    await expect(monthly).toContainText("350");
+  });
+
+  test("فيديو الواجهة صامت ومتكرر، وزره يوقفه ويشغّله", async ({ page }) => {
+    await page.goto("/");
+    const video = page.locator("#top video");
+    await expect(video).toHaveJSProperty("muted", true);
+    await expect(video).toHaveAttribute("loop", "");
+    const pause = page.getByRole("button", { name: "أوقف الفيديو" });
+    await pause.click();
+    await expect(video).toHaveJSProperty("paused", true);
+    await page.getByRole("button", { name: "شغّل الفيديو" }).click();
+    await expect(video).toHaveJSProperty("paused", false);
+  });
+
+  test("مع تقليل الحركة: الإطار وحده بلا فيديو ولا زر", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    await expect(page.locator("#top img")).toBeVisible();
+    await expect(page.locator("#top video")).toHaveCount(0);
+    await expect(page.locator("#top button")).toHaveCount(0);
+  });
+});
+
 test.describe("صفحة الاشتراكات", () => {
   test("جدول المقارنة: عمود لكل اشتراك وصف لكل صفة", async ({ page }) => {
     await page.goto("/memberships");

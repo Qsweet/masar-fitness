@@ -1,4 +1,4 @@
-/* رأس الصفحات الداخلية: امتداد أسود للترويسة بعنوان ضخم وحافة سفلية مائلة. */
+/* رأس الصفحات الداخلية: امتداد أسود للترويسة بعنوان واضح وحافة سفلية مائلة، وصورة اختيارية. */
 .intro {
   padding-block: 2rem calc(var(--slant) + 2rem);
   background: var(--ink);
@@ -6,11 +6,24 @@
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--slant)), 0 100%);
 }
 
+.inner {
+  display: grid;
+  gap: 1.75rem;
+}
+
+/* عنصر شبكة: بلا min-width صفري يتمدد بمحتوى لا يلتف (مسار التنقل المقصوص) فيتجاوز الشاشة */
+.text {
+  min-width: 0;
+}
+
 .before {
   margin-bottom: 1rem;
 }
 
 .before a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
   color: var(--energy);
   font-family: var(--display);
   font-weight: 600;
@@ -18,30 +31,51 @@
 }
 
 .title {
-  max-width: 16ch;
+  max-width: 18ch;
   font-family: var(--display);
   font-weight: 800;
-  font-size: clamp(2.5rem, 11vw, 8rem);
+  font-size: clamp(2.5rem, 4vw + 1.5rem, 5rem);
   overflow-wrap: break-word;
-  line-height: 1;
+  line-height: 1.05;
 }
 
-/* عنوان المقال سؤال طويل: بحجم ملصق يملأ الشاشة الأولى، وتتداخل نازلات العربية (ي، ج) مع السطر التالي. */
+/* عنوان المقال سؤال طويل: أصغر، وتتباعد الأسطر حتى لا تتداخل نازلات العربية (ي، ج) مع السطر التالي. */
 .articleTitle {
   max-width: 22ch;
-  font-size: clamp(2.25rem, 4vw + 1rem, 4.5rem);
-  line-height: 1.2;
+  font-size: clamp(2.125rem, 2.5vw + 1.25rem, 3.75rem);
+  line-height: 1.25;
 }
 
 .lead {
-  max-width: 38rem;
+  max-width: var(--measure);
   margin-top: 1rem;
   color: var(--grey-on-ink);
-  font-size: clamp(1.05rem, 0.4vw + 1rem, 1.25rem);
+  font-size: clamp(1.0625rem, 0.4vw + 1rem, 1.3rem);
+}
+
+.photo {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 21 / 9;
+  overflow: hidden;
+}
+
+.photo img {
+  object-fit: cover;
 }
 
 @media (width >= 64rem) {
   .intro {
     padding-top: 4rem;
+  }
+
+  .withPhoto .inner {
+    grid-template-columns: 6fr 5fr;
+    align-items: center;
+    gap: 4rem;
+  }
+
+  .photo {
+    aspect-ratio: 16 / 10;
   }
 }

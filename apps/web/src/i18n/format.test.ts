@@ -1,6 +1,6 @@
 import { money } from "@masar/domain";
 import { describe, expect, it } from "vitest";
-import { formatMonths, moneyParts, monthsParts } from "./format";
+import { countedMonthsParts, formatMonths, moneyParts, monthsParts } from "./format";
 
 describe("moneyParts", () => {
   it("ريالات كاملة بلا كسور وبفاصلة الآلاف", () => {
@@ -52,5 +52,19 @@ describe("الأشهر", () => {
     expect(monthsParts(1, "ar")).toEqual({ count: undefined, unit: "شهر" });
     expect(monthsParts(2, "ar")).toEqual({ count: undefined, unit: "شهران" });
     expect(monthsParts(12, "ar")).toEqual({ count: "12", unit: "شهرًا" });
+  });
+});
+
+describe("countedMonthsParts", () => {
+  it("الرقم ظاهر دائمًا، والمفرد بعد 1 و2 في العربية", () => {
+    expect(countedMonthsParts(1, "ar")).toEqual({ count: "1", unit: "شهر" });
+    expect(countedMonthsParts(2, "ar")).toEqual({ count: "2", unit: "شهر" });
+    expect(countedMonthsParts(3, "ar")).toEqual({ count: "3", unit: "أشهر" });
+    expect(countedMonthsParts(12, "ar")).toEqual({ count: "12", unit: "شهرًا" });
+  });
+
+  it("الإنجليزية مفرد وجمع", () => {
+    expect(countedMonthsParts(1, "en")).toEqual({ count: "1", unit: "month" });
+    expect(countedMonthsParts(2, "en")).toEqual({ count: "2", unit: "months" });
   });
 });

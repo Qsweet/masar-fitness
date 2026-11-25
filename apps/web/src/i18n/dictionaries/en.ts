@@ -26,9 +26,9 @@ export const en: Dictionary = {
     menu: "Menu",
     home: "Home",
     memberships: "Memberships",
+    facilities: "Facilities",
     train: "Training",
-    water: "Pool",
-    location: "Find us",
+    location: "Location",
     join: "Join now",
     switchLanguage: "العربية",
   },
@@ -36,12 +36,22 @@ export const en: Dictionary = {
   hero: {
     titleLines: ["You've", "got this."],
     wallNote: "“أنت قدها” (you've got this) is painted on our gym wall.",
-    lead: "Strength, functional training, then pool, jacuzzi and steam room. Masters Way, a men's club in Ar Rihab, Buraidah.",
+    lead: "A men's sports club in Ar Rihab, Buraidah: a strength floor and functional training, plus a pool, jacuzzi and steam room for recovery.",
     action: "Choose your membership",
+    secondary: "See the facilities",
+    pauseVideo: "Pause the video",
+    playVideo: "Play the video",
   },
   facilities: {
-    label: "In one membership",
-    items: ["Strength floor", "Functional training", "Pool", "Jacuzzi", "Steam room"],
+    title: "Facilities",
+    lead: "Five facilities, all in your membership.",
+    items: [
+      { name: "Strength floor", line: "Resistance machines and free weights." },
+      { name: "Functional training", line: "An open area with barbells, plates and boxes." },
+      { name: "Pool", line: "An indoor lane pool." },
+      { name: "Jacuzzi", line: "Warm water for recovery after training." },
+      { name: "Steam room", line: "A steam room for recovery after training." },
+    ],
   },
   plans: {
     title: "Choose your duration",
@@ -62,24 +72,24 @@ export const en: Dictionary = {
     emptyLead: "Message us on WhatsApp and we'll tell you what's available.",
     emptyAction: "Message us on WhatsApp",
   },
-  train: { title: "Train hard.", lead: "Real photos from the club's floors." },
-  water: {
-    title: "After the iron, the water.",
-    lead: "An indoor lane pool, plus jacuzzi and steam room for recovery. All in your membership.",
+  train: {
+    title: "Train hard.",
+    lead: "Real photos from the club's floors, on an ordinary training day.",
   },
   payment: {
-    title: "Pay your way",
+    title: "Payment methods",
     methods: [
-      { name: "mada", note: "Card" },
-      { name: "Apple Pay", note: "One tap" },
+      { name: "mada", note: "mada card" },
+      { name: "Apple Pay", note: "Pay from your phone" },
       { name: "Tabby", note: "Instalments, subject to Tabby approval" },
       { name: "Tamara", note: "Instalments, subject to Tamara approval" },
-      { name: "Bank transfer", note: "Through the club" },
+      { name: "Bank transfer", note: "Arranged with the club" },
     ],
     note: "Instalment amounts and count are set by the provider at checkout, and approval depends on eligibility.",
   },
   trust: {
-    title: "No filters.",
+    title: "No surprises.",
+    lead: "What you see here is what you find at the club.",
     points: [
       "The photos are from our floors, not a stock library.",
       "You see the full total before you pay.",
@@ -87,7 +97,7 @@ export const en: Dictionary = {
     ],
   },
   location: {
-    title: "Find us",
+    title: "Club location",
     directions: "Open the map",
     call: "Call",
     whatsapp: "WhatsApp",
@@ -97,7 +107,7 @@ export const en: Dictionary = {
   memberships: {
     title: "Memberships",
     intro: "Every membership covers all club facilities. Only duration and price differ.",
-    compareTitle: "Compare",
+    compareTitle: "Compare memberships",
     compareCaption: "Membership comparison by duration, price and benefits",
     rowPlan: "Membership",
     rowDuration: "Paid duration",
@@ -120,12 +130,17 @@ export const en: Dictionary = {
     stickyLabel: "Membership summary",
   },
   photos: {
-    benches: "Bench row on the strength floor, with “أنت قدها” painted on the yellow wall",
-    curlMachine: "A member on an arm curl machine on the strength floor",
-    dumbbell: "A member lifting a dumbbell in front of the “BE STRONG” wall",
-    ropes: "A member training with battle ropes next to punching bags",
-    functional: "A group training in the functional area with boxes and weights",
-    poolMural: "The indoor pool, with the “BE STRONG” swimmer mural reflected in the water",
+    heroPoster: "A group training on step boards in the functional area",
+    legPress: "A member on the leg press machine on the strength floor",
+    functionalSquat: "A group training with barbells on the green floor of the functional area",
+    pool: "The indoor pool and the “BE STRONG” mural with the club logo",
+    functionalPress: "Members pressing barbells overhead in the functional area",
+    coachFloor: "A coach in a “COACH” shirt watching members in the functional area",
+    latPulldown: "A member on the lat pulldown machine by the gym window",
+    coachRest: "Members resting by a loaded barbell, with a coach standing nearby",
+    trainerPortrait: "A trainer in a club shirt, arms crossed, on the strength floor",
+    consultation: "A man in a club jacket talking with a member by the pool mural",
+    logoWall: "The Masters Way club logo painted on a brick wall",
   },
   footer: {
     rights: "All rights reserved",
@@ -149,7 +164,7 @@ export const en: Dictionary = {
     intro:
       "Straight answers on choosing a membership, training and recovery, reviewed by a coach before publishing.",
     metaDescription:
-      "Masar Champions club articles on choosing a membership, training, recovery and nutrition, reviewed by a coach before publishing.",
+      "Masters Way club articles on choosing a membership, training, recovery and nutrition, reviewed by a coach before publishing.",
     feedTitle: "{club} blog",
     topics: {
       choosing: {
@@ -186,7 +201,7 @@ export const en: Dictionary = {
     costPerVisit: {
       metaTitle: "Cost-per-visit calculator",
       metaDescription:
-        "Pick how often you train each week and see the approximate cost of one visit for each Masar Champions membership in Buraidah.",
+        "Pick how often you train each week and see the approximate cost of one visit for each Masters Way membership in Buraidah.",
       title: "What does a visit cost?",
       lead: "Pick how many times you train each week, and we divide each membership's price by your visits over its full duration.",
       legend: "How many times a week do you train?",

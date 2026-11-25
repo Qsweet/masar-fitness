@@ -46,6 +46,20 @@ export function monthsParts(months: number, locale: Locale): MonthsParts {
   return { count: String(months), unit: months <= ARABIC_FEW_MAX ? words.few : words.many };
 }
 
+/**
+ * المدة رقمًا ظاهرًا دائمًا مع وحدتها، لمربعات الاختيار حيث الرقم الكبير عنوان المربع («1» «شهر»).
+ * في العربية يُكتب المفرد بعد 1 و2 بصيغة الوسم («2 شهر») لأن المثنى لا يُسبق برقم.
+ */
+export function countedMonthsParts(months: number, locale: Locale): Required<MonthsParts> {
+  const words = getDictionary(locale).months;
+  const singular = months === 1 || (locale === "ar" && months === DUAL);
+  if (singular) {
+    return { count: String(months), unit: words.one };
+  }
+  const { unit } = monthsParts(months, locale);
+  return { count: String(months), unit };
+}
+
 export function formatMonths(months: number, locale: Locale): string {
   const { count, unit } = monthsParts(months, locale);
   return count === undefined ? unit : `${count} ${unit}`;

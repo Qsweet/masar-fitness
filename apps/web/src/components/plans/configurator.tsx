@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Price } from "@/components/ui/price";
 import { StickyReveal } from "@/components/ui/sticky-reveal";
@@ -19,6 +19,8 @@ export interface ConfiguratorProps {
   readonly revealAfterId: string;
   readonly labels: Dictionary["plans"];
   readonly planLabels: Dictionary["plan"];
+  /** روابط ثانوية تحت مربعات المدة (المقارنة والحاسبة). */
+  readonly more?: ReactNode;
 }
 
 interface OptionProps {
@@ -40,13 +42,14 @@ function Option({ plan, selected, bestValueLabel, onSelect }: OptionProps) {
         onChange={onSelect}
         className={styles.input}
       />
+      <span className={styles.mark} aria-hidden="true" />
       {plan.isBestValue ? <span className={styles.flag}>{bestValueLabel}</span> : null}
       <span className={styles.duration}>
-        {count === undefined ? null : <span className={styles.count}>{count}</span>}
-        <span className={cx(styles.unit, count === undefined && styles.unitAlone)}>{unit}</span>
+        <span className={styles.count}>{count}</span>
+        <span className={styles.unit}>{unit}</span>
       </span>
-      {plan.bonusText === undefined ? null : <span className={styles.bonus}>{plan.bonusText}</span>}
-      <Price parts={plan.price} className={styles.optionPrice} />
+      <span className={styles.bonus}>{plan.bonusText}</span>
+      <Price parts={plan.price} className={styles.optionPrice} unitClassName={styles.optionUnit} />
     </label>
   );
 }
@@ -134,7 +137,7 @@ function StickyBar({
  * وقارئ الشاشة يعملان)، والسعر والنصوص محسوبة على الخادم؛ هنا اختيار وعرض فقط.
  */
 export function Configurator(props: ConfiguratorProps) {
-  const { plans, initialSlug, labels } = props;
+  const { plans, initialSlug, labels, more } = props;
   const [slug, setSlug] = useState(initialSlug);
   const selected = plans.find((plan) => plan.slug === slug) ?? plans[0];
   if (selected === undefined) {
@@ -156,6 +159,7 @@ export function Configurator(props: ConfiguratorProps) {
           />
         ))}
       </fieldset>
+      {more === undefined ? null : <div className={styles.more}>{more}</div>}
       <Summary plan={selected} {...props} />
       <StickyBar plan={selected} {...props} />
     </div>

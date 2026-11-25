@@ -3,7 +3,12 @@ import { DomainError } from "@masar/domain";
 import type { Prisma } from "../generated/prisma/client";
 import type { Tx } from "./transaction";
 
-export type AuditEntityType = "order" | "membership" | "refund" | "assessment_request";
+export type AuditEntityType =
+  | "order"
+  | "membership"
+  | "refund"
+  | "assessment_request"
+  | "payment_attempt";
 export type AuditActor = "system" | "customer" | "staff" | "provider";
 
 /** قيم بسيطة فقط: لا كائنات متداخلة يختبئ فيها حقل شخصي. */
@@ -27,7 +32,8 @@ export interface AuditEntry {
  */
 const PERSONAL_KEYS = /phone|mobile|name/i;
 
-function assertNoPersonalData(data: AuditEntry["data"]): void {
+/** يُستعمل أيضًا لبيانات حوادث الدفع: القاعدة نفسها على كل ما يُحفظ بلا اسم ولا جوال. */
+export function assertNoPersonalData(data: AuditEntry["data"]): void {
   for (const key of Object.keys(data)) {
     if (PERSONAL_KEYS.test(key)) {
       throw new DomainError("invariant", "audit.personal_data");

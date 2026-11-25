@@ -36,6 +36,8 @@ model Club {
   refunds            Refund[]
   assessmentRequests AssessmentRequest[]
   auditLogs          AuditLog[]
+  paymentAttempts    PaymentAttempt[]
+  paymentIncidents   PaymentIncident[]
 
   @@map("clubs")
 }
@@ -321,12 +323,14 @@ model Order {
   expiredAt             DateTime?   @map("expired_at") @db.Timestamptz(3)
   cancelledAt           DateTime?   @map("cancelled_at") @db.Timestamptz(3)
 
-  club        Club            @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  customer    Customer        @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  items       OrderItem[]
-  discounts   OrderDiscount[]
-  memberships Membership[]
-  refunds     Refund[]
+  club             Club              @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  customer         Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  items            OrderItem[]
+  discounts        OrderDiscount[]
+  memberships      Membership[]
+  refunds          Refund[]
+  paymentAttempts  PaymentAttempt[]
+  paymentIncidents PaymentIncident[]
 
   /// دفعة المزوّد تسوّي طلبًا واحدًا فقط
   @@unique([paidProvider, paidProviderPaymentId])
@@ -502,4 +506,91 @@ model AuditLog {
 
   @@index([entityType, entityId, createdAt])
   @@map("audit_logs")
+}
+
+/// حالات محاولة الدفع. جدول الانتقالات في packages/domain، والقاعدة تفرض الثوابت الخشنة (T8).
+enum PaymentAttemptStatus {
+  created
+  pending
+  authorized
+  captured
+  failed
+  voided
+  expired
+  refunded
+
+  @@map("payment_attempt_status")
+}
+
+/// محاولة دفع لطلب عند مزوّد (المرحلة 4أ). المبلغ والعملة لقطة من الطلب، والطلب لا يُنهى ما دامت
+/// له محاولة حيّة: created أو pending أو authorized، أو captured ولم تُسجَّل تسويتها (T8 و T9).
+model PaymentAttempt {
+  id                String               @id @default(uuid(7)) @db.Uuid
+  clubId            String               @map("club_id") @db.Uuid
+  orderId           String               @map("order_id") @db.Uuid
+  provider          String
+  /// وسيلة الدفع كما يسميها المزوّد (رمز آلي)
+  method            String?
+  status            PaymentAttemptStatus @default(created)
+  amountMinor       Int                  @map("amount_minor")
+  currency          String               @db.Char(3)
+  /// معرّف جلسة المزوّد (فاتورة Moyasar مثلًا). يُكتب مرة
+  providerSessionId String?              @map("provider_session_id")
+  /// معرّف الدفعة الذي يُمرَّر إلى markOrderPaid. يُكتب مرة
+  providerPaymentId String?              @map("provider_payment_id")
+  /// آخر حالة خام قُرئت من المزوّد
+  providerStatus    String?              @map("provider_status")
+  providerMode      String               @map("provider_mode")
+  /// لا يُكمل العميل الدفع بعده: expires_at ناقص الهامش (الشرط الصلب 1)
+  deadlineAt        DateTime             @map("deadline_at") @db.Timestamptz(3)
+  /// مطالبة مزامنة واحدة في كل لحظة
+  syncLeaseUntil    DateTime?            @map("sync_lease_until") @db.Timestamptz(3)
+  /// عادت markOrderPaid بنتيجة (نجاح أو رفض). تُكتب مرة مع settlement_result
+  settledAt         DateTime?            @map("settled_at") @db.Timestamptz(3)
+  /// paid أو replayed أو سبب DomainError
+  settlementResult  String?              @map("settlement_result")
+  /// رمز آلي، لا نص من المزوّد
+  failureReason     String?              @map("failure_reason")
+  lastCheckedAt     DateTime?            @map("last_checked_at") @db.Timestamptz(3)
+  checkCount        Int                  @default(0) @map("check_count")
+  createdAt         DateTime             @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime             @map("updated_at") @db.Timestamptz(3)
+  pendingAt         DateTime?            @map("pending_at") @db.Timestamptz(3)
+  authorizedAt      DateTime?            @map("authorized_at") @db.Timestamptz(3)
+  capturedAt        DateTime?            @map("captured_at") @db.Timestamptz(3)
+  endedAt           DateTime?            @map("ended_at") @db.Timestamptz(3)
+
+  club      Club              @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  order     Order             @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  incidents PaymentIncident[]
+
+  @@unique([provider, providerSessionId])
+  @@unique([provider, providerPaymentId])
+  @@index([orderId])
+  @@index([status, deadlineAt])
+  @@map("payment_attempts")
+}
+
+/// حادثة دفع تنبّه الإدارة (الشرط الصلب 4): إلحاق فقط، وأعمدة الحسم تُكتب مرة (T10).
+/// data بلا اسم ولا جوال. لا تفعيل ولا استرداد آلي بها.
+model PaymentIncident {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  clubId     String    @map("club_id") @db.Uuid
+  orderId    String    @map("order_id") @db.Uuid
+  attemptId  String?   @map("attempt_id") @db.Uuid
+  kind       String
+  data       Json
+  openedAt   DateTime  @map("opened_at") @db.Timestamptz(3)
+  resolvedAt DateTime? @map("resolved_at") @db.Timestamptz(3)
+  resolution String?
+  resolvedBy String?   @map("resolved_by")
+
+  club    Club            @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  attempt PaymentAttempt? @relation(fields: [attemptId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  /// حادثة واحدة من كل نوع لكل محاولة
+  @@unique([attemptId, kind])
+  @@index([orderId])
+  @@map("payment_incidents")
 }

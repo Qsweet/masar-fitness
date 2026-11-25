@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/json-ld";
 import { PageShell } from "@/components/page-shell";
 import { toPlanViews } from "@/components/plans/plan-view";
 import { PlansSection } from "@/components/plans/plans-section";
@@ -9,6 +10,8 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale } from "@/i18n/locales";
 import { getMembershipPlans } from "@/server/catalog";
 import { pageMetadata } from "@/server/metadata";
+import { clubPhotoUrls, siteIdentity } from "@/server/site-identity";
+import { homeGraph } from "@/server/structured-data";
 
 const PATH = "/";
 
@@ -54,6 +57,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <Trust dictionary={dictionary} />
       <Visit locale={locale} dictionary={dictionary} />
       <Final dictionary={dictionary} />
+      <JsonLd
+        data={homeGraph(siteIdentity(locale), {
+          description: dictionary.meta.homeDescription,
+          imageUrls: clubPhotoUrls(),
+        })}
+      />
     </PageShell>
   );
 }

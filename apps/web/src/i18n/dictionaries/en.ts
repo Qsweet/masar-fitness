@@ -171,7 +171,7 @@ export const en: Dictionary = {
     takeawaysTitle: "Key points",
     tocTitle: "In this article",
     sourcesTitle: "Sources",
-    sourceAccessed: "accessed {date}",
+    sourceLine: "{publisher}, {year}. Accessed {date}.",
     relatedTitle: "Read next",
     recommendationLabel: "Club membership now",
     recommendationTitle: "Best value per month: {plan}",

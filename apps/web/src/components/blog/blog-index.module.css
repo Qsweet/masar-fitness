@@ -1,0 +1,63 @@
+/* فهرس المدونة: بطاقات بيضاء بحافة صفراء، وأداة الحساب في كتلة حبر في النهاية. */
+.cards {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+@media (width >= 48rem) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.card {
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+  padding: 1.25rem 1.5rem;
+  background: var(--white);
+  border-inline-start: 6px solid var(--energy);
+}
+
+.cardTitle {
+  font-family: var(--display);
+  font-size: clamp(1.35rem, 1vw + 1rem, 1.75rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.cardTitle a {
+  text-decoration: none;
+}
+
+.cardTitle a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--energy);
+}
+
+.draft {
+  justify-self: start;
+  padding: 0 0.5rem;
+  background: var(--ink);
+  color: var(--energy);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.tool {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  margin-block: var(--section-space);
+  padding: 2rem 1.5rem;
+  background: var(--ink);
+  color: var(--white);
+}
+
+.toolTitle {
+  font-family: var(--display);
+  font-size: clamp(1.75rem, 2vw + 1rem, 2.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+}

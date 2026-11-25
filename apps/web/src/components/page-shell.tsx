@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { getDictionary } from "@/i18n/dictionaries";
 import { localizedPath, type Locale } from "@/i18n/locales";
+import { hasVisibleBlog } from "@/server/blog";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 import styles from "./page-shell.module.css";
@@ -20,11 +21,19 @@ export const MAIN_CONTENT_ID = "main";
 export function PageShell({ locale, path, hasPlans = false, children }: PageShellProps) {
   const dictionary = getDictionary(locale);
   const joinHref = hasPlans ? "#plans" : localizedPath(locale, "/memberships");
+  // رابط المدونة لا يظهر ما دامت بلا مقال ظاهر بلغة الزائر (لا صفحة فارغة ولا رابط إلى 404)
+  const showBlog = hasVisibleBlog(locale);
   return (
     <>
-      <SiteHeader locale={locale} path={path} joinHref={joinHref} dictionary={dictionary} />
+      <SiteHeader
+        locale={locale}
+        path={path}
+        joinHref={joinHref}
+        showBlog={showBlog}
+        dictionary={dictionary}
+      />
       <main id={MAIN_CONTENT_ID}>{children}</main>
-      <SiteFooter locale={locale} dictionary={dictionary} />
+      <SiteFooter locale={locale} showBlog={showBlog} dictionary={dictionary} />
       {hasPlans ? <div className={styles.barSpace} aria-hidden="true" /> : null}
     </>
   );

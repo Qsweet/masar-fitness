@@ -1,10 +1,17 @@
 import type { MetadataRoute } from "next";
+import { getEnv } from "@/server/env";
+
+// الأصل من الإعداد عند الطلب: البناء نفسه يُنشر على أكثر من نطاق
+export const dynamic = "force-dynamic";
 
 /**
  * لا نحجب الزحف هنا حتى على النطاق المؤقت: منع الفهرسة يتم بترويسة X-Robots-Tag من proxy.ts،
  * ومحرك البحث يجب أن يستطيع قراءة الصفحة ليرى noindex. الواجهات لا تُزحف في كل الأحوال.
- * خريطة الموقع تُضاف هنا مع أول صفحات قابلة للفهرسة (المرحلة 6).
+ * لا حجب لزواحف البحث بالذكاء الاصطناعي ولا لوكلاء المستخدمين: قاعدة واحدة للجميع (docs/BLOG.md).
  */
 export default function robots(): MetadataRoute.Robots {
-  return { rules: { userAgent: "*", allow: "/", disallow: "/api/" } };
+  return {
+    rules: { userAgent: "*", allow: "/", disallow: "/api/" },
+    sitemap: `${getEnv().SITE_URL}/sitemap.xml`,
+  };
 }

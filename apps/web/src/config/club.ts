@@ -23,3 +23,18 @@ export function directionsUrl(): string {
 export function whatsappUrl(message: string): string {
   return `https://wa.me/${CLUB_CONTACT.whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
+
+/**
+ * العنوان نفسه مقسومًا إلى حقوله للبيانات المنظَّمة (PostalAddress). لا معلومة جديدة فيه:
+ * تفصيل لـ CLUB_CONTACT.address أعلاه. المنطقة الإدارية لا تُذكر لأنها لم ترد في المصدر.
+ */
+export const CLUB_POSTAL_ADDRESS = {
+  street: {
+    ar: "4870 الطريق الدائري الغربي، حي الرحاب",
+    en: "4870 Western Ring Road, Ar Rihab",
+  },
+  locality: { ar: "بريدة", en: "Buraidah" },
+  postalCode: "52581",
+  /** رمز الدولة ISO 3166-1 */
+  country: "SA",
+} as const;

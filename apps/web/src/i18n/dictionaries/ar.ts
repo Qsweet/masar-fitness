@@ -177,8 +177,8 @@ export const ar = {
     takeawaysTitle: "أهم النقاط",
     tocTitle: "في هذا المقال",
     sourcesTitle: "المراجع",
-    /** {date}: تاريخ آخر فتح للرابط */
-    sourceAccessed: "اطُّلع عليه {date}",
+    /** {publisher}، {year}: سنة النشر، {date}: تاريخ آخر فتح للرابط */
+    sourceLine: "{publisher}، {year}. اطُّلع عليه {date}.",
     relatedTitle: "اقرأ أيضًا",
     recommendationLabel: "اشتراك النادي الآن",
     /** {plan}: اسم الاشتراك الأوفر شهريًا */

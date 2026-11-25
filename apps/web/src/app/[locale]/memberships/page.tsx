@@ -6,10 +6,13 @@ import { ComparisonTable } from "@/components/plans/comparison-table";
 import { toPlanViews } from "@/components/plans/plan-view";
 import { PlansSection } from "@/components/plans/plans-section";
 import { Payment } from "@/components/sections/closing";
+import { ButtonLink } from "@/components/ui/button-link";
+import { ROUTES } from "@/config/routes";
 import { getDictionary } from "@/i18n/dictionaries";
-import { isLocale } from "@/i18n/locales";
+import { isLocale, localizedPath } from "@/i18n/locales";
 import { getMembershipPlans } from "@/server/catalog";
 import { pageMetadata } from "@/server/metadata";
+import styles from "./memberships.module.css";
 
 const PATH = "/memberships";
 
@@ -52,6 +55,11 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
             {dictionary.memberships.compareTitle}
           </h2>
           <ComparisonTable plans={plans} locale={locale} dictionary={dictionary} />
+          <p className={styles.toolLink}>
+            <ButtonLink href={localizedPath(locale, ROUTES.costPerVisit)} variant="line">
+              {dictionary.tools.costPerVisit.membershipsLink}
+            </ButtonLink>
+          </p>
         </section>
       ) : null}
       <Payment dictionary={dictionary} />

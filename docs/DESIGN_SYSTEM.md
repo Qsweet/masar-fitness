@@ -54,6 +54,8 @@
 | محدِّد المدة وملخصه وشريطه     | `components/plans/configurator.tsx`       |
 | بيانات العرض (على الخادم)      | `components/plans/plan-view.ts`           |
 | جدول المقارنة                  | `components/plans/comparison-table.tsx`   |
+| المقال والمدونة (`BLOG.md`)    | `components/blog/*.tsx`                   |
+| حاسبة تكلفة الزيارة            | `components/tools/cost-per-visit.tsx`     |
 
 `[متطلب]` كل مكوّن له وحدة CSS بجانبه تستعمل رموز `globals.css` فقط. الأنماط المشتركة القليلة (`container`، `title-section`، `title-block`، `muted`، `section`، `sr-only`) في `globals.css`.
 

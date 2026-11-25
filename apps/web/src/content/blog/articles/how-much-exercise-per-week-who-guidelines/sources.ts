@@ -6,6 +6,7 @@ export const SOURCES: readonly SharedSource[] = [
     title: "WHO guidelines on physical activity and sedentary behaviour (ISBN 9789240015128)",
     publisher: "World Health Organization",
     url: "https://www.who.int/publications/i/item/9789240015128",
+    lang: "en",
     year: 2020,
   },
   {
@@ -16,12 +17,14 @@ export const SOURCES: readonly SharedSource[] = [
       en: "British Journal of Sports Medicine (BMJ) — via PubMed Central",
     },
     url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC7719906/",
+    lang: "en",
     year: 2020,
   },
   {
     title: "Physical activity (Fact sheet)",
     publisher: "World Health Organization",
     url: "https://www.who.int/news-room/fact-sheets/detail/physical-activity",
+    lang: "en",
     year: 2026,
   },
 ];

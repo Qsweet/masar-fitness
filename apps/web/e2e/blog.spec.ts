@@ -117,6 +117,60 @@ test.describe("صفحة المقال على المعاينة", () => {
   });
 });
 
+interface JsonLdGraph {
+  readonly "@graph": readonly { "@type": string; itemListElement?: { name: string }[] }[];
+}
+
+test.describe("دلالات صفحة المقال", () => {
+  const MEMBERSHIP = "/blog/choose-gym-membership-duration-buraidah";
+
+  test("الجدول يبقى جدولًا بأدوار صريحة حتى حين يتكدس بطاقاتٍ على الجوال", async ({ page }) => {
+    await page.goto(MEMBERSHIP);
+    const table = page.locator('main table[role="table"]');
+    await expect(table).toHaveCount(1);
+    await expect(table.locator('[role="rowgroup"]')).toHaveCount(2);
+    await expect(table.locator('tr[role="row"]')).toHaveCount(5);
+    await expect(table.locator('th[role="columnheader"]')).toHaveCount(3);
+    await expect(table.locator('th[role="rowheader"]')).toHaveCount(4);
+    await expect(table.locator('td[role="cell"]')).toHaveCount(8);
+    await expect(page.getByRole("table")).toHaveCount(1);
+    await expect(page.getByRole("rowheader", { name: "منتظم منذ أشهر وتعرف جدولك" })).toBeVisible();
+  });
+
+  test("عنوان المرجع بلغة أخرى يحمل lang (WCAG 3.1.2)", async ({ page }) => {
+    await page.goto(ARTICLE);
+    await expect(page.locator('#sources a > bdi[lang="en"]')).toHaveCount(8);
+    await expect(page.locator('#sources a > bdi[lang="ar"]')).toHaveCount(2);
+    await page.goto(`/en${ARTICLE}`);
+    const arabicTitle = page.locator('#sources a > bdi[lang="ar"]');
+    await expect(arabicTitle).toHaveCount(2);
+    await expect(arabicTitle.first()).toHaveText("الرياضة في رمضان: عزِّز صحتك ولا ترهقها");
+    // ناشر وزارة الصحة مكتوب بلغة الصفحة فلا يُعلَّم بلغة أخرى
+    await expect(page.locator('#sources bdi[lang="ar"]')).toHaveCount(2);
+  });
+
+  test("مسار التنقل الظاهر هو BreadcrumbList نفسه، آخره الصفحة الحالية", async ({ page }) => {
+    await page.goto(MEMBERSHIP);
+    const items = page.getByRole("navigation", { name: "مسار التنقل" }).getByRole("listitem");
+    const scripts = await page
+      .locator('script[type="application/ld+json"]')
+      .evaluateAll((elements) => elements.map((element) => element.textContent));
+    const graph = scripts
+      .map((text) => JSON.parse(text) as Partial<JsonLdGraph>)
+      .flatMap((data) => data["@graph"] ?? []);
+    const crumbs = graph.find((node) => node["@type"] === "BreadcrumbList");
+    const names = (crumbs?.itemListElement ?? []).map((item) => item.name);
+    expect(names).toHaveLength(3);
+    await expect(items).toHaveText(names);
+    const current = items.last();
+    await expect(current).toHaveAttribute("aria-current", "page");
+    await expect(current).toHaveText(await page.locator("h1").innerText());
+    await expect(current.getByRole("link")).toHaveCount(0);
+    // isPartOf يشير إلى عقدة WebSite معلنة في الصفحة نفسها
+    expect(graph.some((node) => node["@type"] === "WebSite")).toBe(true);
+  });
+});
+
 test.describe("المسودات خارج ملفات الاكتشاف", () => {
   test("لا مسودة في sitemap.xml ولا llms.txt، والخلاصة 404 بلا منشور", async ({ request }) => {
     const sitemap = await (await request.get("/sitemap.xml")).text();

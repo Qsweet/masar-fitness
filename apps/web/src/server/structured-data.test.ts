@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Source } from "@/content/blog/types";
 import { article, TEST_REVIEWER, translation, without } from "@/test/blog-fixtures";
 import { serializeJsonLd, type JsonObject } from "./json-ld";
 import { articleGraph, homeGraph, type SiteIdentity } from "./structured-data";
@@ -20,6 +21,34 @@ function byType(data: JsonObject, type: string): JsonObject {
     throw new Error(`no ${type}`);
   }
   return node;
+}
+
+const LABELLED_SOURCE: Source = {
+  title: "Paper",
+  publisher: "Journal",
+  url: "https://example.org/paper",
+  year: 2020,
+  accessed: "2026-11-01",
+  lang: "en",
+};
+
+/** المعرّفات المعلنة (عقدة بـ@type) والمشار إليها (كائن فيه @id وحده) في الرسم كله. */
+function nodeIds(value: unknown, found = { declared: [] as string[], referenced: [] as string[] }) {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      nodeIds(item, found);
+    }
+  } else if (typeof value === "object" && value !== null) {
+    const entries = Object.entries(value);
+    const id = (value as JsonObject)["@id"];
+    if (typeof id === "string") {
+      (entries.length === 1 ? found.referenced : found.declared).push(id);
+    }
+    for (const [, item] of entries) {
+      nodeIds(item, found);
+    }
+  }
+  return found;
 }
 
 const CRUMBS = [
@@ -129,6 +158,37 @@ describe("articleGraph", () => {
       [2, "https://example.com/en/blog"],
       [3, "https://example.com/en/blog/how-often-to-train"],
     ]);
+  });
+
+  it("isPartOf يشير إلى WebSite معلَن في الرسم نفسه، ولغة المرجع inLanguage", () => {
+    const data = articleGraph(IDENTITY, {
+      article: article(),
+      translation: translation({ sources: [LABELLED_SOURCE] }),
+      reviewer: TEST_REVIEWER,
+      crumbs: CRUMBS,
+    });
+    const website = byType(data, "WebSite");
+    expect(byType(data, "WebPage").isPartOf).toEqual({ "@id": website["@id"] });
+    expect(website).toMatchObject({
+      "@id": "https://example.com/#website",
+      publisher: { "@id": "https://example.com/#organization" },
+    });
+    const posting = byType(data, "WebPage").mainEntity as JsonObject;
+    expect(posting.citation).toEqual([expect.objectContaining({ inLanguage: "en" })]);
+  });
+
+  it("كل إشارة ({@id} وحده) إلى عقدة معلنة في الرسم نفسه", () => {
+    const data = articleGraph(IDENTITY, {
+      article: article(),
+      translation: translation(),
+      reviewer: TEST_REVIEWER,
+      crumbs: CRUMBS,
+    });
+    const { declared, referenced } = nodeIds(data);
+    expect(referenced.length).toBeGreaterThan(0);
+    for (const id of referenced) {
+      expect(declared, id).toContain(id);
+    }
   });
 
   it("المسودة: لا مراجعة معلنة ولا تاريخ نشر", () => {

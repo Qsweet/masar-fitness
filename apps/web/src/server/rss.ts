@@ -66,12 +66,17 @@ function itemXml(item: RssItem): string {
   ].join("");
 }
 
-/** خلاصة RSS 2.0 كاملة، كل نص فيها مُهرَّب. */
+/** الأحدث نشرًا أولًا: ترتيب الخلاصة بتاريخ النشر لا بتاريخ التحديث (التحديث لا يعيد نشر المقال). */
+function newestFirst(items: readonly RssItem[]): RssItem[] {
+  return [...items].sort(
+    (a, b) => b.publishedAt.localeCompare(a.publishedAt) || a.url.localeCompare(b.url),
+  );
+}
+
+/** خلاصة RSS 2.0 كاملة، كل نص فيها مُهرَّب، وعناصرها الأحدث نشرًا أولًا. */
 export function buildRss(channel: RssChannel): string {
-  const latest = channel.items
-    .map((item) => item.publishedAt)
-    .sort()
-    .at(-1);
+  const items = newestFirst(channel.items);
+  const latest = items[0]?.publishedAt;
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
@@ -82,7 +87,7 @@ export function buildRss(channel: RssChannel): string {
     `<description>${escapeXml(channel.description)}</description>`,
     `<language>${escapeXml(channel.language)}</language>`,
     latest === undefined ? "" : `<lastBuildDate>${rfc822(latest)}</lastBuildDate>`,
-    ...channel.items.map(itemXml),
+    ...items.map(itemXml),
     "</channel>",
     "</rss>",
   ].join("\n");

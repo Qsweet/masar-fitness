@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
-import { articlePath, ROUTES } from "@/config/routes";
+import { articlePath } from "@/config/routes";
+import { articleCrumbs } from "@/content/blog/crumbs";
 import { topicText } from "@/content/blog/topics";
 import type { Article, ArticleTranslation, Reviewer } from "@/content/blog/types";
 import { countText } from "@/i18n/count";
@@ -16,22 +17,33 @@ interface Context {
   readonly dictionary: Dictionary;
 }
 
-/** فوق العنوان: مسار التنقل الظاهر (نفسه في BreadcrumbList) واسم الموضوع. */
+/**
+ * فوق العنوان: مسار التنقل الظاهر، وهو نفسه BreadcrumbList (articleCrumbs)، آخره الصفحة الحالية
+ * بلا رابط (aria-current). ثم اسم الموضوع.
+ */
 export function ArticleTrail({
   article,
+  title,
   locale,
   dictionary,
-}: { readonly article: Article } & Context) {
+}: { readonly article: Article; readonly title: string } & Context) {
+  const crumbs = articleCrumbs(dictionary, title, article.slug);
+  const current = crumbs.at(-1);
   return (
     <>
       <nav aria-label={dictionary.blog.breadcrumb}>
         <ol className={styles.trail}>
-          <li>
-            <Link href={localizedPath(locale)}>{dictionary.nav.home}</Link>
-          </li>
-          <li>
-            <Link href={localizedPath(locale, ROUTES.blog)}>{dictionary.blog.title}</Link>
-          </li>
+          {crumbs.slice(0, -1).map((crumb) => (
+            <li key={crumb.path}>
+              <Link href={localizedPath(locale, crumb.path)}>{crumb.name}</Link>
+            </li>
+          ))}
+          {current === undefined ? null : (
+            // العنوان الطويل يُقص بصريًا بعلامة الحذف، ونصه كاملًا في الصفحة لقارئ الشاشة
+            <li aria-current="page" className={styles.trailCurrent}>
+              {current.name}
+            </li>
+          )}
         </ol>
       </nav>
       <p className={styles.topic}>{topicText(dictionary, article.topic).label}</p>
@@ -148,12 +160,13 @@ export function Sources({
         {translation.sources.map((source) => (
           <li key={source.url}>
             <a href={source.url} rel="noopener noreferrer" className={styles.sourceTitle}>
-              <bdi>{source.title}</bdi>
+              {/* لغة المرجع حين تختلف عن لغة الصفحة: ينطقه قارئ الشاشة بلغته (WCAG 3.1.2) */}
+              <bdi lang={source.lang}>{source.title}</bdi>
             </a>
             <span className={cx("muted", styles.sourceLine)}>
               {fillNodes<ReactNode>(dictionary.blog.sourceLine, {
                 // المرجع قد يكون بلغة أخرى: عزل اتجاهه حتى لا تنقلب الفواصل والأرقام حوله
-                publisher: <bdi>{source.publisher}</bdi>,
+                publisher: <bdi lang={source.publisherLang}>{source.publisher}</bdi>,
                 year: String(source.year),
                 date: formatDate(source.accessed, locale),
               }).map((part, index) => (

@@ -1,5 +1,6 @@
 import { CLUB_CONTACT, CLUB_POSTAL_ADDRESS } from "@/config/club";
 import { articlePath, ROUTES } from "@/config/routes";
+import type { Crumb } from "@/content/blog/crumbs";
 import type { Article, ArticleTranslation, Reviewer } from "@/content/blog/types";
 import { localizedPath, type Locale } from "@/i18n/locales";
 import type { JsonObject } from "./json-ld";
@@ -39,6 +40,19 @@ export function organizationNode(identity: SiteIdentity): JsonObject {
   };
 }
 
+/** الموقع نفسه. يُعلَن في كل رسم يشير إليه (isPartOf)، فلا يبقى المعرّف معلّقًا خارج الرئيسية. */
+function websiteNode(identity: SiteIdentity): JsonObject {
+  const id = ids(identity.origin);
+  return {
+    "@type": "WebSite",
+    "@id": id.website,
+    name: identity.clubName,
+    url: absolute(identity, ROUTES.home),
+    inLanguage: identity.locale,
+    publisher: { "@id": id.organization },
+  };
+}
+
 /** الرئيسية: الجهة، والنادي مكانًا (ExerciseGym)، والموقع. حقائق مؤكدة من config/club.ts فقط. */
 export function homeGraph(
   identity: SiteIdentity,
@@ -73,21 +87,9 @@ export function homeGraph(
         },
         parentOrganization: { "@id": id.organization },
       },
-      {
-        "@type": "WebSite",
-        "@id": id.website,
-        name: identity.clubName,
-        url: absolute(identity, ROUTES.home),
-        inLanguage: locale,
-        publisher: { "@id": id.organization },
-      },
+      websiteNode(identity),
     ],
   };
-}
-
-interface Crumb {
-  readonly name: string;
-  readonly path: string;
 }
 
 export function breadcrumbNode(identity: SiteIdentity, id: string, crumbs: readonly Crumb[]) {
@@ -109,6 +111,7 @@ function citations(translation: ArticleTranslation): JsonObject[] {
     name: source.title,
     url: source.url,
     datePublished: String(source.year),
+    ...(source.lang === undefined ? {} : { inLanguage: source.lang }),
     publisher: { "@type": "Organization", name: source.publisher },
   }));
 }
@@ -165,7 +168,7 @@ export interface ArticleGraphInput {
   readonly crumbs: readonly Crumb[];
 }
 
-/** صفحة المقال: WebPage كيانها الرئيسي BlogPosting، ومسار التنقل. */
+/** صفحة المقال: WebPage كيانها الرئيسي BlogPosting، والموقع الذي هي جزء منه، ومسار التنقل. */
 export function articleGraph(identity: SiteIdentity, input: ArticleGraphInput): JsonObject {
   const { article, translation } = input;
   const url = absolute(identity, articlePath(article.slug));
@@ -186,6 +189,7 @@ export function articleGraph(identity: SiteIdentity, input: ArticleGraphInput): 
         ...review(article, input.reviewer, identity.locale),
         mainEntity: blogPosting(identity, article, translation, pageId),
       },
+      websiteNode(identity),
       breadcrumbNode(identity, breadcrumbId, input.crumbs),
     ],
   };

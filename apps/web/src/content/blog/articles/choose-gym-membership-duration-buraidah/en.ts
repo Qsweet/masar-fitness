@@ -1,8 +1,13 @@
 import type { ArticleTranslation } from "../../types";
-import { link, note, p, RECOMMENDATION, sourcesFor, steps, table } from "../build";
+import { clubFacts, link, note, p, RECOMMENDATION, sourcesFor, steps, table } from "../build";
 import { SOURCES } from "./sources";
 
-/** النسخة الإنجليزية منقولة حرفيًا من المسودة المراجَعة (docs/content/drafts/choose-gym-membership-duration-buraidah.md). */
+/**
+ * النسخة الإنجليزية منقولة حرفيًا من المسودة المراجَعة (docs/content/drafts/choose-gym-membership-duration-buraidah.md)،
+ * عدا حقائق النادي (الاسم والمدينة والعنوان والهاتف): تُملأ من الإعداد والقاموس.
+ */
+const CLUB = clubFacts("en");
+
 export const EN: ArticleTranslation = {
   title: "One Month, Three Months or a Year? How to Choose a Gym Membership Length in Buraidah",
   description:
@@ -104,7 +109,7 @@ export const EN: ArticleTranslation = {
       heading: "What should I check in any gym in Buraidah before paying?",
       blocks: [
         p(
-          "Check what you will use every week, at the time you will use it. This list works for any gym, including Masters Way Sports Club:",
+          `Check what you will use every week, at the time you will use it. This list works for any gym, including ${CLUB.name}:`,
         ),
         steps(
           "Visit at your training time. If you will train after work or after isha (night) prayer, visit then. A quiet midday tells you nothing about the evening.",
@@ -116,11 +121,11 @@ export const EN: ArticleTranslation = {
           "The written terms. Read the freeze and refund policies and the start-date rule before you pay, not after.",
         ),
         p(
-          "Masters Way Sports Club is a men's gym in Al Rehab, Buraidah (4870 Western Ring Road). It has a strength floor, a functional training area, an indoor pool with lanes, a jacuzzi and a steam room. See the ",
+          `${CLUB.name} is a men's gym in ${CLUB.city}. It has a strength floor, a functional training area, an indoor pool with lanes, a jacuzzi and a steam room. Address: ${CLUB.address}. See the `,
           link("facilities page", "/#facilities"),
           " and the ",
           link("pool page", "/#water"),
-          " for details, or call 016 324 0111 before you visit.",
+          ` for details, or call ${CLUB.phone} before you visit.`,
         ),
       ],
     },

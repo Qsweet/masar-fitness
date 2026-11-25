@@ -12,6 +12,18 @@
   gap: 0.5rem;
 }
 
+.trail li {
+  min-width: 0;
+}
+
+/* الصفحة الحالية: سطر واحد يُقص بعلامة الحذف إن طال، والنص كاملًا باقٍ في الصفحة */
+.trailCurrent {
+  flex: 1 1 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .trail li + li::before {
   content: "/";
   margin-inline-end: 0.5rem;

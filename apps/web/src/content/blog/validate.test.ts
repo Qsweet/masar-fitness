@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ARTICLES, SITE_VALIDATION_CONTEXT } from "@/content/blog/site";
 import { article, draft, TEST_CONTEXT, translation, without } from "@/test/blog-fixtures";
-import type { Article, Block } from "./types";
+import type { Article, Block, Source } from "./types";
 import {
   articleProblems,
   assertValidArticles,
@@ -124,6 +124,41 @@ describe("الشكل", () => {
     const recommendation: Block = { type: "recommendation", kind: "memberships" };
     expect(problemsOf(withBlocks([recommendation, recommendation]))).toEqual([
       expect.stringContaining("at most one"),
+    ]);
+  });
+});
+
+describe("لغة المرجع وعناصر القوائم", () => {
+  const source: Source = {
+    title: "Source title",
+    publisher: "Publisher",
+    url: "https://example.org/guide",
+    year: 2024,
+    accessed: "2026-11-01",
+  };
+
+  it("lang وpublisherLang وسم BCP 47 قانوني إن وُجد", () => {
+    for (const lang of ["en", "ar", "en-GB"]) {
+      const valid = translation({ sources: [{ ...source, lang, publisherLang: lang }] });
+      expect(problemsOf(article({ translations: { ar: valid } })), lang).toEqual([]);
+    }
+    for (const lang of ["", "english", "EN", "en_GB", "ar-", "<b>"]) {
+      const invalid = translation({ sources: [{ ...source, lang }] });
+      expect(problemsOf(article({ translations: { ar: invalid } })), lang).toEqual([
+        expect.stringContaining("BCP 47"),
+      ]);
+    }
+  });
+
+  it("عناصر القائمة والخطوات والنقاط الرئيسية لا تتكرر (النص مفتاح العنصر)", () => {
+    for (const type of ["list", "steps"] as const) {
+      expect(problemsOf(withBlocks([{ type, items: ["أ", "أ"] }])), type).toEqual([
+        expect.stringContaining("distinct"),
+      ]);
+    }
+    const repeated = translation({ keyTakeaways: ["نقطة", "نقطة"] });
+    expect(problemsOf(article({ translations: { ar: repeated } }))).toEqual([
+      expect.stringContaining("distinct"),
     ]);
   });
 });

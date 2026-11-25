@@ -42,6 +42,10 @@ export interface Source {
   readonly year: number;
   /** تاريخ آخر فتح للرابط والتحقق منه */
   readonly accessed: IsoDate;
+  /** لغة العنوان كما نشره صاحبه (وسم BCP 47 مثل en أو ar)، حين يختلف عن لغة الصفحة (WCAG 3.1.2) */
+  readonly lang?: string;
+  /** لغة اسم الناشر إن كان بلغة المرجع لا بلغة الصفحة */
+  readonly publisherLang?: string;
 }
 
 export interface ArticleTranslation {

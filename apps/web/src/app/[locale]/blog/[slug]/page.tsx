@@ -3,10 +3,11 @@ import { notFound } from "next/navigation";
 import { ArticleView } from "@/components/blog/article-view";
 import { JsonLd } from "@/components/json-ld";
 import { PageShell } from "@/components/page-shell";
-import { articlePath, ROUTES } from "@/config/routes";
+import { articlePath } from "@/config/routes";
+import { articleCrumbs } from "@/content/blog/crumbs";
 import { articleLocales, relatedArticles } from "@/content/blog/visibility";
 import { getDictionary } from "@/i18n/dictionaries";
-import { isLocale, LOCALES, type Locale } from "@/i18n/locales";
+import { isLocale, LOCALES } from "@/i18n/locales";
 import { findReviewer, getVisibleArticle, getVisibleArticles } from "@/server/blog";
 import { pageMetadata } from "@/server/metadata";
 import { siteIdentity } from "@/server/site-identity";
@@ -47,15 +48,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-function crumbs(locale: Locale, title: string, slug: string) {
-  const { nav, blog } = getDictionary(locale);
-  return [
-    { name: nav.home, path: ROUTES.home },
-    { name: blog.title, path: ROUTES.blog },
-    { name: title, path: articlePath(slug) },
-  ];
-}
-
 export default async function ArticlePage({ params }: Props) {
   const found = await resolve(params);
   if (found === undefined) {
@@ -68,7 +60,7 @@ export default async function ArticlePage({ params }: Props) {
     article,
     translation,
     reviewer,
-    crumbs: crumbs(locale, translation.title, article.slug),
+    crumbs: articleCrumbs(dictionary, translation.title, article.slug),
   });
   return (
     <PageShell locale={locale} path={articlePath(article.slug)}>

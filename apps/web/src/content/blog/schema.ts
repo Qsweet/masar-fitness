@@ -23,6 +23,25 @@ const internalPath = z
     "internal link must not carry a locale prefix",
   );
 
+/** رمز لغة ISO 639 من حرفين أو ثلاثة، ثم وسوم فرعية اختيارية (en، ar، en-GB). */
+const LANGUAGE_TAG_SHAPE = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/u;
+
+/** وسم لغة BCP 47 صحيح بصيغته القانونية (en، ar، en-GB…)، يُكتب في خاصية lang. */
+export function isLanguageTag(tag: string): boolean {
+  if (!LANGUAGE_TAG_SHAPE.test(tag)) {
+    return false;
+  }
+  try {
+    return Intl.getCanonicalLocales(tag)[0] === tag;
+  } catch {
+    return false;
+  }
+}
+
+const languageTag = z
+  .string()
+  .refine(isLanguageTag, "lang: a canonical BCP 47 tag such as en or ar");
+
 export function isInternalHref(href: string): boolean {
   return href.startsWith("/");
 }
@@ -36,7 +55,10 @@ const segment = z.discriminatedUnion("type", [
   }),
 ]);
 
-const items = z.array(text).min(1);
+/** عناصر القائمة نصوص مختلفة: النص نفسه مفتاح العنصر عند العرض (key)، فلا يتكرر. */
+const distinct = (values: readonly string[]) => new Set(values).size === values.length;
+const DISTINCT_ITEMS = "list items must be distinct";
+const items = z.array(text).min(1).refine(distinct, DISTINCT_ITEMS);
 
 const block = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("paragraph"), segments: z.array(segment).min(1) }),
@@ -64,13 +86,15 @@ const source = z.strictObject({
   url: httpsUrl,
   year: z.int().min(EARLIEST_SOURCE_YEAR).max(LATEST_SOURCE_YEAR),
   accessed: isoDate,
+  lang: languageTag.optional(),
+  publisherLang: languageTag.optional(),
 });
 
 const translation = z.strictObject({
   title: text,
   description: text.max(DESCRIPTION_MAX),
   summary: text.optional(),
-  keyTakeaways: z.array(text),
+  keyTakeaways: z.array(text).refine(distinct, DISTINCT_ITEMS),
   sections: z.array(section).min(1),
   sources: z.array(source),
 });

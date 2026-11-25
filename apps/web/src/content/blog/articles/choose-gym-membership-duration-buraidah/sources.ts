@@ -7,6 +7,7 @@ export const SOURCES: readonly SharedSource[] = [
     publisher:
       "American Economic Association (American Economic Review, vol. 96, no. 3, pp. 694–719)",
     url: "https://www.aeaweb.org/articles?id=10.1257/aer.96.3.694",
+    lang: "en",
     year: 2006,
   },
   {
@@ -17,6 +18,7 @@ export const SOURCES: readonly SharedSource[] = [
       en: "British Journal of Sports Medicine (BMJ) — via PubMed Central",
     },
     url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC7719906/",
+    lang: "en",
     year: 2020,
   },
 ];

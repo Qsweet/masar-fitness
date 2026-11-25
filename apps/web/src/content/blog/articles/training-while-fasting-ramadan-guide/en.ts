@@ -99,7 +99,7 @@ export const EN: ArticleTranslation = {
           "Drink steadily between iftar and suhoor, and avoid hard training in the heat before iftar. Maughan and Shirreffs' review in the Journal of Sports Sciences explains that a resting person in a temperate climate loses about 1% of body mass as water by sunset, which is unlikely to matter much. But losses grow in hot weather and with exercise, and performance may start to suffer at a loss of 1–2% of body mass. The good news is that these losses can be fully replaced overnight. [7]",
         ),
         p(
-          "The MOH awareness page advises exercising in well-ventilated places in mild conditions [9], and a specialist quoted by the MOH stresses drinking enough water between iftar and suhoor. [10] That favours an air-conditioned indoor session after iftar over a run outdoors before maghrib.",
+          "The MOH awareness page advises exercising in well-ventilated places in mild conditions [9], and a specialist quoted by the MOH stresses drinking enough water between iftar and suhoor. [10] That favours a session in a well-ventilated indoor space after iftar over a run outdoors before maghrib.",
         ),
       ],
     },

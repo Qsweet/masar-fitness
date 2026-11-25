@@ -49,3 +49,26 @@ describe("buildRss", () => {
     expect(xml).not.toContain("<script>");
   });
 });
+
+describe("buildRss: الترتيب", () => {
+  const item = (slug: string, publishedAt: string) => ({
+    title: slug,
+    url: `https://example.com/blog/${slug}`,
+    description: "و",
+    publishedAt,
+  });
+
+  it("الأحدث نشرًا أولًا مهما كان ترتيب المدخلات", () => {
+    const xml = buildRss({
+      title: "م",
+      url: "https://example.com/blog",
+      feedUrl: "https://example.com/blog/feed.xml",
+      description: "و",
+      language: "ar",
+      items: [item("old", "2026-01-05"), item("new", "2026-11-20"), item("mid", "2026-06-01")],
+    });
+    const order = [...xml.matchAll(/<item><title>(\w+)<\/title>/gu)].map((match) => match[1]);
+    expect(order).toEqual(["new", "mid", "old"]);
+    expect(xml).toContain("<lastBuildDate>Fri, 20 Nov 2026 00:00:00 GMT</lastBuildDate>");
+  });
+});

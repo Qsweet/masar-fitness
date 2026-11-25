@@ -25,31 +25,35 @@ function SegmentView({ segment, locale }: { readonly segment: Segment; readonly 
   );
 }
 
+/**
+ * الأدوار صريحة على كل جزء: على الشاشة الضيقة يتكدس الجدول بطاقاتٍ بـdisplay:block
+ * (article.module.css)، وبعض المتصفحات (Safari مع VoiceOver) تُسقط دلالة الجدول حينها.
+ */
 function TableView({ block }: { readonly block: Extract<Block, { type: "table" }> }) {
   return (
     <div className={styles.tableScroller}>
-      <table className={styles.table}>
+      <table className={styles.table} role="table">
         {block.caption === undefined ? null : <caption>{block.caption}</caption>}
-        <thead>
-          <tr>
+        <thead role="rowgroup">
+          <tr role="row">
             {block.head.map((cell, index) => (
-              <th key={index} scope="col">
+              <th key={index} scope="col" role="columnheader">
                 {cell}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody role="rowgroup">
           {block.rows.map((row, rowIndex) => (
-            <tr key={rowIndex}>
+            <tr key={rowIndex} role="row">
               {row.map((cell, index) =>
                 index === 0 ? (
-                  <th key={index} scope="row">
+                  <th key={index} scope="row" role="rowheader">
                     {cell}
                   </th>
                 ) : (
                   // عنوان العمود يظهر فوق الخلية حين يتكدس الجدول على الشاشة الضيقة (article.module.css)
-                  <td key={index} data-label={block.head[index]}>
+                  <td key={index} role="cell" data-label={block.head[index]}>
                     {cell}
                   </td>
                 ),

@@ -41,7 +41,7 @@ export function ArticleView(props: ArticleViewProps) {
       <PageIntro
         title={translation.title}
         lead={translation.description}
-        before={<ArticleTrail article={article} {...context} />}
+        before={<ArticleTrail article={article} title={translation.title} {...context} />}
         size="article"
       >
         <ArticleMeta

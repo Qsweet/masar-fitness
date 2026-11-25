@@ -6,7 +6,7 @@ import { DEFAULT_LOCALE, isLocale, localizedPath } from "@/i18n/locales";
 
 export default async function NotFound() {
   const raw = await currentLocale();
-  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
+  const locale = raw !== undefined && isLocale(raw) ? raw : DEFAULT_LOCALE;
   const dictionary = getDictionary(locale);
 
   return (

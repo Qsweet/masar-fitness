@@ -15,6 +15,8 @@ const FLASH_SUFFIX = "_flash";
 const FLASH_MINUTES = 10;
 const SECONDS_PER_MINUTE = 60;
 const FLASH_MAX_AGE_SECONDS = FLASH_MINUTES * SECONDS_PER_MINUTE;
+const MS_PER_SECOND = 1000;
+const FLASH_MAX_AGE_MS = FLASH_MAX_AGE_SECONDS * MS_PER_SECOND;
 
 const flashSchema = z.object({
   kind: z.enum(["recovery_codes", "temporary_password"]),
@@ -23,7 +25,15 @@ const flashSchema = z.object({
   values: z.array(z.string()).min(1),
 });
 
+/** ما يُشفَّر في الكوكي: السر ووقت إصداره. عمر الكوكي في المتصفح لا يُؤتمن؛ الخادم يفحص الوقت. */
+const sealedSchema = flashSchema.extend({ issuedAt: z.number().int() });
+
 export type AdminFlash = z.infer<typeof flashSchema>;
+
+/** هل ما زال السر ضمن مهلة العرض؟ وقت من المستقبل مرفوض أيضًا. */
+function isFresh(issuedAt: number, nowMs: number): boolean {
+  return issuedAt <= nowMs && nowMs - issuedAt < FLASH_MAX_AGE_MS;
+}
 
 function flashCookie() {
   const { name, options } = adminCookie(getEnv().SITE_URL);
@@ -34,15 +44,23 @@ function contextOf(viewerId: string): string {
   return `flash:${viewerId}`;
 }
 
-export async function writeFlash(viewerId: string, flash: AdminFlash): Promise<void> {
+export async function writeFlash(
+  viewerId: string,
+  flash: AdminFlash,
+  now: Date = new Date(),
+): Promise<void> {
   const { name, options } = flashCookie();
-  const payload = new TextEncoder().encode(JSON.stringify(flash));
+  const sealedFlash = { ...flash, issuedAt: now.getTime() };
+  const payload = new TextEncoder().encode(JSON.stringify(sealedFlash));
   const sealed = sealSecret(adminSecretKey(), payload, contextOf(viewerId));
   (await cookies()).set(name, sealed, { ...options, maxAge: FLASH_MAX_AGE_SECONDS });
 }
 
-/** السر المنتظر لهذا المشاهد، أو null (لا كوكي، أو لمشاهد آخر، أو معبوث به). */
-export async function readFlash(viewerId: string): Promise<AdminFlash | null> {
+/** السر المنتظر لهذا المشاهد، أو null (لا كوكي، أو لمشاهد آخر، أو معبوث به، أو مضت مهلته). */
+export async function readFlash(
+  viewerId: string,
+  now: Date = new Date(),
+): Promise<AdminFlash | null> {
   const sealed = (await cookies()).get(flashCookie().name)?.value;
   const opened =
     sealed === undefined ? null : openSecret(adminSecretKey(), sealed, contextOf(viewerId));
@@ -50,8 +68,12 @@ export async function readFlash(viewerId: string): Promise<AdminFlash | null> {
     return null;
   }
   try {
-    const parsed = flashSchema.safeParse(JSON.parse(new TextDecoder().decode(opened)));
-    return parsed.success ? parsed.data : null;
+    const parsed = sealedSchema.safeParse(JSON.parse(new TextDecoder().decode(opened)));
+    if (!parsed.success || !isFresh(parsed.data.issuedAt, now.getTime())) {
+      return null;
+    }
+    // المخطط يسقط وقت الإصدار: ما يخرج هو السر وحده
+    return flashSchema.parse(parsed.data);
   } catch {
     return null;
   }

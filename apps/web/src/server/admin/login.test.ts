@@ -26,6 +26,7 @@ const db = {
   createStaffSession: vi.fn(() => Promise.resolve("session-id")),
   hashPassword: vi.fn(() => Promise.resolve("rehashed")),
   needsRehash: vi.fn(() => false),
+  lockUsableStaff: vi.fn(() => Promise.resolve(true)),
   issueSessionToken: () => ({ token: "t".repeat(43), tokenHash: "h".repeat(64) }),
   inTransaction: (_db: unknown, work: (tx: unknown) => Promise<unknown>) => work({}),
 };
@@ -136,6 +137,16 @@ describe("attemptLogin", () => {
       {},
       { staffId: STAFF.id, clubId: STAFF.clubId, ip: META.ip, at: NOW },
     );
+  });
+
+  it("كلمة صحيحة والحساب قُفل في الأثناء (تحت قفل الصف): لا جلسة ولا تسجيل نجاح", async () => {
+    db.findStaffCredentialsByEmail.mockResolvedValue(STAFF);
+    db.verifyPassword.mockResolvedValue(true);
+    db.lockUsableStaff.mockResolvedValueOnce(false);
+    expect(await attempt()).toBeNull();
+    expect(db.lockUsableStaff).toHaveBeenCalledWith({}, STAFF.id, NOW);
+    expect(db.createStaffSession).not.toHaveBeenCalled();
+    expect(db.recordPasswordAccepted).not.toHaveBeenCalled();
   });
 
   it("الكلمة توحَّد NFKC قبل التحقق، وتُعاد تجزئتها إن كانت بمعاملات أضعف", async () => {

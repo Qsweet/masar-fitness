@@ -1,5 +1,5 @@
 /** عدّاد المحاولات الفاشلة والقفل في القاعدة (ADMIN_DESIGN §4.6)، وتسجيل الدخول الناجح. */
-import { afterFailedLogin, DomainError, type FailedLoginOutcome } from "@masar/domain";
+import { afterFailedLogin, DomainError, isLockedOut, type FailedLoginOutcome } from "@masar/domain";
 import type { Db } from "../client";
 import { ensureTransaction, type Tx } from "../commerce/transaction";
 import { lockStaff } from "./accounts";
@@ -21,11 +21,26 @@ export interface FailedAttempt extends LoginAttempt {
 
 export type LoginFailureReason = "locked" | "disabled";
 
+/**
+ * يقفل صف الموظف ويقرأ حالته **تحت القفل**: هل يُقبل منه نجاح الآن (نشط وغير مقفل)؟ يُستدعى أول
+ * معاملة النجاح (كلمة مرور صحيحة، رمز خطوة ثانية صحيح): فحص القفل قبل التجزئة قراءة قديمة، ومحاولة
+ * صحيحة متزامنة مع الخامسة الخاطئة لا تدخل بعد أن قُفل الحساب.
+ */
+export async function lockUsableStaff(tx: Tx, staffId: string, now: Date): Promise<boolean> {
+  await lockStaff(tx, staffId);
+  const row = await tx.staffUser.findUnique({ where: { id: staffId } });
+  return row !== null && row.status === "active" && !isLockedOut(row, now);
+}
+
 async function countFailure(tx: Tx, attempt: LoginAttempt): Promise<FailedLoginOutcome> {
   await lockStaff(tx, attempt.staffId);
   const row = await tx.staffUser.findUnique({ where: { id: attempt.staffId } });
   if (row === null) {
     throw new DomainError("invariant", "staff.missing_after_lock");
+  }
+  // مقفل الآن (قفلته محاولة متزامنة سبقت إلى قفل الصف): لا عدّ ولا كتابة، والقفل كما هو
+  if (isLockedOut(row, attempt.at)) {
+    return afterFailedLogin(row, attempt.at);
   }
   const outcome = afterFailedLogin(row, attempt.at);
   await tx.staffUser.update({

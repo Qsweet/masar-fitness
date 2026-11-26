@@ -4,6 +4,7 @@ import {
   createDb,
   findStaffCredentialsByEmail,
   inTransaction,
+  lockUsableStaff,
   recordFailedAttempt,
   recordPasswordAccepted,
   recordRejectedLogin,
@@ -133,6 +134,42 @@ describe("عدّ المحاولات والقفل", () => {
       { ip: "10.9.8.7", method: "recovery" },
     ]);
     expect(log.filter((entry) => entry.action === "account_locked")).toHaveLength(1);
+  });
+
+  it("تسع محاولات خاطئة متزامنة: القفل يبقى، وما وصل بعده لا يُعدّ ولا يمحوه، والنجاح مرفوض تحته", async () => {
+    const clubId = await createTestClub(db);
+    const staff = await createTestStaff(db, clubId);
+    const attempt = { staffId: staff.id, clubId, ip: "10.9.8.7", at: NOW };
+    const outcomes = await Promise.all(
+      Array.from({ length: 9 }, () =>
+        recordFailedAttempt(db, { ...attempt, credential: "password" }),
+      ),
+    );
+    expect(outcomes.filter((outcome) => outcome.lockedNow)).toHaveLength(1);
+    const row = await findStaffCredentialsByEmail(db, staff.email);
+    expect(row?.lockedUntil).toEqual(new Date(NOW.getTime() + LOCKOUT_MINUTES * MINUTE_MS));
+    expect(row?.failedLogins).toBe(0);
+    const log = await audits(staff.id);
+    expect(log.filter((entry) => entry.action === "account_locked")).toHaveLength(1);
+    // كلمة صحيحة تزامنت مع المحاولات: فحصها تحت قفل الصف يرى القفل فيرفض
+    const usable = await inTransaction(db, async (tx) =>
+      ok(await lockUsableStaff(tx, staff.id, NOW)),
+    );
+    expect(usable.ok && usable.value).toBe(false);
+    const later = new Date(NOW.getTime() + LOCKOUT_MINUTES * MINUTE_MS);
+    const after = await inTransaction(db, async (tx) =>
+      ok(await lockUsableStaff(tx, staff.id, later)),
+    );
+    expect(after.ok && after.value).toBe(true);
+  });
+
+  it("حساب معطَّل لا يُقبل منه نجاح تحت القفل", async () => {
+    const clubId = await createTestClub(db);
+    const staff = await createTestStaff(db, clubId, { role: "sales", status: "disabled" });
+    const usable = await inTransaction(db, async (tx) =>
+      ok(await lockUsableStaff(tx, staff.id, NOW)),
+    );
+    expect(usable.ok && usable.value).toBe(false);
   });
 
   it("محاولة على بريد بلا حساب تُسجَّل بلا البريد وبفاعل النظام", async () => {

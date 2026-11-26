@@ -22,10 +22,14 @@ export function isLockedOut(state: LoginGuardState, now: Date): boolean {
 }
 
 /**
- * محاولة فاشلة على حساب غير مقفل. الخامسة المتتالية تقفل 15 دقيقة ويبدأ العدّ من جديد بعدها،
- * فلا يبقى الحساب على حافة القفل إلى الأبد. المحاولات أثناء القفل تُرفض قبل الوصول إلى هنا ولا تُعدّ.
+ * محاولة فاشلة. الخامسة المتتالية تقفل 15 دقيقة ويبدأ العدّ من جديد بعدها، فلا يبقى الحساب على حافة
+ * القفل إلى الأبد. والحساب مقفل الآن: لا تُعدّ المحاولة ولا يُمسّ القفل، فمحاولات متزامنة تصل بعد
+ * القفل (فحصت الحالة قبله) لا تمحوه ولا تمدّه.
  */
 export function afterFailedLogin(state: LoginGuardState, now: Date): FailedLoginOutcome {
+  if (isLockedOut(state, now)) {
+    return { failedLogins: state.failedLogins, lockedUntil: state.lockedUntil, lockedNow: false };
+  }
   const failedLogins = state.failedLogins + 1;
   if (failedLogins < MAX_FAILED_LOGINS) {
     return { failedLogins, lockedUntil: null, lockedNow: false };

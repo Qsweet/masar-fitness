@@ -16,7 +16,12 @@ export {
 } from "./audit";
 export type { StaffActor, StaffAuditAction, StaffAuditEntry } from "./audit";
 export * from "./crypto";
-export { recordFailedAttempt, recordPasswordAccepted, recordRejectedLogin } from "./login-guard";
+export {
+  lockUsableStaff,
+  recordFailedAttempt,
+  recordPasswordAccepted,
+  recordRejectedLogin,
+} from "./login-guard";
 export type {
   FailedAttempt,
   FailedCredential,

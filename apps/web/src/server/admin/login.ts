@@ -5,6 +5,7 @@ import {
   hashPassword,
   inTransaction,
   issueSessionToken,
+  lockUsableStaff,
   needsRehash,
   recordFailedAttempt,
   recordPasswordAccepted,
@@ -63,14 +64,21 @@ async function refuse(staff: StaffCredentials | null, reason: Refusal, input: Lo
   return null;
 }
 
-/** كلمة المرور صحيحة: يُصفَّر العدّاد وتُنشأ جلسة برمز جديد، قبل الخطوة الثانية (بلا إثباتها). */
+/**
+ * كلمة المرور صحيحة: تُنشأ جلسة برمز جديد قبل الخطوة الثانية (بلا إثباتها)، إلا إن قُفل الحساب أو
+ * عُطّل في الأثناء (يُفحص تحت قفل الصف)، فالنتيجة فشل كأي فشل.
+ */
 async function openSession(staff: StaffCredentials, password: string, input: LoginInput) {
   const issued = issueSessionToken();
   const expiresAt = sessionExpiry(input.now);
   const rehashedPassword = needsRehash(staff.passwordHash)
     ? await hashPassword(password)
     : undefined;
-  await inTransaction(getDb(), async (tx) => {
+  const opened = await inTransaction(getDb(), async (tx) => {
+    // القفل والحالة يُعاد فحصهما تحت قفل الصف: ما قُرئ قبل التجزئة قديم
+    if (!(await lockUsableStaff(tx, staff.id, input.now))) {
+      return ok(false);
+    }
     await recordPasswordAccepted(tx, {
       staffId: staff.id,
       clubId: staff.clubId,
@@ -87,9 +95,9 @@ async function openSession(staff: StaffCredentials, password: string, input: Log
       ip: input.meta.ip,
       userAgent: input.meta.userAgent,
     });
-    return ok(null);
+    return ok(true);
   });
-  return { token: issued.token, expiresAt };
+  return opened.ok && opened.value ? { token: issued.token, expiresAt } : null;
 }
 
 /**

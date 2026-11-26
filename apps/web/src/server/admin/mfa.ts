@@ -8,6 +8,7 @@ import {
   inTransaction,
   issueRecoveryCodes,
   issueSessionToken,
+  lockUsableStaff,
   newTotpSecret,
   normalizeRecoveryCode,
   openSecret,
@@ -117,7 +118,9 @@ export async function verifySecondStep(attempt: MfaAttempt): Promise<MfaResult> 
     return null;
   }
   const result = await inTransaction(getDb(), async (tx) => {
-    if (!(await consume(tx, staff, attempt))) {
+    // القفل يُعاد فحصه تحت قفل الصف قبل قبول الرمز: رمز صحيح متزامن مع الخامسة الخاطئة لا يدخل
+    const usable = await lockUsableStaff(tx, staff.id, attempt.now);
+    if (!usable || !(await consume(tx, staff, attempt))) {
       return ok(null);
     }
     await recordMfaVerified(tx, {

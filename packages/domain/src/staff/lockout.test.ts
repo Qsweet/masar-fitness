@@ -46,6 +46,14 @@ describe("قفل الحساب", () => {
     expect(outcome).toEqual({ failedLogins: 1, lockedUntil: null, lockedNow: false });
   });
 
+  it("محاولة على حساب مقفل الآن لا تُعدّ ولا تمسّ القفل", () => {
+    const lockedUntil = new Date(NOW.getTime() + MINUTE_MS);
+    for (const failedLogins of [0, 3]) {
+      const outcome = afterFailedLogin({ failedLogins, lockedUntil }, NOW);
+      expect(outcome).toEqual({ failedLogins, lockedUntil, lockedNow: false });
+    }
+  });
+
   it("الدخول الناجح يصفّر الحالة", () => {
     expect(CLEARED_LOGIN_GUARD).toEqual({ failedLogins: 0, lockedUntil: null });
   });

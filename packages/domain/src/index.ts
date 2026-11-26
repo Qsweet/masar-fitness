@@ -18,6 +18,7 @@ export * from "./commerce/checkout";
 export * from "./commerce/lifecycle";
 export * from "./commerce/pricing";
 export * from "./payments";
+export * from "./staff";
 export {
   costPerVisit,
   DEFAULT_VISITS_PER_WEEK,

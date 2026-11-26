@@ -41,7 +41,7 @@ export function ButtonLink({ href, children, label, ...style }: ButtonLinkProps)
 
 interface PageHeaderProps {
   readonly title: string;
-  readonly description?: string;
+  readonly description?: string | undefined;
   /** شارة بجانب العنوان (حالة الحساب مثلًا). */
   readonly badge?: ReactNode;
   /** أفعال الصفحة. */

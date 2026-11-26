@@ -8,6 +8,7 @@ import {
   promotionDisplayState,
   type LocalizedText,
   type Money,
+  type ProductKind,
   type PromotionDisplayState,
   type PromotionRule,
 } from "@masar/domain";
@@ -135,7 +136,7 @@ export async function getPromotionDetail(
 export interface PromotionProductOption {
   readonly id: string;
   readonly name: LocalizedText;
-  readonly kind: string;
+  readonly kind: ProductKind;
 }
 
 /** منتجات النادي غير المؤرشفة التي تُشترى (اشتراكات وإضافات وبرامج): خيارات نطاق العرض. */

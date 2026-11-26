@@ -213,6 +213,11 @@ export async function setStaffPassword(tx: Tx, change: PasswordChange): Promise<
   if (result.count === 0) {
     abort(new DomainError("not_found", "staff.not_found"));
   }
+  // سر تسجيل معلّق (لم يؤكَّد) قد يكون رآه من عرف الكلمة القديمة: يُمحى، فيُولَّد سر جديد لصاحب الكلمة الجديدة
+  await tx.staffUser.updateMany({
+    where: { id: change.staffId, totpEnabledAt: null },
+    data: { totpSecretEnc: null, totpLastStep: null },
+  });
   await revokeAllStaffSessions(tx, change.staffId, change.at, change.keepSessionId);
   await writeStaffAudit(tx, {
     clubId: change.clubId,

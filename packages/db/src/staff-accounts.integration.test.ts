@@ -222,6 +222,35 @@ describe("تغيير الدور والحالة", () => {
 });
 
 describe("كلمة المرور", () => {
+  it("تغييرها يمحو سر تسجيل معلّقًا لم يؤكَّد، ولا يمسّ خطوة ثانية مفعّلة", async () => {
+    const clubId = await createTestClub(db);
+    const pending = await createTestStaff(db, clubId, { role: "sales" });
+    const enrolled = await createTestStaff(db, clubId, { role: "sales", withTotp: true });
+    await db.staffUser.update({
+      where: { id: pending.id },
+      data: { totpSecretEnc: "v1.pending.secret.box", totpLastStep: 7n },
+    });
+    for (const staff of [pending, enrolled]) {
+      await inTransaction(db, async (tx) => {
+        await setStaffPassword(tx, {
+          clubId,
+          staffId: staff.id,
+          passwordHash: HASH,
+          action: "password_reset",
+          mustChangePassword: true,
+          actor: "system",
+          at: NOW,
+        });
+        return ok(null);
+      });
+    }
+    const cleared = await findStaffCredentialsByEmail(db, pending.email);
+    expect(cleared).toMatchObject({ totpSecretEnc: null, totpLastStep: null, totpEnabled: false });
+    const kept = await findStaffCredentialsByEmail(db, enrolled.email);
+    expect(kept?.totpEnabled).toBe(true);
+    expect(kept?.totpSecretEnc).not.toBeNull();
+  });
+
   it("تغييرها يلغي كل الجلسات ويرفع القفل ويُسجَّل بلا أي سر", async () => {
     const clubId = await createTestClub(db);
     const staff = await createTestStaff(db, clubId, { mustChangePassword: true });

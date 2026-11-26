@@ -43,9 +43,22 @@ test("المالك يرى كل الأقسام، والمدير بلا «المو
 }) => {
   const club = await newClub(db);
   const expected = {
-    owner: [TEXT.nav.overview, TEXT.nav.staff, TEXT.nav.audit, TEXT.nav.account],
-    manager: [TEXT.nav.overview, TEXT.nav.audit, TEXT.nav.account],
-    sales: [TEXT.nav.overview, TEXT.nav.account],
+    owner: [
+      TEXT.nav.overview,
+      TEXT.nav.orders,
+      TEXT.nav.customers,
+      TEXT.nav.staff,
+      TEXT.nav.audit,
+      TEXT.nav.account,
+    ],
+    manager: [
+      TEXT.nav.overview,
+      TEXT.nav.orders,
+      TEXT.nav.customers,
+      TEXT.nav.audit,
+      TEXT.nav.account,
+    ],
+    sales: [TEXT.nav.overview, TEXT.nav.orders, TEXT.nav.customers, TEXT.nav.account],
     editor: [TEXT.nav.account],
   } as const;
   for (const role of ["owner", "manager", "sales", "editor"] as const) {

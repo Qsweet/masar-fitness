@@ -115,6 +115,12 @@ test("صفحات اللوحة بلا مخالفات وصول آلية", async ({
     const opener = page.getByRole("button", { name: TEXT.shell.openMenu });
     if (await opener.isVisible()) {
       await opener.click();
+      // الدرج يدخل بحركة شفافية 180ms: الفحص أثناءها يقيس تباينًا عابرًا لا التباين النهائي
+      await page
+        .getByRole("dialog", { name: TEXT.nav.label })
+        .evaluate((drawer) =>
+          Promise.all(drawer.getAnimations().map((animation) => animation.finished)),
+        );
       await expectAccessible(page, `${theme} drawer`);
       await page.keyboard.press("Escape");
     }

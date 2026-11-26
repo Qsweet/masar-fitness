@@ -54,11 +54,6 @@ export const landingAr = {
     /** {date}: تاريخ القراءة */
     source: "تقييم Google وعدد مراجعاته كما عرضها موقع النادي في {date}.",
   },
-  tiers: {
-    "three-months": "انطلاقة الأبطال",
-    "six-months": "مسار التغيير",
-    "one-year": "رحلة الأبطال",
-  } as Readonly<Record<string, string>>,
   /** {amount} {unit}: «3.52 ر.س». السعر ÷ أيام المدة كاملة شاملة الأشهر المجانية. «نحو» كالشهري، لا «≈» */
   daily: "نحو {amount} {unit} يوميًا",
   dailyNote: "التكلفة اليومية تقريبية: الإجمالي على أيام المدة كاملة.",

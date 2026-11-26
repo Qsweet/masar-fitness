@@ -11,6 +11,7 @@ function plan(
   return {
     slug,
     name: { ar: slug, en: slug },
+    tier: null,
     summary: { ar: "", en: "" },
     price: money(amountMinor),
     paidMonths,

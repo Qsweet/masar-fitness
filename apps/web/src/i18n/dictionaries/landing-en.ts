@@ -53,11 +53,6 @@ export const landingEn: LandingDictionary = {
     machines: "Machines on the strength floor",
     source: "Google rating and review count as shown on the club's website on {date}.",
   },
-  tiers: {
-    "three-months": "Champions' Start",
-    "six-months": "The Change Path",
-    "one-year": "Champions' Journey",
-  },
   daily: "About {amount} {unit} a day",
   dailyNote: "The daily cost is approximate: the total over every day of the full term.",
   steps: {

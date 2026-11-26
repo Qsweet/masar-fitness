@@ -26,7 +26,7 @@ export type PurchaseLink =
 export interface PlanView {
   readonly slug: string;
   readonly name: string;
-  /** اسم الباقة التسويقي من تصميم المالك («رحلة الأبطال»)؛ غائب لاشتراك بلا اسم في القاموس */
+  /** اسم الفئة التسويقي («رحلة الأبطال») من القاعدة (`products.tier_*`)؛ غائب لاشتراك بلا اسم فئة */
   readonly tier: string | undefined;
   /** صفحة الاشتراك */
   readonly href: string;
@@ -129,7 +129,7 @@ function toPlanView(plan: MembershipPlan, context: ViewContext): PlanView {
   return {
     slug: plan.slug,
     name: plan.name[locale],
-    tier: dictionary.tiers[plan.slug],
+    tier: plan.tier?.[locale],
     href: localizedPath(locale, `/memberships/${plan.slug}`),
     purchase: purchaseHref(plan, locale, dictionary, checkoutEnabled),
     whatsappHref: planWhatsappUrl(plan, locale, dictionary),

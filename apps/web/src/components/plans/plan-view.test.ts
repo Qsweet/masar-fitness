@@ -7,6 +7,7 @@ function plan(overrides: Partial<MembershipPlan>): MembershipPlan {
   return {
     slug: "p",
     name: { ar: "باقة", en: "Plan" },
+    tier: null,
     summary: { ar: "", en: "" },
     price: money(35000),
     paidMonths: 1,
@@ -119,5 +120,15 @@ describe("initialPlanSlug", () => {
 describe("freezeDays", () => {
   it("5 أيام لكل شهر مدفوع، والأشهر المجانية لا تُحتسب (كما في شروط النادي الحالية)", () => {
     expect([3, 6, 12].map(freezeDays)).toEqual([15, 30, 60]);
+  });
+});
+
+describe("اسم الفئة من القاعدة", () => {
+  const tiered = plan({ slug: "tiered", tier: { ar: "رحلة الأبطال", en: "Champions' Journey" } });
+
+  it("يُعرض بلغة الصفحة، وغائب لباقة بلا اسم فئة", () => {
+    expect(toPlanViews([tiered], "ar", false)[0]?.tier).toBe("رحلة الأبطال");
+    expect(toPlanViews([tiered], "en", false)[0]?.tier).toBe("Champions' Journey");
+    expect(toPlanViews([monthly], "ar", false)[0]?.tier).toBeUndefined();
   });
 });

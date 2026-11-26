@@ -43,6 +43,8 @@ services:
       MOYASAR_WEBHOOK_SECRET: ${MOYASAR_WEBHOOK_SECRET:-}
       MOYASAR_HOSTED_PAGE_ORIGIN: ${MOYASAR_HOSTED_PAGE_ORIGIN:-}
       PAYMENTS_PUBLIC_SANDBOX: ${PAYMENTS_PUBLIC_SANDBOX:-}
+      # لوحة التحكم مغلقة (404) ما لم يُكتب مفتاحها في deploy/.env على الخادم (docs/DEPLOYMENT.md)
+      ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-}
     healthcheck:
       test:
         [

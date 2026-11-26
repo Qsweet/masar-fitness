@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { ADMIN_ENV } from "./e2e/admin-env";
 import { FAKE_PAYMENTS_ENV } from "./e2e/payments-env";
 
 /** منفذ خادم الاختبار؛ يُغيَّر بـPLAYWRIGHT_PORT لتشغيل نسختين معًا على الجهاز نفسه دون تصادم. */
@@ -13,10 +14,16 @@ const CHECKOUT_URL = `http://127.0.0.1:${String(CHECKOUT_PORT)}`;
 /** خادم ثالث للدفع وحده: الشراء مفتوح ومزوّد الاختبار (محاكاة في الذاكرة، بلا شبكة ولا مال). */
 const PAYMENTS_PORT = PORT + 2;
 const PAYMENTS_URL = `http://127.0.0.1:${String(PAYMENTS_PORT)}`;
+/** خادم رابع للوحة التحكم وحدها: مفتاح اختبار يفتحها؛ الخوادم الأخرى تثبت أنها مغلقة بلا مفتاح. */
+const ADMIN_PORT = PORT + 3;
+const ADMIN_URL = `http://127.0.0.1:${String(ADMIN_PORT)}`;
 const isCi = process.env.CI !== undefined;
 const SCREENS_SPEC = /screens\.spec\.ts/;
 const CHECKOUT_SPEC = /[\\/]checkout(?:-no-provider)?\.spec\.ts$/;
 const PAYMENTS_SPEC = /[\\/]payments(?:-[a-z]+)?\.spec\.ts$/;
+const ADMIN_SPEC = /[\\/]admin(?:-[a-z0-9]+)?\.spec\.ts$/;
+/** اللوحة مغلقة صراحةً: مفتاح من بيئة الصدفة لا يفتحها على الخوادم التي تثبت أنها مغلقة. */
+const ADMIN_OFF = { ADMIN_SECRET_KEY: "" };
 /** الدفع مغلق صراحةً: متغير من بيئة الصدفة لا يضبط مزوّدًا على الخادمين الأولين. */
 const PAYMENTS_OFF = { PAYMENTS_MODE: "off" };
 const MOBILE = { width: 390, height: 844 };
@@ -45,12 +52,12 @@ export default defineConfig({
   projects: [
     {
       name: "mobile-390",
-      testIgnore: [SCREENS_SPEC, CHECKOUT_SPEC, PAYMENTS_SPEC],
+      testIgnore: [SCREENS_SPEC, CHECKOUT_SPEC, PAYMENTS_SPEC, ADMIN_SPEC],
       use: { ...devices["Desktop Chrome"], viewport: MOBILE },
     },
     {
       name: "desktop-1440",
-      testIgnore: [SCREENS_SPEC, CHECKOUT_SPEC, PAYMENTS_SPEC],
+      testIgnore: [SCREENS_SPEC, CHECKOUT_SPEC, PAYMENTS_SPEC, ADMIN_SPEC],
       use: { ...devices["Desktop Chrome"], viewport: DESKTOP },
     },
     // المقاسات السبعة للمراجعة البصرية: يغيّر الاختبار المقاس بنفسه ويحفظ اللقطات
@@ -77,11 +84,31 @@ export default defineConfig({
       testMatch: PAYMENTS_SPEC,
       use: { ...devices["Desktop Chrome"], viewport: DESKTOP, baseURL: PAYMENTS_URL },
     },
+    // لوحة التحكم على الخادم الرابع (المفتاح مضبوط) فقط
+    {
+      name: "admin-390",
+      testMatch: ADMIN_SPEC,
+      use: { ...devices["Desktop Chrome"], viewport: MOBILE, baseURL: ADMIN_URL },
+    },
+    {
+      name: "admin-1440",
+      testMatch: ADMIN_SPEC,
+      use: { ...devices["Desktop Chrome"], viewport: DESKTOP, baseURL: ADMIN_URL },
+    },
   ],
   webServer: [
     // صراحةً: علم من بيئة الصدفة لا يفتح الشراء على الخادم الذي يثبت أنه مغلق
-    server(PORT, BASE_URL, { CHECKOUT_ENABLED: "false", ...PAYMENTS_OFF }),
-    server(CHECKOUT_PORT, CHECKOUT_URL, { CHECKOUT_ENABLED: "true", ...PAYMENTS_OFF }),
-    server(PAYMENTS_PORT, PAYMENTS_URL, { CHECKOUT_ENABLED: "true", ...FAKE_PAYMENTS_ENV }),
+    server(PORT, BASE_URL, { CHECKOUT_ENABLED: "false", ...PAYMENTS_OFF, ...ADMIN_OFF }),
+    server(CHECKOUT_PORT, CHECKOUT_URL, {
+      CHECKOUT_ENABLED: "true",
+      ...PAYMENTS_OFF,
+      ...ADMIN_OFF,
+    }),
+    server(PAYMENTS_PORT, PAYMENTS_URL, {
+      CHECKOUT_ENABLED: "true",
+      ...FAKE_PAYMENTS_ENV,
+      ...ADMIN_OFF,
+    }),
+    server(ADMIN_PORT, ADMIN_URL, { CHECKOUT_ENABLED: "false", ...PAYMENTS_OFF, ...ADMIN_ENV }),
   ],
 });

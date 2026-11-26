@@ -2,9 +2,16 @@ import type { StaffRole } from "./roles";
 
 /**
  * صلاحيات لوحة التحكم. تُضاف صلاحيات كل مرحلة معها (`catalog.*`, `orders.*`, `content.*`…).
- * `overview.read`: أرقام طلبات اليوم في «نظرة عامة»، وهي بيانات مبيعات لا يراها المحرر (القرار 62).
+ * `overview.read`: أرقام الطلبات في «نظرة عامة»، وهي بيانات مبيعات لا يراها المحرر (القرار 62).
+ * `system.read`: بطاقة حالة النظام (الشراء، الدفع، الفهرسة، الإصدار) للمالك والمدير (القرار 64).
  */
-export const PERMISSIONS = ["staff.manage", "audit.read", "overview.read", "account.self"] as const;
+export const PERMISSIONS = [
+  "staff.manage",
+  "audit.read",
+  "overview.read",
+  "system.read",
+  "account.self",
+] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
 /**
@@ -13,8 +20,8 @@ export type Permission = (typeof PERMISSIONS)[number];
  * والمدونة (A3/A4)؛ المبيعات الطلبات والعملاء (A2).
  */
 const ROLE_PERMISSIONS: Readonly<Record<StaffRole, readonly Permission[]>> = {
-  owner: ["staff.manage", "audit.read", "overview.read", "account.self"],
-  manager: ["audit.read", "overview.read", "account.self"],
+  owner: ["staff.manage", "audit.read", "overview.read", "system.read", "account.self"],
+  manager: ["audit.read", "overview.read", "system.read", "account.self"],
   editor: ["account.self"],
   sales: ["overview.read", "account.self"],
 };

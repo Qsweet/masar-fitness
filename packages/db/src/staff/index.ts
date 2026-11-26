@@ -46,6 +46,13 @@ export {
   savePendingTotpSecret,
 } from "./mfa";
 export type { MfaVerified, RecoveryCodeUse, TotpEnrolment, TotpReset } from "./mfa";
+export {
+  countAwaitingPayment,
+  dailyOrderSeries,
+  listRecentOrders,
+  staffMfaCoverage,
+} from "./dashboard";
+export type { DailyOrders, MfaCoverage, RecentOrder } from "./dashboard";
 export { countOrdersToday, findClubSummary, listClubs } from "./overview";
 export type { ClubSummary, OrderCounts } from "./overview";
 export { AUDIT_ACTOR_KINDS, AUDIT_ENTITY_TYPES, listAuditLogs } from "./read-audit";

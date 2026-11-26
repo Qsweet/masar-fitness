@@ -9,12 +9,13 @@ export interface ClubSummary {
   readonly nameAr: string;
   readonly nameEn: string;
   readonly timezone: string;
+  readonly currency: string;
 }
 
 export async function findClubSummary(db: Db, clubId: string): Promise<ClubSummary | null> {
   return db.club.findUnique({
     where: { id: clubId },
-    select: { id: true, nameAr: true, nameEn: true, timezone: true },
+    select: { id: true, nameAr: true, nameEn: true, timezone: true, currency: true },
   });
 }
 
@@ -22,7 +23,7 @@ export async function findClubSummary(db: Db, clubId: string): Promise<ClubSumma
 export async function listClubs(db: Db): Promise<(ClubSummary & { slug: string })[]> {
   return db.club.findMany({
     orderBy: { createdAt: "asc" },
-    select: { id: true, slug: true, nameAr: true, nameEn: true, timezone: true },
+    select: { id: true, slug: true, nameAr: true, nameEn: true, timezone: true, currency: true },
   });
 }
 

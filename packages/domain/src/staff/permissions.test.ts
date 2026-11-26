@@ -3,8 +3,8 @@ import { hasPermission, PERMISSIONS, permissionsOf, type Permission } from "./pe
 import { STAFF_ROLES, type StaffRole } from "./roles";
 
 const EXPECTED: Record<StaffRole, readonly Permission[]> = {
-  owner: ["staff.manage", "audit.read", "overview.read", "account.self"],
-  manager: ["audit.read", "overview.read", "account.self"],
+  owner: ["staff.manage", "audit.read", "overview.read", "system.read", "account.self"],
+  manager: ["audit.read", "overview.read", "system.read", "account.self"],
   editor: ["account.self"],
   sales: ["overview.read", "account.self"],
 };
@@ -34,5 +34,7 @@ describe("خريطة الصلاحيات", () => {
     expect(hasPermission("editor", "overview.read")).toBe(false);
     expect(hasPermission("editor", "audit.read")).toBe(false);
     expect(hasPermission("sales", "audit.read")).toBe(false);
+    expect(hasPermission("sales", "system.read")).toBe(false);
+    expect(hasPermission("editor", "system.read")).toBe(false);
   });
 });

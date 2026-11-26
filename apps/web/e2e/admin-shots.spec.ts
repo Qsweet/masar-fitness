@@ -1,12 +1,20 @@
 import type { Db } from "@masar/db";
 import { createDigitalProgram, insertRawOrder } from "@masar/db/test-support";
 import { base32Decode } from "@masar/domain";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import {
+  SHOT_DESKTOP,
+  SHOT_HEIGHT,
+  SHOT_WIDTHS,
+  SHOTS_DIR,
+  shootAll,
+  shot,
+  watchProblems,
+} from "./admin-shots-support";
 import {
   codeFor,
   newClub,
   newStaff,
-  setTheme,
   shell,
   submitLogin,
   submitTotp,
@@ -17,15 +25,12 @@ import {
 import { testDb } from "./payments-support";
 
 /**
- * لقطات حقيقية لكل صفحات اللوحة للمراجعة البصرية: أربعة مقاسات ومظهران، مع فحص أن لا تمرير أفقي ولا
- * خطأ console (ومنه مخالفات CSP). تُحفظ في apps/web/screens/admin (خارج git). الاختبار يغيّر المقاس
- * بنفسه، فيعمل في مشروع واحد.
+ * لقطات حقيقية لكل صفحات اللوحة للمراجعة البصرية (العدّة في admin-shots-support.ts). الاختبار يغيّر
+ * المقاس بنفسه، فيعمل في مشروع واحد.
  */
-const SHOTS_DIR = "screens/admin";
-const WIDTHS = [390, 768, 1440, 1920] as const;
-const THEMES = ["dark", "light"] as const;
-const HEIGHT = 900;
-const DESKTOP = 1440;
+const WIDTHS = SHOT_WIDTHS;
+const HEIGHT = SHOT_HEIGHT;
+const DESKTOP = SHOT_DESKTOP;
 const NEW_PASSWORD = "quiet-harbor-lantern-58";
 const HOUR_MS = 3_600_000;
 const DAY_MS = 86_400_000;
@@ -43,43 +48,6 @@ test.afterAll(async () => {
 test.beforeEach(({ page }) => {
   test.skip(page.viewportSize()?.width !== DESKTOP, "اللقطات في مشروع واحد: الاختبار يغيّر المقاس");
 });
-
-function watchProblems(page: Page): string[] {
-  const problems: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") {
-      problems.push(message.text());
-    }
-  });
-  page.on("pageerror", (error) => problems.push(error.message));
-  return problems;
-}
-
-async function shot(page: Page, name: string): Promise<void> {
-  const width = page.viewportSize()?.width ?? 0;
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-  );
-  expect(overflow, `تمرير أفقي في ${name} عند ${String(width)}`).toBeLessThanOrEqual(0);
-  await page.screenshot({ path: `${SHOTS_DIR}/${name}-${String(width)}.png`, fullPage: true });
-}
-
-/** الصفحة الحالية بالمظهرين والمقاسات الأربعة. `prepare` يعيد الحالة بعد تبديل المظهر. */
-async function shootAll(page: Page, name: string, prepare?: () => Promise<void>): Promise<void> {
-  for (const theme of THEMES) {
-    await setTheme(page, theme);
-    await page.reload();
-    await prepare?.();
-    for (const width of WIDTHS) {
-      await page.setViewportSize({ width, height: HEIGHT });
-      await shot(page, `${name}-${theme}`);
-    }
-  }
-  await setTheme(page, "dark");
-  await page.setViewportSize({ width: DESKTOP, height: HEIGHT });
-  await page.reload();
-  await prepare?.();
-}
 
 async function seedOrders(clubId: string): Promise<void> {
   const program = await createDigitalProgram(db, clubId, { priceMinor: 69_900 });

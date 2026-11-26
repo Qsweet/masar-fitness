@@ -60,6 +60,10 @@ export async function shootAll(
  * الحالي، والمستدعي يعيد بناءها للمظهر الآخر.
  */
 export async function shootHere(page: Page, name: string, theme: string): Promise<void> {
+  // رد النموذج ينقل التركيز فيتمرر المتصفح إليه؛ اللقطة الكاملة تبدأ من أعلى الصفحة
+  await page.evaluate(() => {
+    window.scrollTo(0, 0);
+  });
   for (const width of SHOT_WIDTHS) {
     await page.setViewportSize({ width, height: SHOT_HEIGHT });
     await shot(page, `${name}-${theme}`);

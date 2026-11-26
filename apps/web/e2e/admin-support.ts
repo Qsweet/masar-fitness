@@ -3,6 +3,7 @@ import {
   createTestClub,
   createTestStaff,
   totpCodeAt,
+  type TestClubPolicy,
   type TestStaff,
   type TestStaffOptions,
 } from "@masar/db/test-support";
@@ -27,8 +28,9 @@ export interface Club {
   readonly id: string;
 }
 
-export async function newClub(db: Db): Promise<Club> {
-  return { id: await createTestClub(db) };
+/** نادي اختبار بسياسات محسومة افتراضيًا؛ يمرَّر null لقيمة لاختبار «غير محسوم». */
+export async function newClub(db: Db, policy: Partial<TestClubPolicy> = {}): Promise<Club> {
+  return { id: await createTestClub(db, policy) };
 }
 
 export function newStaff(db: Db, club: Club, options: TestStaffOptions = {}): Promise<TestStaff> {

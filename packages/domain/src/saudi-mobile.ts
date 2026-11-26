@@ -1,3 +1,4 @@
+import { toAsciiDigits } from "./digits";
 import { DomainError } from "./errors";
 import { err, ok, type Result } from "./result";
 
@@ -7,24 +8,6 @@ export type SaudiMobile = string & { readonly __brand: "SaudiMobile" };
 const COUNTRY_CODE = "966";
 /** الرقم الوطني بلا الصفر البادئ: 9 أرقام تبدأ بـ5. */
 const NATIONAL_PATTERN = /^5\d{8}$/;
-const ARABIC_INDIC_ZERO = 0x0660;
-const EASTERN_ARABIC_INDIC_ZERO = 0x06f0;
-const DIGIT_COUNT = 10;
-const ASCII_ZERO = 0x30;
-
-/** يحوّل الأرقام العربية (٠-٩) والفارسية (۰-۹) إلى أرقام لاتينية. */
-function toAsciiDigits(input: string): string {
-  let out = "";
-  for (const char of input) {
-    const code = char.codePointAt(0) ?? 0;
-    const zero = [ARABIC_INDIC_ZERO, EASTERN_ARABIC_INDIC_ZERO].find(
-      (base) => code >= base && code < base + DIGIT_COUNT,
-    );
-    out += zero === undefined ? char : String.fromCodePoint(ASCII_ZERO + (code - zero));
-  }
-  return out;
-}
-
 /** يزيل بادئة الدولة ثم الصفر المحلي (يُكتب أحيانًا ‎+966 05…) ويرجع الرقم الوطني. */
 function toNational(digits: string): string {
   const withoutCountry =
@@ -53,4 +36,41 @@ export function parseSaudiMobile(input: string): Result<SaudiMobile, DomainError
     return err(new DomainError("validation", "mobile.not_saudi_mobile", { field: "mobile" }));
   }
   return ok(`+${COUNTRY_CODE}${national}` as SaudiMobile);
+}
+
+/** «+966» تبقى ظاهرة: لا تكشف شيئًا لأن كل الجوالات المقبولة سعودية. */
+const COUNTRY_PREFIX_LENGTH = COUNTRY_CODE.length + 1;
+const NATIONAL_LENGTH = 9;
+const MASK = "•";
+
+function assertVisibleDigits(visibleDigits: number): void {
+  if (!Number.isInteger(visibleDigits) || visibleDigits < 0 || visibleDigits >= NATIONAL_LENGTH) {
+    throw new DomainError("invariant", "mobile.mask_visible_digits");
+  }
+}
+
+/**
+ * آخر `count` رقمًا من جوال مخزَّن، للتعرّف لا للاتصال. المصدر الوحيد لقصّ الجوال: القوائم تعرض
+ * ما يخرج من هنا فقط.
+ */
+export function lastMobileDigits(e164: string, count: number): string {
+  assertVisibleDigits(count);
+  return count === 0 ? "" : e164.slice(-count);
+}
+
+/**
+ * جوال مقنَّع: بادئة الدولة ثم نقاط ثم آخر `visibleDigits` رقمًا («+966•••••4567»). الصفحة العامة
+ * تُظهر رقمين، واللوحة أربعة. قيمة ليست بشكل E.164 السعودي تُقنَّع كلها: لا يُعرض ما لا نعرف شكله.
+ */
+export function maskSaudiMobile(e164: string, visibleDigits: number): string {
+  assertVisibleDigits(visibleDigits);
+  if (!/^\+9665\d{8}$/.test(e164)) {
+    return MASK.repeat(NATIONAL_LENGTH);
+  }
+  const hidden = NATIONAL_LENGTH - visibleDigits;
+  return (
+    e164.slice(0, COUNTRY_PREFIX_LENGTH) +
+    MASK.repeat(hidden) +
+    lastMobileDigits(e164, visibleDigits)
+  );
 }

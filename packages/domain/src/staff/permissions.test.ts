@@ -2,19 +2,38 @@ import { describe, expect, it } from "vitest";
 import { hasPermission, PERMISSIONS, permissionsOf, type Permission } from "./permissions";
 import { STAFF_ROLES, type StaffRole } from "./roles";
 
-const EXPECTED: Record<StaffRole, readonly Permission[]> = {
-  owner: ["staff.manage", "audit.read", "overview.read", "system.read", "account.self"],
-  manager: ["audit.read", "overview.read", "system.read", "account.self"],
-  editor: ["account.self"],
-  sales: ["overview.read", "account.self"],
+/** جدول ADMIN_A2_SALES §2 خانةً خانة: مالك، مدير، محرر، مبيعات. */
+const TABLE: Readonly<Record<Permission, readonly [boolean, boolean, boolean, boolean]>> = {
+  "staff.manage": [true, false, false, false],
+  "audit.read": [true, true, false, false],
+  "overview.read": [true, true, false, true],
+  "system.read": [true, true, false, false],
+  "account.self": [true, true, true, true],
+  "catalog.read": [true, true, false, true],
+  "catalog.write": [true, true, false, false],
+  "catalog.publish": [true, true, false, false],
+  "promotions.read": [true, true, false, true],
+  "promotions.write": [true, true, false, false],
+  "orders.read": [true, true, false, true],
+  "orders.cancel": [true, true, false, true],
+  "orders.settle": [true, true, false, false],
+  "customers.read": [true, true, false, true],
+  "customers.reveal_phone": [true, true, false, true],
+  "sales.settings": [true, false, false, false],
 };
+const COLUMNS: readonly StaffRole[] = ["owner", "manager", "editor", "sales"];
+
+function expected(role: StaffRole): readonly Permission[] {
+  const column = COLUMNS.indexOf(role);
+  return PERMISSIONS.filter((permission) => TABLE[permission][column] === true);
+}
 
 describe("خريطة الصلاحيات", () => {
   it.each(STAFF_ROLES)("الدور %s له صلاحياته المعلنة فقط", (role) => {
     for (const permission of PERMISSIONS) {
-      expect(hasPermission(role, permission)).toBe(EXPECTED[role].includes(permission));
+      expect(hasPermission(role, permission)).toBe(expected(role).includes(permission));
     }
-    expect([...permissionsOf(role)].sort()).toEqual([...EXPECTED[role]].sort());
+    expect([...permissionsOf(role)].sort()).toEqual([...expected(role)].sort());
   });
 
   it("المالك وحده يدير الموظفين", () => {
@@ -28,6 +47,24 @@ describe("خريطة الصلاحيات", () => {
 
   it("كل دور يصل إلى حسابه", () => {
     expect(STAFF_ROLES.every((role) => hasPermission(role, "account.self"))).toBe(true);
+  });
+
+  it("الجدول يغطي كل صلاحية معرَّفة وكل دور", () => {
+    expect(Object.keys(TABLE).sort()).toEqual([...PERMISSIONS].sort());
+    expect([...COLUMNS].sort()).toEqual([...STAFF_ROLES].sort());
+  });
+
+  it("الدفع اليدوي للمالك والمدير وحدهما، وإعدادات البيع للمالك وحده", () => {
+    const can = (permission: Permission) =>
+      STAFF_ROLES.filter((role) => hasPermission(role, permission));
+    expect(can("orders.settle")).toEqual(["owner", "manager"]);
+    expect(can("sales.settings")).toEqual(["owner"]);
+    expect(can("orders.cancel")).toEqual(["owner", "manager", "sales"]);
+    expect(can("customers.reveal_phone")).toEqual(["owner", "manager", "sales"]);
+  });
+
+  it("المحرر لا يملك شيئًا من المبيعات", () => {
+    expect(permissionsOf("editor")).toEqual(["account.self"]);
   });
 
   it("المحرر لا يرى أرقام المبيعات ولا سجل التدقيق", () => {

@@ -151,6 +151,26 @@ describe("listOrders: المدى بتقويم النادي", () => {
   });
 });
 
+describe("listOrders: مدى خارج المعقول لا يُسقط الاستعلام", () => {
+  it("سنة 1 وسنة 9999 تُقصّان إلى حدود المدى", async () => {
+    const order = await rawOrder();
+    const ids = async (query: Partial<OrderListQuery>) =>
+      (await list(query)).rows.map((row) => row.id);
+    expect(await ids({ from: plainDate(1, 1, 1) })).toEqual([order.orderId]);
+    expect(await ids({ from: plainDate(1, 1, 1), to: plainDate(9999, 12, 31) })).toEqual([
+      order.orderId,
+    ]);
+    expect(await ids({ to: plainDate(1, 1, 1) })).toEqual([]);
+    expect(await ids({ from: plainDate(9999, 12, 31) })).toEqual([]);
+  });
+
+  it("طريقة الدفعة اليدوية تخرج مع الصف، وغير اليدوي بلا طريقة", async () => {
+    const order = await rawOrder();
+    await markRawPaid(db, order.orderId, { paidAt: TEST_NOW });
+    expect((await list()).rows[0]).toMatchObject({ paidProvider: "test_pay", manualMethod: null });
+  });
+});
+
 describe("listOrders: البحث والصفحات والعزل", () => {
   it("البحث بالمرجع مطابقة تامة", async () => {
     const order = await rawOrder();

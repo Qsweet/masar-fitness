@@ -4,10 +4,12 @@
  * الواجهة: الجوال الكامل لا يخرج من هذا الملف.
  */
 import {
+  comparePlainDates,
   effectiveOrderStatus,
   formatPlainDate,
   maskSaudiMobile,
   money,
+  plainDate,
   type LocalizedText,
   type Money,
   type OrderStatus,
@@ -52,6 +54,8 @@ export interface OrderListRow {
   /** الحالة كما تُعرض: المعلّق الذي بلغ مهلته منتهٍ. */
   readonly status: OrderStatus;
   readonly paidProvider: string | null;
+  /** طريقة الدفعة اليدوية حين يكون الدفع يدويًا؛ وإلا null. */
+  readonly manualMethod: string | null;
 }
 
 export interface OrderListPage {
@@ -81,13 +85,31 @@ interface Bounds {
   readonly ends: Date | null;
 }
 
-/** حدّا المدى لحظتين: بداية اليوم الأول ونهاية اليوم الأخير في منطقة النادي (القاعدة تحسبهما). */
+/** أبعد ما يُستعلم عنه: لا طلب قبل المنصة ولا بعد قرن، وتاريخ خارج المدى لا يصل إلى حساب المنطقة. */
+const MIN_RANGE_YEAR = 2000;
+const MAX_RANGE_YEAR = 2100;
+const DECEMBER = 12;
+const LAST_DAY = 31;
+const MIN_RANGE_DAY = plainDate(MIN_RANGE_YEAR, 1, 1);
+const MAX_RANGE_DAY = plainDate(MAX_RANGE_YEAR, DECEMBER, LAST_DAY);
+
+function clampDay(day: PlainDate): PlainDate {
+  if (comparePlainDates(day, MIN_RANGE_DAY) < 0) {
+    return MIN_RANGE_DAY;
+  }
+  return comparePlainDates(day, MAX_RANGE_DAY) > 0 ? MAX_RANGE_DAY : day;
+}
+
+/**
+ * حدّا المدى لحظتين: بداية اليوم الأول ونهاية اليوم الأخير في منطقة النادي (القاعدة تحسبهما). اليوم
+ * خارج المدى المعقول يُقصّ إليه: سنة 1 أو 9999 تُخرج لحظة لا يمثّلها Date فتُسقط الاستعلام.
+ */
 async function dayBounds(db: Db, query: OrderListQuery): Promise<Bounds> {
   if (query.from === undefined && query.to === undefined) {
     return { starts: null, ends: null };
   }
-  const from = query.from === undefined ? null : formatPlainDate(query.from);
-  const to = query.to === undefined ? null : formatPlainDate(query.to);
+  const from = query.from === undefined ? null : formatPlainDate(clampDay(query.from));
+  const to = query.to === undefined ? null : formatPlainDate(clampDay(query.to));
   const rows = await db.$queryRaw<Bounds[]>`
     SELECT (${from}::date)::timestamp AT TIME ZONE c.timezone AS starts,
       ((${to}::date) + 1)::timestamp AT TIME ZONE c.timezone AS ends
@@ -110,6 +132,7 @@ function rangeFilter(bounds: Bounds): Prisma.OrderWhereInput {
 const LIST_INCLUDE = {
   items: { where: { position: 0 }, select: { nameAr: true, nameEn: true } },
   _count: { select: { items: true } },
+  manualPayment: { select: { method: true } },
 } as const satisfies Prisma.OrderInclude;
 
 type ListRow = Prisma.OrderGetPayload<{ include: typeof LIST_INCLUDE }>;
@@ -127,6 +150,7 @@ function toRow(row: ListRow, now: Date): OrderListRow {
     total: money(row.totalMinor, row.currency),
     status: effectiveOrderStatus(row.status, row.expiresAt, now),
     paidProvider: row.paidProvider,
+    manualMethod: row.manualPayment?.method ?? null,
   };
 }
 

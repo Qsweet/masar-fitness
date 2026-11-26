@@ -83,37 +83,126 @@
   color: var(--ink);
 }
 
-.bottom {
+/* أوقات النادي تحت التواصل */
+.hours {
+  margin-top: 1.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.subheading {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 2rem;
-  justify-content: space-between;
-  padding-block: 1.5rem 2rem;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--white);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.subheading svg {
+  color: var(--yellow);
+}
+
+.hours dl {
+  display: grid;
+  gap: 0.6rem;
+}
+
+/* اليوم فوق الوقت في كل صف، فلا ينكسر صف ويبقى الآخر على سطر */
+.hours dl div {
+  display: grid;
+}
+
+.hours dd {
+  color: var(--white);
+  white-space: nowrap;
+}
+
+/* الشريط السفلي: الحقوق في جهة وشعارات الدفع في الأخرى، والسطر عن واتساب تحتهما */
+.bottom {
+  display: grid;
+  gap: 1.25rem;
+  justify-items: center;
+  padding-block: 1.75rem 2rem;
   border-top: 1px solid var(--line);
   font-size: 0.875rem;
+  text-align: center;
 }
 
 .payments {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.5rem;
 }
 
-.payments li {
-  padding: 0.15rem 0.6rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+/* بلاطات بيضاء متساوية كعلامات القبول عند الدفع؛ الشعار بألوانه الرسمية داخلها */
+.mark {
+  display: grid;
+  place-items: center;
+  width: 4.25rem;
+  height: 2.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.4rem;
+  background: var(--white);
 }
 
-@media (width >= 48rem) {
-  .inner {
-    grid-template-columns: 1fr 1fr;
-  }
+.markLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.bank {
+  display: flex;
+  gap: 0.35rem;
+  width: auto;
+  padding-inline: 0.7rem;
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.note {
+  max-width: var(--measure);
+}
+
+/* على الهاتف: الروابط والبرامج عمودان متجاوران، والعلامة والتواصل بعرض كامل */
+.inner {
+  grid-template-columns: 1fr 1fr;
+}
+
+.wide {
+  grid-column: 1 / -1;
 }
 
 @media (width >= 64rem) {
   .inner {
     grid-template-columns: 1.4fr 1fr 1fr 1.3fr;
     gap: 3rem;
+  }
+
+  .wide {
+    grid-column: auto;
+  }
+
+  .bottom {
+    grid-template-columns: auto 1fr;
+    justify-items: stretch;
+    align-items: center;
+    text-align: start;
+  }
+
+  .payments {
+    justify-content: flex-end;
+  }
+
+  .note {
+    grid-column: 1 / -1;
+    max-width: none;
   }
 }

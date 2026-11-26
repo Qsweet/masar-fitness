@@ -108,6 +108,7 @@ const PATHS = {
     <path d="M12 6.5C10 5 7 4.5 4 5v13.5c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5ZM12 6.5V20" />
   ),
   grid: <path d="M4 4h7v7H4ZM13 4h7v7h-7ZM4 13h7v7H4ZM13 13h7v7h-7Z" />,
+  bank: <path d="M3.5 9.5 12 4.5l8.5 5M5 9.5V18M9.5 9.5V18M14.5 9.5V18M19 9.5V18M3.5 20h17" />,
   bag: <path d="M5.5 8h13l-1 12.5h-11ZM9 10.5V7a3 3 0 0 1 6 0v3.5" />,
 } as const satisfies Record<string, ReactNode>;
 

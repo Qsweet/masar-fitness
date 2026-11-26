@@ -161,6 +161,15 @@ export const en: Dictionary = {
     contact: "Contact",
     social: "Follow us",
     joinNote: "For now you join through the club's WhatsApp; online payment is being prepared.",
+    /** أسماء شعارات طرق الدفع (نصها البديل)، بالترتيب في config/payment-marks.ts */
+    paymentMarks: {
+      mada: "mada",
+      applePay: "Apple Pay",
+      tabby: "Tabby",
+      tamara: "Tamara",
+      bank: "Bank transfer",
+    },
+    hours: "Club hours",
     socialNames: { instagram: "Instagram", x: "X", snapchat: "Snapchat", tiktok: "TikTok" },
   },
   notFound: {

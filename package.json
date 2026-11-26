@@ -19,6 +19,9 @@
     "db:generate": "pnpm --filter @masar/db generate",
     "db:migrate": "pnpm --filter @masar/db migrate:deploy",
     "db:seed:demo": "pnpm --filter @masar/db seed:demo",
+    "admin:create-owner": "pnpm --filter @masar/db admin:create-owner",
+    "admin:reset-owner-mfa": "pnpm --filter @masar/db admin:reset-owner-mfa",
+    "admin:reset-owner-password": "pnpm --filter @masar/db admin:reset-owner-password",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test"
   },
   "devDependencies": {

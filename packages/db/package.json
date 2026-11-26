@@ -15,8 +15,12 @@
     "migrate:status": "prisma migrate status",
     "seed:demo": "tsx prisma/seed-demo.ts",
     "orders:expire": "tsx prisma/expire-orders.ts",
+    "admin:create-owner": "tsx scripts/admin/create-owner.ts",
+    "admin:reset-owner-mfa": "tsx scripts/admin/reset-owner-mfa.ts",
+    "admin:reset-owner-password": "tsx scripts/admin/reset-owner-password.ts",
     "typecheck": "tsc --noEmit",
-    "test:integration": "vitest run"
+    "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@masar/domain": "workspace:*",

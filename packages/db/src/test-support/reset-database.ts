@@ -15,13 +15,14 @@ export async function assertTestDatabase(db: Db): Promise<void> {
 }
 
 /**
- * يفرّغ جداول البيع كلها (TRUNCATE لا يشغّل triggers منع الحذف)، ثم يحذف كتالوج أندية الاختبار وحدها.
+ * يفرّغ جداول البيع وموظفي اللوحة كلها (TRUNCATE لا يشغّل triggers منع الحذف)، ثم يحذف كتالوج أندية
+ * الاختبار وحدها.
  * الكتالوج والأندية الأخرى (ومنها البيانات التجريبية) لا تُمسّ.
  */
 export async function resetCommerceTables(db: Db): Promise<void> {
   await assertTestDatabase(db);
   await db.$executeRaw`
-    TRUNCATE payment_incidents, payment_attempts, audit_logs, refunds, memberships, order_discounts, order_items, orders, assessment_requests,
+    TRUNCATE staff_recovery_codes, staff_sessions, staff_users, payment_incidents, payment_attempts, audit_logs, refunds, memberships, order_discounts, order_items, orders, assessment_requests,
       promotion_products, promotions, product_addons, customers RESTART IDENTITY CASCADE`;
   const testClubs = { club: { slug: { startsWith: TEST_CLUB_SLUG_PREFIX } } };
   await db.productBenefit.deleteMany({ where: { version: { product: testClubs } } });

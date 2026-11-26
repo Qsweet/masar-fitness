@@ -38,6 +38,7 @@ model Club {
   auditLogs          AuditLog[]
   paymentAttempts    PaymentAttempt[]
   paymentIncidents   PaymentIncident[]
+  staffUsers         StaffUser[]
 
   @@map("clubs")
 }
@@ -505,6 +506,7 @@ model AuditLog {
   club Club @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 
   @@index([entityType, entityId, createdAt])
+  @@index([clubId, createdAt])
   @@map("audit_logs")
 }
 
@@ -593,4 +595,85 @@ model PaymentIncident {
   @@unique([attemptId, kind])
   @@index([orderId])
   @@map("payment_incidents")
+}
+
+/// أدوار موظفي لوحة التحكم. خريطة الصلاحيات في packages/domain/src/staff/permissions.ts.
+enum StaffRole {
+  owner
+  manager
+  editor
+  sales
+
+  @@map("staff_role")
+}
+
+enum StaffStatus {
+  active
+  disabled
+
+  @@map("staff_status")
+}
+
+/// موظف لوحة التحكم (ADMIN_DESIGN §4.2). لا يُحذف: سجل التدقيق يشير إليه. المحفّز S1 يبقي مالكًا
+/// نشطًا واحدًا على الأقل لكل نادٍ.
+model StaffUser {
+  id                 String      @id @default(uuid(7)) @db.Uuid
+  clubId             String      @map("club_id") @db.Uuid
+  /// صغير الحروف دائمًا (قيد)، ففرادته بلا حساسية حروف.
+  email              String      @unique
+  displayName        String      @map("display_name")
+  role               StaffRole
+  status             StaffStatus @default(active)
+  /// scrypt بصيغة تحمل المعاملات (packages/db/src/staff/crypto/password-hash.ts).
+  passwordHash       String      @map("password_hash")
+  mustChangePassword Boolean     @default(false) @map("must_change_password")
+  /// سر TOTP مشفّرًا AES-256-GCM بـADMIN_SECRET_KEY. قبل التأكيد: سر معلّق و totp_enabled_at فارغ.
+  totpSecretEnc      String?     @map("totp_secret_enc")
+  totpEnabledAt      DateTime?   @map("totp_enabled_at") @db.Timestamptz(3)
+  /// آخر خطوة زمنية قُبل رمزها: رمزها وما قبلها لا يُقبل ثانية.
+  totpLastStep       BigInt?     @map("totp_last_step")
+  failedLogins       Int         @default(0) @map("failed_logins")
+  lockedUntil        DateTime?   @map("locked_until") @db.Timestamptz(3)
+  lastLoginAt        DateTime?   @map("last_login_at") @db.Timestamptz(3)
+  createdAt          DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  club          Club                @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sessions      StaffSession[]
+  recoveryCodes StaffRecoveryCode[]
+
+  @@index([clubId, role, status])
+  @@map("staff_users")
+}
+
+/// جلسة موظف. الرمز نفسه في الكوكي فقط؛ هنا تجزئته SHA-256.
+model StaffSession {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  staffUserId   String    @map("staff_user_id") @db.Uuid
+  tokenHash     String    @unique @map("token_hash")
+  createdAt     DateTime  @map("created_at") @db.Timestamptz(3)
+  lastSeenAt    DateTime  @map("last_seen_at") @db.Timestamptz(3)
+  /// الحد المطلق من لحظة الدخول؛ لا يتمدد.
+  expiresAt     DateTime  @map("expires_at") @db.Timestamptz(3)
+  mfaVerifiedAt DateTime? @map("mfa_verified_at") @db.Timestamptz(3)
+  ip            String
+  userAgent     String    @map("user_agent")
+  revokedAt     DateTime? @map("revoked_at") @db.Timestamptz(3)
+
+  staffUser StaffUser @relation(fields: [staffUserId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([staffUserId, revokedAt])
+  @@map("staff_sessions")
+}
+
+/// رمز استرجاع للخطوة الثانية: مجزأ، ويُستعمل مرة واحدة.
+model StaffRecoveryCode {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  staffUserId String    @map("staff_user_id") @db.Uuid
+  codeHash    String    @unique @map("code_hash")
+  usedAt      DateTime? @map("used_at") @db.Timestamptz(3)
+
+  staffUser StaffUser @relation(fields: [staffUserId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([staffUserId])
+  @@map("staff_recovery_codes")
 }

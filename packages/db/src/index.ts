@@ -3,5 +3,8 @@ export { createDb, isDbReachable } from "./client";
 export type { Db } from "./client";
 export * from "./commerce";
 export * from "./payments";
+export * from "./staff";
+export { ensureTransaction, inTransaction } from "./commerce/transaction";
+export type { Tx } from "./commerce/transaction";
 export { Prisma } from "./generated/prisma/client";
 export type { Club } from "./generated/prisma/client";

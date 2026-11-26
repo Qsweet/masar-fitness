@@ -11,7 +11,7 @@ export const ORDERS_ADMIN_CONSTRAINTS = {
   manualLiveAttempt: "manual_payment_blocked_by_live_attempt",
   manualSnapshotMismatch: "manual_payment_snapshot_mismatch",
   manualOrderUnique: "manual_payments_order_id_key",
-  manualReferenceUnique: "manual_payments_club_id_method_external_reference_key",
+  manualReferenceUnique: "manual_payments_club_id_reference_key_key",
   manualPrimaryKey: "manual_payments_pkey",
 } as const;
 

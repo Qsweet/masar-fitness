@@ -692,8 +692,10 @@ model ManualPayment {
   orderId           String   @unique @map("order_id") @db.Uuid
   /// bank_transfer أو paid_at_club (CHECK)
   method            String
-  /// مرجع الحوالة أو رقم سند القبض
+  /// مرجع الحوالة أو رقم سند القبض كما كتبه الموظف (للعرض)
   externalReference String   @map("external_reference")
+  /// مفتاح الفرادة الموحَّد (manualReferenceKey): حروف وأرقام فقط
+  referenceKey      String   @map("reference_key")
   /// يوم الاستلام بتقويم النادي
   receivedOn        DateTime @map("received_on") @db.Date
   amountMinor       Int      @map("amount_minor")
@@ -707,7 +709,7 @@ model ManualPayment {
   order  Order     @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   staff  StaffUser @relation(fields: [recordedBy], references: [id], onDelete: Restrict, onUpdate: Restrict)
 
-  /// المرجع الخارجي لا يسوّي طلبين
-  @@unique([clubId, method, externalReference])
+  /// المرجع الخارجي لا يسوّي طلبين في النادي، بأي طريقة وبأي كتابة
+  @@unique([clubId, referenceKey])
   @@map("manual_payments")
 }

@@ -159,6 +159,23 @@ describe("recordManualPayment: الرفض بلا أثر", () => {
   });
 });
 
+describe("recordManualPayment: نص حر لا يُسقط القاعدة", () => {
+  it("ملاحظة فيها NUL ومحارف تحكم وعلامات اتجاه: تُسجَّل منظَّفة، لا عطل", async () => {
+    const orderId = await newOrder();
+    const note = "وصل\u0000 المبلغ\u0007\u202E\nسطر ثانٍ";
+    const paid = await recordManualPayment(db, input(orderId, { details: { ...DETAILS, note } }));
+    expect(unwrap(paid).status).toBe("fulfilled");
+    const stored = await db.manualPayment.findFirstOrThrow({ where: { orderId } });
+    expect(stored.note).toBe("وصل المبلغ\nسطر ثانٍ");
+    const empty = await newOrder();
+    const blank = { ...DETAILS, externalReference: "NUL-ONLY-1", note: "\u0000\u0000" };
+    unwrap(await recordManualPayment(db, input(empty, { details: blank })));
+    expect(
+      (await db.manualPayment.findFirstOrThrow({ where: { orderId: empty } })).note,
+    ).toBeNull();
+  });
+});
+
 describe("يدوي ثم دفعة مزوّد متأخرة", () => {
   it("لقطة مدفوعة على محاولة قديمة: حادثة order_already_paid بلا اشتراك ثانٍ ولا تغيير في الطلب", async () => {
     const orderId = await newOrder();

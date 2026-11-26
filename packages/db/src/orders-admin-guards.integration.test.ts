@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { manualReferenceKey } from "@masar/domain";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createDb, type Db } from "./index";
 import {
@@ -55,6 +56,8 @@ interface RawManual {
   amountMinor: number;
   currency: string;
   note: string | null;
+  /** مفتاح الفرادة؛ يُحسب من المرجع ما لم يُكتب صراحةً لاختبار القيد. */
+  key?: string;
 }
 
 function manual(overrides: Partial<RawManual> = {}): RawManual {
@@ -75,10 +78,10 @@ type Client = Pick<Db, "$executeRaw">;
 
 function insertManual(client: Client, row: RawManual) {
   return client.$executeRaw`
-    INSERT INTO manual_payments (id, club_id, order_id, method, external_reference, received_on,
-      amount_minor, currency, note, recorded_by, created_at)
+    INSERT INTO manual_payments (id, club_id, order_id, method, external_reference, reference_key,
+      received_on, amount_minor, currency, note, recorded_by, created_at)
     VALUES (${row.id}::uuid, ${row.clubId}::uuid, ${row.orderId}::uuid, ${row.method},
-      ${row.reference}, '2026-06-15'::date, ${row.amountMinor}, ${row.currency}, ${row.note},
+      ${row.reference}, ${row.key ?? manualReferenceKey(row.reference)}, '2026-06-15'::date, ${row.amountMinor}, ${row.currency}, ${row.note},
       ${staff.id}::uuid, ${TEST_NOW})`;
 }
 
@@ -197,7 +200,11 @@ describe("T13: لا صف يدوي بلا تسوية، ولا تسوية يدوي
 describe("قيود manual_payments", () => {
   it.each([
     [{ method: "cash" }, "manual_payments_method_known"],
-    [{ reference: "ab" }, "manual_payments_external_reference_shape"],
+    [{ reference: "ab", key: "ABC" }, "manual_payments_external_reference_shape"],
+    [{ key: "ab" }, "manual_payments_reference_key_shape"],
+    [{ key: "abc" }, "manual_payments_reference_key_shape"],
+    [{ key: "TRF-99" }, "manual_payments_reference_key_shape"],
+    [{ key: "TRF 99" }, "manual_payments_reference_key_shape"],
     [{ reference: " REF-1 " }, "manual_payments_external_reference_shape"],
     [{ reference: "x".repeat(65) }, "manual_payments_external_reference_shape"],
     [{ note: "" }, "manual_payments_note_length"],
@@ -206,7 +213,7 @@ describe("قيود manual_payments", () => {
     await expect(insertAndSettle(manual(overrides))).rejects.toThrow(constraint);
   });
 
-  it("دفعة واحدة للطلب، والمرجع الخارجي لا يسوّي طلبين بالطريقة نفسها", async () => {
+  it("دفعة واحدة للطلب، والمرجع الخارجي لا يسوّي طلبين في النادي بأي طريقة", async () => {
     const first = manual({ reference: "RCPT-9" });
     await insertAndSettle(first);
     await expect(insertManual(db, manual())).rejects.toThrow();
@@ -217,7 +224,12 @@ describe("قيود manual_payments", () => {
     });
     const reused = manual({ orderId: second.orderId, reference: "RCPT-9" });
     await expect(insertAndSettle(reused)).rejects.toThrow();
-    await insertAndSettle({ ...reused, method: "paid_at_club" });
+    const otherMethod = insertAndSettle({ ...reused, id: randomUUID(), method: "paid_at_club" });
+    await expect(otherMethod).rejects.toThrow();
+    // الفرادة بالمفتاح: كتابة أخرى للمرجع نفسه بالمفتاح نفسه مرفوضة
+    const respelled = insertAndSettle({ ...reused, id: randomUUID(), reference: "rcpt 9" });
+    await expect(respelled).rejects.toThrow();
+    await insertAndSettle({ ...reused, id: randomUUID(), reference: "RCPT-10" });
     expect(await db.manualPayment.count()).toBe(2);
   });
 
@@ -226,9 +238,9 @@ describe("قيود manual_payments", () => {
     const orphan = db.$transaction(async (tx) => {
       await tx.$executeRaw`
         INSERT INTO manual_payments (id, club_id, order_id, method, external_reference,
-          received_on, amount_minor, currency, recorded_by, created_at)
+          reference_key, received_on, amount_minor, currency, recorded_by, created_at)
         VALUES (${row.id}::uuid, ${clubId}::uuid, ${row.orderId}::uuid, 'bank_transfer', 'REF-777',
-          '2026-06-15'::date, ${PLAN_PRICE}, 'SAR', ${randomUUID()}::uuid, ${TEST_NOW})`;
+          'REF777', '2026-06-15'::date, ${PLAN_PRICE}, 'SAR', ${randomUUID()}::uuid, ${TEST_NOW})`;
       await settleManually(tx, row);
     });
     await expect(orphan).rejects.toThrow();

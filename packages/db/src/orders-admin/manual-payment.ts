@@ -10,7 +10,9 @@ import {
   decideManualSettlement,
   err,
   formatPlainDate,
+  manualReferenceKey,
   money,
+  sanitizeFreeText,
   type ManualPaymentDetails,
   type Result,
 } from "@masar/domain";
@@ -41,26 +43,52 @@ function paidReference(order: LockedAdminOrder) {
     : { provider: order.paid_provider, providerPaymentId: order.paid_provider_payment_id };
 }
 
+/** الملاحظة كما تُحفظ: تنظيف المجال نفسه مرة أخرى عند الحد، فلا يصل NUL إلى القاعدة من أي مستدعٍ. */
+function storedNote(note: string | null): string | null {
+  const clean = note === null ? "" : sanitizeFreeText(note);
+  return clean === "" ? null : clean;
+}
+
 async function insertManualPayment(tx: Tx, input: RecordManualPaymentInput): Promise<void> {
   const { details } = input;
   await tx.$executeRaw`
-    INSERT INTO manual_payments (id, club_id, order_id, method, external_reference, received_on,
-      amount_minor, currency, note, recorded_by, created_at)
+    INSERT INTO manual_payments (id, club_id, order_id, method, external_reference, reference_key,
+      received_on, amount_minor, currency, note, recorded_by, created_at)
     VALUES (${input.paymentId}::uuid, ${input.clubId}::uuid, ${input.orderId}::uuid,
-      ${details.method}, ${details.externalReference}, ${formatPlainDate(details.receivedOn)}::date,
-      ${input.amountMinor}, ${input.currency}, ${details.note}, ${input.staffId}::uuid, ${input.now})`;
+      ${details.method}, ${details.externalReference},
+      ${manualReferenceKey(details.externalReference)},
+      ${formatPlainDate(details.receivedOn)}::date, ${input.amountMinor}, ${input.currency},
+      ${storedNote(details.note)}, ${input.staffId}::uuid, ${input.now})`;
+}
+
+export interface ManualReferenceUse {
+  readonly orderId: string;
+  readonly orderReference: string;
+}
+
+/**
+ * الطلب الذي سوّاه هذا المرجع الخارجي في النادي، بأي طريقة وبأي كتابة (المطابقة بالمفتاح الموحَّد)،
+ * أو undefined. يُعرض مرجع ذلك الطلب للموظف حين يُرفض مرجع مكرر.
+ */
+export async function findManualReferenceUse(
+  db: Db | Tx,
+  clubId: string,
+  externalReference: string,
+): Promise<ManualReferenceUse | undefined> {
+  const used = await db.manualPayment.findUnique({
+    where: {
+      clubId_referenceKey: { clubId, referenceKey: manualReferenceKey(externalReference) },
+    },
+    select: { orderId: true, order: { select: { reference: true } } },
+  });
+  return used === null
+    ? undefined
+    : { orderId: used.orderId, orderReference: used.order.reference };
 }
 
 async function isReferenceUsed(tx: Tx, input: RecordManualPaymentInput): Promise<boolean> {
-  const used = await tx.manualPayment.findFirst({
-    where: {
-      clubId: input.clubId,
-      method: input.details.method,
-      externalReference: input.details.externalReference,
-    },
-    select: { id: true },
-  });
-  return used !== null;
+  const use = await findManualReferenceUse(tx, input.clubId, input.details.externalReference);
+  return use !== undefined;
 }
 
 function settle(tx: Tx, input: RecordManualPaymentInput) {

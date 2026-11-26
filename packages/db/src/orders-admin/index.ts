@@ -11,8 +11,8 @@ export type {
 } from "./customers";
 export { ADMIN_VISIBLE_PHONE_DIGITS, ORDER_LIST_TABS, listOrders } from "./list-orders";
 export type { OrderListPage, OrderListQuery, OrderListRow, OrderListTab } from "./list-orders";
-export { recordManualPayment } from "./manual-payment";
-export type { RecordManualPaymentInput } from "./manual-payment";
+export { findManualReferenceUse, recordManualPayment } from "./manual-payment";
+export type { ManualReferenceUse, RecordManualPaymentInput } from "./manual-payment";
 export type { ManualPaymentView } from "./manual-payment-view";
 export { getOrderDetail } from "./order-detail";
 export type {

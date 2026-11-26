@@ -4,6 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   createDb,
   createOrder,
+  findManualReferenceUse,
   getOrderDetail,
   recordManualPayment,
   type Db,
@@ -41,6 +42,7 @@ const DETAILS: ManualPaymentDetails = {
 let db: Db;
 let clients: Db[];
 let clubId: string;
+let otherClubId: string;
 let plan: TestProduct;
 let staff: TestStaff;
 let phoneIndex = 0;
@@ -51,6 +53,7 @@ beforeAll(async () => {
   clients = createDbClients(CLIENTS);
   await resetCommerceTables(db);
   clubId = await createTestClub(db);
+  otherClubId = await createTestClub(db);
   plan = await createPlan(db, clubId, { priceMinor: PLAN_PRICE, durationMonths: 3 });
   staff = await createTestStaff(db, clubId, { role: "manager" });
 });
@@ -198,21 +201,76 @@ describe("recordManualPayment: عدم التكرار", () => {
     expect(await actions()).toHaveLength(4);
   });
 
-  it("مرجع خارجي مستعمل لطلب آخر بالطريقة نفسها: مرفوض، وبطريقة أخرى مقبول", async () => {
+  it("مرجع خارجي مستعمل لطلب آخر: مرفوض بأي طريقة، ويُعرف الطلب الذي استعمله", async () => {
     const first = await newOrder();
     const second = await newOrder();
-    const third = await newOrder();
     const details = { ...DETAILS, externalReference: "RCPT-77" };
     unwrap(await recordManualPayment(db, input(first, { details })));
-    const reused = await recordManualPayment(db, input(second, { details }));
-    expect(failure(reused)).toMatchObject({
-      reason: "manual_payment.reference_used",
-      field: "externalReference",
-    });
+    for (const method of ["bank_transfer", "paid_at_club"] as const) {
+      const reused = await recordManualPayment(
+        db,
+        input(second, { details: { ...details, method } }),
+      );
+      expect(failure(reused)).toMatchObject({
+        reason: "manual_payment.reference_used",
+        field: "externalReference",
+      });
+    }
     expect((await orderRow(second)).status).toBe("pending_payment");
-    const atClub = { ...details, method: "paid_at_club" } as const;
-    unwrap(await recordManualPayment(db, input(third, { details: atClub })));
-    expect(await db.manualPayment.count()).toBe(2);
+    expect(await db.manualPayment.count()).toBe(1);
+    const use = await findManualReferenceUse(db, clubId, "rcpt 77");
+    expect(use).toEqual({ orderId: first, orderReference: (await orderRow(first)).reference });
+    expect(await findManualReferenceUse(db, clubId, "RCPT-78")).toBeUndefined();
+    expect(await findManualReferenceUse(db, otherClubId, "RCPT-77")).toBeUndefined();
+  });
+
+  it.each([
+    ["١٢٣٤٥٦", ["123456", "12 34 56", "123-456", "۱۲۳۴۵۶"]],
+    ["trf-99", ["TRF-99", "TRF 99", "TRF\u201199", "TRF99", "ＴＲＦ－９９", "t.r.f/99"]],
+  ])(
+    "كتابات المرجع %s كلها مرجع واحد: طلب واحد يُسوّى والباقي يُرفض",
+    async (original, variants) => {
+      const first = await newOrder();
+      unwrap(
+        await recordManualPayment(
+          db,
+          input(first, { details: { ...DETAILS, externalReference: original } }),
+        ),
+      );
+      for (const externalReference of variants) {
+        const orderId = await newOrder();
+        const details = { ...DETAILS, method: "paid_at_club", externalReference } as const;
+        const reused = await recordManualPayment(db, input(orderId, { details }));
+        expect(failure(reused), externalReference).toMatchObject({
+          reason: "manual_payment.reference_used",
+        });
+        expect((await orderRow(orderId)).status).toBe("pending_payment");
+      }
+      expect(await db.manualPayment.count()).toBe(1);
+      expect(await db.membership.count()).toBe(1);
+      // ما كتبه الموظف محفوظ للعرض كما هو
+      const stored = await db.manualPayment.findFirstOrThrow();
+      expect(stored.externalReference).toBe(original);
+    },
+  );
+
+  it("تسجيلان متزامنان بكتابتين للمرجع نفسه على طلبين: واحد فقط يُسوّى", async () => {
+    const orders = [await newOrder(), await newOrder()];
+    const results = await Promise.all(
+      ["TRF-500", "trf 500"].map((externalReference, index) =>
+        recordManualPayment(
+          clients[index] ?? db,
+          input(orders[index] ?? "", { details: { ...DETAILS, externalReference } }),
+        ),
+      ),
+    );
+    expect(results.filter((result) => result.ok)).toHaveLength(1);
+    const refused = results.find((result) => !result.ok);
+    expect(refused === undefined ? null : failure(refused)).toMatchObject({
+      reason: "manual_payment.reference_used",
+    });
+    expect(await db.manualPayment.count()).toBe(1);
+    expect(await db.membership.count()).toBe(1);
   });
 
   it("معرّف دفعة سوّى طلبًا آخر: مرفوض بلا أثر على الطلب الثاني", async () => {

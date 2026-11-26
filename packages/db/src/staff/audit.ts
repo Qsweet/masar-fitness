@@ -3,7 +3,7 @@
  * `staff:<معرّف>` أو `system`. لا كلمة مرور ولا رمز ولا سر ولا بريد ولا اسم في `data`.
  */
 import { DomainError } from "@masar/domain";
-import type { AuditValue } from "../commerce/audit";
+import type { AuditValue, StaffAuditActor } from "../commerce/audit";
 import type { Tx } from "../commerce/transaction";
 import type { Prisma } from "../generated/prisma/client";
 
@@ -30,9 +30,9 @@ export const STAFF_AUDIT_ACTIONS = [
 ] as const;
 export type StaffAuditAction = (typeof STAFF_AUDIT_ACTIONS)[number];
 
-export type StaffActor = "system" | `staff:${string}`;
+export type StaffActor = "system" | StaffAuditActor;
 
-export function staffActor(staffId: string): StaffActor {
+export function staffActor(staffId: string): StaffAuditActor {
   return `staff:${staffId}`;
 }
 

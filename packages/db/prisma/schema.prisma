@@ -39,6 +39,7 @@ model Club {
   paymentAttempts    PaymentAttempt[]
   paymentIncidents   PaymentIncident[]
   staffUsers         StaffUser[]
+  manualPayments     ManualPayment[]
 
   @@map("clubs")
 }
@@ -332,6 +333,7 @@ model Order {
   refunds          Refund[]
   paymentAttempts  PaymentAttempt[]
   paymentIncidents PaymentIncident[]
+  manualPayment    ManualPayment?
 
   /// دفعة المزوّد تسوّي طلبًا واحدًا فقط
   @@unique([paidProvider, paidProviderPaymentId])
@@ -340,6 +342,8 @@ model Order {
   @@unique([id, paidAt])
   @@index([status, expiresAt])
   @@index([customerId, createdAt])
+  /// قائمة الطلبات في اللوحة: الأحدث أولًا لكل نادٍ، ومدى زمني على الإنشاء
+  @@index([clubId, createdAt])
   @@map("orders")
 }
 
@@ -637,9 +641,10 @@ model StaffUser {
   lastLoginAt        DateTime?   @map("last_login_at") @db.Timestamptz(3)
   createdAt          DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  club          Club                @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  sessions      StaffSession[]
-  recoveryCodes StaffRecoveryCode[]
+  club           Club                @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sessions       StaffSession[]
+  recoveryCodes  StaffRecoveryCode[]
+  manualPayments ManualPayment[]
 
   @@index([clubId, role, status])
   @@map("staff_users")
@@ -676,4 +681,33 @@ model StaffRecoveryCode {
 
   @@index([staffUserId])
   @@map("staff_recovery_codes")
+}
+
+/// دفعة يدوية سجّلها موظف من اللوحة (حوالة بنكية أو مدفوع في النادي). إلحاق فقط (T12)، ومعرّفها هو
+/// `orders.paid_provider_payment_id` للطلب الذي سوّته (T13). ADMIN_A2_SALES §6.5.
+model ManualPayment {
+  /// يولَّد عند رسم نموذج التأكيد: مفتاح عدم التكرار
+  id                String   @id @db.Uuid
+  clubId            String   @map("club_id") @db.Uuid
+  orderId           String   @unique @map("order_id") @db.Uuid
+  /// bank_transfer أو paid_at_club (CHECK)
+  method            String
+  /// مرجع الحوالة أو رقم سند القبض
+  externalReference String   @map("external_reference")
+  /// يوم الاستلام بتقويم النادي
+  receivedOn        DateTime @map("received_on") @db.Date
+  amountMinor       Int      @map("amount_minor")
+  currency          String   @db.Char(3)
+  /// نص حر قد يحوي بيانًا شخصيًا: لا يُنسخ إلى التدقيق ولا السجلات
+  note              String?
+  recordedBy        String   @map("recorded_by") @db.Uuid
+  createdAt         DateTime @map("created_at") @db.Timestamptz(3)
+
+  club   Club      @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  order  Order     @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  staff  StaffUser @relation(fields: [recordedBy], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  /// المرجع الخارجي لا يسوّي طلبين
+  @@unique([clubId, method, externalReference])
+  @@map("manual_payments")
 }

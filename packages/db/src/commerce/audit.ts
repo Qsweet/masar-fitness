@@ -8,8 +8,12 @@ export type AuditEntityType =
   | "membership"
   | "refund"
   | "assessment_request"
-  | "payment_attempt";
+  | "payment_attempt"
+  | "customer"
+  | "manual_payment";
 export type AuditActor = "system" | "customer" | "staff" | "provider";
+/** موظف اللوحة بمعرّفه: `staff:<uuid>` (قيد `audit_logs_actor_known`). */
+export type StaffAuditActor = `staff:${string}`;
 
 /** قيم بسيطة فقط: لا كائنات متداخلة يختبئ فيها حقل شخصي. */
 export type AuditValue = string | number | boolean | null;
@@ -21,7 +25,7 @@ export interface AuditEntry {
   readonly action: string;
   readonly fromState: string | null;
   readonly toState: string | null;
-  readonly actor: AuditActor;
+  readonly actor: AuditActor | StaffAuditActor;
   readonly data: Readonly<Record<string, AuditValue>>;
   readonly at: Date;
 }

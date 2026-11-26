@@ -10,6 +10,8 @@ export const AUDIT_ENTITY_TYPES = [
   "refund",
   "assessment_request",
   "payment_attempt",
+  "customer",
+  "manual_payment",
   STAFF_AUDIT_ENTITY,
 ] as const satisfies readonly (AuditEntityType | typeof STAFF_AUDIT_ENTITY)[];
 export type AuditEntityFilter = (typeof AUDIT_ENTITY_TYPES)[number];

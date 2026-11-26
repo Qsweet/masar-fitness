@@ -4,6 +4,7 @@
  */
 import {
   effectiveMembershipStatus,
+  isLiveAttempt,
   money,
   plainDateInZone,
   type AttemptStatus,
@@ -22,6 +23,7 @@ import { toManualPaymentView, type ManualPaymentView } from "./manual-payment-vi
 
 export interface OrderPaymentView {
   readonly provider: string;
+  readonly providerPaymentId: string;
   readonly amount: Money;
   readonly paidAt: Date;
 }
@@ -41,6 +43,8 @@ export interface OrderAttemptView {
   readonly provider: string;
   readonly method: string | null;
   readonly status: AttemptStatus;
+  /** حيّة بتعريف `isLiveAttempt`: تمنع الإلغاء والدفع اليدوي. */
+  readonly live: boolean;
   readonly amount: Money;
   readonly createdAt: Date;
   readonly endedAt: Date | null;
@@ -88,13 +92,15 @@ const DETAIL_INCLUDE = {
 type DetailRow = Prisma.OrderGetPayload<{ include: typeof DETAIL_INCLUDE }>;
 
 function toPayment(row: DetailRow): OrderPaymentView | null {
-  if (row.paidAt === null || row.paidProvider === null || row.paidAmountMinor === null) {
+  const { paidAt, paidProvider, paidProviderPaymentId, paidAmountMinor } = row;
+  if (paidAt === null || paidProvider === null || paidProviderPaymentId === null) {
     return null;
   }
   return {
-    provider: row.paidProvider,
-    amount: money(row.paidAmountMinor, row.paidCurrency ?? row.currency),
-    paidAt: row.paidAt,
+    provider: paidProvider,
+    providerPaymentId: paidProviderPaymentId,
+    amount: money(paidAmountMinor ?? row.totalMinor, row.paidCurrency ?? row.currency),
+    paidAt,
   };
 }
 
@@ -120,6 +126,7 @@ function toAttempt(attempt: DetailRow["paymentAttempts"][number]): OrderAttemptV
     provider: attempt.provider,
     method: attempt.method,
     status: attempt.status,
+    live: isLiveAttempt(attempt.status, attempt.settledAt !== null),
     amount: money(attempt.amountMinor, attempt.currency),
     createdAt: attempt.createdAt,
     endedAt: attempt.endedAt,

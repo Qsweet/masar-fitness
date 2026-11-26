@@ -34,6 +34,8 @@ export interface SettleFormLabels {
   readonly confirm: string;
   readonly edit: string;
   readonly startsNote: string;
+  /** {reference}: مرجع الطلب الذي سُجّل عليه المرجع الخارجي من قبل. */
+  readonly referenceUsedBy: string;
   readonly methods: Readonly<Record<string, string>>;
   readonly errors: Readonly<Record<string, string>>;
 }
@@ -220,7 +222,11 @@ export function SettleForm(props: SettleFormProps) {
         <p className={styles.step}>{state.step === "confirm" ? labels.stepTwo : labels.stepOne}</p>
         {state.error === null ? null : (
           <p role="alert" className={cx(uiStyles.alert, uiStyles.alertDanger)}>
-            {lookup(labels.errors, state.error, fallback)}
+            {typeof state.usedByOrder === "string"
+              ? fillNodes(labels.referenceUsedBy, {
+                  reference: <bdi key="order">{state.usedByOrder}</bdi>,
+                })
+              : lookup(labels.errors, state.error, fallback)}
           </p>
         )}
       </div>

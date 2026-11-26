@@ -26,16 +26,21 @@ export interface SettleSummary {
   readonly note: string | null;
 }
 
+/** خطأ النموذج: السبب، ومرجع الطلب الذي استعمل المرجع الخارجي من قبل حين يكون هذا هو السبب. */
+export interface SettleError {
+  readonly error: string | null;
+  readonly usedByOrder?: string | null;
+}
+
 export type SettleFormState =
-  | { readonly step: "edit"; readonly error: string | null; readonly values: SettleValues }
-  | {
+  | ({ readonly step: "edit"; readonly values: SettleValues } & SettleError)
+  | ({
       readonly step: "confirm";
-      readonly error: string | null;
       readonly values: SettleValues;
       /** رمز مختوم بمفتاح اللوحة: ما يُنفَّذ في الخطوة الثانية هو ما فيه وحده. */
       readonly token: string;
       readonly summary: SettleSummary;
-    };
+    } & SettleError);
 
 export const SETTLE_INTENTS = ["review", "confirm", "edit"] as const;
 export type SettleIntent = (typeof SETTLE_INTENTS)[number];

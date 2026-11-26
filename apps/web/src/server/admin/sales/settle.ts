@@ -1,10 +1,17 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { getOrderDetail, recordManualPayment, type OrderDetail, type PaidOrder } from "@masar/db";
+import {
+  findManualReferenceUse,
+  getOrderDetail,
+  recordManualPayment,
+  type OrderDetail,
+  type PaidOrder,
+} from "@masar/db";
 import {
   DomainError,
   decideManualSettlement,
   err,
+  hasPermission,
   ok,
   parsePlainDate,
   parseSarAmount,
@@ -30,6 +37,35 @@ const PREVIEW_REFUSED = "orders.settle_preview_refused";
 
 function refuse(reason: string, code: "conflict" | "validation" | "forbidden" = "conflict") {
   return err(new DomainError(code, reason));
+}
+
+const REFERENCE_USED = "manual_payment.reference_used";
+
+/** سبب الرفض، ومعه مرجع الطلب الذي استعمل المرجع الخارجي من قبل حين يكون هذا هو السبب. */
+export interface SettleFailure {
+  readonly reason: string;
+  readonly usedByOrder: string | null;
+}
+
+type SettleResult<T> = Result<T, SettleFailure>;
+
+/**
+ * يحوّل خطأ العمل إلى سبب يُعرض. المرجع المكرر يُسمّى طلبه (ليتحقق الموظف من الحوالة) لمن يملك قراءة
+ * الطلبات فقط؛ البحث بالمفتاح الموحَّد داخل نادي الموظف.
+ */
+async function failure(
+  context: StaffContext,
+  error: DomainError,
+  externalReference: string | null,
+): Promise<SettleResult<never>> {
+  const canName =
+    error.reason === REFERENCE_USED &&
+    externalReference !== null &&
+    hasPermission(context.staff.role, "orders.read");
+  const use = canName
+    ? await findManualReferenceUse(getDb(), context.staff.clubId, externalReference)
+    : undefined;
+  return err({ reason: error.reason, usedByOrder: use?.orderReference ?? null });
 }
 
 export interface PreparedSettlement {
@@ -92,16 +128,12 @@ function toPayload(
   });
 }
 
-/** الخطوة 1: تتحقق من البيانات والطلب، ولا تكتب شيئًا. ترجع الرمز المختوم وما فيه لإعادة العرض. */
-export async function prepareManualSettlement(
+async function prepareChecked(
   context: StaffContext,
   orderId: string,
   values: SettleValues,
   now: Date,
-): Promise<Result<PreparedSettlement, DomainError>> {
-  if (isCheckoutPreview()) {
-    return refuse(PREVIEW_REFUSED, "forbidden");
-  }
+): Promise<Result<SettleTokenPayload, DomainError>> {
   const detail = await getOrderDetail(getDb(), context.staff.clubId, orderId, now);
   if (detail === undefined) {
     return err(new DomainError("not_found", "order.not_found"));
@@ -117,8 +149,32 @@ export async function prepareManualSettlement(
   if (decision.value === "replay") {
     return refuse("order.already_paid");
   }
+  const { externalReference } = payload.value.details;
+  const used = await findManualReferenceUse(getDb(), context.staff.clubId, externalReference);
+  return used === undefined ? payload : refuse(REFERENCE_USED);
+}
+
+/** الخطوة 1: تتحقق من البيانات والطلب والمرجع، ولا تكتب شيئًا. ترجع الرمز المختوم وما فيه. */
+export async function prepareManualSettlement(
+  context: StaffContext,
+  orderId: string,
+  values: SettleValues,
+  now: Date,
+): Promise<SettleResult<PreparedSettlement>> {
+  if (isCheckoutPreview()) {
+    return err({ reason: PREVIEW_REFUSED, usedByOrder: null });
+  }
+  const payload = await prepareChecked(context, orderId, values, now);
+  if (!payload.ok) {
+    return failure(context, payload.error, sanitizeReference(values.externalReference));
+  }
   const token = sealSettleToken(binding(context, orderId), payload.value, now);
   return ok({ token, payload: payload.value });
+}
+
+/** المرجع كما كُتب، للبحث عن مستعمله: المفتاح الموحَّد يتكفل بالشكل. */
+function sanitizeReference(raw: string): string | null {
+  return raw.trim() === "" ? null : raw;
 }
 
 export interface ConfirmSettlementInput {
@@ -128,22 +184,34 @@ export interface ConfirmSettlementInput {
   readonly confirmed: boolean;
 }
 
+interface Checked {
+  readonly result: Result<PaidOrder, DomainError>;
+  /** المرجع الخارجي من الرمز المختوم (لا مما أرسله المتصفح)، إن فُتح الرمز. */
+  readonly externalReference: string | null;
+}
+
 async function confirmChecked(
   context: StaffContext,
   input: ConfirmSettlementInput,
   now: Date,
-): Promise<Result<PaidOrder, DomainError>> {
+): Promise<Checked> {
   if (!allowManualSettle(context.staff.id)) {
-    return refuse("orders.settle_too_many_attempts", "forbidden");
+    return {
+      result: refuse("orders.settle_too_many_attempts", "forbidden"),
+      externalReference: null,
+    };
   }
   if (!input.confirmed) {
-    return refuse("orders.settle_confirmation_required", "validation");
+    return {
+      result: refuse("orders.settle_confirmation_required", "validation"),
+      externalReference: null,
+    };
   }
   const payload = openSettleToken(binding(context, input.orderId), input.token, now);
   if (payload === null) {
-    return refuse("orders.settle_token_invalid", "validation");
+    return { result: refuse("orders.settle_token_invalid", "validation"), externalReference: null };
   }
-  return recordManualPayment(getDb(), {
+  const result = await recordManualPayment(getDb(), {
     paymentId: payload.paymentId,
     orderId: input.orderId,
     clubId: context.staff.clubId,
@@ -153,6 +221,7 @@ async function confirmChecked(
     staffId: context.staff.id,
     now,
   });
+  return { result, externalReference: payload.details.externalReference };
 }
 
 /**
@@ -163,17 +232,18 @@ export async function confirmManualSettlement(
   context: StaffContext,
   input: ConfirmSettlementInput,
   now: Date,
-): Promise<Result<PaidOrder, DomainError>> {
+): Promise<SettleResult<PaidOrder>> {
   if (isCheckoutPreview()) {
-    return refuse(PREVIEW_REFUSED, "forbidden");
+    return err({ reason: PREVIEW_REFUSED, usedByOrder: null });
   }
-  const settled = await confirmChecked(context, input, now);
-  if (!settled.ok) {
-    logger.warn("admin.manual_settle_refused", {
-      staffId: context.staff.id,
-      orderId: input.orderId,
-      reason: settled.error.reason,
-    });
+  const { result, externalReference } = await confirmChecked(context, input, now);
+  if (result.ok) {
+    return result;
   }
-  return settled;
+  logger.warn("admin.manual_settle_refused", {
+    staffId: context.staff.id,
+    orderId: input.orderId,
+    reason: result.error.reason,
+  });
+  return failure(context, result.error, externalReference);
 }

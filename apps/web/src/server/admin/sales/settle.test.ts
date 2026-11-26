@@ -37,7 +37,16 @@ function detail(overrides: Record<string, unknown> = {}) {
 const getOrderDetail = vi.fn((): Promise<unknown> => Promise.resolve(detail()));
 const recordManualPayment = vi.fn(() => Promise.resolve(ok({ orderId: ORDER_ID })));
 const actual = await vi.importActual<typeof MasarDb>("@masar/db");
-vi.mock("@masar/db", () => ({ ...actual, getOrderDetail, recordManualPayment }));
+const findManualReferenceUse = vi.fn(
+  (): Promise<{ orderId: string; orderReference: string } | undefined> =>
+    Promise.resolve(undefined),
+);
+vi.mock("@masar/db", () => ({
+  ...actual,
+  getOrderDetail,
+  recordManualPayment,
+  findManualReferenceUse,
+}));
 vi.mock("../../db", () => ({ getDb: () => ({}) }));
 vi.mock("../flag", () => ({ adminSecretKey: () => TEST_ADMIN_KEY }));
 const warn = vi.fn();
@@ -64,7 +73,7 @@ function prepare(values: Partial<SettleValues> = {}, staff = STAFF, now = NOW) {
 async function tokenFor(staff = STAFF): Promise<string> {
   const prepared = await prepare({}, staff);
   if (!prepared.ok) {
-    throw prepared.error;
+    throw new Error(prepared.error.reason);
   }
   return prepared.value.token;
 }
@@ -149,6 +158,47 @@ describe("الخطوة 1: تتحقق ولا تكتب", () => {
     const paid = { provider: "moyasar", providerPaymentId: "p-1" };
     getOrderDetail.mockResolvedValueOnce(detail({ payment: paid }));
     expect(reasonOf(await prepare())).toBe("order.already_paid");
+  });
+});
+
+describe("مرجع خارجي مستعمل: الرفض يسمّي طلبه", () => {
+  const USED = { orderId: "o-1", orderReference: "MSR-0000042" };
+
+  it("الخطوة 1 ترفضه قبل صفحة التأكيد، بالمفتاح الموحَّد داخل نادي الموظف", async () => {
+    findManualReferenceUse.mockResolvedValue(USED);
+    const prepared = await prepare({ externalReference: "trf 88412" });
+    expect(prepared).toEqual({
+      ok: false,
+      error: { reason: "manual_payment.reference_used", usedByOrder: "MSR-0000042" },
+    });
+    expect(findManualReferenceUse).toHaveBeenCalledWith({}, "club-1", "trf 88412");
+    findManualReferenceUse.mockResolvedValue(undefined);
+  });
+
+  it("الخطوة 2 (سباق بعد المراجعة): المرجع من الرمز المختوم، وطلبه يُسمّى", async () => {
+    const token = await tokenFor();
+    recordManualPayment.mockResolvedValueOnce(
+      err(new DomainError("conflict", "manual_payment.reference_used")) as never,
+    );
+    findManualReferenceUse.mockResolvedValueOnce(USED);
+    const settled = await confirm(token);
+    expect(settled).toEqual({
+      ok: false,
+      error: { reason: "manual_payment.reference_used", usedByOrder: "MSR-0000042" },
+    });
+    expect(findManualReferenceUse).toHaveBeenLastCalledWith({}, "club-1", "TRF-88412");
+  });
+
+  it("من لا يقرأ الطلبات لا يُسمّى له طلب، وسبب آخر بلا طلب", async () => {
+    findManualReferenceUse.mockResolvedValue(USED);
+    const blind = await prepare({}, { ...STAFF, role: "editor" });
+    expect(blind).toMatchObject({ error: { usedByOrder: null } });
+    findManualReferenceUse.mockResolvedValue(undefined);
+    const other = await prepare({ amount: "1" });
+    expect(other).toEqual({
+      ok: false,
+      error: { reason: "payment.amount_mismatch", usedByOrder: null },
+    });
   });
 });
 

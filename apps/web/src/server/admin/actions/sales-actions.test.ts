@@ -198,13 +198,23 @@ describe("settleOrderAction", () => {
 
   it("«راجع» بخطأ: يبقى في الحقول بما كُتب", async () => {
     prepareManualSettlement.mockResolvedValueOnce(
-      err(new DomainError("conflict", "payment.amount_mismatch")),
+      err({ reason: "payment.amount_mismatch", usedByOrder: null }),
     );
     const state = await settleOrderAction(EDIT, form({ ...review, amount: "1400" }));
     expect(state).toEqual({
       step: "edit",
       error: "payment.amount_mismatch",
+      usedByOrder: null,
       values: { ...VALUES, amount: "1400" },
+    });
+    prepareManualSettlement.mockResolvedValueOnce(
+      err({ reason: "manual_payment.reference_used", usedByOrder: "MSR-0000042" }),
+    );
+    const used = await settleOrderAction(EDIT, form(review));
+    expect(used).toMatchObject({
+      step: "edit",
+      error: "manual_payment.reference_used",
+      usedByOrder: "MSR-0000042",
     });
   });
 
@@ -236,13 +246,13 @@ describe("settleOrderAction", () => {
     expect(prepareManualSettlement).not.toHaveBeenCalled();
 
     confirmManualSettlement.mockResolvedValueOnce(
-      err(new DomainError("conflict", "order.already_paid")),
+      err({ reason: "order.already_paid", usedByOrder: null }),
     );
     const failed = await settleOrderAction(
       confirmState,
       form({ orderId: ORDER_ID, intent: "confirm" }),
     );
-    expect(failed).toEqual({ ...confirmState, error: "order.already_paid" });
+    expect(failed).toEqual({ ...confirmState, error: "order.already_paid", usedByOrder: null });
     expect(confirmManualSettlement).toHaveBeenLastCalledWith(
       { staff: STAFF },
       { orderId: ORDER_ID, token: "", confirmed: false },

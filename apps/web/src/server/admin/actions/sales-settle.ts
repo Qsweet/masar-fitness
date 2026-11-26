@@ -77,7 +77,8 @@ export async function settleOrderAction(
     const values = settleValues(formData);
     const prepared = await prepareManualSettlement(context, orderId, values, now);
     if (!prepared.ok) {
-      return { step: "edit", error: prepared.error.reason, values };
+      const { reason, usedByOrder } = prepared.error;
+      return { step: "edit", error: reason, usedByOrder, values };
     }
     const { token, payload } = prepared.value;
     return { step: "confirm", error: null, values, token, summary: summaryOf(payload) };
@@ -93,9 +94,10 @@ export async function settleOrderAction(
   );
   if (!settled.ok) {
     // خطأ في التأكيد يُبقي صفحة المراجعة إن كانت معروضة، وإلا يعود إلى الحقول
+    const { reason: error, usedByOrder } = settled.error;
     return previous.step === "confirm"
-      ? { ...previous, error: settled.error.reason }
-      : { step: "edit", error: settled.error.reason, values: previous.values };
+      ? { ...previous, error, usedByOrder }
+      : { step: "edit", error, usedByOrder, values: previous.values };
   }
   done(orderId, "manual_payment_recorded");
 }

@@ -212,3 +212,23 @@ Refund:     requested → approved → processing → completed
 | T10   | `payment_incidents_guard()`                | `payment_incident_reference_mismatch`، `…_append_only`، `…_resolution_final`                                                                                                                                                             | الحادثة تطابق طلبها ومحاولتها، ولا يُكتب بعدها إلا الحسم ومرة واحدة                                                             |
 
 الحذف ممنوع من الجدولين (`payment_attempt_delete_forbidden`، `payment_incident_delete_forbidden`). الفهارس: `payment_attempts(order_id)` و`(status, deadline_at)`، و`payment_incidents(order_id)`.
+
+## 11. موظفو لوحة التحكم (المرحلة A1، ترحيل `20261126090000_staff_identity`)
+
+| الجدول                 | المحتوى                                                                                                                                                                                                                                                                                 | ملاحظات                                        |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `staff_users`          | `club_id`، `email` (فريد، صغير الحروف)، `display_name`، `role` (`owner/manager/editor/sales`)، `status` (`active/disabled`)، `password_hash` (scrypt)، `must_change_password`، `totp_secret_enc`، `totp_enabled_at`، `totp_last_step`، `failed_logins`، `locked_until`، `last_login_at` | لا يُحذف ولا ينتقل بين الأندية                 |
+| `staff_sessions`       | `staff_user_id`، `token_hash` (SHA-256، فريد)، `created_at`، `last_seen_at`، `expires_at`، `mfa_verified_at`، `ip`، `user_agent` (255)، `revoked_at`                                                                                                                                    | سجل: لا يُحذف، والتدوير صف جديد                |
+| `staff_recovery_codes` | `staff_user_id`، `code_hash` (SHA-256، فريد)، `used_at`                                                                                                                                                                                                                                 | كل رمز مرة؛ المجموعة تُستبدل عند إعادة التسجيل |
+
+- **CHECK:** شكل البريد وصغر حروفه، طول الاسم، التجزئة بصيغة `scrypt$…`، العدّاد غير سالب، لا خطوة ثانية مفعّلة ولا خطوة مستعملة بلا سر؛ شكل تجزئة الرمز، الانتهاء بعد الإنشاء، طول العنوان والمتصفح.
+- **`audit_logs`:** `entity_type` يقبل `staff_user`، و`actor` يقبل `staff:<uuid>` بجانب القيم القائمة، وفهرس جديد `(club_id, created_at)` لصفحة السجل.
+
+| الرمز | الدالة                                | الرسائل الثابتة                                                                    | ما يفرضه                                                                                      |
+| ----- | ------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| S1    | `staff_users_guard_last_owner()`      | `staff_last_owner_required`                                                        | آخر مالك نشط في النادي لا يُعطَّل ولا يُنزَّل؛ قفل استشاري لكل نادٍ يسلسل التغييرات المتزامنة |
+| S2    | `staff_users_guard_identity()`        | `staff_user_identity_immutable`، `staff_user_delete_forbidden`                     | النادي وتاريخ الإنشاء ثابتان، والحذف ممنوع                                                    |
+| S3    | `staff_sessions_guard_update()`       | `staff_session_immutable`، `staff_session_final`، `staff_session_delete_forbidden` | يتغير آخر نشاط فقط؛ الإلغاء وإثبات الخطوة الثانية يُكتبان مرة ولا يُمحيان                     |
+| S4    | `staff_recovery_codes_guard_update()` | `staff_recovery_code_used_once`                                                    | `used_at` يُكتب مرة، والرمز وصاحبه ثابتان                                                     |
+
+**المعاملات:** عدّ المحاولة الفاشلة تحت قفل صف الموظف؛ تغيير الدور والحالة تحت قفل مالكي النادي ثم صف الموظف، ومعه إلغاء الجلسات وسطر التدقيق؛ قبول خطوة TOTP تحديث ذرّي يشترط أنها أحدث من آخر خطوة مقبولة؛ استهلاك رمز الاسترجاع `UPDATE … WHERE used_at IS NULL`.

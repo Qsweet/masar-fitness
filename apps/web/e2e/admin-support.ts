@@ -69,6 +69,12 @@ export async function signIn(page: Page, staff: TestStaff, stepOffset = 0): Prom
   await expect(page.getByRole("navigation", { name: TEXT.nav.label })).toBeVisible();
 }
 
+/** يخرج وينتظر صفحة الدخول: دخول تالٍ قبل اكتمال الخروج يجد الجلسة القديمة حيّة فيُحوَّل. */
+export async function signOut(page: Page): Promise<void> {
+  await page.getByRole("button", { name: TEXT.nav.logout }).click();
+  await expect(page).toHaveURL(/\/admin\/login$/);
+}
+
 /** يضيف رمز استرجاع معروفًا للموظف (مجزأً كما يخزّنه التسجيل). */
 export async function addRecoveryCode(db: Db, staff: TestStaff, code: string): Promise<void> {
   const normalized = normalizeRecoveryCode(code);

@@ -7,6 +7,7 @@ import {
   newClub,
   newStaff,
   signIn,
+  signOut,
   submitLogin,
   submitTotp,
   TEXT,
@@ -77,7 +78,7 @@ test("دور بلا صلاحية يُرفض بـ404: المبيعات لا تف�
   }
   // المحرر لا يرى أرقام المبيعات: يُحوَّل من «نظرة عامة» إلى حسابه
   const editor = await newStaff(db, club, { role: "editor", withTotp: true });
-  await page.getByRole("button", { name: TEXT.nav.logout }).click();
+  await signOut(page);
   await signIn(page, editor);
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin\/account$/);

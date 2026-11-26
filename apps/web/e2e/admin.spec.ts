@@ -17,6 +17,7 @@ import {
   newStaff,
   SESSION_COOKIE,
   signIn,
+  signOut,
   submitLogin,
   submitTotp,
   TEXT,
@@ -170,8 +171,7 @@ test("الخطوة الثانية: رمز خاطئ يُرفض، والصحيح �
   await expect(page.getByRole("heading", { level: 1, name: TEXT.overview.title })).toBeVisible();
   expect(await sessionCookie(page)).not.toBe(beforeVerify);
 
-  await page.getByRole("button", { name: TEXT.nav.logout }).click();
-  await expect(page).toHaveURL(/\/admin\/login$/);
+  await signOut(page);
   await submitLogin(page, staff.email, staff.password);
   await submitTotp(page, code);
   await expect(formAlert(page)).toHaveText(MFA_FAILED);
@@ -197,8 +197,7 @@ test("رمز الاسترجاع يدخل مرة واحدة فقط", async ({ pag
   };
   await useRecovery();
   await expect(page.getByRole("heading", { level: 1, name: TEXT.overview.title })).toBeVisible();
-  await page.getByRole("button", { name: TEXT.nav.logout }).click();
-  await expect(page).toHaveURL(/\/admin\/login$/);
+  await signOut(page);
 
   await useRecovery();
   await expect(formAlert(page)).toHaveText(MFA_FAILED);
@@ -215,16 +214,14 @@ test("جلسة قبل الخطوة الثانية لا تفتح إلا صفحة 
     await expect(page).toHaveURL(/\/admin\/verify$/);
   }
   // الخروج متاح قبل إتمام الخطوة
-  await page.getByRole("button", { name: TEXT.nav.logout }).click();
-  await expect(page).toHaveURL(/\/admin\/login$/);
+  await signOut(page);
 });
 
 test("الخروج يلغي الجلسة: الكوكي القديم لا يعمل بعده", async ({ page, baseURL }) => {
   const staff = await newStaff(db, await newClub(db), { withTotp: true });
   await signIn(page, staff);
   const token = await sessionCookie(page);
-  await page.getByRole("button", { name: TEXT.nav.logout }).click();
-  await expect(page).toHaveURL(/\/admin\/login$/);
+  await signOut(page);
   expect(await sessionCookie(page)).toBe("");
 
   await page.context().addCookies([{ name: SESSION_COOKIE, value: token, url: baseURL ?? "" }]);

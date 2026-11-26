@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { ADMIN_OPEN_HEADER, ADMIN_PATH, ADMIN_SEGMENT_PATTERN } from "./src/config/admin";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales";
 
 const HSTS_MAX_AGE_SECONDS = 63_072_000; // سنتان
@@ -40,7 +41,15 @@ const nextConfig: NextConfig = {
   // afterFiles: الملفات والمسارات الثابتة (robots.txt، الواجهات) تُطابَق أولًا.
   rewrites() {
     return Promise.resolve({
-      beforeFiles: [],
+      // لوحة التحكم بلا علامة الوسيط (مغلقة، أو ‎/Admin‎ أو ‎/%61dmin‎: النمط يشمل كل كتابة)
+      // تُخدَّم كأي مسار مجهول من اللغة الافتراضية، قبل ملفات اللوحة نفسها: 404 العامة لا غير.
+      beforeFiles: [
+        {
+          source: `/:admin(${ADMIN_SEGMENT_PATTERN})/:path*`,
+          missing: [{ type: "header", key: ADMIN_OPEN_HEADER }],
+          destination: `/${DEFAULT_LOCALE}${ADMIN_PATH}/:path*`,
+        },
+      ],
       afterFiles: [
         { source: "/", destination: `/${DEFAULT_LOCALE}` },
         {

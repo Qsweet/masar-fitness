@@ -60,6 +60,14 @@ test("ترويسات اللوحة: لا فهرسة، لا تخزين، سياس�
   expect(login.headers()["content-security-policy"]).toMatch(/script-src 'self' 'nonce-/);
   expect(await login.text()).toContain('name="robots" content="noindex, nofollow"');
 
+  // اللوحة مفتوحة: robots.txt يمنع زحفها، وكتابة أخرى لاسمها 404 عامة لا صفحة دخول
+  expect(await (await request.get("/robots.txt")).text()).toContain("Disallow: /admin");
+  for (const path of ["/Admin/login", "/%61dmin/login"]) {
+    const lookalike = await request.get(path, { maxRedirects: 0 });
+    expect(lookalike.status()).toBe(404);
+    expect(await lookalike.text()).not.toContain('type="password"');
+  }
+
   const gated = await request.get("/admin", { maxRedirects: 0 });
   expect(gated.status()).toBe(307);
   expect(gated.headers().location).toBe("/admin/login");

@@ -34,6 +34,30 @@ export function isAdminConfigured(rawKey: string | undefined): boolean {
   return rawKey !== undefined && rawKey !== "";
 }
 
+/**
+ * ترويسة طلب داخلية يضعها الوسيط على مسارات اللوحة المفتوحة فقط (ويحذف ما يرسله العميل بها).
+ * قاعدة next.config تعيد كتابة كل ‎/admin‎ بلاها إلى اللغة الافتراضية، أي إلى 404 العامة.
+ */
+export const ADMIN_OPEN_HEADER = "x-masar-admin-open";
+export const ADMIN_OPEN_VALUE = "1";
+
+const HEX = 16;
+
+/** حرف واحد كما قد يُكتب في رابط: نفسه، أو مرمَّزًا بالنسبة المئوية بحالتيه (‎a‎ أو ‎%61‎ أو ‎%41‎). */
+function anySpelling(letter: string): string {
+  const codes = [letter.toLowerCase(), letter.toUpperCase()].map(
+    (form) => `%${form.charCodeAt(0).toString(HEX)}`,
+  );
+  return `(?:${[letter, ...codes].join("|")})`;
+}
+
+/**
+ * نمط المقطع الأول «admin» بكل كتابة يفكّها الخادم إليه: أي حالة حروف (مطابقة القواعد بلا حساسية)
+ * وأي حرف مرمَّز. قاعدة next.config تطابق الرابط الخام، وملفات المسارات تُطابَق بعد فك الترميز، فبلا
+ * هذا النمط يصل ‎/%61dmin‎ إلى ملفات اللوحة متجاوزًا القاعدة.
+ */
+export const ADMIN_SEGMENT_PATTERN = Array.from(ADMIN_PATH.slice(1), anySpelling).join("");
+
 /** ردود اللوحة لا تُخزَّن في أي ذاكرة وسيطة. */
 export const NO_STORE_HEADER = { name: "Cache-Control", value: "no-store" } as const;
 
@@ -53,6 +77,8 @@ export const MAX_LOGIN_ATTEMPTS_PER_EMAIL = 10;
 export const MAX_MFA_ATTEMPTS_PER_STAFF = 10;
 /** محاولات رموز الخطوة الثانية والاسترجاع من عنوان واحد في النافذة. */
 export const MAX_MFA_ATTEMPTS_PER_IP = 30;
+/** محاولات كتابة «كلمة المرور الحالية» في «حسابي» لحساب واحد في النافذة. */
+export const MAX_CURRENT_PASSWORD_CHECKS_PER_STAFF = 5;
 export const MAX_ADMIN_THROTTLE_KEYS = 5_000;
 
 /** لا يُحدَّث «آخر نشاط» للجلسة أكثر من مرة في هذه المدة: كتابة واحدة في الدقيقة تكفي لحد الخمول. */

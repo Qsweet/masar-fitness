@@ -71,41 +71,57 @@ describe("matcher", () => {
 
 describe("لوحة التحكم في الوسيط", () => {
   const KEY = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=";
+  /** الترويسة الداخلية كما يحملها Next إلى الطلب المُمرَّر (تجاوز ترويسات الطلب). */
+  const OPEN_MARK = "x-middleware-request-x-masar-admin-open";
 
-  function respond(path: string) {
-    return proxy(new NextRequest(`https://example.com${path}`));
+  function respond(path: string, headers: Record<string, string> = {}) {
+    return proxy(new NextRequest(`https://example.com${path}`, { headers }));
   }
 
-  it("بلا مفتاح: كل مسار لوحة يُخدَّم من صفحة «غير موجودة» العامة، بلا ترويسة تميّزه", () => {
+  function forwardedNames(response: ReturnType<typeof respond>): string[] {
+    return (response.headers.get("x-middleware-override-headers") ?? "").split(",");
+  }
+
+  it("بلا مفتاح: لا علامة فتح ولا إعادة كتابة من الوسيط ولا ترويسة تميّز الرد", () => {
     vi.stubEnv("ADMIN_SECRET_KEY", "");
     vi.stubEnv("SITE_INDEXABLE", "true");
     for (const path of ["/admin", "/admin/login", "/admin/staff/abc"]) {
       const response = respond(path);
-      expect(response.headers.get("x-middleware-rewrite")).toBe("https://example.com/admin-closed");
-      expect(response.headers.get("x-robots-tag")).toBeNull();
-      expect(response.headers.get("cache-control")).toBeNull();
-      expect(response.headers.get("content-security-policy")).toBeTruthy();
+      const unknown = respond("/no-such-page");
+      expect(response.headers.get(OPEN_MARK)).toBeNull();
+      expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+      expect([...response.headers.keys()].sort()).toEqual([...unknown.headers.keys()].sort());
     }
   });
 
-  it("بالمفتاح: تمر، ولا تُفهرس ولا تُخزَّن حتى على النطاق المفهرس", () => {
+  it("علامة الفتح التي يرسلها العميل تُحذف دائمًا", () => {
+    vi.stubEnv("ADMIN_SECRET_KEY", "");
+    const spoofed = respond("/admin/login", { "x-masar-admin-open": "1" });
+    expect(spoofed.headers.get(OPEN_MARK)).toBeNull();
+    expect(forwardedNames(spoofed)).not.toContain("x-masar-admin-open");
+    vi.stubEnv("ADMIN_SECRET_KEY", KEY);
+    const outside = respond("/memberships", { "x-masar-admin-open": "1" });
+    expect(forwardedNames(outside)).not.toContain("x-masar-admin-open");
+  });
+
+  it("بالمفتاح: يُعلَّم الطلب، ولا يُفهرس الرد ولا يُخزَّن حتى على النطاق المفهرس", () => {
     vi.stubEnv("ADMIN_SECRET_KEY", KEY);
     vi.stubEnv("SITE_INDEXABLE", "true");
     for (const path of ["/admin", "/admin/login", "/admin/audit"]) {
       const response = respond(path);
-      expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+      expect(response.headers.get(OPEN_MARK)).toBe("1");
       expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
       expect(response.headers.get("cache-control")).toBe("no-store");
       expect(response.headers.get("content-security-policy")).toMatch(/script-src 'self' 'nonce-/);
     }
   });
 
-  it("مسار يشبه اللوحة ليس منها: لا إعادة كتابة ولا منع تخزين", () => {
-    vi.stubEnv("ADMIN_SECRET_KEY", "");
+  it("كتابة أخرى لاسم اللوحة أو مسار يشبهها: لا علامة فتح ولو كانت اللوحة مفتوحة", () => {
+    vi.stubEnv("ADMIN_SECRET_KEY", KEY);
     vi.stubEnv("SITE_INDEXABLE", "true");
-    for (const path of ["/administrator", "/en/admin", "/blog/admin"]) {
+    for (const path of ["/Admin/login", "/%61dmin/login", "/administrator", "/en/admin"]) {
       const response = respond(path);
-      expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+      expect(response.headers.get(OPEN_MARK)).toBeNull();
       expect(response.headers.get("cache-control")).toBeNull();
     }
   });

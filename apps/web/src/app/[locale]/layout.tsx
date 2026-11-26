@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { MAIN_CONTENT_ID } from "@/components/page-shell";
+import { ScrollReset } from "@/components/scroll-reset";
 import { StagingNote } from "@/components/staging-note";
 import { getDictionary } from "@/i18n/dictionaries";
 import { directionOf, isLocale, LOCALES } from "@/i18n/locales";
@@ -35,13 +36,20 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   }
   const dictionary = getDictionary(locale);
   return (
-    <html lang={locale} dir={directionOf(locale)} className={alexandria.variable}>
+    // data-scroll-behavior: الانتقال بين الصفحات فوري، والتمرير الناعم للروابط داخل الصفحة فقط
+    <html
+      lang={locale}
+      dir={directionOf(locale)}
+      className={alexandria.variable}
+      data-scroll-behavior="smooth"
+    >
       <body>
         <a href={`#${MAIN_CONTENT_ID}`} className="skip-link">
           {dictionary.nav.skipToContent}
         </a>
         <StagingNote rawIndexable={process.env.SITE_INDEXABLE} text={dictionary.staging} />
         {children}
+        <ScrollReset />
       </body>
     </html>
   );

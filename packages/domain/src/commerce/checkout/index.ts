@@ -12,3 +12,5 @@ export type {
 } from "./order-draft";
 export { buildQuote } from "./quote";
 export type { Quote, QuoteFacts } from "./quote";
+export { MAX_PAYMENT_WINDOW_MINUTES, validateSalesSettings } from "./sales-settings";
+export type { SalesSettings, SalesSettingsContext, SalesSettingsInput } from "./sales-settings";

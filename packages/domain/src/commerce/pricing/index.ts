@@ -21,7 +21,7 @@ export type {
   PricedCart,
   PricedLine,
 } from "./price-cart";
-export { checkPromotion, isInScope } from "./promotion";
+export { PROMOTION_STATUSES, checkPromotion, isInScope } from "./promotion";
 export type {
   CustomerStanding,
   PromotionAudience,

@@ -12,6 +12,7 @@ function plan(overrides: Partial<MembershipPlan> = {}): MembershipPlan {
   return {
     slug: "p",
     name: { ar: "باقة", en: "Plan" },
+    tier: null,
     summary: { ar: "", en: "" },
     price: money(120000),
     paidMonths: 12,

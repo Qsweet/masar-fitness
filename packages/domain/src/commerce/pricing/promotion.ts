@@ -5,7 +5,9 @@ import { err, ok, type Result } from "../../result";
 import type { CouponCode } from "./coupon-code";
 import type { BasisPoints } from "./vat";
 
-export type PromotionStatus = "draft" | "active" | "archived";
+/** `paused`: أوقفه الموظف مؤقتًا (يُفعَّل من جديد)، غير المسودة التي لم تُفعَّل قط. */
+export const PROMOTION_STATUSES = ["draft", "active", "paused", "archived"] as const;
+export type PromotionStatus = (typeof PROMOTION_STATUSES)[number];
 export type PromotionAudience = "anyone" | "new_customer" | "existing_customer";
 
 export type PromotionDiscount =

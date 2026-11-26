@@ -7,6 +7,7 @@ function plan(amountMinor: number, paidMonths: number, bonusMonths = 0): Members
   return {
     slug: "p",
     name: { ar: "باقة", en: "Plan" },
+    tier: null,
     summary: { ar: "", en: "" },
     price: money(amountMinor),
     paidMonths,

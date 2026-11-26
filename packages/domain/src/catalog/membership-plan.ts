@@ -10,6 +10,8 @@ export interface LocalizedText {
 export interface MembershipPlan {
   readonly slug: string;
   readonly name: LocalizedText;
+  /** اسم الفئة التسويقي («رحلة الأبطال») من `products.tier_*`؛ null لباقة بلا اسم فئة. */
+  readonly tier: LocalizedText | null;
   readonly summary: LocalizedText;
   /** السعر الإجمالي شامل الضريبة */
   readonly price: Money;

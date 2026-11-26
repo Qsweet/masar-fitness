@@ -1,7 +1,8 @@
 /**
  * تسجيل دفعة متحقق منها على طلب: نقطة تسليم المرحلة 4. لا استدعاء خارجي داخل المعاملة.
- * مستدعيها الوحيد في مسار الدفع `applyProviderSnapshot` (payments/apply-snapshot.ts)، بعد قراءة
- * الدفعة من المزوّد نفسه.
+ * مستدعيها في مسار الدفع `applyProviderSnapshot` (payments/apply-snapshot.ts)، بعد قراءة الدفعة من
+ * المزوّد نفسه. والدفع اليدوي من اللوحة (orders-admin/manual-payment.ts) يستدعي `settleInTransaction`
+ * نفسها داخل معاملته: لا مسار تسوية ثانٍ، ولا كتابة `status = 'paid'` خارج هذا الملف.
  *
  * الشرطان الصلبان اللذان يمنعان أن تصل دفعة لطلب أنهته المهلة:
  * 1. تنتهي جلسة المزوّد قبل `orders.expires_at` بهامش (`payment_attempts.deadline_at`).
@@ -19,7 +20,7 @@ import {
 } from "@masar/domain";
 import type { Db } from "../client";
 import type { OrderStatus } from "../generated/prisma/client";
-import { writeAudit, type AuditActor } from "./audit";
+import { writeAudit, type StaffAuditActor } from "./audit";
 import { createMembershipForOrder } from "./membership-write";
 import { mapCommerceDbError } from "./sql-errors";
 import { inTransaction, type Tx } from "./transaction";
@@ -27,7 +28,8 @@ import { inTransaction, type Tx } from "./transaction";
 export interface MarkOrderPaidInput {
   readonly orderId: string;
   readonly payment: VerifiedPayment;
-  readonly actor: Extract<AuditActor, "provider" | "system">;
+  /** المزوّد أو النظام في مسار الدفع، وموظف بمعرّفه في الدفع اليدوي. */
+  readonly actor: "provider" | "system" | StaffAuditActor;
   readonly now: Date;
 }
 
@@ -184,7 +186,11 @@ async function fulfilIfNoDigital(tx: Tx, order: LockedOrder, input: MarkOrderPai
   return "fulfilled" as const;
 }
 
-async function settleInTransaction(
+/**
+ * التسوية نفسها داخل معاملة المستدعي: قفل الطلب ثم العميل، والقرار بـ`decideSettlement`، والاشتراك
+ * والتسليم. الرفض يرجع `err` بعد كتابة سطر تدقيقه؛ من يريد التراجع الكامل عنه يستدعي `abort`.
+ */
+export async function settleInTransaction(
   tx: Tx,
   input: MarkOrderPaidInput,
 ): Promise<Result<PaidOrder, DomainError>> {

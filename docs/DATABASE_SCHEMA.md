@@ -232,3 +232,29 @@ Refund:     requested → approved → processing → completed
 | S4    | `staff_recovery_codes_guard_update()` | `staff_recovery_code_used_once`                                                    | `used_at` يُكتب مرة، والرمز وصاحبه ثابتان                                                     |
 
 **المعاملات:** عدّ المحاولة الفاشلة تحت قفل صف الموظف؛ تغيير الدور والحالة تحت قفل مالكي النادي ثم صف الموظف، ومعه إلغاء الجلسات وسطر التدقيق؛ قبول خطوة TOTP تحديث ذرّي يشترط أنها أحدث من آخر خطوة مقبولة؛ استهلاك رمز الاسترجاع `UPDATE … WHERE used_at IS NULL`.
+
+## 12. إدارة المبيعات من اللوحة (المرحلة A2، الحزم WP1–WP4)
+
+ثلاثة ترحيلات صغيرة، كلٌّ مع حزمته (`ADMIN_A2_SALES.md` §3). لا تغيير في T1–T10 ولا S1–S4.
+
+| الترحيل                             | الحزمة | المحتوى                                                                                                                                       |
+| ----------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261126120000_sales_admin_base`   | WP1    | فهرس `orders(club_id, created_at)` لقائمة الطلبات. `audit_logs.entity_type` يقبل `product`، `promotion`، `customer`، `club`، `manual_payment` |
+| `20261126130000_order_cancel_guard` | WP3    | T11                                                                                                                                           |
+| `20261126140000_manual_payments`    | WP4    | جدول `manual_payments` وT12 وT13                                                                                                              |
+
+**`manual_payments`** (إلحاق فقط): `id` (يولَّد عند رسم نموذج التأكيد، وهو `orders.paid_provider_payment_id`)، `club_id`، `order_id`، `method`، `external_reference`، `received_on` (DATE بتقويم النادي)، `amount_minor`، `currency`، `note` (نص حر لا يدخل التدقيق)، `recorded_by` (FK إلى `staff_users`)، `created_at`.
+
+- **UNIQUE:** `manual_payments(order_id)` (دفعة يدوية واحدة للطلب)، و`(club_id, method, external_reference)` (المرجع لا يسوّي طلبين).
+- **CHECK:** الطريقة `bank_transfer` أو `paid_at_club`؛ المرجع مشذَّب وطوله 3 إلى 64؛ المبلغ موجب؛ شكل العملة؛ الملاحظة مشذَّبة وطولها 1 إلى 500 أو NULL.
+- **فحص التطبيق (المجال):** `received_on` ليس بعد اليوم ولا قبل يوم إنشاء الطلب بتقويم النادي (`validateManualPayment`)؛ والطلب الذي بلغ مهلته لا يُدفع ولو لم يُكتب منتهيًا (`decideManualSettlement`). القاعدة لا تقرأ الساعة: `now` يُمرَّر من الكود.
+
+| الرمز | الدالة                                                                | الرسائل الثابتة                                                                                                    | ما يفرضه                                                                                                                                                  |
+| ----- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T11   | `orders_forbid_cancel_with_live_attempt()`                            | `order_cancel_blocked_by_live_attempt`                                                                             | سدّ احتياطي كـT9: الطلب لا يُكتب `cancelled` وله محاولة دفع حيّة (`payment_attempt_is_live`)                                                              |
+| T12   | `manual_payments_guard()`                                             | `manual_payment_order_not_pending`، `…_snapshot_mismatch`، `…_blocked_by_live_attempt`، `manual_payment_immutable` | عند الإدراج يقفل الطلب ويطابقه (معلّق، والنادي والمبلغ والعملة لقطته، وبلا محاولة حيّة)؛ التعديل والحذف ممنوعان                                           |
+| T13   | `manual_payment_settlement_link()` و`orders_require_manual_payment()` | `manual_payment_requires_settlement`، `order_manual_payment_missing`                                               | مؤجَّل عند COMMIT: كل صف يدوي طلبه يحمل `paid_provider = 'manual'` ومعرّفه؛ وعند `UPDATE orders`: لا تسوية «manual» بلا صف مطابق بالمعرّف والمبلغ والعملة |
+
+**المعاملات:** `cancelPendingOrder` و`recordManualPayment` تقفلان الطلب `FOR UPDATE` أولًا (القفل نفسه الذي يأخذه T8 و`markOrderPaid`)، ثم تقرآن المحاولة الحيّة، ثم القرار في المجال. الدفع اليدوي يدرج صفه ثم يستدعي `settleInTransaction` نفسها (ترتيب الأقفال: الطلب ثم العميل)، وأي رفض من التسوية يتراجع عن كل شيء. كشف الجوال يقرأ الرقم ويكتب سطر تدقيقه في معاملة واحدة.
+
+**ما لا يخرج من `packages/db`:** الجوال الكامل، إلا من `revealCustomerPhone` بسطر تدقيق. القوائم والتفصيل وصفحة العميل تحمل `maskSaudiMobile` (آخر أربعة أرقام).

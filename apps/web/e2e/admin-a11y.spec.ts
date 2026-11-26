@@ -29,6 +29,8 @@ test.afterAll(async () => {
 });
 
 async function expectAccessible(page: Page, name: string): Promise<void> {
+  // العنوان يصل ببث الصفحة بعد التنقل: ننتظره كي لا يفحص axe مستندًا لم يكتمل
+  await expect(page).toHaveTitle(/\S/);
   const results = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
   const summary = results.violations.map(
     (violation) =>

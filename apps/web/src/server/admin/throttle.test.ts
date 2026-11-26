@@ -3,10 +3,20 @@ import {
   MAX_CURRENT_PASSWORD_CHECKS_PER_STAFF,
   MAX_LOGIN_ATTEMPTS_PER_EMAIL,
   MAX_LOGIN_ATTEMPTS_PER_IP,
+  MAX_MANUAL_SETTLE_ATTEMPTS_PER_STAFF,
   MAX_MFA_ATTEMPTS_PER_IP,
   MAX_MFA_ATTEMPTS_PER_STAFF,
+  MAX_PHONE_LOOKUPS_PER_STAFF,
+  MAX_PHONE_REVEALS_PER_STAFF,
 } from "@/config/admin";
-import { allowCurrentPasswordCheck, allowLoginAttempt, allowMfaAttempt } from "./throttle";
+import {
+  allowCurrentPasswordCheck,
+  allowLoginAttempt,
+  allowManualSettle,
+  allowMfaAttempt,
+  allowPhoneLookup,
+  allowPhoneReveal,
+} from "./throttle";
 
 const VICTIM = "owner@example.test";
 const ATTACKER_IP = "198.51.100.9";
@@ -62,5 +72,29 @@ describe("حدود محاولات اللوحة", () => {
     }
     expect(allowCurrentPasswordCheck("staff-a")).toBe(false);
     expect(allowCurrentPasswordCheck("staff-b")).toBe(true);
+  });
+});
+
+describe("حدود إجراءات المبيعات لكل موظف", () => {
+  it.each([
+    ["البحث بالجوال", allowPhoneLookup, MAX_PHONE_LOOKUPS_PER_STAFF, 20],
+    ["كشف الجوال", allowPhoneReveal, MAX_PHONE_REVEALS_PER_STAFF, 30],
+    ["الدفع اليدوي", allowManualSettle, MAX_MANUAL_SETTLE_ATTEMPTS_PER_STAFF, 10],
+  ] as const)("%s: الحد في عشر دقائق، وكل موظف بنافذته", (_name, allow, limit, expected) => {
+    expect(limit).toBe(expected);
+    for (let index = 0; index < limit; index += 1) {
+      expect(allow("staff-a")).toBe(true);
+    }
+    expect(allow("staff-a")).toBe(false);
+    expect(allow("staff-b")).toBe(true);
+  });
+
+  it("الحدود الثلاثة مستقلة: استنفاد الكشف لا يمنع البحث ولا الدفع", () => {
+    for (let index = 0; index < MAX_PHONE_REVEALS_PER_STAFF; index += 1) {
+      allowPhoneReveal("staff-a");
+    }
+    expect(allowPhoneReveal("staff-a")).toBe(false);
+    expect(allowPhoneLookup("staff-a")).toBe(true);
+    expect(allowManualSettle("staff-a")).toBe(true);
   });
 });

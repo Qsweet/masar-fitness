@@ -58,6 +58,18 @@ export const salesStatusesAr = {
     digital_program: "برنامج رقمي",
     assessed_service: "خدمة بتقييم",
   },
+  product: { draft: "مسودة", active: "منشور", archived: "مؤرشف" },
+  promotion: { draft: "مسودة", active: "فعّال", paused: "متوقف مؤقتًا", archived: "منتهٍ" },
+  /** الحالة المعروضة للعرض: تُحسب من حالته ونافذته واستخدامه. */
+  promotionState: {
+    draft: "مسودة",
+    scheduled: "مجدول",
+    running: "سارٍ",
+    paused: "متوقف مؤقتًا",
+    ended: "انتهت نافذته",
+    exhausted: "مستنفد",
+    archived: "منتهٍ",
+  },
   startRule: { on_payment: "يبدأ يوم الدفع", on_first_visit: "يبدأ من أول زيارة" },
   discountSource: { automatic: "عرض تلقائي", coupon: "كوبون" },
   manualMethod: { bank_transfer: "حوالة بنكية", paid_at_club: "مدفوع في النادي" },

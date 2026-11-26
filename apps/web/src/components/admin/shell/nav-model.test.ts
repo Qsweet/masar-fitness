@@ -16,7 +16,10 @@ describe("مجموعات التنقل بحسب الدور", () => {
   it("المالك يرى المجموعات الأربع، والمبيعات بين «عام» و«الإدارة»", () => {
     expect(labels("owner")).toEqual([
       ["عام", ["نظرة عامة"]],
-      ["المبيعات", ["الطلبات", "العملاء"]],
+      [
+        "المبيعات",
+        ["الطلبات", "العملاء", "الاشتراكات والإضافات", "العروض والكوبونات", "إعدادات البيع"],
+      ],
       ["الإدارة", ["الموظفون", "سجل التدقيق"]],
       ["الحساب", ["حسابي"]],
     ]);
@@ -25,23 +28,32 @@ describe("مجموعات التنقل بحسب الدور", () => {
   it("المدير بلا «الموظفون»، والمبيعات بلا مجموعة الإدارة كلها", () => {
     expect(labels("manager")).toEqual([
       ["عام", ["نظرة عامة"]],
-      ["المبيعات", ["الطلبات", "العملاء"]],
+      ["المبيعات", ["الطلبات", "العملاء", "الاشتراكات والإضافات", "العروض والكوبونات"]],
       ["الإدارة", ["سجل التدقيق"]],
       ["الحساب", ["حسابي"]],
     ]);
     expect(labels("sales")).toEqual([
       ["عام", ["نظرة عامة"]],
-      ["المبيعات", ["الطلبات", "العملاء"]],
+      ["المبيعات", ["الطلبات", "العملاء", "الاشتراكات والإضافات", "العروض والكوبونات"]],
       ["الحساب", ["حسابي"]],
     ]);
   });
 
-  it("مجموعة المبيعات تعرض المبني فقط: لا كتالوج ولا عروض ولا إعدادات بيع بعد", () => {
-    const sales = navGroupsFor("owner", dictionary).find((group) => group.id === "sales");
-    expect(sales?.items.map((item) => item.href)).toEqual([
+  it("مجموعة المبيعات: إعدادات البيع للمالك وحده، والكتالوج والعروض لمن يقرؤهما", () => {
+    const hrefs = (role: (typeof STAFF_ROLES)[number]): string[] =>
+      navGroupsFor(role, dictionary)
+        .find((group) => group.id === "sales")
+        ?.items.map((item) => item.href) ?? [];
+    const shared = [
       "/admin/sales/orders",
       "/admin/sales/customers",
-    ]);
+      "/admin/sales/plans",
+      "/admin/sales/promotions",
+    ];
+    expect(hrefs("owner")).toEqual([...shared, "/admin/sales/settings"]);
+    expect(hrefs("manager")).toEqual(shared);
+    expect(hrefs("sales")).toEqual(shared);
+    expect(hrefs("editor")).toEqual([]);
   });
 
   it("المحرر: حسابه فقط، ولا مجموعة فارغة تظهر", () => {

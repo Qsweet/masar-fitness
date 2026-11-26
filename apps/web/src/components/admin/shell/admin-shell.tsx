@@ -9,6 +9,10 @@ import {
   orderCancelPath,
   orderPath,
   orderSettlePath,
+  planPath,
+  planStatusPath,
+  promotionPath,
+  promotionStatusPath,
   staffMemberPath,
   type AdminTheme,
 } from "@/config/admin";
@@ -74,6 +78,15 @@ function crumbLabels(dictionary: AdminDictionary): Record<string, string> {
     [orderSettlePath("*")]: sales.breadcrumbs.settle,
     [ADMIN_ROUTES.customers]: nav.customers,
     [customerPath("*")]: sales.breadcrumbs.customer,
+    [ADMIN_ROUTES.plans]: nav.plans,
+    [ADMIN_ROUTES.plansNew]: sales.breadcrumbs.planNew,
+    [planPath("*")]: sales.breadcrumbs.plan,
+    [planStatusPath("*")]: sales.breadcrumbs.planStatus,
+    [ADMIN_ROUTES.promotions]: nav.promotions,
+    [ADMIN_ROUTES.promotionsNew]: sales.breadcrumbs.promotionNew,
+    [promotionPath("*")]: sales.breadcrumbs.promotion,
+    [promotionStatusPath("*")]: sales.breadcrumbs.promotionStatus,
+    [ADMIN_ROUTES.salesSettings]: nav.salesSettings,
   };
 }
 

@@ -18,6 +18,11 @@ export const ADMIN_ROUTES = {
   sales: `${ADMIN_PATH}/sales`,
   orders: `${ADMIN_PATH}/sales/orders`,
   customers: `${ADMIN_PATH}/sales/customers`,
+  plans: `${ADMIN_PATH}/sales/plans`,
+  plansNew: `${ADMIN_PATH}/sales/plans/new`,
+  promotions: `${ADMIN_PATH}/sales/promotions`,
+  promotionsNew: `${ADMIN_PATH}/sales/promotions/new`,
+  salesSettings: `${ADMIN_PATH}/sales/settings`,
 } as const;
 
 export function staffMemberPath(id: string): string {
@@ -38,6 +43,24 @@ export function orderSettlePath(id: string): string {
 
 export function customerPath(id: string): string {
   return `${ADMIN_ROUTES.customers}/${id}`;
+}
+
+export function planPath(id: string): string {
+  return `${ADMIN_ROUTES.plans}/${id}`;
+}
+
+/** صفحة تأكيد تغيير حالة منتج؛ الإجراء في `?to=`. */
+export function planStatusPath(id: string): string {
+  return `${planPath(id)}/status`;
+}
+
+export function promotionPath(id: string): string {
+  return `${ADMIN_ROUTES.promotions}/${id}`;
+}
+
+/** صفحة تأكيد تغيير حالة عرض؛ الإجراء في `?to=`. */
+export function promotionStatusPath(id: string): string {
+  return `${promotionPath(id)}/status`;
 }
 
 /** هل المسار داخل اللوحة؟ ‎/admin‎ نفسه وكل ما تحته، لا ‎/administrator‎. */

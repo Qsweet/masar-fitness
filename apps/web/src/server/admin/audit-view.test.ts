@@ -150,3 +150,82 @@ describe("صف سجل التدقيق", () => {
     expect(view.details).toEqual(["محرر"]);
   });
 });
+
+describe("أحداث الكتالوج والعروض وإعدادات البيع", () => {
+  const PRODUCT = "018f4e2a-0000-7000-8000-0000000000b1";
+
+  it("نشر منتج: الحالتان بنص المنتج، والمنطقي نعم أو لا", () => {
+    const view = auditRowView(
+      row({
+        entityType: "product",
+        entityId: PRODUCT,
+        action: "product_archived",
+        fromState: "active",
+        toState: "archived",
+        data: { slug: "six-months", lastSellable: true },
+      }),
+      names,
+      dictionary,
+    );
+    expect(view).toMatchObject({
+      action: "أُرشف منتج",
+      subject: "منتج 018f4e2a",
+      details: ["منشور ← مؤرشف", "المعرّف: six-months", "آخر باقة تُباع: نعم"],
+    });
+  });
+
+  it("نسخة سعرية: الحقول المتغيرة بأسمائها، والقيمة الفارغة شرطة", () => {
+    const view = auditRowView(
+      row({
+        entityType: "product",
+        entityId: PRODUCT,
+        action: "product_version_created",
+        data: { previousVersionId: null, priceMinor: 99_900, changed: "price,benefits" },
+      }),
+      names,
+      dictionary,
+    );
+    expect(view.action).toBe("نسخة سعرية جديدة");
+    expect(view.details).toEqual([
+      "النسخة السابقة: —",
+      "السعر بالهللة: 99900",
+      "ما تغيّر: السعر، المزايا",
+    ]);
+  });
+
+  it("عرض وإعدادات: رموز القيم مترجمة", () => {
+    const promotion = auditRowView(
+      row({
+        entityType: "promotion",
+        entityId: PRODUCT,
+        action: "promotion_paused",
+        fromState: "active",
+        toState: "paused",
+        data: { code: "DEMO10", discountKind: "percentage", scope: "all_products" },
+      }),
+      names,
+      dictionary,
+    );
+    expect(promotion.details).toEqual([
+      "فعّال ← متوقف مؤقتًا",
+      "الرمز: DEMO10",
+      "شكل الخصم: نسبة مئوية",
+      "النطاق: كل المنتجات",
+    ]);
+    const settings = auditRowView(
+      row({
+        entityType: "club",
+        entityId: PRODUCT,
+        action: "sales_settings_updated",
+        data: { windowBefore: null, windowAfter: 1440, startRuleAfter: "on_payment" },
+      }),
+      names,
+      dictionary,
+    );
+    expect(settings).toMatchObject({
+      action: "عُدّلت إعدادات البيع",
+      subject: "إعدادات النادي 018f4e2a",
+      details: ["المهلة قبل: —", "المهلة بعد: 1440", "قاعدة البدء بعد: يبدأ يوم الدفع"],
+    });
+  });
+});

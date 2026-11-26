@@ -1,12 +1,6 @@
+import { auditAr } from "./audit-ar";
 import { overviewAr } from "./overview-ar";
-import {
-  salesAr,
-  salesAuditActionsAr,
-  salesAuditDetailsAr,
-  salesAuditValuesAr,
-  salesErrorsAr,
-  salesNoticesAr,
-} from "./sales-ar";
+import { salesAr, salesErrorsAr, salesNoticesAr } from "./sales-ar";
 
 /**
  * نصوص لوحة التحكم. العربي هو المرجع، وأي لغة تُضاف لاحقًا تتبع شكله (`AdminDictionary`).
@@ -57,7 +51,7 @@ export const adminAr = {
     owner: "كل شيء، ومنه إدارة الموظفين.",
     manager: "كل شيء عدا إدارة الموظفين.",
     editor: "المحتوى والمدونة.",
-    sales: "الطلبات والعملاء.",
+    sales: "الطلبات والعملاء، وقراءة الكتالوج والعروض.",
   },
   statuses: { active: "نشط", disabled: "معطَّل" },
   common: {
@@ -207,81 +201,7 @@ export const adminAr = {
     passwordSubmit: "ضع كلمة مرور مؤقتة",
     selfNote: "هذا حسابك. غيّر كلمة مرورك وراجع جلساتك من «حسابي».",
   },
-  audit: {
-    title: "سجل التدقيق",
-    lead: "كل حدث مهم في النظام: من فعل ماذا ومتى. السجل للإلحاق فقط ولا يُعدَّل.",
-    filters: {
-      legend: "تصفية السجل",
-      entity: "النوع",
-      actor: "الفاعل",
-      all: "الكل",
-      apply: "صفِّ",
-      clear: "امسح التصفية",
-    },
-    columns: { time: "الوقت", actor: "الفاعل", action: "الحدث", subject: "على", details: "تفاصيل" },
-    emptyTitle: "لا أحداث تطابق التصفية",
-    emptyLead: "غيّر التصفية أو امسحها لترى كل السجل.",
-    /** {from} و{to}: أرقام الصفوف المعروضة، {total}: العدد الكلي. بالكلمات: الشرطة بين رقمين تنقلب في RTL. */
-    range: "{from} إلى {to} من {total}",
-    newer: "الأحدث",
-    older: "الأقدم",
-    pagination: "صفحات السجل",
-    entities: {
-      order: "طلب",
-      membership: "اشتراك",
-      refund: "استرداد",
-      assessment_request: "طلب تقييم",
-      payment_attempt: "محاولة دفع",
-      customer: "عميل",
-      manual_payment: "دفعة يدوية",
-      staff_user: "موظف",
-    },
-    actors: { staff: "موظف", system: "النظام", customer: "عميل", provider: "مزوّد الدفع" },
-    unknownStaff: "موظف غير معروف",
-    unknownAccount: "حساب غير موجود",
-    actions: {
-      login_succeeded: "دخول ناجح",
-      login_failed: "دخول فاشل",
-      account_locked: "قُفل الحساب",
-      logout: "خروج",
-      mfa_verified: "نجح التحقق بخطوتين",
-      mfa_failed: "رمز تحقق خاطئ",
-      mfa_enrolled: "فُعّل التحقق بخطوتين",
-      mfa_reset: "أُعيد ضبط التحقق بخطوتين",
-      recovery_code_used: "استُعمل رمز استرجاع",
-      password_changed: "غُيّرت كلمة المرور",
-      password_reset: "وُضعت كلمة مرور مؤقتة",
-      staff_created: "أُنشئ حساب موظف",
-      role_changed: "غُيّر الدور",
-      staff_disabled: "عُطّل الحساب",
-      staff_enabled: "فُعّل الحساب",
-      session_revoked: "أُلغيت جلسة",
-    },
-    /** أحداث البيع والدفع: تُعرض في السجل والخط الزمني بالنص نفسه. */
-    salesActions: salesAuditActionsAr,
-    details: {
-      ip: "العنوان",
-      reason: "السبب",
-      method: "الطريقة",
-      remaining: "الرموز الباقية",
-      session: "الجلسة",
-      ...salesAuditDetailsAr,
-    },
-    reasons: {
-      bad_password: "كلمة مرور خاطئة",
-      locked: "الحساب مقفل",
-      disabled: "الحساب معطَّل",
-      unknown_account: "لا حساب بهذا البريد",
-      ...salesAr.orders.cancel.reasons,
-      ...salesErrorsAr,
-    },
-    methods: {
-      totp: "رمز التطبيق",
-      recovery: "رمز استرجاع",
-      ...salesAr.statuses.manualMethod,
-    },
-    ...salesAuditValuesAr,
-  },
+  audit: auditAr,
   account: {
     title: "حسابي",
     lead: "بياناتك وكلمة مرورك وجلساتك المفتوحة.",

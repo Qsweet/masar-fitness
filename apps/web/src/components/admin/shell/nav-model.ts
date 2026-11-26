@@ -20,7 +20,16 @@ export interface NavGroup {
   readonly items: readonly NavItem[];
 }
 
-type NavKey = "overview" | "orders" | "customers" | "staff" | "audit" | "account";
+type NavKey =
+  | "overview"
+  | "orders"
+  | "customers"
+  | "plans"
+  | "promotions"
+  | "salesSettings"
+  | "staff"
+  | "audit"
+  | "account";
 type GroupKey = keyof AdminDictionary["nav"]["groups"];
 
 interface Section {
@@ -38,7 +47,6 @@ const GROUPS: readonly { readonly id: GroupKey; readonly sections: readonly Sect
     ],
   },
   {
-    // المبني من المبيعات فقط: الكتالوج والعروض وإعدادات البيع تُضاف مع صفحاتها
     id: "sales",
     sections: [
       { key: "orders", href: ADMIN_ROUTES.orders, icon: "orders", permission: "orders.read" },
@@ -47,6 +55,19 @@ const GROUPS: readonly { readonly id: GroupKey; readonly sections: readonly Sect
         href: ADMIN_ROUTES.customers,
         icon: "customers",
         permission: "customers.read",
+      },
+      { key: "plans", href: ADMIN_ROUTES.plans, icon: "plans", permission: "catalog.read" },
+      {
+        key: "promotions",
+        href: ADMIN_ROUTES.promotions,
+        icon: "promotions",
+        permission: "promotions.read",
+      },
+      {
+        key: "salesSettings",
+        href: ADMIN_ROUTES.salesSettings,
+        icon: "settings",
+        permission: "sales.settings",
       },
     ],
   },

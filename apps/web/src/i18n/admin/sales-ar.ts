@@ -1,20 +1,39 @@
 import { salesOrderActionsAr } from "./sales-actions-ar";
 import { salesCustomersAr } from "./sales-customers-ar";
+import {
+  catalogAuditActionsAr,
+  catalogAuditDetailsAr,
+  catalogChangedFieldsAr,
+  catalogErrorsAr,
+  catalogNoticesAr,
+} from "./sales-catalog-codes-ar";
 import { salesOrdersAr } from "./sales-orders-ar";
+import { salesPlansAr } from "./sales-plans-ar";
+import { salesPromotionsAr } from "./sales-promotions-ar";
+import { salesSettingsAr } from "./sales-settings-ar";
 import { salesStatusesAr } from "./statuses-ar";
 
-/**
- * نصوص مجموعة «المبيعات» في اللوحة (ADMIN_A2_SALES §12). تُركَّب في `adminAr.sales`. ما يُبنى من
- * المجموعة اليوم: الطلبات والعملاء؛ الكتالوج والعروض وإعدادات البيع تُضاف مع حزمها.
- */
+/** نصوص مجموعة «المبيعات» في اللوحة (ADMIN_A2_SALES §12). تُركَّب في `adminAr.sales`. */
 export const salesAr = {
-  nav: { orders: "الطلبات", customers: "العملاء" },
+  nav: {
+    orders: "الطلبات",
+    customers: "العملاء",
+    plans: salesPlansAr.title,
+    promotions: salesPromotionsAr.title,
+    salesSettings: salesSettingsAr.title,
+  },
   breadcrumbs: {
     group: "المبيعات",
     order: "تفصيل الطلب",
     cancel: "إلغاء الطلب",
     settle: "دفع يدوي",
     customer: "صفحة العميل",
+    planNew: "منتج جديد",
+    plan: "صفحة المنتج",
+    planStatus: "تأكيد",
+    promotionNew: salesPromotionsAr.new.title,
+    promotion: "صفحة العرض",
+    promotionStatus: "تأكيد",
   },
   errorPage: {
     title: "تعذّر عرض هذه الصفحة",
@@ -24,6 +43,9 @@ export const salesAr = {
   statuses: salesStatusesAr,
   orders: { ...salesOrdersAr, ...salesOrderActionsAr },
   customers: salesCustomersAr,
+  plans: salesPlansAr,
+  promotions: salesPromotionsAr,
+  settings: salesSettingsAr,
 } as const;
 
 /** أسباب أخطاء المبيعات (`DomainError.reason`) بنصوصها. تُدمج في `adminAr.errors`. */
@@ -67,11 +89,13 @@ export const salesErrorsAr = {
   "customers.too_many_lookups": "عمليات بحث كثيرة. انتظر عشر دقائق ثم حاول.",
   "customers.too_many_reveals": "كشفتَ أرقامًا كثيرة في وقت قصير. انتظر عشر دقائق ثم حاول.",
   "sales.invalid_request": "طلب غير صالح. حدّث الصفحة وحاول من جديد.",
+  ...catalogErrorsAr,
 } as const;
 
 export const salesNoticesAr = {
   order_cancelled: "أُلغي الطلب.",
   manual_payment_recorded: "سُجّل الدفع وفُعّل الطلب.",
+  ...catalogNoticesAr,
 } as const;
 
 /** أحداث البيع والدفع في سجل التدقيق والخط الزمني. المفاتيح رموز يكتبها الكود. */
@@ -96,6 +120,7 @@ export const salesAuditActionsAr = {
   payment_attempt_settled: "سُوّيت محاولة الدفع",
   manual_payment_recorded: "سُجّل دفع يدوي",
   phone_revealed: "كُشف جوال عميل",
+  ...catalogAuditActionsAr,
 } as const;
 
 /** تسميات مفاتيح `data` في أسطر تدقيق البيع. */
@@ -112,6 +137,7 @@ export const salesAuditDetailsAr = {
   providerPaymentId: "معرّف الدفعة",
   startsOn: "يبدأ",
   endsOn: "ينتهي",
+  ...catalogAuditDetailsAr,
 } as const;
 
 /** قيم تُترجم في أسطر تدقيق البيع: مصدر كشف الجوال، واسم «المزوّد» (المجهول باسمه العام لا برمزه). */
@@ -119,4 +145,5 @@ export const salesAuditValuesAr = {
   sources: { order: "تفصيل طلب", customer: "صفحة العميل" },
   providers: salesStatusesAr.payment.providers,
   unknownProvider: salesStatusesAr.payment.unknownProvider,
+  changedFields: catalogChangedFieldsAr,
 } as const;

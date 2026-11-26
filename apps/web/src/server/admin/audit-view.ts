@@ -45,11 +45,13 @@ function subjectText(row: AuditRow, names: Names, text: AdminDictionary["audit"]
  * نفسه «expired» له نص لكل كيان). ما لا ترجمة له يُعرض برمزه.
  */
 function stateText(state: string, entityType: string, dictionary: AdminDictionary): string {
-  const { order, membership, attempt } = dictionary.sales.statuses;
+  const { order, membership, attempt, product, promotion } = dictionary.sales.statuses;
   const maps: Readonly<Record<string, Readonly<Record<string, string>>>> = {
     order,
     membership,
     payment_attempt: attempt,
+    product,
+    promotion,
     [STAFF_AUDIT_ENTITY]: { ...dictionary.roles, ...dictionary.statuses },
   };
   const map = Object.hasOwn(maps, entityType) ? maps[entityType] : undefined;
@@ -75,26 +77,61 @@ function dayText(raw: string): string {
   return day.ok ? formatPlainDay(day.value) : raw;
 }
 
-function valueText(key: string, value: unknown, text: AdminDictionary["audit"]): string {
-  const raw = typeof value === "string" || typeof value === "number" ? String(value) : "";
+/** مفاتيح قيمها رموز لها نص في القاموس: المفتاح ← خريطة نصوصه. */
+function codeMaps(
+  dictionary: AdminDictionary,
+): Readonly<Record<string, Readonly<Record<string, string>>>> {
+  const text = dictionary.audit;
+  const { statuses, promotions } = dictionary.sales;
+  return {
+    reason: text.reasons,
+    source: text.sources,
+    method: text.methods,
+    kind: statuses.itemKind,
+    scope: promotions.form.scopes,
+    discountKind: promotions.form.kinds,
+    startRuleBefore: statuses.startRule,
+    startRuleAfter: statuses.startRule,
+  };
+}
+
+const NO_VALUE = "—";
+const LIST_SEPARATOR = "، ";
+
+/** قائمة الحقول المتغيرة (`title_ar,price`) بأسمائها. */
+function changedText(raw: string, text: AdminDictionary["audit"]): string {
+  return raw
+    .split(",")
+    .map((field) => lookup(text.changedFields, field, field))
+    .join(LIST_SEPARATOR);
+}
+
+function valueText(key: string, value: unknown, dictionary: AdminDictionary): string {
+  const text = dictionary.audit;
+  if (typeof value === "boolean") {
+    return value ? dictionary.common.yes : dictionary.common.no;
+  }
+  if (typeof value !== "string" && typeof value !== "number") {
+    return NO_VALUE;
+  }
+  const raw = String(value);
   if (DAY_KEYS.includes(key)) {
     return dayText(raw);
-  }
-  if (key === "reason") {
-    return lookup(text.reasons, raw, raw);
-  }
-  if (key === "source") {
-    return lookup(text.sources, raw, raw);
   }
   if (key === "provider") {
     return lookup(text.providers, raw, text.unknownProvider);
   }
-  return key === "method" ? lookup(text.methods, raw, raw) : raw;
+  if (key === "changed") {
+    return changedText(raw, text);
+  }
+  const maps = codeMaps(dictionary);
+  return Object.hasOwn(maps, key) ? lookup(maps[key] ?? {}, raw, raw) : raw;
 }
 
-function dataLines(row: AuditRow, text: AdminDictionary["audit"]): string[] {
+function dataLines(row: AuditRow, dictionary: AdminDictionary): string[] {
   return Object.entries(row.data).map(
-    ([key, value]) => `${lookup(text.details, key, key)}: ${valueText(key, value, text)}`,
+    ([key, value]) =>
+      `${lookup(dictionary.audit.details, key, key)}: ${valueText(key, value, dictionary)}`,
   );
 }
 
@@ -110,6 +147,6 @@ export function auditRowView(
     actor: actorText(row.actor, names, text),
     action: lookup({ ...text.salesActions, ...text.actions }, row.action, row.action),
     subject: subjectText(row, names, text),
-    details: [...transition(row, dictionary), ...dataLines(row, text)],
+    details: [...transition(row, dictionary), ...dataLines(row, dictionary)],
   };
 }

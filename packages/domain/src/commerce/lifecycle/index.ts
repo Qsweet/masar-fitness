@@ -28,6 +28,8 @@ export {
   MANUAL_PAYMENT_PROVIDER,
   decideManualSettlement,
   isManualPaymentMethod,
+  manualReferenceKey,
+  sanitizeFreeText,
   validateManualPayment,
 } from "./manual-settlement";
 export type {

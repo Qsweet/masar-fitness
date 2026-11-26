@@ -5,6 +5,8 @@ import {
   MANUAL_PAYMENT_PROVIDER,
   decideManualSettlement,
   isManualPaymentMethod,
+  manualReferenceKey,
+  sanitizeFreeText,
   validateManualPayment,
   type ManualPaymentDraft,
   type ManualSettlementRequest,
@@ -169,5 +171,59 @@ describe("validateManualPayment", () => {
     expect(kept.ok ? kept.value.note : null).toBe("وصل عبر الراجحي");
     expect(validate({ note: "ن".repeat(500) })).toBe("ok");
     expect(validate({ note: "ن".repeat(501) })).toBe("manual_payment.note_too_long");
+  });
+});
+
+describe("manualReferenceKey: الفروق الشكلية لا تصنع مرجعًا جديدًا", () => {
+  it.each([
+    ["trf-99", "TRF99"],
+    ["TRF-99", "TRF99"],
+    ["TRF 99", "TRF99"],
+    ["TRF\u201199", "TRF99"],
+    ["TRF\u2013\u221299", "TRF99"],
+    [" T.R.F / 9_9 ", "TRF99"],
+    ["ＴＲＦ９９", "TRF99"],
+    ["TRF\u200F99\u200E", "TRF99"],
+    ["١٢٣٤٥٦", "123456"],
+    ["۱۲۳۴۵۶", "123456"],
+    ["123456", "123456"],
+    ["12 34-56", "123456"],
+    ["سند ٧٧", "سند77"],
+  ])("%s ← %s", (input, key) => {
+    expect(manualReferenceKey(input)).toBe(key);
+  });
+
+  it("مرجعان مختلفان فعلًا يبقيان مختلفين", () => {
+    expect(manualReferenceKey("TRF-99")).not.toBe(manualReferenceKey("TRF-98"));
+    expect(manualReferenceKey("TRF-99")).not.toBe(manualReferenceKey("TRX-99"));
+    expect(manualReferenceKey("123456")).not.toBe(manualReferenceKey("1234567"));
+  });
+
+  it("مرجع من رموز وحدها، أو مفتاحه أقصر من ثلاثة، مرفوض", () => {
+    for (const externalReference of ["---", "- - -", "a-1", "٧ ٧", "...."]) {
+      expect(validate({ externalReference })).toBe("manual_payment.reference_invalid");
+    }
+    expect(validate({ externalReference: "a-12" })).toBe("ok");
+  });
+
+  it("ما كتبه الموظف يُحفظ للعرض كما هو (مشذَّبًا)", () => {
+    const result = validateManualPayment(draft({ externalReference: " trf-99 " }), CALENDAR);
+    expect(result.ok ? result.value.externalReference : null).toBe("trf-99");
+  });
+});
+
+describe("sanitizeFreeText: الملاحظة بلا محارف تحكم ولا علامات اتجاه", () => {
+  it("NUL ومحارف التحكم وعلامات الاتجاه تُحذف، والسطر الجديد والجدولة يبقيان", () => {
+    expect(sanitizeFreeText("وصل\u0000 المبلغ\u0007")).toBe("وصل المبلغ");
+    expect(sanitizeFreeText("\u202Eسطر\u202C\u200F أول\nسطر\tثانٍ\r")).toBe("سطر أول\nسطر\tثانٍ");
+    expect(sanitizeFreeText("\u0000\u0001 \u200B")).toBe("");
+  });
+
+  it("ملاحظة من محارف تحكم وحدها تُحفظ null، والطول يُحسب بعد التنظيف", () => {
+    const empty = validateManualPayment(draft({ note: "\u0000\u0000" }), CALENDAR);
+    expect(empty.ok ? empty.value.note : "?").toBeNull();
+    const cleaned = validateManualPayment(draft({ note: "حوالة\u0000 الراجحي" }), CALENDAR);
+    expect(cleaned.ok ? cleaned.value.note : null).toBe("حوالة الراجحي");
+    expect(validate({ note: `${"ن".repeat(500)}\u0000` })).toBe("ok");
   });
 });

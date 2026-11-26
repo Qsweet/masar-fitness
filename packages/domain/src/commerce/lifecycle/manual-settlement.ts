@@ -1,3 +1,4 @@
+import { toAsciiDigits } from "../../digits";
 import { DomainError } from "../../errors";
 import type { Money } from "../../money";
 import { err, ok, type Result } from "../../result";
@@ -110,7 +111,32 @@ function charLength(text: string): number {
 }
 
 /**
- * بيانات الدفعة اليدوية كما تُحفظ: طريقة من القائمة، ومرجع خارجي إلزامي من 3 إلى 64 محرفًا، وتاريخ
+ * مفتاح فرادة المرجع الخارجي: ما يبقى منه بعد إسقاط كل فرق شكلي. أرقام لاتينية، ثم توحيد NFKC
+ * (العرض الكامل والأشكال المتوافقة)، ثم حروف كبيرة، ثم إسقاط كل ما ليس حرفًا أو رقمًا (مسافات،
+ * شرطات بأنواعها، نقاط، علامات اتجاه). «‎trf-99‎» و«‎TRF 99‎» و«‎TRF‑99‎» مرجع واحد: حوالة واحدة لا
+ * تسوّي طلبين بتغيير طريقة كتابتها. ما كتبه الموظف يُحفظ للعرض، والمفتاح للفرادة وحدها.
+ */
+export function manualReferenceKey(externalReference: string): string {
+  return toAsciiDigits(externalReference)
+    .normalize("NFKC")
+    .toUpperCase()
+    .replace(/[^\p{L}\p{N}]/gu, "");
+}
+
+/** محارف التحكم عدا السطر الجديد والجدولة، ومحارف التنسيق غير المرئية (ومنها علامات الاتجاه). */
+const NOTE_FORBIDDEN = /[^\P{Cc}\n\t]|\p{Cf}/gu;
+
+/**
+ * نص حر كما يُحفظ: بلا NUL ولا محارف تحكم (PostgreSQL يرفض NUL في النص) ولا علامات اتجاه تقلب
+ * عرضه، ومشذَّبًا. السطر الجديد والجدولة يبقيان.
+ */
+export function sanitizeFreeText(text: string): string {
+  return text.replace(NOTE_FORBIDDEN, "").trim();
+}
+
+/**
+ * بيانات الدفعة اليدوية كما تُحفظ: طريقة من القائمة، ومرجع خارجي إلزامي من 3 إلى 64 محرفًا (ومفتاحه
+ * ثلاثة أحرف وأرقام على الأقل)، وتاريخ
  * استلام ليس بعد اليوم ولا قبل يوم إنشاء الطلب (مال استُلم قبل وجود الطلب ليس لهذا الطلب)، وملاحظة
  * اختيارية حتى 500 محرف.
  */
@@ -123,7 +149,13 @@ export function validateManualPayment(
   }
   const externalReference = draft.externalReference.replace(INVISIBLE, "").trim();
   const length = charLength(externalReference);
-  if (length < MIN_REFERENCE_LENGTH || length > MAX_REFERENCE_LENGTH) {
+  // المفتاح أيضًا: مرجع من رموز وحدها («---») لا يميّز حوالة
+  const keyLength = charLength(manualReferenceKey(externalReference));
+  if (
+    length < MIN_REFERENCE_LENGTH ||
+    length > MAX_REFERENCE_LENGTH ||
+    keyLength < MIN_REFERENCE_LENGTH
+  ) {
     return invalid("manual_payment.reference_invalid", "externalReference");
   }
   if (
@@ -132,7 +164,7 @@ export function validateManualPayment(
   ) {
     return invalid("manual_payment.received_on_invalid", "receivedOn");
   }
-  const note = draft.note.trim();
+  const note = sanitizeFreeText(draft.note);
   if (charLength(note) > MAX_NOTE_LENGTH) {
     return invalid("manual_payment.note_too_long", "note");
   }

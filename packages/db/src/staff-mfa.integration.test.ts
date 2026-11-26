@@ -59,13 +59,19 @@ describe("تسجيل الخطوة الثانية", () => {
   it("سر معلّق ثم تفعيل برمز التأكيد وعشرة رموز استرجاع مجزأة", async () => {
     const staff = await createTestStaff(db, clubId);
     expect(await savePendingTotpSecret(db, staff.id, PENDING)).toBe(true);
+    await db.staffUser.update({ where: { id: staff.id }, data: { failedLogins: 2 } });
     expect((await findStaffCredentialsById(db, staff.id))?.totpEnabled).toBe(false);
     const { codes, hashes } = issueRecoveryCodes();
     await run((tx) =>
       completeTotpEnrolment(tx, { staff, step: STEP, recoveryCodeHashes: hashes, at: NOW }),
     );
     const row = await findStaffCredentialsById(db, staff.id);
-    expect(row).toMatchObject({ totpEnabled: true, totpLastStep: STEP, totpSecretEnc: PENDING });
+    expect(row).toMatchObject({
+      totpEnabled: true,
+      totpLastStep: STEP,
+      totpSecretEnc: PENDING,
+      failedLogins: 0,
+    });
     const stored = await db.staffRecoveryCode.findMany({ where: { staffUserId: staff.id } });
     expect(stored).toHaveLength(codes.length);
     expect(stored.map((code) => code.codeHash).sort()).toEqual([...hashes].sort());

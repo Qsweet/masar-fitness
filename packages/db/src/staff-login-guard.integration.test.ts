@@ -80,7 +80,7 @@ describe("عدّ المحاولات والقفل", () => {
     expect((await findStaffCredentialsByEmail(db, staff.email))?.failedLogins).toBe(3);
   });
 
-  it("الدخول الناجح يصفّر العدّاد ويسجّل الوقت ويعيد التجزئة إن طُلب", async () => {
+  it("كلمة المرور الصحيحة تسجّل الدخول ولا تصفّر العدّاد، وتعيد التجزئة إن طُلب", async () => {
     const clubId = await createTestClub(db);
     const staff = await createTestStaff(db, clubId);
     const attempt = { staffId: staff.id, clubId, ip: "10.9.8.7", at: NOW };
@@ -90,11 +90,28 @@ describe("عدّ المحاولات والقفل", () => {
       return ok(null);
     });
     const row = await findStaffCredentialsByEmail(db, staff.email);
-    expect(row).toMatchObject({ failedLogins: 0, lastLoginAt: NOW, passwordHash: HASH });
+    expect(row).toMatchObject({ failedLogins: 1, lastLoginAt: NOW, passwordHash: HASH });
     expect((await audits(staff.id)).at(-1)).toMatchObject({
       action: "login_succeeded",
       data: { ip: "10.9.8.7" },
     });
+  });
+
+  it("من يعرف كلمة المرور لا يمحو رموزه الخاطئة بإعادة الدخول: الخامسة تقفل", async () => {
+    const clubId = await createTestClub(db);
+    const staff = await createTestStaff(db, clubId, { withTotp: true });
+    const attempt = { staffId: staff.id, clubId, ip: "10.9.8.7", at: NOW };
+    let locked = false;
+    for (let round = 0; round < MAX_FAILED_LOGINS; round += 1) {
+      await inTransaction(db, async (tx) => {
+        await recordPasswordAccepted(tx, attempt);
+        return ok(null);
+      });
+      locked = (await recordFailedAttempt(db, { ...attempt, credential: "totp" })).lockedNow;
+    }
+    expect(locked).toBe(true);
+    const row = await findStaffCredentialsByEmail(db, staff.email);
+    expect(row?.lockedUntil).toEqual(new Date(NOW.getTime() + LOCKOUT_MINUTES * MINUTE_MS));
   });
 
   it("رموز الخطوة الثانية الخاطئة تُعدّ في العدّاد نفسه وتقفل، وتُسجَّل بطريقتها", async () => {

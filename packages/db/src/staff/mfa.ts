@@ -44,12 +44,15 @@ export interface TotpEnrolment {
   readonly at: Date;
 }
 
-/** يفعّل الخطوة الثانية برمز تأكيد مقبول، ويستبدل رموز الاسترجاع. يتراجع إن كانت مفعّلة أصلًا. */
+/**
+ * يفعّل الخطوة الثانية برمز تأكيد مقبول، ويستبدل رموز الاسترجاع، ويصفّر عدّاد المحاولات (الدخول
+ * اكتمل). يتراجع إن كانت مفعّلة أصلًا.
+ */
 export async function completeTotpEnrolment(tx: Tx, enrolment: TotpEnrolment): Promise<void> {
   const { staff, at } = enrolment;
   const enabled = await tx.staffUser.updateMany({
     where: { id: staff.id, totpEnabledAt: null, totpSecretEnc: { not: null } },
-    data: { totpEnabledAt: at, totpLastStep: BigInt(enrolment.step) },
+    data: { totpEnabledAt: at, totpLastStep: BigInt(enrolment.step), ...CLEARED_LOGIN_GUARD },
   });
   if (enabled.count === 0) {
     abort(new DomainError("conflict", "staff.mfa_already_enrolled"));

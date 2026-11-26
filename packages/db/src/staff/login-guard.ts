@@ -1,10 +1,5 @@
 /** عدّاد المحاولات الفاشلة والقفل في القاعدة (ADMIN_DESIGN §4.6)، وتسجيل الدخول الناجح. */
-import {
-  afterFailedLogin,
-  CLEARED_LOGIN_GUARD,
-  DomainError,
-  type FailedLoginOutcome,
-} from "@masar/domain";
+import { afterFailedLogin, DomainError, type FailedLoginOutcome } from "@masar/domain";
 import type { Db } from "../client";
 import { ensureTransaction, type Tx } from "../commerce/transaction";
 import { lockStaff } from "./accounts";
@@ -94,12 +89,15 @@ export interface SuccessfulLogin extends LoginAttempt {
   readonly rehashedPassword?: string;
 }
 
-/** كلمة المرور صحيحة: يُصفَّر العدّاد ويُسجَّل وقت الدخول. */
+/**
+ * كلمة المرور صحيحة: يُسجَّل وقت الدخول. العدّاد **لا يُصفَّر هنا**: من يعرف كلمة المرور ويخمّن رمز
+ * الخطوة الثانية لا يمحو محاولاته الخاطئة بإعادة الدخول. التصفير عند إتمام الخطوة الثانية وحده
+ * (`recordMfaVerified`، و`completeTotpEnrolment` لأول دخول).
+ */
 export async function recordPasswordAccepted(tx: Tx, login: SuccessfulLogin): Promise<void> {
   await tx.staffUser.update({
     where: { id: login.staffId },
     data: {
-      ...CLEARED_LOGIN_GUARD,
       lastLoginAt: login.at,
       ...(login.rehashedPassword === undefined ? {} : { passwordHash: login.rehashedPassword }),
     },

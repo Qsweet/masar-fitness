@@ -7,9 +7,12 @@ import {
   formAlert,
   newClub,
   newStaff,
+  setTheme,
+  THEME_COOKIE,
   signIn,
   submitLogin,
   TEXT,
+  userMenu,
   withFreshIp,
 } from "./admin-support";
 import { testDb } from "./payments-support";
@@ -17,6 +20,7 @@ import { testDb } from "./payments-support";
 /** فحص WCAG 2.2 AA الآلي (axe) لكل صفحة في اللوحة، بمقاسي المشروعين. */
 const WCAG_22_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const NEW_PASSWORD = "silver-orchard-compass-36";
+const THEMES = ["dark", "light"] as const;
 
 let db: Db;
 
@@ -39,7 +43,14 @@ async function expectAccessible(page: Page, name: string): Promise<void> {
   expect(summary, name).toEqual([]);
 }
 
-test("صفحات ما قبل اللوحة بلا مخالفات وصول آلية", async ({ page }) => {
+for (const theme of THEMES) {
+  test(`صفحات ما قبل اللوحة بلا مخالفات وصول آلية (${theme})`, async ({ page, baseURL }) => {
+    await page.context().addCookies([{ name: THEME_COOKIE, value: theme, url: baseURL ?? "" }]);
+    await preAuthJourney(page);
+  });
+}
+
+async function preAuthJourney(page: Page): Promise<void> {
   const staff = await newStaff(db, await newClub(db), { role: "sales", mustChangePassword: true });
   await withFreshIp(page);
   await page.goto("/admin/login");
@@ -63,7 +74,7 @@ test("صفحات ما قبل اللوحة بلا مخالفات وصول آلي�
   await page.getByRole("button", { name: TEXT.enrol.submit }).click();
   await expect(page).toHaveURL(/\/admin\/recovery-codes$/);
   await expectAccessible(page, "recovery codes");
-});
+}
 
 test("صفحات اللوحة بلا مخالفات وصول آلية", async ({ page }) => {
   const club = await newClub(db);
@@ -86,11 +97,27 @@ test("صفحات اللوحة بلا مخالفات وصول آلية", async ({
     "/admin/audit",
     "/admin/audit?actor=provider",
     "/admin/account",
+    "/admin/account?tab=sessions",
     "/admin/no-such-page",
   ];
-  for (const path of pages) {
-    await page.goto(path);
-    await expectAccessible(page, path);
+  for (const theme of THEMES) {
+    await setTheme(page, theme);
+    for (const path of pages) {
+      await page.goto(path);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      await expectAccessible(page, `${theme} ${path}`);
+    }
+    // قائمة الحساب مفتوحة، والدرج مفتوحًا حيث يحل محل الشريط الجانبي
+    await page.goto("/admin");
+    await userMenu(page).click();
+    await expectAccessible(page, `${theme} user menu`);
+    await page.keyboard.press("Escape");
+    const opener = page.getByRole("button", { name: TEXT.shell.openMenu });
+    if (await opener.isVisible()) {
+      await opener.click();
+      await expectAccessible(page, `${theme} drawer`);
+      await page.keyboard.press("Escape");
+    }
   }
 });
 

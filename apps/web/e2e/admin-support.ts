@@ -66,11 +66,48 @@ export async function signIn(page: Page, staff: TestStaff, stepOffset = 0): Prom
   await submitLogin(page, staff.email, staff.password);
   await expect(page).toHaveURL(/\/admin\/verify$/);
   await submitTotp(page, codeFor(staff, stepOffset));
-  await expect(page.getByRole("navigation", { name: TEXT.nav.label })).toBeVisible();
+  await expect(shell(page)).toBeVisible();
+}
+
+/** زر قائمة الحساب في الشريط العلوي. */
+export function userMenu(page: Page): Locator {
+  return page.locator("[data-admin-menu] > summary");
+}
+
+/** هيكل اللوحة (شريط جانبي وعلوي): يظهر لجلسة كاملة فقط. */
+export function shell(page: Page): Locator {
+  return page.locator("[data-admin-shell]");
+}
+
+export const THEME_COOKIE = "masar_admin_theme";
+
+/** يضبط مظهر اللوحة كما يحفظه التبديل (كوكي يقرؤه الخادم). */
+export async function setTheme(page: Page, theme: "dark" | "light"): Promise<void> {
+  const url = new URL(page.url() === "about:blank" ? "http://127.0.0.1" : page.url()).origin;
+  await page.context().addCookies([{ name: THEME_COOKIE, value: theme, url }]);
+}
+
+/** أسماء أقسام التنقل المتاحة للموظف: من الشريط الجانبي، أو من الدرج حين يحل محله (الهاتف). */
+export async function navLinks(page: Page): Promise<string[]> {
+  const opener = page.getByRole("button", { name: TEXT.shell.openMenu });
+  if (!(await opener.isVisible())) {
+    const sidebar = page.getByRole("navigation", { name: TEXT.nav.label });
+    return sidebar.getByRole("link").allTextContents();
+  }
+  await opener.click();
+  const drawer = page.getByRole("dialog", { name: TEXT.nav.label });
+  const links = await drawer.getByRole("link").allTextContents();
+  await page.keyboard.press("Escape");
+  await expect(drawer).toBeHidden();
+  return links.filter((text) => text !== "");
 }
 
 /** يخرج وينتظر صفحة الدخول: دخول تالٍ قبل اكتمال الخروج يجد الجلسة القديمة حيّة فيُحوَّل. */
 export async function signOut(page: Page): Promise<void> {
+  // داخل اللوحة الخروج في قائمة الحساب؛ في صفحات ما قبلها زر ظاهر
+  if (await shell(page).isVisible()) {
+    await userMenu(page).click();
+  }
   await page.getByRole("button", { name: TEXT.nav.logout }).click();
   await expect(page).toHaveURL(/\/admin\/login$/);
 }

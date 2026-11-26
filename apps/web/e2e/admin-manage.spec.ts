@@ -5,7 +5,9 @@ import {
   codeFor,
   formAlert,
   newClub,
+  navLinks,
   newStaff,
+  shell,
   signIn,
   signOut,
   submitLogin,
@@ -29,10 +31,6 @@ test.afterAll(async () => {
   await db.$disconnect();
 });
 
-function navLinks(page: Page): Promise<string[]> {
-  return page.getByRole("navigation", { name: TEXT.nav.label }).getByRole("link").allTextContents();
-}
-
 async function secondPage(browser: Browser): Promise<Page> {
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -55,7 +53,7 @@ test("المالك يرى كل الأقسام، والمدير بلا «المو
     const page = await secondPage(browser);
     await submitLogin(page, staff.email, staff.password);
     await submitTotp(page, codeFor(staff));
-    await expect(page.getByRole("navigation", { name: TEXT.nav.label })).toBeVisible();
+    await expect(shell(page)).toBeVisible();
     expect(await navLinks(page)).toEqual(expected[role]);
     await page.context().close();
   }
@@ -203,6 +201,8 @@ test("حسابي: تغيير كلمة المرور بالحالية، وإلغا
   await signIn(other, staff);
   await signIn(page, staff, 1);
   await page.goto("/admin/account");
+  await page.getByRole("link", { name: TEXT.account.tabs.sessions }).click();
+  await expect(page).toHaveURL(/tab=sessions/);
   const rows = page.getByTestId("sessions-table").locator("tbody tr");
   await expect(rows).toHaveCount(2);
   await expect(rows.filter({ hasText: TEXT.account.current })).toHaveCount(1);
@@ -214,6 +214,7 @@ test("حسابي: تغيير كلمة المرور بالحالية، وإلغا
   await expect(other).toHaveURL(/\/admin\/login$/);
   await other.context().close();
 
+  await page.getByRole("link", { name: TEXT.account.tabs.password }).click();
   await page.getByLabel(TEXT.passwordFields.current).fill("not-my-current-password");
   await page.getByLabel(TEXT.passwordFields.next).fill(NEW_PASSWORD);
   await page.getByLabel(TEXT.passwordFields.confirmation).fill(NEW_PASSWORD);
@@ -279,7 +280,7 @@ test("سجل التدقيق: أحداث الدخول بلا أسرار، وال�
   await expect(table.locator("tbody tr")).toHaveCount(2);
   await page.getByLabel(TEXT.audit.filters.entity).selectOption("refund");
   await page.getByRole("button", { name: TEXT.audit.filters.apply }).click();
-  await expect(page.getByText(TEXT.audit.empty)).toBeVisible();
+  await expect(page.getByText(TEXT.audit.emptyTitle)).toBeVisible();
   await page.getByRole("link", { name: TEXT.audit.filters.clear }).click();
   await expect(table.locator("tbody tr")).toHaveCount(25);
 });

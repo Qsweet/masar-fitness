@@ -16,6 +16,7 @@ import {
   newClub,
   newStaff,
   SESSION_COOKIE,
+  shell,
   signIn,
   signOut,
   submitLogin,
@@ -277,5 +278,5 @@ test("صفحة مجهولة داخل اللوحة: 404 داخل الهيكل، �
   const response = await page.goto("/admin/no-such-page");
   expect(response?.status()).toBe(404);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(TEXT.notFound.title);
-  await expect(page.getByRole("navigation", { name: TEXT.nav.label })).toBeVisible();
+  await expect(shell(page)).toBeVisible();
 });

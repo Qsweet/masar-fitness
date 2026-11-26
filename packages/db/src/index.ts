@@ -1,9 +1,12 @@
 export { listMembershipPlans } from "./catalog";
 export { createDb, isDbReachable } from "./client";
 export type { Db } from "./client";
+export * from "./catalog-admin";
 export * from "./commerce";
 export * from "./orders-admin";
 export * from "./payments";
+export * from "./promotions-admin";
+export * from "./sales-settings";
 export * from "./staff";
 export { ensureTransaction, inTransaction } from "./commerce/transaction";
 export type { Tx } from "./commerce/transaction";

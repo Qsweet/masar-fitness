@@ -1,4 +1,4 @@
-import { money, type MembershipPlan } from "@masar/domain";
+import { isSellable, money, type MembershipPlan } from "@masar/domain";
 import type { Db } from "./client";
 import type { Prisma } from "./generated/prisma/client";
 
@@ -26,18 +26,24 @@ function findMembershipRows(db: Db, now: Date) {
   });
 }
 
-/** منتج بلا نسخة سارية أو بلا مدة ليس معروضًا للبيع: لا يظهر. */
+/** منتج لا يُباع الآن (`isSellable`: بلا نسخة سارية، أو اشتراك بلا مدة) ليس معروضًا: لا يظهر. */
 function toPlan(row: ProductRow): MembershipPlan | undefined {
-  const version = row.versions[0];
-  if (version === undefined || version.durationMonths === null) {
+  const version = row.versions[0] ?? null;
+  const sellable = isSellable({ status: row.status, kind: row.kind, currentVersion: version });
+  if (version === null || !sellable) {
+    return undefined;
+  }
+  const { durationMonths } = version;
+  if (durationMonths === null) {
     return undefined;
   }
   return {
     slug: row.slug,
     name: { ar: row.nameAr, en: row.nameEn },
+    tier: row.tierAr === null || row.tierEn === null ? null : { ar: row.tierAr, en: row.tierEn },
     summary: { ar: row.summaryAr, en: row.summaryEn },
     price: money(version.priceMinor, version.currency),
-    paidMonths: version.durationMonths,
+    paidMonths: durationMonths,
     bonusMonths: version.bonusMonths,
     benefits: version.benefits.map((benefit) => ({ ar: benefit.labelAr, en: benefit.labelEn })),
   };

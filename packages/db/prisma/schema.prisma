@@ -74,6 +74,9 @@ model Product {
   nameEn    String        @map("name_en")
   summaryAr String        @map("summary_ar")
   summaryEn String        @map("summary_en")
+  /// اسم الفئة التسويقي للاشتراك («رحلة الأبطال»): باللغتين معًا أو لا شيء (CHECK في ترحيل catalog_admin)
+  tierAr    String?       @map("tier_ar")
+  tierEn    String?       @map("tier_en")
   sortOrder Int           @default(0) @map("sort_order")
   status    ProductStatus @default(draft)
   createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -151,6 +154,8 @@ enum MembershipStartRule {
 enum PromotionStatus {
   draft
   active
+  /// أوقفه الموظف مؤقتًا من اللوحة (A2): يُفعَّل من جديد، ولا يدخل التسعير
+  paused
   archived
 
   @@map("promotion_status")
@@ -271,6 +276,8 @@ model Promotion {
   maxRedemptions            Int?              @map("max_redemptions")
   maxRedemptionsPerCustomer Int?              @map("max_redemptions_per_customer")
   createdAt                 DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  /// رمز القفل المتفائل لنموذج التعديل في اللوحة (A2)
+  updatedAt                 DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   club      Club               @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   products  PromotionProduct[]

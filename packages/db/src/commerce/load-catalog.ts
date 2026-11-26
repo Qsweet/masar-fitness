@@ -5,6 +5,7 @@
 import {
   DomainError,
   err,
+  isSellable,
   money,
   ok,
   type CartLine,
@@ -70,16 +71,16 @@ function unavailable(): DomainError {
   return new DomainError("not_found", "cart.product_unavailable");
 }
 
-/** المنتج قابل للبيع: فعّال، وله نسخة سارية، ونوعه يُشترى مباشرة، والاشتراك له مدة. */
+/** المنتج قابل للبيع بقاعدة المجال الواحدة `isSellable` (تطبقها قائمة الموقع ولوحة التحكم أيضًا). */
 function toLine(row: ProductRow | undefined, sortOrder?: number): CatalogLine | undefined {
   const version = row?.versions[0];
-  if (row?.status !== "active" || version === undefined || row.kind === "assessed_service") {
+  if (row === undefined || version === undefined || row.kind === "assessed_service") {
+    return undefined;
+  }
+  if (!isSellable({ status: row.status, kind: row.kind, currentVersion: version })) {
     return undefined;
   }
   const kind: PurchasableKind = row.kind;
-  if (kind === "membership" && version.durationMonths === null) {
-    return undefined;
-  }
   return {
     productId: row.id,
     versionId: version.id,

@@ -91,3 +91,10 @@ export function failure<E>(result: { ok: true } | { ok: false; error: E }): E {
   }
   return result.error;
 }
+
+/** أسباب الرفض في نتائج سباق: الناجحة تُهمل. */
+export function refusalReasons(
+  results: readonly ({ ok: true } | { ok: false; error: { reason: string } })[],
+): string[] {
+  return results.flatMap((result) => (result.ok ? [] : [result.error.reason]));
+}

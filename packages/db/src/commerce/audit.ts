@@ -10,7 +10,10 @@ export type AuditEntityType =
   | "assessment_request"
   | "payment_attempt"
   | "customer"
-  | "manual_payment";
+  | "manual_payment"
+  | "product"
+  | "promotion"
+  | "club";
 export type AuditActor = "system" | "customer" | "staff" | "provider";
 /** موظف اللوحة بمعرّفه: `staff:<uuid>` (قيد `audit_logs_actor_known`). */
 export type StaffAuditActor = `staff:${string}`;

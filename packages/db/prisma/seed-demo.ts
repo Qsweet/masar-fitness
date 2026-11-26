@@ -52,6 +52,9 @@ interface SeedProduct {
   slug: string;
   nameAr: string;
   nameEn: string;
+  /** اسم الفئة التسويقي من تصميم المالك (كان في قاموس الموقع حتى A2). */
+  tierAr?: string;
+  tierEn?: string;
   months: number | null;
   bonus: number;
   /** بالهللة */
@@ -65,6 +68,8 @@ interface SeedProduct {
 const PLANS: SeedProduct[] = [
   {
     slug: "three-months",
+    tierAr: "انطلاقة الأبطال",
+    tierEn: "Champions' Start",
     nameAr: "3 أشهر + شهر مجانًا",
     nameEn: "3 months + 1 free",
     months: 3,
@@ -73,6 +78,8 @@ const PLANS: SeedProduct[] = [
   },
   {
     slug: "six-months",
+    tierAr: "مسار التغيير",
+    tierEn: "The Change Path",
     nameAr: "6 أشهر + شهران مجانًا",
     nameEn: "6 months + 2 free",
     months: 6,
@@ -81,6 +88,8 @@ const PLANS: SeedProduct[] = [
   },
   {
     slug: "one-year",
+    tierAr: "رحلة الأبطال",
+    tierEn: "Champions' Journey",
     nameAr: "12 شهرًا + شهران مجانًا",
     nameEn: "12 months + 2 free",
     months: 12,
@@ -185,6 +194,8 @@ async function upsertProduct(
     sortOrder,
     nameAr: item.nameAr,
     nameEn: item.nameEn,
+    tierAr: item.tierAr ?? null,
+    tierEn: item.tierEn ?? null,
     ...summary,
   } as const;
   const product = await db.product.upsert({

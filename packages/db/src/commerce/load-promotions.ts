@@ -58,7 +58,7 @@ export function candidateIdList(ids: CandidateIds): string[] {
   return [...new Set(all)].sort();
 }
 
-type PromotionRow = Awaited<ReturnType<typeof findPromotions>>[number];
+export type PromotionRow = Awaited<ReturnType<typeof findPromotions>>[number];
 
 function findPromotions(client: Tx, ids: readonly string[]) {
   return client.promotion.findMany({
@@ -97,7 +97,8 @@ function toCode(code: string | null): CouponCode | null {
   return parsed.value;
 }
 
-function toRule(row: PromotionRow): PromotionRule {
+/** صف العرض وروابط منتجاته ← قاعدة المجال. تستعمله قراءة اللوحة أيضًا: تعريف واحد للعرض. */
+export function toPromotionRule(row: PromotionRow): PromotionRule {
   return {
     id: row.id,
     code: toCode(row.code),
@@ -154,7 +155,7 @@ export async function loadPromotionCandidates(
   return new Map(
     rows.map((row) => [
       row.id,
-      { rule: toRule(row), usage: usage.get(row.id) ?? { total: 0, byCustomer: 0 } },
+      { rule: toPromotionRule(row), usage: usage.get(row.id) ?? { total: 0, byCustomer: 0 } },
     ]),
   );
 }

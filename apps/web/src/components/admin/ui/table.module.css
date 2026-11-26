@@ -1,0 +1,146 @@
+/*
+ * جدول البيانات: رأس ثابت أثناء التمرير داخل البطاقة، خطوط شعرية بلا تظليل متناوب، وتحويم على الصف.
+ * لا يتجاوز الجدول عرض الشاشة أبدًا: التمرير الأفقي داخل البطاقة. تحت 640px كل صف بطاقة بتسميات.
+ */
+.wrap {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--a-text-body);
+}
+
+.table caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: var(--a-2) var(--a-4);
+  border-bottom: 1px solid var(--a-border);
+  background: var(--a-surface);
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  font-weight: 600;
+  text-align: start;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: var(--a-3) var(--a-4);
+  border-bottom: 1px solid var(--a-border);
+  vertical-align: middle;
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-inline-start: var(--a-5);
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-inline-end: var(--a-5);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table tbody tr:hover {
+  background: var(--a-hover);
+}
+
+.end {
+  text-align: end;
+}
+
+.numeric {
+  text-align: end;
+  white-space: nowrap;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.line {
+  display: block;
+}
+
+@media (width < 40rem) {
+  .wrap {
+    overflow-x: visible;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+  }
+
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .table tr {
+    padding: var(--a-3) var(--a-4);
+    border-bottom: 1px solid var(--a-border);
+  }
+
+  .table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .table td,
+  .table td:first-child,
+  .table td:last-child {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--a-4);
+    padding: 0.3rem 0;
+    border-bottom: 0;
+    text-align: end;
+  }
+
+  .table td::before {
+    flex: none;
+    color: var(--a-muted);
+    font-size: var(--a-text-caption);
+    text-align: start;
+    content: attr(data-label);
+  }
+
+  .table td[data-label=""]::before {
+    content: none;
+  }
+
+  .table td[data-label=""] {
+    justify-content: flex-end;
+    padding-top: var(--a-2);
+  }
+}
+
+.mutedCell {
+  color: var(--a-muted);
+}
+
+.strongCell {
+  font-weight: 600;
+}

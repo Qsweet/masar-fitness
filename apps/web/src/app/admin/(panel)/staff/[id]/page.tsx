@@ -3,10 +3,20 @@ import { isLockedOut } from "@masar/domain";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { adminButton, Notice, noticeText } from "@/components/admin/fields";
-import { Badge, Ltr, PageHeader, pageStyles, Panel } from "@/components/admin/page-parts";
 import { StaffControls } from "@/components/admin/staff-controls";
-import { ADMIN_ROUTES, FALLBACK_TIMEZONE } from "@/config/admin";
+import {
+  Alert,
+  Badge,
+  Card,
+  Facts,
+  Ltr,
+  Notice,
+  noticeText,
+  PageHeader,
+  SecretValue,
+} from "@/components/admin/ui/kit";
+import { SubmitButton } from "@/components/admin/ui/submit-button";
+import { FALLBACK_TIMEZONE } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { formatDateTime } from "@/i18n/admin/format";
 import { dismissTemporaryPasswordAction } from "@/server/admin/actions/staff";
@@ -27,29 +37,27 @@ interface FactsProps {
   readonly dictionary: AdminDictionary;
 }
 
-function Facts({ member, timezone, now, dictionary }: FactsProps) {
+function memberFacts({ member, timezone, now, dictionary }: FactsProps) {
   const { staff, staffMember, roles, common } = dictionary;
   const when = (date: Date | null) =>
     date === null ? common.never : formatDateTime(date, timezone);
   const locked = isLockedOut({ failedLogins: 0, lockedUntil: member.lockedUntil }, now);
-  const facts: readonly (readonly [string, ReactNode])[] = [
+  const facts: (readonly [string, ReactNode])[] = [
     [staff.columns.email, <Ltr key="email">{member.email}</Ltr>],
     [staff.columns.role, roles[member.role]],
-    [staff.columns.mfa, member.totpEnabled ? staff.mfaOn : staff.mfaOff],
+    [
+      staff.columns.mfa,
+      <Badge key="mfa" tone={member.totpEnabled ? "success" : "warning"}>
+        {member.totpEnabled ? staff.mfaOn : staff.mfaOff}
+      </Badge>,
+    ],
     [staff.columns.lastLogin, when(member.lastLoginAt)],
     [staffMember.created, when(member.createdAt)],
-    ...(locked ? [[staffMember.lockedUntil, when(member.lockedUntil)] as const] : []),
   ];
-  return (
-    <dl className={pageStyles.facts}>
-      {facts.map(([label, value]) => (
-        <div key={label} className={pageStyles.fact}>
-          <dt>{label}</dt>
-          <dd>{value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
+  if (locked) {
+    facts.push([staffMember.lockedUntil, when(member.lockedUntil)]);
+  }
+  return facts;
 }
 
 interface TemporaryPasswordProps {
@@ -61,21 +69,13 @@ interface TemporaryPasswordProps {
 /** الكلمة المؤقتة بعد الإنشاء أو إعادة الضبط: تظهر للمالك حتى يؤكد أنه نسخها. */
 function TemporaryPassword({ staffId, password, text }: TemporaryPasswordProps) {
   return (
-    <section className={pageStyles.secret} aria-labelledby="temporary-password-title">
-      <h2 id="temporary-password-title" className={pageStyles.panelTitle}>
-        {text.temporaryTitle}
-      </h2>
-      <p>{text.temporaryLead}</p>
-      <code className={pageStyles.secretValue} data-testid="temporary-password">
-        {password}
-      </code>
+    <Card title={text.temporaryTitle} description={text.temporaryLead} accent>
+      <SecretValue data-testid="temporary-password">{password}</SecretValue>
       <form action={dismissTemporaryPasswordAction}>
         <input type="hidden" name="staffId" value={staffId} />
-        <button type="submit" className={adminButton("outline")}>
-          {text.temporaryDismiss}
-        </button>
+        <SubmitButton>{text.temporaryDismiss}</SubmitButton>
       </form>
-    </section>
+    </Card>
   );
 }
 
@@ -104,30 +104,26 @@ export default async function StaffMemberPage(props: PageProps<"/admin/staff/[id
     staffClub(context.staff.clubId),
     temporaryPasswordFor(context.staff.id, member.id),
   ]);
+  const timezone = club?.timezone ?? FALLBACK_TIMEZONE;
   return (
     <>
       <PageHeader
         title={member.displayName}
-        back={{ href: ADMIN_ROUTES.staff, label: staffMember.backToList }}
-      >
-        <Badge tone={member.status === "active" ? "accent" : "muted"}>
-          {statuses[member.status]}
-        </Badge>
-      </PageHeader>
+        badge={
+          <Badge tone={member.status === "active" ? "success" : "neutral"}>
+            {statuses[member.status]}
+          </Badge>
+        }
+      />
       <Notice text={noticeText(query.done, dictionary)} />
       {temporary === undefined ? null : (
         <TemporaryPassword staffId={member.id} password={temporary} text={staffMember} />
       )}
-      <Panel title={staffMember.details}>
-        <Facts
-          member={member}
-          timezone={club?.timezone ?? FALLBACK_TIMEZONE}
-          now={new Date()}
-          dictionary={dictionary}
-        />
-      </Panel>
+      <Card title={staffMember.details}>
+        <Facts items={memberFacts({ member, timezone, now: new Date(), dictionary })} />
+      </Card>
       {member.id === context.staff.id ? (
-        <p className={pageStyles.muted}>{staffMember.selfNote}</p>
+        <Alert tone="info">{staffMember.selfNote}</Alert>
       ) : (
         <StaffControls member={member} dictionary={dictionary} />
       )}

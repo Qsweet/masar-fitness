@@ -1,9 +1,8 @@
 import { AUDIT_ACTOR_KINDS, AUDIT_ENTITY_TYPES } from "@masar/db";
-import Link from "next/link";
 import { ADMIN_ROUTES } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
-import { adminButton, SelectField } from "./fields";
-import styles from "./page.module.css";
+import { SelectField } from "./ui/fields";
+import { ButtonLink, buttonClass, uiStyles } from "./ui/kit";
 
 const ALL = "";
 
@@ -13,12 +12,17 @@ interface AuditFiltersProps {
   readonly actorKind: string | undefined;
 }
 
-/** نموذج GET عادي: التصفية في الرابط، فتُشارك وتُحفظ ويعمل الرجوع، وبلا JavaScript. */
+/** شريط تصفية مضغوط. نموذج GET عادي: التصفية في الرابط، فتُشارك وتُحفظ ويعمل الرجوع، وبلا JavaScript. */
 export function AuditFilters({ text, entityType, actorKind }: AuditFiltersProps) {
   const { filters } = text;
   const all = { value: ALL, label: filters.all };
   return (
-    <form method="get" action={ADMIN_ROUTES.audit} className={styles.filters}>
+    <form
+      method="get"
+      action={ADMIN_ROUTES.audit}
+      className={uiStyles.inlineForm}
+      aria-label={filters.legend}
+    >
       <SelectField
         id="audit-entity"
         name="entity"
@@ -36,13 +40,13 @@ export function AuditFilters({ text, entityType, actorKind }: AuditFiltersProps)
         defaultValue={actorKind ?? ALL}
         options={[all, ...AUDIT_ACTOR_KINDS.map((value) => ({ value, label: text.actors[value] }))]}
       />
-      <button type="submit" className={adminButton("primary")}>
+      <button type="submit" className={buttonClass()}>
         {filters.apply}
       </button>
       {entityType === undefined && actorKind === undefined ? null : (
-        <Link href={ADMIN_ROUTES.audit} prefetch={false} className={adminButton("ghost")}>
+        <ButtonLink href={ADMIN_ROUTES.audit} variant="ghost">
           {filters.clear}
-        </Link>
+        </ButtonLink>
       )}
     </form>
   );

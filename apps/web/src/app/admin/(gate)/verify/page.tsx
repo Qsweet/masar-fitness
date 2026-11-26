@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AdminForm } from "@/components/admin/admin-form";
-import { TextField } from "@/components/admin/fields";
+import { TextField } from "@/components/admin/ui/fields";
 import { Gate, gateStyles } from "@/components/admin/gate";
 import { MAX_CODE_INPUT_LENGTH } from "@/config/admin";
 import { getAdminDictionary } from "@/i18n/admin";
@@ -15,13 +15,10 @@ export function generateMetadata(): Metadata {
 export default async function VerifyPage() {
   await requireStaff("account.self", "mfa_verify");
   const dictionary = getAdminDictionary();
-  const { verify, common, errors } = dictionary;
+  const { verify, errors } = dictionary;
   return (
     <Gate dictionary={dictionary} title={verify.title} lead={verify.lead} signedIn>
-      <AdminForm
-        action={verifyTotpAction}
-        labels={{ submit: verify.submit, pending: common.pending, errors }}
-      >
+      <AdminForm action={verifyTotpAction} labels={{ submit: verify.submit, errors }}>
         <TextField
           id="verify-code"
           name="code"
@@ -42,8 +39,8 @@ export default async function VerifyPage() {
           <p className={gateStyles.small}>{verify.recoveryLead}</p>
           <AdminForm
             action={verifyRecoveryAction}
-            variant="outline"
-            labels={{ submit: verify.recoverySubmit, pending: common.pending, errors }}
+            variant="secondary"
+            labels={{ submit: verify.recoverySubmit, errors }}
           >
             <TextField
               id="verify-recovery"

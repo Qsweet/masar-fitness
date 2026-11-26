@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { adminButton } from "@/components/admin/fields";
 import { Gate, gateStyles } from "@/components/admin/gate";
+import { SubmitButton } from "@/components/admin/ui/submit-button";
 import { ADMIN_ROUTES } from "@/config/admin";
 import { getAdminDictionary } from "@/i18n/admin";
 import { acknowledgeRecoveryCodesAction } from "@/server/admin/actions/mfa";
@@ -36,9 +36,9 @@ export default async function RecoveryCodesPage() {
         ))}
       </ul>
       <form action={acknowledgeRecoveryCodesAction}>
-        <button type="submit" className={adminButton("primary", true)}>
+        <SubmitButton variant="primary" size="large" block>
           {recoveryCodes.confirm}
-        </button>
+        </SubmitButton>
       </form>
     </Gate>
   );

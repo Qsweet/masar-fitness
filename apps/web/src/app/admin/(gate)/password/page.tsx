@@ -14,12 +14,12 @@ export function generateMetadata(): Metadata {
 export default async function ForcedPasswordPage() {
   const { staff } = await requireStaff("account.self", "password_change");
   const dictionary = getAdminDictionary();
-  const { forcedPassword, common, errors } = dictionary;
+  const { forcedPassword, errors } = dictionary;
   return (
     <Gate dictionary={dictionary} title={forcedPassword.title} lead={forcedPassword.lead} signedIn>
       <AdminForm
         action={changeForcedPasswordAction}
-        labels={{ submit: forcedPassword.submit, pending: common.pending, errors }}
+        labels={{ submit: forcedPassword.submit, errors }}
       >
         <NewPasswordFields idPrefix="forced" email={staff.email} text={dictionary.passwordFields} />
       </AdminForm>

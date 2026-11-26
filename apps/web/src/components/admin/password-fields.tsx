@@ -1,6 +1,6 @@
 import { MAX_PASSWORD_INPUT_LENGTH } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
-import { TextField } from "./fields";
+import { TextField } from "./ui/fields";
 
 interface NewPasswordFieldsProps {
   readonly idPrefix: string;

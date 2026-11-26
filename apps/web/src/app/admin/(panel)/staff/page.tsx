@@ -1,12 +1,12 @@
 import { listStaff, type StaffAccount } from "@masar/db";
 import type { Metadata } from "next";
-import Link from "next/link";
-import { adminButton } from "@/components/admin/fields";
-import { Badge, Ltr, PageHeader, pageStyles } from "@/components/admin/page-parts";
+import { Cell, DataTable } from "@/components/admin/ui/data-table";
+import { Badge, ButtonLink, Card, Ltr, PageHeader } from "@/components/admin/ui/kit";
 import { ADMIN_ROUTES, FALLBACK_TIMEZONE, staffMemberPath } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { formatDateTime } from "@/i18n/admin/format";
 import { fill } from "@/i18n/fill";
+import { formatNumber } from "@/i18n/format";
 import { staffClub } from "@/server/admin/club";
 import { requireStaff } from "@/server/admin/guard";
 import { getDb } from "@/server/db";
@@ -27,32 +27,35 @@ function StaffRow({ member, isSelf, timezone, dictionary }: RowProps) {
   const { columns } = staff;
   return (
     <tr>
-      <td data-label={columns.name} className={pageStyles.strong}>
+      <Cell label={columns.name} strong>
         {member.displayName} {isSelf ? <Badge tone="accent">{staff.you}</Badge> : null}
-      </td>
-      <td data-label={columns.email}>
+      </Cell>
+      <Cell label={columns.email} muted>
         <Ltr>{member.email}</Ltr>
-      </td>
-      <td data-label={columns.role}>{roles[member.role]}</td>
-      <td data-label={columns.status}>
-        <Badge tone={member.status === "active" ? "accent" : "muted"}>
+      </Cell>
+      <Cell label={columns.role}>{roles[member.role]}</Cell>
+      <Cell label={columns.status}>
+        <Badge tone={member.status === "active" ? "success" : "neutral"}>
           {statuses[member.status]}
         </Badge>
-      </td>
-      <td data-label={columns.mfa}>{member.totpEnabled ? staff.mfaOn : staff.mfaOff}</td>
-      <td data-label={columns.lastLogin} className={pageStyles.muted}>
+      </Cell>
+      <Cell label={columns.mfa}>
+        <Badge tone={member.totpEnabled ? "success" : "warning"}>
+          {member.totpEnabled ? staff.mfaOn : staff.mfaOff}
+        </Badge>
+      </Cell>
+      <Cell label={columns.lastLogin} muted nowrap>
         {member.lastLoginAt === null ? common.never : formatDateTime(member.lastLoginAt, timezone)}
-      </td>
-      <td data-label="" className={pageStyles.end}>
-        <Link
+      </Cell>
+      <Cell label="" align="end">
+        <ButtonLink
           href={staffMemberPath(member.id)}
-          prefetch={false}
-          className={adminButton("outline")}
-          aria-label={fill(staff.manageLabel, { name: member.displayName })}
+          size="small"
+          label={fill(staff.manageLabel, { name: member.displayName })}
         >
           {staff.manage}
-        </Link>
-      </td>
+        </ButtonLink>
+      </Cell>
     </tr>
   );
 }
@@ -66,42 +69,30 @@ export default async function StaffPage() {
     listStaff(getDb(), context.staff.clubId),
     staffClub(context.staff.clubId),
   ]);
-  const timezone = club?.timezone ?? FALLBACK_TIMEZONE;
   return (
     <>
-      <PageHeader title={staff.title} lead={staff.lead}>
-        <Link href={ADMIN_ROUTES.staffNew} prefetch={false} className={adminButton("primary")}>
+      <PageHeader title={staff.title} description={staff.lead}>
+        <ButtonLink href={ADMIN_ROUTES.staffNew} variant="primary">
           {staff.add}
-        </Link>
+        </ButtonLink>
       </PageHeader>
-      <div className={pageStyles.tableWrap}>
-        <table className={pageStyles.table}>
-          <caption>{staff.title}</caption>
-          <thead>
-            <tr>
-              {Object.values(staff.columns).map((column) => (
-                <th key={column} scope="col">
-                  {column}
-                </th>
-              ))}
-              <th scope="col">
-                <span className="sr-only">{staff.manage}</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((member) => (
-              <StaffRow
-                key={member.id}
-                member={member}
-                isSelf={member.id === context.staff.id}
-                timezone={timezone}
-                dictionary={dictionary}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Card title={fill(staff.count, { count: formatNumber(members.length) })} flush>
+        <DataTable
+          caption={staff.title}
+          columns={Object.values(staff.columns)}
+          actionsLabel={staff.manage}
+        >
+          {members.map((member) => (
+            <StaffRow
+              key={member.id}
+              member={member}
+              isSelf={member.id === context.staff.id}
+              timezone={club?.timezone ?? FALLBACK_TIMEZONE}
+              dictionary={dictionary}
+            />
+          ))}
+        </DataTable>
+      </Card>
     </>
   );
 }

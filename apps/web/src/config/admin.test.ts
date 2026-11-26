@@ -4,6 +4,7 @@ import {
   ADMIN_SEGMENT_PATTERN,
   isAdminConfigured,
   isAdminPath,
+  parseAdminTheme,
   staffMemberPath,
 } from "./admin";
 
@@ -50,5 +51,16 @@ describe("هل اللوحة مضبوطة", () => {
     expect(isAdminConfigured(undefined)).toBe(false);
     expect(isAdminConfigured("")).toBe(false);
     expect(isAdminConfigured("anything")).toBe(true);
+  });
+});
+
+describe("مظهر اللوحة من الكوكي", () => {
+  it("الداكن افتراضي، والفاتح بقيمته الحرفية فقط", () => {
+    expect(parseAdminTheme(undefined)).toBe("dark");
+    expect(parseAdminTheme("")).toBe("dark");
+    expect(parseAdminTheme("light")).toBe("light");
+    expect(parseAdminTheme("dark")).toBe("dark");
+    expect(parseAdminTheme("LIGHT")).toBe("dark");
+    expect(parseAdminTheme('light" onload="x')).toBe("dark");
   });
 });

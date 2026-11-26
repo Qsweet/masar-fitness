@@ -3,9 +3,9 @@ import { Logo } from "@/components/ui/logo";
 import type { AdminDictionary } from "@/i18n/admin";
 import { cx } from "@/lib/cx";
 import { logoutAction } from "@/server/admin/actions/session";
-import { ADMIN_MAIN_ID } from "./admin-shell";
-import { adminButton } from "./fields";
 import styles from "./gate.module.css";
+import { ADMIN_MAIN_ID } from "./main-id";
+import { SubmitButton } from "./ui/submit-button";
 
 interface GateProps {
   readonly dictionary: AdminDictionary;
@@ -17,11 +17,13 @@ interface GateProps {
   readonly children: ReactNode;
 }
 
-/** إطار صفحات ما قبل اللوحة: الشعار، وبطاقة بعنوان وسطر، وخروج لمن دخل ولم يكمل خطوته. */
+/** إطار صفحات ما قبل اللوحة: بلاطة الشعار، وبطاقة بعنوان وسطر، وخروج لمن دخل ولم يكمل خطوته. */
 export function Gate({ dictionary, title, lead, wide, signedIn, children }: GateProps) {
   return (
     <div className={styles.gate}>
-      <Logo variant="lockup" height="3rem" alt={dictionary.brand.logoAlt} preload />
+      <div className={styles.brand} data-surface="dark">
+        <Logo variant="lockup" height="2.25rem" alt={dictionary.brand.logoAlt} preload />
+      </div>
       <main
         id={ADMIN_MAIN_ID}
         tabIndex={-1}
@@ -29,16 +31,15 @@ export function Gate({ dictionary, title, lead, wide, signedIn, children }: Gate
       >
         <div className={styles.head}>
           <h1 className={styles.title}>{title}</h1>
-          <span className={styles.track} aria-hidden="true" />
           <p className={styles.lead}>{lead}</p>
         </div>
         {children}
       </main>
       {signedIn === true ? (
-        <form action={logoutAction} className={styles.foot}>
-          <button type="submit" className={adminButton("ghost")}>
+        <form action={logoutAction}>
+          <SubmitButton variant="ghost" size="small">
             {dictionary.nav.logout}
-          </button>
+          </SubmitButton>
         </form>
       ) : null}
     </div>

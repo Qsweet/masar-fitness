@@ -1,0 +1,222 @@
+/* «نظرة عامة»: شريط أرقام واحد بفواصل شعرية (لا بطاقات متطابقة)، ورسم الطلبات، والقوائم. */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-surface);
+  box-shadow: var(--a-shadow-raised);
+}
+
+.kpi {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--a-1) var(--a-3);
+  min-width: 0;
+  padding: var(--a-4) var(--a-5);
+  border-bottom: 1px solid var(--a-border);
+  border-inline-end: 1px solid var(--a-border);
+}
+
+.kpi:nth-child(2n) {
+  border-inline-end: 0;
+}
+
+.kpi:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.kpiLabel {
+  grid-column: 1 / -1;
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  font-weight: 500;
+}
+
+.kpiValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.kpiUnit {
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.kpiNote {
+  grid-column: 1 / -1;
+  min-height: 1.3rem;
+  color: var(--a-subtle);
+  font-size: var(--a-text-caption);
+}
+
+.up {
+  color: var(--a-success);
+  font-weight: 600;
+}
+
+.down {
+  color: var(--a-danger);
+  font-weight: 600;
+}
+
+.spark {
+  display: none;
+  width: 5rem;
+  height: 1.75rem;
+  overflow: visible;
+}
+
+@media (width >= 40rem) {
+  .spark {
+    display: block;
+  }
+}
+
+.sparkLine {
+  fill: none;
+  stroke: var(--a-accent-text);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.sparkFlat {
+  stroke: var(--a-border-strong);
+}
+
+.columns {
+  display: grid;
+  gap: var(--a-5);
+  min-width: 0;
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.gridLine {
+  stroke: var(--a-chart-grid);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+/* خط القاعدة: مسار الشعار المتقطع */
+.baseLine {
+  stroke: var(--a-accent-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.bar {
+  fill: var(--a-chart-bar);
+}
+
+.barToday {
+  fill: var(--a-accent);
+}
+
+.axisText {
+  fill: var(--a-subtle);
+  font-family: var(--font);
+  font-size: 11px;
+}
+
+.chartMeta {
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+}
+
+.feed {
+  display: grid;
+}
+
+.feedItem {
+  display: grid;
+  gap: 0.1rem;
+  padding: var(--a-3) var(--a-5);
+  border-bottom: 1px solid var(--a-border);
+}
+
+.feedItem:last-child {
+  border-bottom: 0;
+}
+
+.feedTime {
+  color: var(--a-subtle);
+  font-size: var(--a-text-caption);
+}
+
+.status {
+  display: grid;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--a-3);
+  padding: var(--a-3) var(--a-5);
+  border-bottom: 1px solid var(--a-border);
+}
+
+.statusRow:last-child {
+  border-bottom: 0;
+}
+
+.statusRow dt {
+  color: var(--a-muted);
+}
+
+.statusRow dd {
+  min-width: 0;
+  font-weight: 500;
+  text-align: end;
+}
+
+.cardLink {
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  font-weight: 600;
+  text-underline-offset: 0.3em;
+}
+
+.cardLink:hover {
+  color: var(--a-text);
+}
+
+@media (width >= 64rem) {
+  .kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .kpi,
+  .kpi:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+
+  .kpi:nth-child(2n) {
+    border-inline-end: 1px solid var(--a-border);
+  }
+
+  .kpi:last-child {
+    border-inline-end: 0;
+  }
+}
+
+@media (width >= 72rem) {
+  .split {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}

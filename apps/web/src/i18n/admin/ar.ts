@@ -1,3 +1,5 @@
+import { overviewAr } from "./overview-ar";
+
 /**
  * نصوص لوحة التحكم. العربي هو المرجع، وأي لغة تُضاف لاحقًا تتبع شكله (`AdminDictionary`).
  * مفاتيح `errors` و`notices` و`audit.actions` أسباب ثابتة يكتبها الكود، لا نصوص حرة.
@@ -13,7 +15,22 @@ export const adminAr = {
     audit: "سجل التدقيق",
     account: "حسابي",
     logout: "خروج",
-    viewSite: "الموقع",
+    viewSite: "عرض الموقع",
+    /** عناوين مجموعات الشريط الجانبي. تُضاف مجموعات المراحل القادمة مع صفحاتها. */
+    groups: { general: "عام", management: "الإدارة", personal: "الحساب" },
+  },
+  shell: {
+    collapse: "اطوِ الشريط الجانبي",
+    expand: "ابسط الشريط الجانبي",
+    openMenu: "افتح قائمة الأقسام",
+    closeMenu: "أغلق القائمة",
+    drawerNav: "أقسام اللوحة (القائمة)",
+    newTab: "(يفتح في تبويب جديد)",
+  },
+  breadcrumbs: { label: "مسار التنقل", root: "اللوحة", staffMember: "بيانات موظف" },
+  userMenu: {
+    label: "قائمة الحساب",
+    themes: { light: "المظهر الفاتح", dark: "المظهر الداكن" },
   },
   roles: { owner: "مالك", manager: "مدير", editor: "محرر", sales: "مبيعات" },
   roleHints: {
@@ -27,9 +44,6 @@ export const adminAr = {
     yes: "نعم",
     no: "لا",
     never: "لم يحدث بعد",
-    back: "رجوع",
-    pending: "لحظة…",
-    required: "مطلوب",
   },
   errors: {
     fallback: "تعذّر تنفيذ الطلب. حاول مرة أخرى.",
@@ -88,10 +102,10 @@ export const adminAr = {
   enrol: {
     title: "فعّل التحقق بخطوتين",
     lead: "إلزامي لكل حسابات اللوحة. تحتاج تطبيق تحقق على جوالك مثل Google Authenticator أو Microsoft Authenticator.",
-    stepScan: "1. امسح الرمز بتطبيق التحقق",
+    stepScan: "امسح الرمز بتطبيق التحقق",
     qrAlt: "رمز QR لإضافة الحساب إلى تطبيق التحقق",
     manualTitle: "لا تستطيع المسح؟ اكتب هذا المفتاح في التطبيق:",
-    stepConfirm: "2. اكتب الرمز الذي يعرضه التطبيق",
+    stepConfirm: "اكتب الرمز الذي يعرضه التطبيق",
     code: "رمز التطبيق",
     submit: "فعّل",
   },
@@ -112,25 +126,7 @@ export const adminAr = {
     nextHint: "12 حرفًا على الأقل. جملة من عدة كلمات أسهل حفظًا وأصعب تخمينًا.",
     confirmation: "أعد كتابة الكلمة الجديدة",
   },
-  overview: {
-    title: "نظرة عامة",
-    /** {name}: اسم الموظف. */
-    greeting: "أهلًا {name}",
-    ordersTitle: "طلبات اليوم",
-    /** {date}: تاريخ اليوم بتقويم النادي. */
-    ordersLead: "الطلبات المنشأة اليوم ({date}) بحالتها الحالية.",
-    total: "كل طلبات اليوم",
-    empty: "لا طلبات اليوم بعد.",
-    orderStatuses: {
-      pending_payment: "بانتظار الدفع",
-      paid: "مدفوعة",
-      fulfilled: "مكتملة",
-      expired: "انتهت مهلتها",
-      cancelled: "ملغاة",
-      partially_refunded: "مستردة جزئيًا",
-      refunded: "مستردة",
-    },
-  },
+  overview: overviewAr,
   staff: {
     title: "الموظفون",
     lead: "حسابات من يدخلون هذه اللوحة وأدوارهم.",
@@ -146,6 +142,8 @@ export const adminAr = {
     mfaOn: "مفعّل",
     mfaOff: "لم يُسجَّل بعد",
     you: "أنت",
+    /** {count}: عدد الحسابات. */
+    count: "عدد الحسابات: {count}",
     manage: "إدارة",
     /** {name}: اسم الموظف، لقارئ الشاشة. */
     manageLabel: "إدارة حساب {name}",
@@ -160,8 +158,8 @@ export const adminAr = {
     submit: "أنشئ الحساب",
   },
   staffMember: {
-    backToList: "كل الموظفين",
     details: "بيانات الحساب",
+    status: "الحالة",
     created: "أُنشئ في",
     lockedUntil: "مقفل حتى",
     temporaryTitle: "كلمة المرور المؤقتة",
@@ -198,7 +196,8 @@ export const adminAr = {
       clear: "امسح التصفية",
     },
     columns: { time: "الوقت", actor: "الفاعل", action: "الحدث", subject: "على", details: "تفاصيل" },
-    empty: "لا أحداث تطابق التصفية.",
+    emptyTitle: "لا أحداث تطابق التصفية",
+    emptyLead: "غيّر التصفية أو امسحها لترى كل السجل.",
     /** {from} و{to}: أرقام الصفوف المعروضة، {total}: العدد الكلي. بالكلمات: الشرطة بين رقمين تنقلب في RTL. */
     range: "{from} إلى {to} من {total}",
     newer: "الأحدث",
@@ -252,6 +251,8 @@ export const adminAr = {
     title: "حسابي",
     lead: "بياناتك وكلمة مرورك وجلساتك المفتوحة.",
     profile: "بياناتي",
+    tabsLabel: "أقسام حسابي",
+    tabs: { password: "كلمة المرور", sessions: "الجلسات" },
     name: "الاسم",
     email: "البريد",
     role: "الدور",

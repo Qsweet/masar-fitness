@@ -1,24 +1,71 @@
-import { countOrdersToday } from "@masar/db";
-import { hasPermission, ORDER_STATUSES } from "@masar/domain";
+import {
+  countAwaitingPayment,
+  dailyOrderSeries,
+  listAuditLogs,
+  listRecentOrders,
+  listStaff,
+  staffMfaCoverage,
+  type ClubSummary,
+} from "@masar/db";
+import { hasPermission, type StaffRole } from "@masar/domain";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { PageHeader, pageStyles, Panel } from "@/components/admin/page-parts";
-import { ADMIN_ROUTES } from "@/config/admin";
+import { KpiStrip } from "@/components/admin/overview/kpi-strip";
+import { OrdersChart } from "@/components/admin/overview/orders-chart";
+import {
+  ActivityFeed,
+  overviewStyles,
+  RecentOrders,
+  SystemCard,
+} from "@/components/admin/overview/panels";
+import { Card, PageHeader } from "@/components/admin/ui/kit";
+import {
+  ADMIN_ROUTES,
+  OVERVIEW_ACTIVITY_ROWS,
+  OVERVIEW_CHART_DAYS,
+  OVERVIEW_RECENT_ORDERS,
+  OVERVIEW_SPARK_DAYS,
+} from "@/config/admin";
 import { getAdminDictionary } from "@/i18n/admin";
 import { formatDay } from "@/i18n/admin/format";
 import { fill } from "@/i18n/fill";
-import { formatNumber } from "@/i18n/format";
 import { cx } from "@/lib/cx";
 import { staffClub } from "@/server/admin/club";
 import { requireStaff } from "@/server/admin/guard";
+import { activityItem, kpiOf } from "@/server/admin/overview-view";
+import { systemStatus } from "@/server/admin/system-status";
 import { getDb } from "@/server/db";
 
 export function generateMetadata(): Metadata {
   return { title: getAdminDictionary().overview.title };
 }
 
+const CHART_TITLE_ID = "orders-chart-title";
+
+/** آخر النشاط لمن يقرأ سجل التدقيق فقط. */
+async function loadActivity(club: ClubSummary, role: StaffRole) {
+  if (!hasPermission(role, "audit.read")) {
+    return null;
+  }
+  const db = getDb();
+  const [log, members] = await Promise.all([
+    listAuditLogs(db, { clubId: club.id, page: 1, pageSize: OVERVIEW_ACTIVITY_ROWS }),
+    listStaff(db, club.id),
+  ]);
+  const names = new Map(members.map((member) => [member.id, member.displayName]));
+  const dictionary = getAdminDictionary();
+  return log.rows.map((row) => activityItem(row, names, dictionary));
+}
+
+/** حالة النظام للمالك والمدير (`system.read`). */
+async function loadSystem(club: ClubSummary, role: StaffRole) {
+  return hasPermission(role, "system.read")
+    ? systemStatus(await staffMfaCoverage(getDb(), club.id))
+    : null;
+}
+
 /**
- * نظرة عامة: أرقام حقيقية من القاعدة فقط (طلبات اليوم بحالاتها). من لا يملك `overview.read` (المحرر)
+ * نظرة عامة: أرقام حقيقية من القاعدة فقط، وكل قسم بصلاحيته. من لا يملك `overview.read` (المحرر)
  * يُحوَّل إلى حسابه بدل صفحة أرقام مبيعات لا تخصه.
  */
 export default async function OverviewPage() {
@@ -28,33 +75,50 @@ export default async function OverviewPage() {
   }
   const club = (await staffClub(staff.clubId)) ?? notFound();
   const now = new Date();
-  const counts = await countOrdersToday(getDb(), club, now);
+  const db = getDb();
+  const [series, awaiting, orders, activity, system] = await Promise.all([
+    dailyOrderSeries(db, club, now, OVERVIEW_CHART_DAYS),
+    countAwaitingPayment(db, club.id, now),
+    listRecentOrders(db, club.id, now, OVERVIEW_RECENT_ORDERS),
+    loadActivity(club, staff.role),
+    loadSystem(club, staff.role),
+  ]);
   const { overview } = getAdminDictionary();
-  const total = ORDER_STATUSES.reduce((sum, status) => sum + counts[status], 0);
+  const kpis = {
+    created: kpiOf(series, (day) => day.created, OVERVIEW_SPARK_DAYS),
+    paid: kpiOf(series, (day) => day.paid, OVERVIEW_SPARK_DAYS),
+    revenue: kpiOf(series, (day) => day.revenueMinor, OVERVIEW_SPARK_DAYS),
+    awaiting,
+    currency: club.currency,
+  };
+  const when = { now, timezone: club.timezone };
+  const split = (side: unknown) =>
+    cx(overviewStyles.columns, side !== null && overviewStyles.split);
   return (
     <>
       <PageHeader
         title={overview.title}
-        lead={fill(overview.greeting, { name: staff.displayName })}
+        description={fill(overview.description, {
+          name: staff.displayName,
+          date: formatDay(now, club.timezone),
+        })}
       />
-      <Panel
-        title={overview.ordersTitle}
-        lead={fill(overview.ordersLead, { date: formatDay(now, club.timezone) })}
-      >
-        <dl className={pageStyles.stats} data-testid="orders-today">
-          <div className={cx(pageStyles.stat, pageStyles.statLead)}>
-            <dd className={pageStyles.statValue}>{formatNumber(total)}</dd>
-            <dt className={pageStyles.statLabel}>{overview.total}</dt>
-          </div>
-          {ORDER_STATUSES.map((status) => (
-            <div key={status} className={pageStyles.stat}>
-              <dd className={pageStyles.statValue}>{formatNumber(counts[status])}</dd>
-              <dt className={pageStyles.statLabel}>{overview.orderStatuses[status]}</dt>
-            </div>
-          ))}
-        </dl>
-        {total === 0 ? <p className={pageStyles.muted}>{overview.empty}</p> : null}
-      </Panel>
+      <KpiStrip kpis={kpis} text={overview.kpis} />
+      <div className={split(system)}>
+        <Card title={overview.chart.title} description={overview.chart.description}>
+          <span id={CHART_TITLE_ID} className="sr-only">
+            {overview.chart.title}
+          </span>
+          <OrdersChart series={series} text={overview.chart} titleId={CHART_TITLE_ID} />
+        </Card>
+        {system === null ? null : <SystemCard status={system} text={overview.system} />}
+      </div>
+      <div className={split(activity)}>
+        <RecentOrders orders={orders} text={overview} {...when} />
+        {activity === null ? null : (
+          <ActivityFeed items={activity} text={overview.activity} {...when} />
+        )}
+      </div>
     </>
   );
 }

@@ -1,0 +1,514 @@
+/*
+ * هيكل اللوحة: شريط جانبي داكن دائمًا (أرضية الشعار) يُطوى إلى أيقونات، وشريط علوي ثابت بمسار
+ * التنقل وقائمة المستخدم، ومحتوى بعرض مريح. تحت 1024px يختفي الشريط الجانبي ويحل محله درج جانبي.
+ */
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 100dvh;
+}
+
+.sidebar {
+  display: none;
+}
+
+.column {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  height: var(--a-topbar);
+  padding-inline: var(--a-gutter);
+  border-bottom: 1px solid var(--a-border);
+  background: var(--a-surface);
+}
+
+.topActions {
+  display: flex;
+  align-items: center;
+  gap: var(--a-1);
+  margin-inline-start: auto;
+}
+
+.main {
+  display: grid;
+  align-content: start;
+  gap: var(--a-5);
+  width: 100%;
+  max-width: var(--a-content);
+  margin-inline: auto;
+  padding: var(--a-5) var(--a-gutter) var(--a-7);
+}
+
+.main:focus {
+  outline: none;
+}
+
+.iconButton {
+  display: inline-grid;
+  place-items: center;
+  width: var(--a-control);
+  height: var(--a-control);
+  flex: none;
+  border: 0;
+  border-radius: var(--a-radius);
+  background: transparent;
+  color: var(--a-muted);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: var(--a-hover);
+  color: var(--a-text);
+}
+
+.topLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--a-2);
+  min-height: var(--a-control);
+  padding-inline: var(--a-3);
+  border-radius: var(--a-radius);
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.topLink:hover {
+  background: var(--a-hover);
+  color: var(--a-text);
+}
+
+.topLinkText {
+  display: none;
+}
+
+/* مسار التنقل */
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--a-2);
+  min-width: 0;
+  font-size: var(--a-text-caption);
+}
+
+.crumbs li {
+  display: flex;
+  align-items: center;
+  gap: var(--a-2);
+  min-width: 0;
+}
+
+.crumbs li + li::before {
+  color: var(--a-subtle);
+}
+
+.crumbs li:not(:last-child) {
+  display: none;
+}
+
+.crumb {
+  overflow: hidden;
+  color: var(--a-muted);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.crumb:hover {
+  color: var(--a-text);
+}
+
+.crumb[aria-current="page"] {
+  color: var(--a-text);
+  font-size: var(--a-text-body);
+  font-weight: 600;
+}
+
+/* العلامة */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: var(--a-topbar);
+  padding-inline: var(--a-3);
+  color: var(--a-text);
+  text-decoration: none;
+}
+
+.brandMark {
+  display: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--a-radius);
+}
+
+/* التنقل */
+.nav {
+  display: grid;
+  align-content: start;
+  gap: var(--a-4);
+  padding: var(--a-2);
+}
+
+.group {
+  display: grid;
+  gap: 2px;
+}
+
+.groupLabel {
+  padding: 0 var(--a-3) var(--a-1);
+  color: var(--a-subtle);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.navLink {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: var(--a-control);
+  padding-inline: var(--a-3);
+  border-radius: var(--a-radius);
+  color: var(--a-muted);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.navLink:hover {
+  background: var(--a-hover);
+  color: var(--a-text);
+}
+
+.navLink[aria-current="page"] {
+  background: var(--a-hover);
+  color: var(--a-text);
+  font-weight: 600;
+}
+
+/* علامة القسم الحالي: مسار الشعار المتقطع، قائمًا في جهة البداية */
+.navLink[aria-current="page"]::before {
+  position: absolute;
+  inset-block: 0.45rem;
+  inset-inline-start: 0;
+  width: 3px;
+  border-radius: var(--a-radius-pill);
+  background: linear-gradient(to bottom, var(--a-accent) 5px, transparent 5px 8px) 0 0 / 100% 8px;
+  content: "";
+}
+
+.navLink[aria-current="page"] svg {
+  color: var(--a-accent);
+}
+
+.navLink svg {
+  flex: none;
+}
+
+.navText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebarFoot {
+  margin-top: auto;
+  padding: var(--a-2);
+  border-top: 1px solid var(--a-border);
+}
+
+.collapse {
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  width: 100%;
+  min-height: var(--a-control);
+  padding-inline: var(--a-3);
+  border: 0;
+  border-radius: var(--a-radius);
+  background: transparent;
+  color: var(--a-muted);
+  font: inherit;
+  font-size: var(--a-text-caption);
+  cursor: pointer;
+}
+
+.collapse:hover {
+  background: var(--a-hover);
+  color: var(--a-text);
+}
+
+.collapse svg {
+  flex: none;
+}
+
+/* الدرج الجانبي على الهاتف: ‎<dialog>‎ أصلي (حبس التركيز و Esc والستار من المتصفح) */
+.drawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline: 0 auto;
+  width: min(18rem, 86vw);
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.drawer::backdrop {
+  background: var(--a-scrim, rgb(0 0 0 / 60%));
+}
+
+.drawer[open] {
+  animation: drawer-in 180ms var(--a-ease);
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(var(--drawer-from, 100%));
+    opacity: 0.6;
+  }
+}
+
+.drawer:dir(ltr) {
+  --drawer-from: -100%;
+}
+
+.drawerPanel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  border-inline-end: 1px solid var(--a-border);
+  background: var(--a-page);
+  color: var(--a-text);
+}
+
+.drawerHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline-end: var(--a-2);
+  border-bottom: 1px solid var(--a-border);
+}
+
+/* قائمة المستخدم */
+.menu {
+  position: relative;
+}
+
+.menuButton {
+  display: flex;
+  align-items: center;
+  gap: var(--a-2);
+  min-height: var(--a-control);
+  padding-inline: var(--a-1) var(--a-2);
+  border-radius: var(--a-radius);
+  color: var(--a-text);
+  font-size: var(--a-text-caption);
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.menuButton::-webkit-details-marker {
+  display: none;
+}
+
+.menuButton:hover,
+.menu[open] > .menuButton {
+  background: var(--a-hover);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: none;
+  border-radius: var(--a-radius-pill);
+  background: var(--a-accent);
+  color: var(--a-on-accent);
+  font-size: var(--a-text-caption);
+  font-weight: 700;
+}
+
+.menuName {
+  display: none;
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuPanel {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + var(--a-2));
+  z-index: 10;
+  display: grid;
+  gap: 2px;
+  width: 16rem;
+  max-width: calc(100vw - 2 * var(--a-gutter));
+  padding: var(--a-2);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-overlay);
+  box-shadow: var(--a-shadow-overlay);
+}
+
+.menuIdentity {
+  display: grid;
+  gap: 0.1rem;
+  padding: var(--a-2) var(--a-3) var(--a-3);
+  margin-bottom: var(--a-1);
+  border-bottom: 1px solid var(--a-border);
+}
+
+.menuIdentityName {
+  font-weight: 600;
+}
+
+.menuIdentityMeta {
+  overflow: hidden;
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  width: 100%;
+  min-height: var(--a-control);
+  padding-inline: var(--a-3);
+  border: 0;
+  border-radius: var(--a-radius);
+  background: transparent;
+  color: var(--a-text);
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background: var(--a-hover);
+}
+
+.menuItem svg {
+  flex: none;
+  color: var(--a-muted);
+}
+
+@media (width >= 40rem) {
+  .topLinkText,
+  .menuName {
+    display: block;
+  }
+
+  .crumbs li:not(:last-child) {
+    display: flex;
+  }
+
+  .crumbs li + li::before {
+    content: "/";
+  }
+}
+
+@media (width >= 64rem) {
+  .shell {
+    grid-template-columns: var(--a-sidebar) minmax(0, 1fr);
+  }
+
+  .shell[data-collapsed] {
+    grid-template-columns: var(--a-sidebar-collapsed) minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    border-inline-end: 1px solid var(--a-border);
+    background: var(--a-page);
+    color: var(--a-text);
+  }
+
+  .drawerButton {
+    display: none;
+  }
+
+  .main {
+    padding-block: var(--a-6) var(--a-7);
+  }
+
+  /* مطويّ: أيقونات فقط، والاسم تلميحًا عند المرور والتركيز (ويبقى اسمًا لقارئ الشاشة) */
+  .shell[data-collapsed] .sidebar .brandFull,
+  .shell[data-collapsed] .sidebar .groupLabel {
+    display: none;
+  }
+
+  .shell[data-collapsed] .sidebar .brandMark {
+    display: block;
+  }
+
+  .shell[data-collapsed] .sidebar .brand {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .shell[data-collapsed] .sidebar .navLink,
+  .shell[data-collapsed] .sidebar .collapse {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .shell[data-collapsed] .sidebar .navText {
+    position: absolute;
+    inset-inline-start: calc(100% + var(--a-3));
+    z-index: 20;
+    padding: 0.2rem var(--a-2);
+    border-radius: var(--a-radius-sm);
+    background: var(--a-overlay);
+    box-shadow: var(--a-shadow-overlay);
+    color: var(--a-text);
+    font-size: var(--a-text-caption);
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .shell[data-collapsed] .sidebar .navLink:hover .navText,
+  .shell[data-collapsed] .sidebar .navLink:focus-visible .navText,
+  .shell[data-collapsed] .sidebar .collapse:hover .navText,
+  .shell[data-collapsed] .sidebar .collapse:focus-visible .navText {
+    opacity: 1;
+  }
+
+  .shell[data-collapsed] .sidebar .collapse svg {
+    transform: scaleX(-1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer[open] {
+    animation: none;
+  }
+}

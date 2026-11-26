@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AdminForm } from "@/components/admin/admin-form";
-import { TextField } from "@/components/admin/fields";
+import { TextField } from "@/components/admin/ui/fields";
 import { Gate, gateStyles } from "@/components/admin/gate";
 import { ADMIN_ROUTES, MAX_EMAIL_INPUT_LENGTH, MAX_PASSWORD_INPUT_LENGTH } from "@/config/admin";
 import { getAdminDictionary } from "@/i18n/admin";
@@ -23,13 +23,10 @@ export default async function LoginPage() {
     redirect(ADMIN_ROUTES.home);
   }
   const dictionary = getAdminDictionary();
-  const { login, common, errors } = dictionary;
+  const { login, errors } = dictionary;
   return (
     <Gate dictionary={dictionary} title={login.title} lead={login.lead}>
-      <AdminForm
-        action={loginAction}
-        labels={{ submit: login.submit, pending: common.pending, errors }}
-      >
+      <AdminForm action={loginAction} labels={{ submit: login.submit, errors }}>
         <TextField
           id="login-email"
           name="email"

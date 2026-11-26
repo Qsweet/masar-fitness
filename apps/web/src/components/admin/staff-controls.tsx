@@ -8,8 +8,8 @@ import {
   setStatusAction,
 } from "@/server/admin/actions/staff";
 import { AdminForm, type AdminFormLabels } from "./admin-form";
-import { SelectField } from "./fields";
-import { Panel } from "./page-parts";
+import { SelectField } from "./ui/fields";
+import { Card, CardGrid } from "./ui/kit";
 
 interface StaffControlsProps {
   readonly member: StaffAccount;
@@ -20,14 +20,14 @@ function StaffId({ id }: { readonly id: string }) {
   return <input type="hidden" name="staffId" value={id} />;
 }
 
-/** أفعال المالك على حساب موظف آخر: الدور، والحالة، وإعادة ضبط الخطوة الثانية وكلمة المرور. */
+/** أفعال المالك على حساب موظف آخر: الدور، وإعادة ضبط الخطوة الثانية وكلمة المرور، والحالة. */
 export function StaffControls({ member, dictionary }: StaffControlsProps) {
-  const { staffMember: text, roles, common, errors } = dictionary;
-  const labels = (submit: string): AdminFormLabels => ({ submit, pending: common.pending, errors });
+  const { staffMember: text, roles, errors } = dictionary;
+  const labels = (submit: string): AdminFormLabels => ({ submit, errors });
   const disabled = member.status === "disabled";
   return (
-    <>
-      <Panel title={text.roleTitle} lead={text.roleLead}>
+    <CardGrid>
+      <Card title={text.roleTitle} description={text.roleLead}>
         <AdminForm action={changeRoleAction} labels={labels(text.roleSubmit)} inline>
           <StaffId id={member.id} />
           <SelectField
@@ -38,33 +38,38 @@ export function StaffControls({ member, dictionary }: StaffControlsProps) {
             options={STAFF_ROLES.map((role) => ({ value: role, label: roles[role] }))}
           />
         </AdminForm>
-      </Panel>
-      <Panel title={text.mfaTitle} lead={text.mfaLead}>
-        <AdminForm action={resetMfaAction} labels={labels(text.mfaSubmit)} variant="outline" inline>
-          <StaffId id={member.id} />
-        </AdminForm>
-      </Panel>
-      <Panel title={text.passwordTitle} lead={text.passwordLead}>
+      </Card>
+      <Card title={text.mfaTitle} description={text.mfaLead}>
         <AdminForm
-          action={resetPasswordAction}
-          labels={labels(text.passwordSubmit)}
-          variant="outline"
+          action={resetMfaAction}
+          labels={labels(text.mfaSubmit)}
+          variant="secondary"
           inline
         >
           <StaffId id={member.id} />
         </AdminForm>
-      </Panel>
-      <Panel title={text.statusTitle} lead={disabled ? text.enableLead : text.disableLead}>
+      </Card>
+      <Card title={text.passwordTitle} description={text.passwordLead}>
+        <AdminForm
+          action={resetPasswordAction}
+          labels={labels(text.passwordSubmit)}
+          variant="secondary"
+          inline
+        >
+          <StaffId id={member.id} />
+        </AdminForm>
+      </Card>
+      <Card title={text.statusTitle} description={disabled ? text.enableLead : text.disableLead}>
         <AdminForm
           action={setStatusAction}
           labels={labels(disabled ? text.enable : text.disable)}
-          variant="outline"
+          variant={disabled ? "secondary" : "danger"}
           inline
         >
           <StaffId id={member.id} />
           <input type="hidden" name="status" value={disabled ? "active" : "disabled"} />
         </AdminForm>
-      </Panel>
-    </>
+      </Card>
+    </CardGrid>
   );
 }

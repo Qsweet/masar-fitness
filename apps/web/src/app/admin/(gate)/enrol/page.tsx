@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AdminForm } from "@/components/admin/admin-form";
-import { TextField } from "@/components/admin/fields";
+import { TextField } from "@/components/admin/ui/fields";
 import { Gate, gateStyles } from "@/components/admin/gate";
 import { QrCode } from "@/components/admin/qr-code";
 import { MAX_CODE_INPUT_LENGTH } from "@/config/admin";
@@ -20,21 +20,26 @@ export default async function EnrolPage() {
   const context = await requireStaff("account.self", "mfa_enrol");
   const setup = await enrolmentSetup(context);
   const dictionary = getAdminDictionary();
-  const { enrol, common, errors } = dictionary;
+  const { enrol, errors } = dictionary;
   return (
     <Gate dictionary={dictionary} title={enrol.title} lead={enrol.lead} wide signedIn>
-      <h2 className={gateStyles.step}>{enrol.stepScan}</h2>
-      <QrCode value={setup.uri} label={enrol.qrAlt} className={gateStyles.qr} />
-      <p className={gateStyles.small}>{enrol.manualTitle}</p>
-      <code className={gateStyles.secret} data-testid="totp-secret">
-        {setup.secretBase32.match(SECRET_GROUP)?.join(" ")}
-      </code>
+      <section className={gateStyles.stack}>
+        <h2 className={gateStyles.step}>
+          <span className={gateStyles.stepNumber}>1</span>
+          {enrol.stepScan}
+        </h2>
+        <QrCode value={setup.uri} label={enrol.qrAlt} className={gateStyles.qr} />
+        <p className={gateStyles.small}>{enrol.manualTitle}</p>
+        <code className={gateStyles.secret} data-testid="totp-secret">
+          {setup.secretBase32.match(SECRET_GROUP)?.join(" ")}
+        </code>
+      </section>
       <hr className={gateStyles.divider} />
-      <h2 className={gateStyles.step}>{enrol.stepConfirm}</h2>
-      <AdminForm
-        action={confirmEnrolAction}
-        labels={{ submit: enrol.submit, pending: common.pending, errors }}
-      >
+      <h2 className={gateStyles.step}>
+        <span className={gateStyles.stepNumber}>2</span>
+        {enrol.stepConfirm}
+      </h2>
+      <AdminForm action={confirmEnrolAction} labels={{ submit: enrol.submit, errors }}>
         <TextField
           id="enrol-code"
           name="code"

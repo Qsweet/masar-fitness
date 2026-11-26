@@ -1,6 +1,4 @@
-import Link from "next/link";
-import { adminButton } from "@/components/admin/fields";
-import { PageHeader } from "@/components/admin/page-parts";
+import { ButtonLink, PageHeader } from "@/components/admin/ui/kit";
 import { ADMIN_ROUTES } from "@/config/admin";
 import { getAdminDictionary } from "@/i18n/admin";
 
@@ -8,13 +6,10 @@ import { getAdminDictionary } from "@/i18n/admin";
 export default function PanelNotFound() {
   const { notFound } = getAdminDictionary();
   return (
-    <>
-      <PageHeader title={notFound.title} lead={notFound.lead} />
-      <div>
-        <Link href={ADMIN_ROUTES.account} prefetch={false} className={adminButton("primary")}>
-          {notFound.home}
-        </Link>
-      </div>
-    </>
+    <PageHeader title={notFound.title} description={notFound.lead}>
+      <ButtonLink href={ADMIN_ROUTES.account} variant="primary">
+        {notFound.home}
+      </ButtonLink>
+    </PageHeader>
   );
 }

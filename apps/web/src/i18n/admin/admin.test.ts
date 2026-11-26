@@ -16,6 +16,9 @@ describe("قاموس اللوحة", () => {
     expect(Object.keys(dictionary.overview.orderStatuses).sort()).toEqual(
       [...ORDER_STATUSES].sort(),
     );
+    expect(Object.keys(dictionary.overview.activity.sentences).sort()).toEqual(
+      [...STAFF_AUDIT_ACTIONS].sort(),
+    );
     expect(PERMISSIONS.length).toBeGreaterThan(0);
   });
 

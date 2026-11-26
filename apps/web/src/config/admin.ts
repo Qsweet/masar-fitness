@@ -96,3 +96,31 @@ export const FALLBACK_TIMEZONE = "UTC";
 export const AUDIT_PAGE_SIZE = 25;
 /** اسم مُصدر الرمز كما يظهر في تطبيق التحقق. */
 export const TOTP_ISSUER = "Masters Way";
+
+/** كوكي مظهر اللوحة (داكن افتراضيًا): يقرؤه التخطيط الجذري على الخادم، فلا وميض عند التحميل. */
+export const ADMIN_THEME_COOKIE = "masar_admin_theme";
+export const ADMIN_THEMES = ["dark", "light"] as const;
+export type AdminTheme = (typeof ADMIN_THEMES)[number];
+export const DEFAULT_ADMIN_THEME: AdminTheme = "dark";
+
+export function parseAdminTheme(value: string | undefined): AdminTheme {
+  return ADMIN_THEMES.find((theme) => theme === value) ?? DEFAULT_ADMIN_THEME;
+}
+
+/**
+ * كوكي طيّ الشريط الجانبي: يكتبه المتصفح عند الضغط ويقرؤه الخادم عند العرض، فيخرج الشريط بحالته
+ * من أول بايت. تفضيل عرض لا سر: ليس HttpOnly.
+ */
+export const ADMIN_NAV_COOKIE = "masar_admin_nav";
+export const ADMIN_NAV_COLLAPSED = "collapsed";
+export const ADMIN_NAV_EXPANDED = "expanded";
+const DAYS_PER_YEAR = 365;
+const SECONDS_PER_DAY = 86_400;
+/** عمر كوكيَي التفضيل بالثواني. */
+export const ADMIN_PREFERENCE_MAX_AGE = DAYS_PER_YEAR * SECONDS_PER_DAY;
+
+/** أيام الرسم البياني في «نظرة عامة»، وأيام الخط الصغير في بطاقات الأرقام. */
+export const OVERVIEW_CHART_DAYS = 14;
+export const OVERVIEW_SPARK_DAYS = 7;
+export const OVERVIEW_RECENT_ORDERS = 8;
+export const OVERVIEW_ACTIVITY_ROWS = 8;

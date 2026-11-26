@@ -1,11 +1,20 @@
-import { listLiveStaffSessions, type StaffAccount, type StaffSessionView } from "@masar/db";
+import { listLiveStaffSessions, type StaffSessionView } from "@masar/db";
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import { AdminForm } from "@/components/admin/admin-form";
-import { adminButton, Notice, noticeText } from "@/components/admin/fields";
-import { Badge, Ltr, PageHeader, pageStyles, Panel } from "@/components/admin/page-parts";
 import { NewPasswordFields } from "@/components/admin/password-fields";
-import { FALLBACK_TIMEZONE } from "@/config/admin";
+import { Cell, DataTable } from "@/components/admin/ui/data-table";
+import {
+  Badge,
+  Card,
+  Facts,
+  Ltr,
+  Notice,
+  noticeText,
+  PageHeader,
+  Tabs,
+} from "@/components/admin/ui/kit";
+import { SubmitButton } from "@/components/admin/ui/submit-button";
+import { ADMIN_ROUTES, FALLBACK_TIMEZONE } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { formatDateTime } from "@/i18n/admin/format";
 import { fill } from "@/i18n/fill";
@@ -13,11 +22,22 @@ import { changePasswordAction } from "@/server/admin/actions/password";
 import { revokeSessionAction } from "@/server/admin/actions/session";
 import { staffClub } from "@/server/admin/club";
 import { requireStaff } from "@/server/admin/guard";
+import type { StaffContext } from "@/server/admin/session";
 import { describeUserAgent } from "@/server/admin/user-agent";
 import { getDb } from "@/server/db";
 
 export function generateMetadata(): Metadata {
   return { title: getAdminDictionary().account.title };
+}
+
+const TABS = ["password", "sessions"] as const;
+type Tab = (typeof TABS)[number];
+/** التنبيه الذي يعود بعد إلغاء جلسة يفتح تبويب الجلسات. */
+const SESSIONS_NOTICE = "session_revoked";
+
+function currentTab(tab: unknown, done: unknown): Tab {
+  const requested = TABS.find((candidate) => candidate === tab);
+  return requested ?? (done === SESSIONS_NOTICE ? "sessions" : "password");
 }
 
 interface SessionRowProps {
@@ -32,132 +52,107 @@ function SessionRow({ session, isCurrent, timezone, text }: SessionRowProps) {
   const device = describeUserAgent(session.userAgent);
   return (
     <tr>
-      <td data-label={text.columns.device} className={pageStyles.strong}>
+      <Cell label={text.columns.device} strong nowrap>
         {device === null ? text.unknownDevice : <Ltr>{device}</Ltr>}{" "}
         {isCurrent ? <Badge tone="accent">{text.current}</Badge> : null}
-      </td>
-      <td data-label={text.columns.ip}>
+      </Cell>
+      <Cell label={text.columns.ip} muted>
         <Ltr>{session.ip}</Ltr>
-      </td>
-      <td data-label={text.columns.started} className={pageStyles.muted}>
+      </Cell>
+      <Cell label={text.columns.started} muted nowrap>
         {started}
-      </td>
-      <td data-label={text.columns.lastSeen} className={pageStyles.muted}>
+      </Cell>
+      <Cell label={text.columns.lastSeen} muted nowrap>
         {formatDateTime(session.lastSeenAt, timezone)}
-      </td>
-      <td data-label="" className={pageStyles.end}>
+      </Cell>
+      <Cell label="" align="end">
         <form action={revokeSessionAction}>
           <input type="hidden" name="sessionId" value={session.id} />
-          <button
-            type="submit"
-            className={adminButton("outline")}
-            aria-label={fill(text.revokeLabel, { started })}
-          >
+          <SubmitButton size="small" variant="danger" label={fill(text.revokeLabel, { started })}>
             {text.revoke}
-          </button>
+          </SubmitButton>
         </form>
-      </td>
+      </Cell>
     </tr>
   );
 }
 
-interface SessionsProps {
-  readonly sessions: readonly StaffSessionView[];
-  readonly currentId: string;
-  readonly timezone: string;
-  readonly text: AdminDictionary["account"];
-}
-
-function Sessions({ sessions, currentId, timezone, text }: SessionsProps) {
-  return (
-    <div className={pageStyles.tableWrap}>
-      <table className={pageStyles.table} data-testid="sessions-table">
-        <caption>{text.sessionsTitle}</caption>
-        <thead>
-          <tr>
-            {Object.values(text.columns).map((column) => (
-              <th key={column} scope="col">
-                {column}
-              </th>
-            ))}
-            <th scope="col">
-              <span className="sr-only">{text.revoke}</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {sessions.map((session) => (
-            <SessionRow
-              key={session.id}
-              session={session}
-              isCurrent={session.id === currentId}
-              timezone={timezone}
-              text={text}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function Profile({ staff, dictionary }: { staff: StaffAccount; dictionary: AdminDictionary }) {
-  const { account, roles } = dictionary;
-  const facts: readonly (readonly [string, ReactNode])[] = [
-    [account.name, staff.displayName],
-    [account.email, <Ltr key="email">{staff.email}</Ltr>],
-    [account.role, roles[staff.role]],
-  ];
-  return (
-    <dl className={pageStyles.facts}>
-      {facts.map(([label, value]) => (
-        <div key={label} className={pageStyles.fact}>
-          <dt>{label}</dt>
-          <dd>{value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
-/** حسابي: البيانات، وتغيير كلمة المرور (بالكلمة الحالية)، والجلسات المفتوحة وإلغاؤها. */
-export default async function AccountPage(props: PageProps<"/admin/account">) {
-  const { staff, session: current } = await requireStaff("account.self");
-  const query = await props.searchParams;
-  const dictionary = getAdminDictionary();
-  const { account, common, errors } = dictionary;
+async function SessionsCard({ context }: { readonly context: StaffContext }) {
+  const { account } = getAdminDictionary();
   const [sessions, club] = await Promise.all([
-    listLiveStaffSessions(getDb(), staff.id, new Date()),
-    staffClub(staff.clubId),
+    listLiveStaffSessions(getDb(), context.staff.id, new Date()),
+    staffClub(context.staff.clubId),
   ]);
   return (
-    <>
-      <PageHeader title={account.title} lead={account.lead} />
-      <Notice text={noticeText(query.done, dictionary)} />
-      <Panel title={account.profile}>
-        <Profile staff={staff} dictionary={dictionary} />
-      </Panel>
-      <Panel title={account.passwordTitle} lead={account.passwordLead} narrow>
-        <AdminForm
-          action={changePasswordAction}
-          labels={{ submit: account.passwordSubmit, pending: common.pending, errors }}
-        >
-          <NewPasswordFields
-            idPrefix="account"
-            email={staff.email}
-            text={dictionary.passwordFields}
-            withCurrent
+    <Card title={account.sessionsTitle} description={account.sessionsLead} flush>
+      <DataTable
+        caption={account.sessionsTitle}
+        columns={Object.values(account.columns)}
+        actionsLabel={account.revoke}
+        testId="sessions-table"
+      >
+        {sessions.map((session) => (
+          <SessionRow
+            key={session.id}
+            session={session}
+            isCurrent={session.id === context.session.id}
+            timezone={club?.timezone ?? FALLBACK_TIMEZONE}
+            text={account}
           />
-        </AdminForm>
-      </Panel>
-      <Panel title={account.sessionsTitle} lead={account.sessionsLead}>
-        <Sessions
-          sessions={sessions}
-          currentId={current.id}
-          timezone={club?.timezone ?? FALLBACK_TIMEZONE}
-          text={account}
+        ))}
+      </DataTable>
+    </Card>
+  );
+}
+
+function PasswordCard({ context }: { readonly context: StaffContext }) {
+  const dictionary = getAdminDictionary();
+  const { account, errors } = dictionary;
+  return (
+    <Card title={account.passwordTitle} description={account.passwordLead} narrow>
+      <AdminForm action={changePasswordAction} labels={{ submit: account.passwordSubmit, errors }}>
+        <NewPasswordFields
+          idPrefix="account"
+          email={context.staff.email}
+          text={dictionary.passwordFields}
+          withCurrent
         />
-      </Panel>
+      </AdminForm>
+    </Card>
+  );
+}
+
+/** حسابي: البيانات، ثم تبويبان: كلمة المرور (بالكلمة الحالية)، والجلسات المفتوحة وإلغاؤها. */
+export default async function AccountPage(props: PageProps<"/admin/account">) {
+  const context = await requireStaff("account.self");
+  const query = await props.searchParams;
+  const dictionary = getAdminDictionary();
+  const { account, roles } = dictionary;
+  const { staff } = context;
+  const tab = currentTab(query.tab, query.done);
+  return (
+    <>
+      <PageHeader title={account.title} description={account.lead} />
+      <Notice text={noticeText(query.done, dictionary)} />
+      <Card title={account.profile}>
+        <Facts
+          items={[
+            [account.name, staff.displayName],
+            [account.email, <Ltr key="email">{staff.email}</Ltr>],
+            [account.role, roles[staff.role]],
+          ]}
+        />
+      </Card>
+      <Tabs
+        label={account.tabsLabel}
+        current={tab}
+        tabs={TABS.map((id) => ({
+          id,
+          label: account.tabs[id],
+          href: `${ADMIN_ROUTES.account}?tab=${id}`,
+        }))}
+      />
+      {tab === "sessions" ? <SessionsCard context={context} /> : <PasswordCard context={context} />}
     </>
   );
 }

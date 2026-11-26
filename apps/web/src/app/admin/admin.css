@@ -1,0 +1,142 @@
+/*
+ * رموز لوحة التحكم، فوق رموز الهوية في globals.css. واجهة منتج لا صفحة تسويق: كثيفة، هادئة، دقيقة.
+ * المصدر الوحيد لألوان اللوحة: وحدات CSS في components/admin تستعمل ‎--a-*‎ فقط، ولا لون خام خارج هذا
+ * الملف. الداكن هو الافتراضي؛ الفاتح يُختار من قائمة المستخدم ويُحفظ في كوكي يقرؤه الخادم (بلا وميض).
+ * أصفر الشعار التمييز الوحيد: تعبئة بنص أسود في المظهرين، ونصًّا على الداكن فقط (على الأبيض 1.4:1).
+ * ألوان الحالة (نجاح، تحذير، خطر، معلومة) للشارات والفروق فقط، وكلها AA على سطحها.
+ */
+html[data-admin],
+html[data-admin] [data-surface="dark"] {
+  /* الارتفاع: صفحة ← سطح ← مرفوع ← طافٍ */
+  --a-page: #0a0a0a;
+  --a-surface: #121212;
+  --a-raised: #191919;
+  --a-overlay: #202020;
+  --a-hover: rgb(255 255 255 / 5%);
+  --a-border: rgb(255 255 255 / 9%);
+  --a-border-strong: rgb(255 255 255 / 18%);
+  --a-field-border: #6e6e6e;
+  --a-text: #f4f4f4;
+  --a-muted: #a8a8a8;
+  --a-subtle: #8c8c8c;
+  --a-accent: #fdd624;
+  --a-accent-hover: #ffe15a;
+  --a-on-accent: #0a0a0a;
+  /* التمييز نصًّا وعلامةً: أصفر على الداكن */
+  --a-accent-text: #fdd624;
+  --a-accent-soft: rgb(253 214 36 / 11%);
+  --a-accent-line: rgb(253 214 36 / 40%);
+  --a-focus: #fdd624;
+  --a-success: #5fd38d;
+  --a-success-soft: rgb(95 211 141 / 12%);
+  --a-warning: #f5a65b;
+  --a-warning-soft: rgb(245 166 91 / 13%);
+  --a-danger: #ff8a80;
+  --a-danger-soft: rgb(255 138 128 / 13%);
+  --a-info: #82b6ff;
+  --a-info-soft: rgb(130 182 255 / 13%);
+  --a-neutral-soft: rgb(255 255 255 / 7%);
+  --a-scrim: rgb(0 0 0 / 62%);
+  --a-shadow-raised: 0 1px 2px rgb(0 0 0 / 40%);
+  --a-shadow-overlay: 0 18px 44px -12px rgb(0 0 0 / 75%), 0 0 0 1px rgb(255 255 255 / 8%);
+  --a-chart-grid: rgb(255 255 255 / 8%);
+  --a-chart-bar: rgb(255 255 255 / 22%);
+
+  color-scheme: dark;
+}
+
+html[data-admin][data-theme="light"] {
+  --a-page: #f4f4f1;
+  --a-surface: #ffffff;
+  --a-raised: #ffffff;
+  --a-overlay: #ffffff;
+  --a-hover: rgb(10 10 10 / 4%);
+  --a-border: rgb(10 10 10 / 10%);
+  --a-border-strong: rgb(10 10 10 / 20%);
+  --a-field-border: #7a7a7a;
+  --a-text: #0a0a0a;
+  --a-muted: #555555;
+  --a-subtle: #666666;
+  --a-accent-text: #0a0a0a;
+  --a-accent-soft: rgb(253 214 36 / 26%);
+  --a-accent-line: #c9a400;
+  --a-focus: #0a0a0a;
+  --a-success: #12703a;
+  --a-success-soft: rgb(18 112 58 / 10%);
+  --a-warning: #8a4b00;
+  --a-warning-soft: rgb(196 110 0 / 12%);
+  --a-danger: #b3261e;
+  --a-danger-soft: rgb(179 38 30 / 9%);
+  --a-info: #1a57b5;
+  --a-info-soft: rgb(26 87 181 / 9%);
+  --a-neutral-soft: rgb(10 10 10 / 6%);
+  --a-scrim: rgb(10 10 10 / 45%);
+  --a-shadow-raised: 0 1px 2px rgb(10 10 10 / 6%);
+  --a-shadow-overlay: 0 18px 44px -14px rgb(10 10 10 / 28%), 0 0 0 1px rgb(10 10 10 / 8%);
+  --a-chart-grid: rgb(10 10 10 / 9%);
+  --a-chart-bar: rgb(10 10 10 / 26%);
+
+  color-scheme: light;
+}
+
+html[data-admin] {
+  /* إيقاع 8 نقاط */
+  --a-1: 0.25rem;
+  --a-2: 0.5rem;
+  --a-3: 0.75rem;
+  --a-4: 1rem;
+  --a-5: 1.5rem;
+  --a-6: 2rem;
+  --a-7: 3rem;
+  /* سلّم الحروف: عنوان الصفحة، عنوان القسم، النص، التعليق */
+  --a-text-title: 1.5rem;
+  --a-text-section: 1rem;
+  --a-text-body: 0.9rem;
+  --a-text-caption: 0.8rem;
+  --a-radius-sm: 0.375rem;
+  --a-radius: 0.5rem;
+  --a-radius-lg: 0.75rem;
+  --a-radius-pill: 999px;
+  --a-control: 2.25rem;
+  --a-sidebar: 15rem;
+  --a-sidebar-collapsed: 3.75rem;
+  --a-topbar: 3.5rem;
+  --a-gutter: 1rem;
+  --a-content: 78rem;
+  --a-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --a-fast: 140ms;
+
+  scroll-padding-top: calc(var(--a-topbar) + 1rem);
+  scroll-padding-bottom: 2rem;
+}
+
+@media (width >= 64rem) {
+  html[data-admin] {
+    --a-gutter: 2rem;
+  }
+}
+
+html[data-admin] body {
+  background: var(--a-page);
+  color: var(--a-text);
+  font-size: var(--a-text-body);
+  line-height: 1.65;
+  font-variant-numeric: tabular-nums;
+}
+
+/* حلقة تركيز واحدة في اللوحة: خط بلون المظهر وفاصل بلون الصفحة، بدل حلقة الموقع العام */
+html[data-admin] :focus-visible {
+  outline: 2px solid var(--a-focus);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+html[data-admin] ::selection {
+  background: var(--a-accent);
+  color: var(--a-on-accent);
+}
+
+html[data-admin] .skip-link:focus-visible {
+  background: var(--a-accent);
+  color: var(--a-on-accent);
+}

@@ -56,6 +56,11 @@ const rawSchema = z.object({
   PAYMENTS_ALLOW_FAKE: optionalText,
   /** إذن صريح ("yes") لفتح الشراء على معاينة عامة بمفاتيح التجربة. ينتظر موافقة المالك (القرار 54). */
   PAYMENTS_PUBLIC_SANDBOX: optionalText,
+  /**
+   * مفتاح لوحة التحكم: 32 بايتًا base64 (`openssl rand -base64 32`)، يُشفَّر به سر TOTP. غيابه يغلق
+   * اللوحة (404)، وقيمة ناقصة أو قصيرة ترفض الإقلاع (docs/ADMIN_DESIGN.md §4.1).
+   */
+  ADMIN_SECRET_KEY: optionalText,
 });
 
 type RawEnv = z.infer<typeof rawSchema>;
@@ -75,6 +80,18 @@ const CORE_KEYS = [
 ] as const;
 
 const EXPLICIT_YES = "yes";
+const ADMIN_KEY_BYTES = 32;
+/** base64 قياسي لـ32 بايتًا بالضبط: 43 محرفًا وعلامة حشو واحدة. */
+const ADMIN_KEY_SHAPE = /^[A-Za-z0-9+/]{43}=$/;
+
+/** يفك مفتاح اللوحة. undefined = غير مضبوط (اللوحة مغلقة)، null = قيمة مرفوضة. */
+function decodeAdminKey(raw: string | undefined): Uint8Array | null | undefined {
+  if (raw === undefined) {
+    return undefined;
+  }
+  const bytes = ADMIN_KEY_SHAPE.test(raw) ? Buffer.from(raw, "base64") : null;
+  return bytes?.length === ADMIN_KEY_BYTES ? new Uint8Array(bytes) : null;
+}
 
 interface CheckedEnv {
   readonly NODE_ENV: RawEnv["NODE_ENV"];
@@ -121,6 +138,15 @@ const envSchema = rawSchema
       }
       return z.NEVER;
     }
+    const adminKey = decodeAdminKey(env.ADMIN_SECRET_KEY);
+    if (adminKey === null) {
+      context.addIssue({
+        code: "custom",
+        path: ["ADMIN_SECRET_KEY"],
+        message: "must be exactly 32 bytes in base64 (openssl rand -base64 32)",
+      });
+      return z.NEVER;
+    }
     // مفاتيح الدفع لا تبقى حقولًا خامًا في الإعداد: تُحمل داخل PAYMENTS وحده
     return {
       ...pick(env, CORE_KEYS),
@@ -128,6 +154,8 @@ const envSchema = rawSchema
       PAYMENTS_ALLOW_FAKE: env.PAYMENTS_ALLOW_FAKE === EXPLICIT_YES,
       PAYMENTS_PUBLIC_SANDBOX: env.PAYMENTS_PUBLIC_SANDBOX === EXPLICIT_YES,
       CHECKOUT_PREVIEW: env.CHECKOUT_PREVIEW === EXPLICIT_YES,
+      /** مفتاح اللوحة مفكوكًا، أو null واللوحة مغلقة. */
+      ADMIN_SECRET_KEY: adminKey ?? null,
     };
   })
   .refine((env) => env.NODE_ENV !== "production" || isSecureOrLoopback(env.SITE_URL), {

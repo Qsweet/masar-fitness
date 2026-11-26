@@ -61,6 +61,7 @@ describe("parseEnv: الدفع اختياري ومغلق افتراضيًا", ()
       moyasarHostedPageOrigin: null,
     });
     expect(Object.keys(env).sort()).toEqual([
+      "ADMIN_SECRET_KEY",
       "APP_VERSION",
       "CHECKOUT_ENABLED",
       "CHECKOUT_PREVIEW",

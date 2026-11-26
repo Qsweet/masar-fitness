@@ -68,3 +68,52 @@ describe("matcher", () => {
     expect(pattern.test(path)).toBe(false);
   });
 });
+
+describe("لوحة التحكم في الوسيط", () => {
+  const KEY = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=";
+
+  function respond(path: string) {
+    return proxy(new NextRequest(`https://example.com${path}`));
+  }
+
+  it("بلا مفتاح: كل مسار لوحة يُخدَّم من صفحة «غير موجودة» العامة، بلا ترويسة تميّزه", () => {
+    vi.stubEnv("ADMIN_SECRET_KEY", "");
+    vi.stubEnv("SITE_INDEXABLE", "true");
+    for (const path of ["/admin", "/admin/login", "/admin/staff/abc"]) {
+      const response = respond(path);
+      expect(response.headers.get("x-middleware-rewrite")).toBe("https://example.com/admin-closed");
+      expect(response.headers.get("x-robots-tag")).toBeNull();
+      expect(response.headers.get("cache-control")).toBeNull();
+      expect(response.headers.get("content-security-policy")).toBeTruthy();
+    }
+  });
+
+  it("بالمفتاح: تمر، ولا تُفهرس ولا تُخزَّن حتى على النطاق المفهرس", () => {
+    vi.stubEnv("ADMIN_SECRET_KEY", KEY);
+    vi.stubEnv("SITE_INDEXABLE", "true");
+    for (const path of ["/admin", "/admin/login", "/admin/audit"]) {
+      const response = respond(path);
+      expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+      expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(response.headers.get("content-security-policy")).toMatch(/script-src 'self' 'nonce-/);
+    }
+  });
+
+  it("مسار يشبه اللوحة ليس منها: لا إعادة كتابة ولا منع تخزين", () => {
+    vi.stubEnv("ADMIN_SECRET_KEY", "");
+    vi.stubEnv("SITE_INDEXABLE", "true");
+    for (const path of ["/administrator", "/en/admin", "/blog/admin"]) {
+      const response = respond(path);
+      expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+      expect(response.headers.get("cache-control")).toBeNull();
+    }
+  });
+
+  it("المطابق يشمل مسارات اللوحة", () => {
+    const [pattern = ""] = config.matcher;
+    const matcher = new RegExp(`^${pattern}$`);
+    expect(matcher.test("/admin")).toBe(true);
+    expect(matcher.test("/admin/login")).toBe(true);
+  });
+});

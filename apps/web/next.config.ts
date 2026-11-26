@@ -15,8 +15,11 @@ const SECURITY_HEADERS = [
   },
 ];
 
-/** المقاطع الأولى التي لا تُعاد كتابتها إلى اللغة الافتراضية: اللغات نفسها والواجهات. */
-const NON_REWRITTEN_PREFIXES = [...LOCALES, "api"].join("|");
+/**
+ * المقاطع الأولى التي لا تُعاد كتابتها إلى اللغة الافتراضية: اللغات نفسها والواجهات ولوحة التحكم
+ * (‎/admin‎ خارج ‎[locale]‎ بتخطيط جذري خاص، ومساراتها الديناميكية تُطابَق بعد هذه القواعد).
+ */
+const NON_REWRITTEN_PREFIXES = [...LOCALES, "api", "admin"].join("|");
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

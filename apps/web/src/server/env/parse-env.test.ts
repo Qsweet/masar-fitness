@@ -37,6 +37,7 @@ describe("parseEnv", () => {
       PAYMENTS_ALLOW_FAKE: false,
       PAYMENTS_PUBLIC_SANDBOX: false,
       CHECKOUT_PREVIEW: false,
+      ADMIN_SECRET_KEY: null,
     });
   });
 

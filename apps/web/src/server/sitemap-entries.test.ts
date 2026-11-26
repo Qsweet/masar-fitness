@@ -68,3 +68,15 @@ describe("sitemapEntries", () => {
     expect(urls(entries).some((url) => url.includes("/blog"))).toBe(false);
   });
 });
+
+describe("لوحة التحكم خارج خريطة الموقع", () => {
+  it("لا رابط يبدأ بـ/admin مهما كانت المدخلات", () => {
+    const entries = sitemapEntries({
+      origin: "https://example.com",
+      planSlugs: ["admin"],
+      articles: [],
+    });
+    const paths = entries.map((entry) => new URL(entry.url).pathname);
+    expect(paths.some((path) => path === "/admin" || path.startsWith("/admin/"))).toBe(false);
+  });
+});

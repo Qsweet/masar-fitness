@@ -13,9 +13,10 @@ function labels(role: (typeof STAFF_ROLES)[number]): [string, string[]][] {
 }
 
 describe("مجموعات التنقل بحسب الدور", () => {
-  it("المالك يرى المجموعات الثلاث", () => {
+  it("المالك يرى المجموعات الأربع، والمبيعات بين «عام» و«الإدارة»", () => {
     expect(labels("owner")).toEqual([
       ["عام", ["نظرة عامة"]],
+      ["المبيعات", ["الطلبات", "العملاء"]],
       ["الإدارة", ["الموظفون", "سجل التدقيق"]],
       ["الحساب", ["حسابي"]],
     ]);
@@ -24,12 +25,22 @@ describe("مجموعات التنقل بحسب الدور", () => {
   it("المدير بلا «الموظفون»، والمبيعات بلا مجموعة الإدارة كلها", () => {
     expect(labels("manager")).toEqual([
       ["عام", ["نظرة عامة"]],
+      ["المبيعات", ["الطلبات", "العملاء"]],
       ["الإدارة", ["سجل التدقيق"]],
       ["الحساب", ["حسابي"]],
     ]);
     expect(labels("sales")).toEqual([
       ["عام", ["نظرة عامة"]],
+      ["المبيعات", ["الطلبات", "العملاء"]],
       ["الحساب", ["حسابي"]],
+    ]);
+  });
+
+  it("مجموعة المبيعات تعرض المبني فقط: لا كتالوج ولا عروض ولا إعدادات بيع بعد", () => {
+    const sales = navGroupsFor("owner", dictionary).find((group) => group.id === "sales");
+    expect(sales?.items.map((item) => item.href)).toEqual([
+      "/admin/sales/orders",
+      "/admin/sales/customers",
     ]);
   });
 
@@ -66,6 +77,28 @@ describe("مسار التنقل", () => {
     expect(breadcrumbTrail("/admin", known, "بيانات موظف")).toEqual([
       { href: "/admin", label: "اللوحة" },
     ]);
+  });
+
+  it("المعرّف في الرابط يُطابَق بنجمة: تفصيل الطلب وإجراؤه بأسمائهما", () => {
+    const id = "018f4e2a-7b1c-7d3e-9f4a-5b6c7d8e9f01";
+    const sales = {
+      ...known,
+      "/admin/sales": "المبيعات",
+      "/admin/sales/orders": "الطلبات",
+      "/admin/sales/orders/*": "تفصيل الطلب",
+      "/admin/sales/orders/*/cancel": "إلغاء الطلب",
+    };
+    expect(
+      breadcrumbTrail(`/admin/sales/orders/${id}/cancel`, sales, "تفصيل").map((c) => c.label),
+    ).toEqual(["اللوحة", "المبيعات", "الطلبات", "تفصيل الطلب", "إلغاء الطلب"]);
+    expect(breadcrumbTrail(`/admin/sales/orders/${id}`, sales, "تفصيل").at(-1)).toEqual({
+      href: `/admin/sales/orders/${id}`,
+      label: "تفصيل الطلب",
+    });
+    // مقطع ليس معرّفًا لا يُطابَق بالنجمة
+    expect(breadcrumbTrail("/admin/sales/orders/export", sales, "تفصيل").at(-1)?.label).toBe(
+      "تفصيل",
+    );
   });
 
   it("المقطع المجهول (معرّف موظف) يأخذ اسم التفصيل، ولا يُقرأ من خصائص الكائن الموروثة", () => {

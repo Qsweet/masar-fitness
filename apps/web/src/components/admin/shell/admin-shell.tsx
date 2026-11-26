@@ -3,7 +3,15 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import mark from "@/app/icon.png";
 import { Logo } from "@/components/ui/logo";
-import { ADMIN_ROUTES, type AdminTheme } from "@/config/admin";
+import {
+  ADMIN_ROUTES,
+  customerPath,
+  orderCancelPath,
+  orderPath,
+  orderSettlePath,
+  staffMemberPath,
+  type AdminTheme,
+} from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
 import { cx } from "@/lib/cx";
 import type { StaffContext } from "@/server/admin/session";
@@ -51,13 +59,21 @@ function Brand({
 
 /** أسماء المسارات لمسار التنقل، من القاموس. */
 function crumbLabels(dictionary: AdminDictionary): Record<string, string> {
-  const { nav, staffNew, breadcrumbs } = dictionary;
+  const { nav, staffNew, breadcrumbs, sales } = dictionary;
   return {
     [ADMIN_ROUTES.home]: breadcrumbs.root,
     [ADMIN_ROUTES.staff]: nav.staff,
     [ADMIN_ROUTES.staffNew]: staffNew.title,
+    [staffMemberPath("*")]: breadcrumbs.staffMember,
     [ADMIN_ROUTES.audit]: nav.audit,
     [ADMIN_ROUTES.account]: nav.account,
+    [ADMIN_ROUTES.sales]: sales.breadcrumbs.group,
+    [ADMIN_ROUTES.orders]: nav.orders,
+    [orderPath("*")]: sales.breadcrumbs.order,
+    [orderCancelPath("*")]: sales.breadcrumbs.cancel,
+    [orderSettlePath("*")]: sales.breadcrumbs.settle,
+    [ADMIN_ROUTES.customers]: nav.customers,
+    [customerPath("*")]: sales.breadcrumbs.customer,
   };
 }
 
@@ -92,7 +108,7 @@ export function AdminShell({ context, dictionary, collapsed, theme, children }: 
           <Breadcrumbs
             label={breadcrumbs.label}
             labels={crumbLabels(dictionary)}
-            detailLabel={breadcrumbs.staffMember}
+            detailLabel={breadcrumbs.detail}
           />
           <div className={styles.topActions}>
             <a

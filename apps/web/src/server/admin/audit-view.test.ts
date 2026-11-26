@@ -53,7 +53,7 @@ describe("صف سجل التدقيق", () => {
     expect(view.details).toEqual(["العنوان: 10.1.2.3", "السبب: لا حساب بهذا البريد"]);
   });
 
-  it("حدث بيع: نوع الكيان ومعرّف مختصر، وحالاته برموزها", () => {
+  it("حدث بيع: نوع الكيان ومعرّف مختصر، والحدث وحالاته بنصوصها", () => {
     const view = auditRowView(
       row({
         entityType: "order",
@@ -68,10 +68,60 @@ describe("صف سجل التدقيق", () => {
     );
     expect(view).toMatchObject({
       actor: "مزوّد الدفع",
-      action: "payment_verified",
+      action: "سُجّل الدفع",
       subject: "طلب 018f4e2a",
-      details: ["pending_payment ← paid"],
+      details: ["بانتظار الدفع ← مدفوع"],
     });
+  });
+
+  it("الرمز نفسه بنص كيانه: «expired» للطلب غيره للاشتراك ولمحاولة الدفع", () => {
+    const expired = (entityType: string) =>
+      auditRowView(row({ entityType, action: "x", toState: "expired" }), names, dictionary).details;
+    expect(expired("order")).toEqual(["انتهت مهلته"]);
+    expect(expired("membership")).toEqual(["منتهٍ"]);
+    expect(expired("payment_attempt")).toEqual(["انتهت جلستها"]);
+  });
+
+  it("حدث وحالة بلا ترجمة يُعرضان برمزيهما", () => {
+    const view = auditRowView(
+      row({ entityType: "refund", action: "refund_probe", fromState: "a", toState: "b" }),
+      names,
+      dictionary,
+    );
+    expect(view).toMatchObject({ action: "refund_probe", details: ["a ← b"] });
+  });
+
+  it("أحداث اللوحة على الطلب: الإلغاء بسببه، والدفع اليدوي بطريقته، وكشف الجوال بمصدره", () => {
+    const cancelled = auditRowView(
+      row({
+        entityType: "order",
+        action: "order_cancelled",
+        fromState: "pending_payment",
+        toState: "cancelled",
+        data: { reason: "duplicate_order" },
+      }),
+      names,
+      dictionary,
+    );
+    expect(cancelled.action).toBe("أُلغي الطلب");
+    expect(cancelled.details).toEqual(["بانتظار الدفع ← ملغى", "السبب: طلب مكرر"]);
+    const manual = auditRowView(
+      row({
+        entityType: "manual_payment",
+        action: "manual_payment_recorded",
+        data: { method: "bank_transfer", externalReference: "TRF-1" },
+      }),
+      names,
+      dictionary,
+    );
+    expect(manual.subject).toMatch(/^دفعة يدوية /);
+    expect(manual.details).toEqual(["الطريقة: حوالة بنكية", "المرجع الخارجي: TRF-1"]);
+    const reveal = auditRowView(
+      row({ entityType: "customer", action: "phone_revealed", data: { source: "order" } }),
+      names,
+      dictionary,
+    );
+    expect(reveal).toMatchObject({ action: "كُشف جوال عميل", details: ["من: تفصيل طلب"] });
   });
 
   it("موظف غير معروف، وطريقة التحقق مترجمة، وعدد الرموز الباقية", () => {

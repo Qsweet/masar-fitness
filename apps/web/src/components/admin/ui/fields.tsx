@@ -75,3 +75,58 @@ export function SelectField({ id, name, label, hint, defaultValue, options }: Se
     </FieldShell>
   );
 }
+
+type DateFieldProps = Omit<ComponentProps<"input">, "id" | "className" | "type"> & {
+  readonly id: string;
+  readonly label: string;
+  readonly hint?: string;
+};
+
+/** حقل تاريخ أصلي (‎YYYY-MM-DD‎ في القيمة)، بمنتقي المتصفح ولوحة المفاتيح. */
+export function DateField({ id, label, hint, ...input }: DateFieldProps) {
+  return (
+    <FieldShell id={id} label={label} {...(hint === undefined ? {} : { hint })}>
+      <input
+        id={id}
+        type="date"
+        className={cx(styles.input, styles.dateInput)}
+        aria-describedby={hint === undefined ? undefined : `${id}-hint`}
+        {...input}
+      />
+    </FieldShell>
+  );
+}
+
+type TextAreaFieldProps = Omit<ComponentProps<"textarea">, "id" | "className"> & {
+  readonly id: string;
+  readonly label: string;
+  readonly hint?: string;
+};
+
+export function TextAreaField({ id, label, hint, ...area }: TextAreaFieldProps) {
+  return (
+    <FieldShell id={id} label={label} {...(hint === undefined ? {} : { hint })}>
+      <textarea
+        id={id}
+        className={cx(styles.input, styles.textarea)}
+        aria-describedby={hint === undefined ? undefined : `${id}-hint`}
+        {...area}
+      />
+    </FieldShell>
+  );
+}
+
+type CheckboxFieldProps = Omit<ComponentProps<"input">, "id" | "className" | "type"> & {
+  readonly id: string;
+  readonly label: string;
+};
+
+/** مربع اختيار بتسميته في سطر واحد: هدف لمس كامل الارتفاع، والتسمية تُنقر. */
+export function CheckboxField({ id, label, ...input }: CheckboxFieldProps) {
+  return (
+    <label htmlFor={id} className={styles.checkbox}>
+      <input id={id} type="checkbox" {...input} />
+      <span>{label}</span>
+    </label>
+  );
+}

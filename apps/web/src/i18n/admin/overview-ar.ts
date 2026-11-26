@@ -1,3 +1,5 @@
+import { orderStatusesAr } from "./statuses-ar";
+
 /** نصوص «نظرة عامة» في اللوحة. جزء من قاموس اللوحة العربي (ar.ts)، مفصول لحجمه. */
 export const overviewAr = {
   title: "نظرة عامة",
@@ -81,13 +83,5 @@ export const overviewAr = {
     /** {enrolled} من {active} حسابًا نشطًا. */
     mfaCoverage: "{enrolled} من {active} حسابًا نشطًا",
   },
-  orderStatuses: {
-    pending_payment: "بانتظار الدفع",
-    paid: "مدفوع",
-    fulfilled: "مكتمل",
-    expired: "انتهت مهلته",
-    cancelled: "ملغى",
-    partially_refunded: "مسترد جزئيًا",
-    refunded: "مسترد",
-  },
+  orderStatuses: orderStatusesAr,
 } as const;

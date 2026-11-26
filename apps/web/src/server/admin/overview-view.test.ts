@@ -180,7 +180,7 @@ describe("جملة النشاط", () => {
     expect(activityItem(login, names, dictionary).sentence).toBe("دخول خالد إلى اللوحة");
   });
 
-  it("حدث بلا قالب (بيع) بالقالب العام، وبلا بيانات الصف", () => {
+  it("حدث بيع بالقالب العام وباسمه العربي، وبلا بيانات الصف", () => {
     const sale = row({
       entityType: "order",
       entityId: "018f4e2a-aaaa-7000-8000-000000000009",
@@ -189,7 +189,9 @@ describe("جملة النشاط", () => {
       data: { ip: "10.0.0.1" },
     });
     const item = activityItem(sale, names, dictionary);
-    expect(item.sentence).toBe("payment_verified: طلب 018f4e2a (مزوّد الدفع)");
+    expect(item.sentence).toBe("سُجّل الدفع: طلب 018f4e2a (مزوّد الدفع)");
+    const unknown = activityItem({ ...sale, action: "no_such_event" }, names, dictionary);
+    expect(unknown.sentence).toBe("no_such_event: طلب 018f4e2a (مزوّد الدفع)");
     expect(item.sentence).not.toContain("10.0.0.1");
     expect(item.at).toEqual(sale.createdAt);
   });

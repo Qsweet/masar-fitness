@@ -15,10 +15,29 @@ export const ADMIN_ROUTES = {
   staffNew: `${ADMIN_PATH}/staff/new`,
   audit: `${ADMIN_PATH}/audit`,
   account: `${ADMIN_PATH}/account`,
+  sales: `${ADMIN_PATH}/sales`,
+  orders: `${ADMIN_PATH}/sales/orders`,
+  customers: `${ADMIN_PATH}/sales/customers`,
 } as const;
 
 export function staffMemberPath(id: string): string {
   return `${ADMIN_ROUTES.staff}/${id}`;
+}
+
+export function orderPath(id: string): string {
+  return `${ADMIN_ROUTES.orders}/${id}`;
+}
+
+export function orderCancelPath(id: string): string {
+  return `${orderPath(id)}/cancel`;
+}
+
+export function orderSettlePath(id: string): string {
+  return `${orderPath(id)}/settle`;
+}
+
+export function customerPath(id: string): string {
+  return `${ADMIN_ROUTES.customers}/${id}`;
 }
 
 /** هل المسار داخل اللوحة؟ ‎/admin‎ نفسه وكل ما تحته، لا ‎/administrator‎. */
@@ -79,6 +98,12 @@ export const MAX_MFA_ATTEMPTS_PER_STAFF = 10;
 export const MAX_MFA_ATTEMPTS_PER_IP = 30;
 /** محاولات كتابة «كلمة المرور الحالية» في «حسابي» لحساب واحد في النافذة. */
 export const MAX_CURRENT_PASSWORD_CHECKS_PER_STAFF = 5;
+/** بحث بجوال كامل لموظف واحد في النافذة (ADMIN_A2_SALES §6.3): حد تقني يمنع تعداد الأرقام. */
+export const MAX_PHONE_LOOKUPS_PER_STAFF = 20;
+/** كشف جوال كامل لموظف واحد في النافذة (سؤال المالك 1: ثلاثون في عشر دقائق). */
+export const MAX_PHONE_REVEALS_PER_STAFF = 30;
+/** محاولات تسجيل دفع يدوي لموظف واحد في النافذة، ناجحة أو مرفوضة. */
+export const MAX_MANUAL_SETTLE_ATTEMPTS_PER_STAFF = 10;
 export const MAX_ADMIN_THROTTLE_KEYS = 5_000;
 
 /** لا يُحدَّث «آخر نشاط» للجلسة أكثر من مرة في هذه المدة: كتابة واحدة في الدقيقة تكفي لحد الخمول. */
@@ -94,6 +119,13 @@ export const MAX_NAME_INPUT_LENGTH = 120;
 export const FALLBACK_TIMEZONE = "UTC";
 /** عدد صفوف سجل التدقيق في الصفحة. */
 export const AUDIT_PAGE_SIZE = 25;
+/** عدد صفوف قائمة الطلبات في الصفحة، ومداها الزمني الافتراضي بالأيام (اليوم مشمول). */
+export const ORDERS_PAGE_SIZE = 25;
+export const ORDERS_DEFAULT_RANGE_DAYS = 30;
+/** طلبات العميل المعروضة في صفحته (الأحدث أولًا). */
+export const CUSTOMER_ORDERS_SHOWN = 50;
+/** عمر رمز تأكيد الدفع اليدوي المختوم بالدقائق. */
+export const SETTLE_TOKEN_MINUTES = 10;
 /** اسم مُصدر الرمز كما يظهر في تطبيق التحقق. */
 export const TOTP_ISSUER = "Masters Way";
 

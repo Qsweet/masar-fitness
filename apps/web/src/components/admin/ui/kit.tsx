@@ -96,6 +96,21 @@ export function Card({ title, description, action, flush, narrow, accent, childr
   );
 }
 
+/** رابط خافت في رأس بطاقة («كل السجل»، «صفحة العميل»). */
+export function CardLink({
+  href,
+  children,
+}: {
+  readonly href: string;
+  readonly children: ReactNode;
+}) {
+  return (
+    <Link href={href} prefetch={false} className={styles.cardLink}>
+      {children}
+    </Link>
+  );
+}
+
 export type Tone = "neutral" | "success" | "warning" | "danger" | "info" | "accent";
 
 const BADGE_TONES: Readonly<Record<Tone, string | undefined>> = {
@@ -218,6 +233,34 @@ export function Facts({ items }: FactsProps) {
         </div>
       ))}
     </dl>
+  );
+}
+
+export interface TimelineEntry {
+  readonly id: string;
+  readonly title: string;
+  /** الوقت ومن فعل، في سطر واحد خافت. */
+  readonly meta: ReactNode;
+  /** تفاصيل «التسمية: القيمة». */
+  readonly lines?: readonly string[];
+}
+
+/** خط زمني عمودي: الأقدم أولًا، ولكل حدث نقطة وعنوان ووقت وفاعل. */
+export function Timeline({ entries }: { readonly entries: readonly TimelineEntry[] }) {
+  return (
+    <ol className={styles.timeline}>
+      {entries.map((entry) => (
+        <li key={entry.id} className={styles.timelineItem}>
+          <p className={styles.timelineTitle}>{entry.title}</p>
+          <p className={styles.timelineMeta}>{entry.meta}</p>
+          {entry.lines?.map((line) => (
+            <bdi key={line} className={styles.timelineLine}>
+              {line}
+            </bdi>
+          ))}
+        </li>
+      ))}
+    </ol>
   );
 }
 

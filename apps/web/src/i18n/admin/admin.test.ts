@@ -1,5 +1,22 @@
-import { PERMISSIONS, ORDER_STATUSES, STAFF_ROLES, STAFF_STATUSES } from "@masar/domain";
-import { AUDIT_ACTOR_KINDS, AUDIT_ENTITY_TYPES, STAFF_AUDIT_ACTIONS } from "@masar/db";
+import {
+  ATTEMPT_STATUSES,
+  INCIDENT_KINDS,
+  MANUAL_PAYMENT_METHODS,
+  MEMBERSHIP_START_RULES,
+  MEMBERSHIP_STATUSES,
+  ORDER_CANCEL_REASONS,
+  ORDER_STATUSES,
+  PERMISSIONS,
+  REFUND_STATUSES,
+  STAFF_ROLES,
+  STAFF_STATUSES,
+} from "@masar/domain";
+import {
+  AUDIT_ACTOR_KINDS,
+  AUDIT_ENTITY_TYPES,
+  ORDER_LIST_TABS,
+  STAFF_AUDIT_ACTIONS,
+} from "@masar/db";
 import { describe, expect, it } from "vitest";
 import { formatDateTime, formatDay } from "./format";
 import { ADMIN_LOCALES, adminDirection, getAdminDictionary, lookup } from "./index";
@@ -20,6 +37,40 @@ describe("قاموس اللوحة", () => {
       [...STAFF_AUDIT_ACTIONS].sort(),
     );
     expect(PERMISSIONS.length).toBeGreaterThan(0);
+  });
+
+  it.each(ADMIN_LOCALES)("%s: كل حالة ورمز في المبيعات له نص", (locale) => {
+    const { sales, errors, notices, audit, overview } = getAdminDictionary(locale);
+    const keys = (map: object) => Object.keys(map).sort();
+    expect(keys(sales.statuses.order)).toEqual([...ORDER_STATUSES].sort());
+    expect(sales.statuses.order).toBe(overview.orderStatuses);
+    expect(keys(sales.statuses.membership)).toEqual([...MEMBERSHIP_STATUSES].sort());
+    expect(keys(sales.statuses.attempt)).toEqual([...ATTEMPT_STATUSES].sort());
+    expect(keys(sales.statuses.incident)).toEqual([...INCIDENT_KINDS].sort());
+    expect(keys(sales.statuses.refund)).toEqual([...REFUND_STATUSES].sort());
+    expect(keys(sales.statuses.startRule)).toEqual([...MEMBERSHIP_START_RULES].sort());
+    expect(keys(sales.statuses.manualMethod)).toEqual([...MANUAL_PAYMENT_METHODS].sort());
+    expect(keys(sales.orders.tabs)).toEqual([...ORDER_LIST_TABS].sort());
+    expect(keys(sales.orders.cancel.reasons)).toEqual([...ORDER_CANCEL_REASONS].sort());
+    for (const reason of [
+      "order.not_cancellable",
+      "order.cancel_blocked_by_live_attempt",
+      "order.not_payable",
+      "order.payment_window_passed",
+      "order.already_paid",
+      "order.settle_blocked_by_live_attempt",
+      "orders.settle_preview_refused",
+      "payment.amount_mismatch",
+      "manual_payment.reference_used",
+      "customer.not_found",
+    ]) {
+      expect(lookup(errors, reason, "")).not.toBe("");
+    }
+    for (const action of ["order_cancelled", "manual_payment_recorded", "phone_revealed"]) {
+      expect(lookup(audit.salesActions, action, "")).not.toBe("");
+    }
+    expect(notices.order_cancelled).not.toBe("");
+    expect(notices.manual_payment_recorded).not.toBe("");
   });
 
   it("العربية من اليمين، وهي الافتراضية", () => {

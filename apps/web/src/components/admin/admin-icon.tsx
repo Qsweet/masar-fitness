@@ -64,6 +64,20 @@ const PATHS = {
       <path d="M9 8V7a3 3 0 0 1 6 0v1" />
     </>
   ),
+  customers: (
+    <>
+      <circle cx="10" cy="8" r="3.5" />
+      <path d="M3.5 20c.6-3.6 3.2-5.5 6.5-5.5 1.3 0 2.5.3 3.5.9" />
+      <circle cx="17" cy="17" r="3" />
+      <path d="m19.2 19.2 2.3 2.3" />
+    </>
+  ),
+  search: (
+    <>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4.5 4.5" />
+    </>
+  ),
   activity: <path d="M3 12h4l3-7 4 14 3-7h4" />,
   system: (
     <>

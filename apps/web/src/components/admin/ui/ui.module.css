@@ -513,3 +513,95 @@
     border: 1px solid CanvasText;
   }
 }
+
+/* حقل التاريخ: قيمته لاتينية (‎YYYY-MM-DD‎ بعرض المتصفح)، فتُعزل من اتجاه الصفحة. */
+.dateInput {
+  direction: ltr;
+  text-align: end;
+}
+
+.textarea {
+  min-height: 5.5rem;
+  padding-block: var(--a-2);
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: var(--a-control);
+  font-size: var(--a-text-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.checkbox input {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--a-accent);
+}
+
+.checkbox input:focus-visible {
+  outline: 2px solid var(--a-focus);
+  outline-offset: 2px;
+}
+
+/* الخط الزمني: خط شعري في جهة البداية ونقطة لكل حدث. */
+.timeline {
+  display: grid;
+  gap: var(--a-4);
+  padding-inline-start: var(--a-4);
+  border-inline-start: 1px solid var(--a-border-strong);
+}
+
+.timelineItem {
+  position: relative;
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.timelineItem::before {
+  position: absolute;
+  inset-block-start: 0.45rem;
+  inset-inline-start: calc(-1 * var(--a-4) - 0.25rem - 0.5px);
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--a-radius-pill);
+  background: var(--a-border-strong);
+  box-shadow: 0 0 0 3px var(--a-surface);
+  content: "";
+}
+
+.timelineItem:last-child::before {
+  background: var(--a-accent-line);
+}
+
+.timelineTitle {
+  font-weight: 600;
+}
+
+.timelineMeta,
+.timelineLine {
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+}
+
+.timelineLine {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.cardLink {
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  font-weight: 600;
+  text-underline-offset: 0.3em;
+}
+
+.cardLink:hover {
+  color: var(--a-text);
+}

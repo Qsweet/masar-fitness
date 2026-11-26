@@ -1,6 +1,5 @@
 import { money, type OrderStatus } from "@masar/domain";
 import type { RecentOrder } from "@masar/db";
-import Link from "next/link";
 import { ADMIN_ROUTES } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
 import { formatDateTime } from "@/i18n/admin/format";
@@ -10,7 +9,7 @@ import type { ActivityItem } from "@/server/admin/overview-view";
 import { relativeTime } from "@/server/admin/overview-view";
 import type { SystemStatus } from "@/server/admin/system-status";
 import { Cell, DataTable } from "../ui/data-table";
-import { Badge, Card, EmptyState, Ltr, type Tone } from "../ui/kit";
+import { Badge, Card, CardLink, EmptyState, Ltr, type Tone } from "../ui/kit";
 import styles from "./overview.module.css";
 
 type OverviewText = AdminDictionary["overview"];
@@ -102,11 +101,7 @@ interface ActivityFeedProps extends Omit<WhenProps, "at"> {
 }
 
 export function ActivityFeed({ items, text, now, timezone }: ActivityFeedProps) {
-  const all = (
-    <Link href={ADMIN_ROUTES.audit} prefetch={false} className={styles.cardLink}>
-      {text.all}
-    </Link>
-  );
+  const all = <CardLink href={ADMIN_ROUTES.audit}>{text.all}</CardLink>;
   return (
     <Card title={text.title} action={all} flush>
       {items.length === 0 ? (

@@ -137,6 +137,66 @@
   }
 }
 
+/*
+ * الصف المضغوط على الهاتف: سطران بدل بطاقة بتسميات. الأول: العنوان (المرجع) ثم ما بجانبه ثم الشارة،
+ * والثاني: القيمة (المبلغ) ثم الوقت. الخلايا بلا موضع تختفي هنا وتبقى في التفصيل.
+ */
+@media (width < 40rem) {
+  .table.compact tr {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--a-1) var(--a-3);
+  }
+
+  .table.compact td,
+  .table.compact td:first-child,
+  .table.compact td:last-child {
+    display: none;
+  }
+
+  .table.compact td[data-slot] {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    text-align: start;
+  }
+
+  .table.compact td[data-slot]::before {
+    content: none;
+  }
+
+  .table.compact td[data-slot="title"] {
+    grid-area: 1 / 1;
+  }
+
+  .table.compact td[data-slot="aside"] {
+    grid-area: 1 / 2;
+    overflow: hidden;
+    color: var(--a-muted);
+    font-size: var(--a-text-caption);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .table.compact td[data-slot="badge"] {
+    grid-area: 1 / 3;
+    justify-self: end;
+  }
+
+  .table.compact td[data-slot="value"] {
+    grid-area: 2 / 1 / auto / span 2;
+    font-weight: 600;
+  }
+
+  .table.compact td[data-slot="meta"] {
+    grid-area: 2 / 3;
+    justify-self: end;
+    color: var(--a-muted);
+    font-size: var(--a-text-caption);
+  }
+}
+
 .mutedCell {
   color: var(--a-muted);
 }

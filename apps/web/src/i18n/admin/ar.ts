@@ -1,4 +1,12 @@
 import { overviewAr } from "./overview-ar";
+import {
+  salesAr,
+  salesAuditActionsAr,
+  salesAuditDetailsAr,
+  salesAuditValuesAr,
+  salesErrorsAr,
+  salesNoticesAr,
+} from "./sales-ar";
 
 /**
  * نصوص لوحة التحكم. العربي هو المرجع، وأي لغة تُضاف لاحقًا تتبع شكله (`AdminDictionary`).
@@ -11,13 +19,19 @@ export const adminAr = {
   nav: {
     label: "أقسام اللوحة",
     overview: "نظرة عامة",
+    ...salesAr.nav,
     staff: "الموظفون",
     audit: "سجل التدقيق",
     account: "حسابي",
     logout: "خروج",
     viewSite: "عرض الموقع",
     /** عناوين مجموعات الشريط الجانبي. تُضاف مجموعات المراحل القادمة مع صفحاتها. */
-    groups: { general: "عام", management: "الإدارة", personal: "الحساب" },
+    groups: {
+      general: "عام",
+      sales: salesAr.breadcrumbs.group,
+      management: "الإدارة",
+      personal: "الحساب",
+    },
   },
   shell: {
     collapse: "اطوِ الشريط الجانبي",
@@ -27,7 +41,13 @@ export const adminAr = {
     drawerNav: "أقسام اللوحة (القائمة)",
     newTab: "(يفتح في تبويب جديد)",
   },
-  breadcrumbs: { label: "مسار التنقل", root: "اللوحة", staffMember: "بيانات موظف" },
+  breadcrumbs: {
+    label: "مسار التنقل",
+    root: "اللوحة",
+    staffMember: "بيانات موظف",
+    /** مقطع بلا اسم معروف (معرّف تحت قسم لم يُسمَّ تفصيله). */
+    detail: "تفصيل",
+  },
   userMenu: {
     label: "قائمة الحساب",
     themes: { light: "المظهر الفاتح", dark: "المظهر الداكن" },
@@ -68,6 +88,7 @@ export const adminAr = {
       "لا تغيّر حسابك من هنا. كلمة مرورك وجلساتك في «حسابي»، والتحقق بخطوتين للمالك يُعاد ضبطه من الخادم.",
     "staff.not_found": "الموظف غير موجود.",
     "staff.invalid_request": "طلب غير صالح. حدّث الصفحة وحاول من جديد.",
+    ...salesErrorsAr,
   },
   notices: {
     password_changed: "غُيّرت كلمة المرور، وأُلغيت جلساتك الأخرى.",
@@ -78,6 +99,7 @@ export const adminAr = {
     staff_enabled: "فُعّل الحساب.",
     mfa_reset: "أُعيد ضبط التحقق بخطوتين. يسجّله الموظف من جديد عند دخوله التالي.",
     password_reset: "وُضعت كلمة مرور مؤقتة، وأُلغيت جلسات الموظف.",
+    ...salesNoticesAr,
   },
   login: {
     title: "دخول الموظفين",
@@ -127,6 +149,7 @@ export const adminAr = {
     confirmation: "أعد كتابة الكلمة الجديدة",
   },
   overview: overviewAr,
+  sales: salesAr,
   staff: {
     title: "الموظفون",
     lead: "حسابات من يدخلون هذه اللوحة وأدوارهم.",
@@ -209,6 +232,8 @@ export const adminAr = {
       refund: "استرداد",
       assessment_request: "طلب تقييم",
       payment_attempt: "محاولة دفع",
+      customer: "عميل",
+      manual_payment: "دفعة يدوية",
       staff_user: "موظف",
     },
     actors: { staff: "موظف", system: "النظام", customer: "عميل", provider: "مزوّد الدفع" },
@@ -232,20 +257,30 @@ export const adminAr = {
       staff_enabled: "فُعّل الحساب",
       session_revoked: "أُلغيت جلسة",
     },
+    /** أحداث البيع والدفع: تُعرض في السجل والخط الزمني بالنص نفسه. */
+    salesActions: salesAuditActionsAr,
     details: {
       ip: "العنوان",
       reason: "السبب",
       method: "الطريقة",
       remaining: "الرموز الباقية",
       session: "الجلسة",
+      ...salesAuditDetailsAr,
     },
     reasons: {
       bad_password: "كلمة مرور خاطئة",
       locked: "الحساب مقفل",
       disabled: "الحساب معطَّل",
       unknown_account: "لا حساب بهذا البريد",
+      ...salesAr.orders.cancel.reasons,
+      ...salesErrorsAr,
     },
-    methods: { totp: "رمز التطبيق", recovery: "رمز استرجاع" },
+    methods: {
+      totp: "رمز التطبيق",
+      recovery: "رمز استرجاع",
+      ...salesAr.statuses.manualMethod,
+    },
+    ...salesAuditValuesAr,
   },
   account: {
     title: "حسابي",

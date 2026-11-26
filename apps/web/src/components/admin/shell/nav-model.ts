@@ -20,7 +20,7 @@ export interface NavGroup {
   readonly items: readonly NavItem[];
 }
 
-type NavKey = "overview" | "staff" | "audit" | "account";
+type NavKey = "overview" | "orders" | "customers" | "staff" | "audit" | "account";
 type GroupKey = keyof AdminDictionary["nav"]["groups"];
 
 interface Section {
@@ -35,6 +35,19 @@ const GROUPS: readonly { readonly id: GroupKey; readonly sections: readonly Sect
     id: "general",
     sections: [
       { key: "overview", href: ADMIN_ROUTES.home, icon: "overview", permission: "overview.read" },
+    ],
+  },
+  {
+    // المبني من المبيعات فقط: الكتالوج والعروض وإعدادات البيع تُضاف مع صفحاتها
+    id: "sales",
+    sections: [
+      { key: "orders", href: ADMIN_ROUTES.orders, icon: "orders", permission: "orders.read" },
+      {
+        key: "customers",
+        href: ADMIN_ROUTES.customers,
+        icon: "customers",
+        permission: "customers.read",
+      },
     ],
   },
   {
@@ -75,9 +88,13 @@ export interface Crumb {
   readonly label: string;
 }
 
+const UUID_SEGMENT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const ANY_ID = "*";
+
 /**
- * مسار التنقل من الرابط: كل مقطع له اسم معروف يصير حلقة، والمقطع المجهول تحت قسم معروف (معرّف
- * موظف) يأخذ اسم التفصيل العام. الجذر «اللوحة» دائمًا أولًا.
+ * مسار التنقل من الرابط: كل مقطع له اسم معروف يصير حلقة. المعرّف في الرابط يُطابَق بـ‎`*`‎ في خريطة
+ * الأسماء («‎/admin/sales/orders/*‎» و«‎/admin/sales/orders/*‎/cancel»)، وما لا اسم له يأخذ الاسم
+ * العام. الجذر «اللوحة» دائمًا أولًا.
  */
 export function breadcrumbTrail(
   pathname: string,
@@ -87,9 +104,12 @@ export function breadcrumbTrail(
   const segments = pathname.split("/").filter((segment) => segment !== "");
   const trail: Crumb[] = [];
   let href = "";
+  let pattern = "";
   for (const segment of segments) {
     href = `${href}/${segment}`;
-    const known = Object.hasOwn(labels, href) ? labels[href] : undefined;
+    pattern = `${pattern}/${UUID_SEGMENT.test(segment) ? ANY_ID : segment}`;
+    const key = Object.hasOwn(labels, href) ? href : pattern;
+    const known = Object.hasOwn(labels, key) ? labels[key] : undefined;
     trail.push({ href, label: known ?? detailLabel });
   }
   return trail;

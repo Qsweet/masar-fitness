@@ -184,17 +184,6 @@
   text-align: end;
 }
 
-.cardLink {
-  color: var(--a-muted);
-  font-size: var(--a-text-caption);
-  font-weight: 600;
-  text-underline-offset: 0.3em;
-}
-
-.cardLink:hover {
-  color: var(--a-text);
-}
-
 @media (width >= 64rem) {
   .kpis {
     grid-template-columns: repeat(4, minmax(0, 1fr));

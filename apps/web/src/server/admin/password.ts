@@ -21,6 +21,7 @@ import { getDb } from "../db";
 import { passwordForbiddenWords } from "./club";
 import type { IssuedSession } from "./login";
 import type { StaffContext } from "./session";
+import { allowCurrentPasswordCheck } from "./throttle";
 
 export interface OwnPasswordChange {
   readonly context: StaffContext;
@@ -35,13 +36,31 @@ function rejection(reason: string, field: string): Result<never, DomainError> {
   return err(new DomainError("validation", reason, { field }));
 }
 
-async function checkCurrent(change: OwnPasswordChange): Promise<boolean> {
-  if (change.currentPassword === null) {
-    return true;
+/**
+ * يفحص الكلمة الحالية (حين تُطلب) وأن الجديدة ليست هي نفسها. محاولات الكلمة الحالية محدودة لكل حساب،
+ * فجلسة مسروقة لا تخمّنها بلا حد. الكلمة المؤقتة لا تُقبل كلمةً جديدة: تغييرها الإلزامي تغيير فعلي.
+ */
+async function checkAgainstStored(
+  change: OwnPasswordChange,
+  newPassword: string,
+): Promise<Result<null, DomainError>> {
+  const stored = await findStaffCredentialsById(getDb(), change.context.staff.id);
+  if (stored === null) {
+    return err(new DomainError("unauthenticated", "staff.session_ended"));
   }
-  const staff = await findStaffCredentialsById(getDb(), change.context.staff.id);
-  const current = normalizePassword(change.currentPassword);
-  return staff !== null && (await verifyPassword(current, staff.passwordHash));
+  if (change.currentPassword !== null) {
+    if (!allowCurrentPasswordCheck(stored.id)) {
+      return rejection("staff.too_many_attempts", "currentPassword");
+    }
+    const current = normalizePassword(change.currentPassword);
+    if (!(await verifyPassword(current, stored.passwordHash))) {
+      return rejection("staff.current_password_wrong", "currentPassword");
+    }
+  }
+  if (await verifyPassword(newPassword, stored.passwordHash)) {
+    return rejection("staff.password_same", "newPassword");
+  }
+  return ok(null);
 }
 
 /**
@@ -63,8 +82,9 @@ export async function changeOwnPassword(
   if (!checked.ok) {
     return checked;
   }
-  if (!(await checkCurrent(change))) {
-    return rejection("staff.current_password_wrong", "currentPassword");
+  const allowed = await checkAgainstStored(change, checked.value);
+  if (!allowed.ok) {
+    return allowed;
   }
   const passwordHash = await hashPassword(checked.value);
   const issued = issueSessionToken();

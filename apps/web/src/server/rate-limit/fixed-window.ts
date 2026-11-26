@@ -16,12 +16,28 @@ interface Window {
   readonly resetAtMs: number;
 }
 
-/** يحذف النوافذ المنتهية، ثم الأقدم إن بقيت الذاكرة ممتلئة (ترتيب الإدراج في Map). */
-function makeRoom(windows: Map<string, Window>, maxKeys: number, nowMs: number): void {
+/**
+ * ما يُفعل بمفتاح جديد والذاكرة ممتلئة بنوافذ حيّة:
+ * - `evict` (الافتراضي، حدود الشراء): تُحذف أقدم نافذة، فالخدمة لا تتوقف والذاكرة لا تكبر.
+ * - `refuse` (حدود دخول اللوحة): يُرفض المفتاح الجديد ولا تُحذف نافذة حيّة، فلا يمحو مهاجم عدّاد
+ *   ضحيته بإغراق المحدِّد بمفاتيح مختلقة.
+ */
+export type WhenFull = "evict" | "refuse";
+
+/** يحذف النوافذ المنتهية، ثم (مع `evict`) الأقدم إن بقيت الذاكرة ممتلئة (ترتيب الإدراج في Map). */
+function makeRoom(
+  windows: Map<string, Window>,
+  maxKeys: number,
+  nowMs: number,
+  whenFull: WhenFull,
+): void {
   for (const [key, window] of windows) {
     if (window.resetAtMs <= nowMs) {
       windows.delete(key);
     }
+  }
+  if (whenFull === "refuse") {
+    return;
   }
   for (const key of windows.keys()) {
     if (windows.size < maxKeys) {
@@ -36,7 +52,11 @@ function makeRoom(windows: Map<string, Window>, maxKeys: number, nowMs: number):
  * الأقدم، فلا يكبر مع مفاتيح مختلقة. يصلح لعملية خادم واحدة (deploy/compose.yml)؛ التوسع إلى أكثر
  * من عملية يحتاج مخزنًا مشتركًا.
  */
-export function createRateLimiter(rule: RateLimitRule, maxKeys: number): RateLimiter {
+export function createRateLimiter(
+  rule: RateLimitRule,
+  maxKeys: number,
+  whenFull: WhenFull = "evict",
+): RateLimiter {
   if (!Number.isInteger(rule.limit) || rule.limit < 1 || rule.windowMs <= 0 || maxKeys < 1) {
     throw new RangeError("rate_limit.invalid_rule");
   }
@@ -53,7 +73,10 @@ export function createRateLimiter(rule: RateLimitRule, maxKeys: number): RateLim
       }
       windows.delete(key);
       if (windows.size >= maxKeys) {
-        makeRoom(windows, maxKeys, nowMs);
+        makeRoom(windows, maxKeys, nowMs, whenFull);
+      }
+      if (windows.size >= maxKeys) {
+        return false;
       }
       windows.set(key, { count: 1, resetAtMs: nowMs + rule.windowMs });
       return true;

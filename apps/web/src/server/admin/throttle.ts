@@ -2,6 +2,7 @@ import "server-only";
 import {
   ADMIN_THROTTLE_WINDOW_MS,
   MAX_ADMIN_THROTTLE_KEYS,
+  MAX_CURRENT_PASSWORD_CHECKS_PER_STAFF,
   MAX_LOGIN_ATTEMPTS_PER_EMAIL,
   MAX_LOGIN_ATTEMPTS_PER_IP,
   MAX_MFA_ATTEMPTS_PER_IP,
@@ -14,10 +15,13 @@ interface AdminLimiters {
   readonly loginByEmail: RateLimiter;
   readonly mfaByIp: RateLimiter;
   readonly mfaByStaff: RateLimiter;
+  readonly passwordByStaff: RateLimiter;
 }
 
 function limiter(limit: number): RateLimiter {
-  return createRateLimiter({ limit, windowMs: ADMIN_THROTTLE_WINDOW_MS }, MAX_ADMIN_THROTTLE_KEYS);
+  // refuse: نافذة حيّة لا تُحذف لإفساح مكان، فإغراق المحدِّد بمفاتيح مختلقة لا يمحو عدّاد أحد
+  const rule = { limit, windowMs: ADMIN_THROTTLE_WINDOW_MS };
+  return createRateLimiter(rule, MAX_ADMIN_THROTTLE_KEYS, "refuse");
 }
 
 // على globalThis كي تشترك فيها كل حزم المسارات (كما في حدود الشراء)
@@ -31,6 +35,7 @@ function limiters(): AdminLimiters {
     loginByEmail: limiter(MAX_LOGIN_ATTEMPTS_PER_EMAIL),
     mfaByIp: limiter(MAX_MFA_ATTEMPTS_PER_IP),
     mfaByStaff: limiter(MAX_MFA_ATTEMPTS_PER_STAFF),
+    passwordByStaff: limiter(MAX_CURRENT_PASSWORD_CHECKS_PER_STAFF),
   };
   return globalForThrottle.masarAdminLimiters;
 }
@@ -41,15 +46,20 @@ function limiters(): AdminLimiters {
  */
 export function allowLoginAttempt(ip: string, email: string): boolean {
   const now = Date.now();
-  const byIp = limiters().loginByIp.consume(ip, now);
-  const byEmail = limiters().loginByEmail.consume(email, now);
-  return byIp && byEmail;
+  // العنوان أولًا: عنوان تجاوز حدّه لا يستهلك من نافذة البريد (ولا يملأ المحدِّد بمفاتيح بريد)
+  return limiters().loginByIp.consume(ip, now) && limiters().loginByEmail.consume(email, now);
 }
 
 /** محاولة رمز خطوة ثانية أو رمز استرجاع: حد مستقل عن حد الدخول، على العنوان وعلى الحساب. */
 export function allowMfaAttempt(ip: string, staffId: string): boolean {
   const now = Date.now();
-  const byIp = limiters().mfaByIp.consume(ip, now);
-  const byStaff = limiters().mfaByStaff.consume(staffId, now);
-  return byIp && byStaff;
+  return limiters().mfaByIp.consume(ip, now) && limiters().mfaByStaff.consume(staffId, now);
+}
+
+/**
+ * فحص كلمة المرور الحالية في «حسابي»: حد لكل حساب، فجلسة مسروقة لا تخمّن الكلمة بلا حد. في الذاكرة
+ * فقط ولا يدخل قفل الحساب: صاحب جلسة مسروقة لا يُعطى وسيلة لقفل صاحبها خارج اللوحة.
+ */
+export function allowCurrentPasswordCheck(staffId: string): boolean {
+  return limiters().passwordByStaff.consume(staffId, Date.now());
 }

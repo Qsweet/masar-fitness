@@ -119,6 +119,11 @@ test("المالك ينشئ موظفًا بكلمة مؤقتة، والموظف 
   await expect(staffPage).toHaveURL(/\/admin\/password$/);
   await staffPage.goto("/admin/account");
   await expect(staffPage).toHaveURL(/\/admin\/password$/);
+  // الكلمة المؤقتة نفسها لا تُقبل كلمةً جديدة
+  await staffPage.getByLabel(TEXT.passwordFields.next).fill(temporary);
+  await staffPage.getByLabel(TEXT.passwordFields.confirmation).fill(temporary);
+  await staffPage.getByRole("button", { name: TEXT.forcedPassword.submit }).click();
+  await expect(formAlert(staffPage)).toHaveText(TEXT.errors["staff.password_same"]);
   await staffPage.getByLabel(TEXT.passwordFields.next).fill("password1234");
   await staffPage.getByLabel(TEXT.passwordFields.confirmation).fill("password1234");
   await staffPage.getByRole("button", { name: TEXT.forcedPassword.submit }).click();
@@ -214,6 +219,12 @@ test("حسابي: تغيير كلمة المرور بالحالية، وإلغا
   await page.getByLabel(TEXT.passwordFields.confirmation).fill(NEW_PASSWORD);
   await page.getByRole("button", { name: TEXT.account.passwordSubmit }).click();
   await expect(formAlert(page)).toHaveText(TEXT.errors["staff.current_password_wrong"]);
+
+  await page.getByLabel(TEXT.passwordFields.current).fill(staff.password);
+  await page.getByLabel(TEXT.passwordFields.next).fill(staff.password);
+  await page.getByLabel(TEXT.passwordFields.confirmation).fill(staff.password);
+  await page.getByRole("button", { name: TEXT.account.passwordSubmit }).click();
+  await expect(formAlert(page)).toHaveText(TEXT.errors["staff.password_same"]);
 
   await page.getByLabel(TEXT.passwordFields.current).fill(staff.password);
   await page.getByLabel(TEXT.passwordFields.next).fill(NEW_PASSWORD);

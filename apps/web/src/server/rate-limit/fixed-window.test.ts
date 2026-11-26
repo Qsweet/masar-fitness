@@ -42,6 +42,22 @@ describe("محدِّد المحاولات بنافذة ثابتة", () => {
     expect(limiter.consume("live", WINDOW_MS)).toBe(false);
   });
 
+  it("refuse: الممتلئ بنوافذ حيّة يرفض المفتاح الجديد ولا يحذف نافذة حيّة", () => {
+    const limiter = createRateLimiter(RULE, 2, "refuse");
+    attempts(RULE.limit, () => limiter.consume("victim", 0));
+    expect(limiter.consume("other", 1)).toBe(true);
+    // مفاتيح مختلقة لا تجد مكانًا، وعدّاد الضحية باقٍ
+    expect(attempts(3, () => limiter.consume(`made-up-${String(Math.random())}`, 2))).toEqual([
+      false,
+      false,
+      false,
+    ]);
+    expect(limiter.consume("victim", 3)).toBe(false);
+    expect(limiter.consume("other", 3)).toBe(true);
+    // بعد انتهاء النوافذ يعود المكان
+    expect(limiter.consume("made-up", WINDOW_MS + 1)).toBe(true);
+  });
+
   it("قاعدة غير صالحة ترمي", () => {
     expect(() => createRateLimiter({ limit: 0, windowMs: WINDOW_MS }, MAX_KEYS)).toThrow(
       "rate_limit.invalid_rule",

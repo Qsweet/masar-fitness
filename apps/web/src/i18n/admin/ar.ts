@@ -43,6 +43,8 @@ export const adminAr = {
     "staff.password_contains_identity": "كلمة المرور تحوي بريدك أو اسم النادي. اختر غيرها.",
     "staff.password_mismatch": "الكلمتان الجديدتان غير متطابقتين.",
     "staff.current_password_wrong": "كلمة المرور الحالية غير صحيحة.",
+    "staff.password_same": "الكلمة الجديدة هي كلمتك الحالية نفسها. اختر كلمة مختلفة.",
+    "staff.too_many_attempts": "محاولات كثيرة. انتظر عشر دقائق ثم حاول.",
     "staff.session_ended": "انتهت الجلسة. ادخل من جديد.",
     "staff.email_invalid": "اكتب بريدًا إلكترونيًا صحيحًا.",
     "staff.email_taken": "هذا البريد مستعمل لحساب آخر.",

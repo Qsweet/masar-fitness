@@ -2,7 +2,7 @@
  * قراءات «نظرة عامة» في اللوحة: كلها من القاعدة وبتقويم منطقة النادي الزمنية، و`now` يُمرَّر فالاختبار
  * يثبّت الوقت. لا جوال كاملًا يخرج من هنا: آخر أربعة أرقام فقط.
  */
-import { effectiveOrderStatus, type OrderStatus } from "@masar/domain";
+import { effectiveOrderStatus, lastMobileDigits, type OrderStatus } from "@masar/domain";
 import type { Db } from "../client";
 import type { ClubSummary } from "./overview";
 
@@ -89,7 +89,7 @@ export async function listRecentOrders(
   return rows.map((row) => ({
     id: row.id,
     reference: row.reference,
-    phoneLast4: row.customerPhoneE164.slice(-PHONE_TAIL),
+    phoneLast4: lastMobileDigits(row.customerPhoneE164, PHONE_TAIL),
     itemNameAr: row.items[0]?.nameAr ?? "",
     itemNameEn: row.items[0]?.nameEn ?? "",
     totalMinor: row.totalMinor,

@@ -5,6 +5,7 @@
 import {
   DomainError,
   effectiveOrderStatus,
+  maskSaudiMobile,
   money,
   type LocalizedText,
   type MembershipStartRule,
@@ -13,7 +14,7 @@ import {
   type RequestLocale,
 } from "@masar/domain";
 import type { Db } from "../client";
-import type { DiscountSource, ProductKind } from "../generated/prisma/client";
+import type { DiscountSource, Prisma, ProductKind } from "../generated/prisma/client";
 
 export interface OrderItemView {
   readonly position: number;
@@ -43,7 +44,7 @@ export interface OrderView {
   readonly id: string;
   readonly reference: string;
   readonly customerName: string;
-  /** آخر رقمين فقط ظاهران. */
+  /** مقنَّع: آخر رقمين في الصفحة العامة، وآخر أربعة في اللوحة. الجوال الكامل لا يخرج من هنا. */
   readonly maskedPhone: string;
   readonly locale: RequestLocale;
   readonly status: OrderStatus;
@@ -61,17 +62,8 @@ export interface OrderView {
   readonly discounts: readonly OrderDiscountView[];
 }
 
-const VISIBLE_PHONE_DIGITS = 2;
-/** «+966» تبقى ظاهرة: لا تكشف شيئًا لأن كل الجوالات المقبولة سعودية. */
-const COUNTRY_PREFIX_LENGTH = 4;
-const MASK = "•";
-
-export function maskPhone(e164: string): string {
-  const hidden = e164.length - COUNTRY_PREFIX_LENGTH - VISIBLE_PHONE_DIGITS;
-  return (
-    e164.slice(0, COUNTRY_PREFIX_LENGTH) + MASK.repeat(hidden) + e164.slice(-VISIBLE_PHONE_DIGITS)
-  );
-}
+/** الصفحة العامة تُظهر آخر رقمين فقط. */
+const PUBLIC_VISIBLE_PHONE_DIGITS = 2;
 
 function isLocalizedText(value: unknown): value is LocalizedText {
   return (
@@ -100,18 +92,15 @@ function toLocale(value: string): RequestLocale {
   return value;
 }
 
-function findOrder(db: Db, publicToken: string) {
-  return db.order.findUnique({
-    where: { publicToken },
-    include: {
-      items: { orderBy: { position: "asc" } },
-      discounts: { orderBy: { sequence: "asc" } },
-      club: { select: { timezone: true } },
-    },
-  });
-}
+/** ما يُقرأ مع الطلب ليُعرض من لقطته: سطوره وخصوماته ومنطقة ناديه. */
+export const ORDER_VIEW_INCLUDE = {
+  items: { orderBy: { position: "asc" } },
+  discounts: { orderBy: { sequence: "asc" } },
+  club: { select: { timezone: true } },
+} as const satisfies Prisma.OrderInclude;
 
-type OrderRow = NonNullable<Awaited<ReturnType<typeof findOrder>>>;
+export type OrderViewRow = Prisma.OrderGetPayload<{ include: typeof ORDER_VIEW_INCLUDE }>;
+type OrderRow = OrderViewRow;
 
 function toItem(item: OrderRow["items"][number]): OrderItemView {
   return {
@@ -141,21 +130,16 @@ function toDiscount(row: OrderRow["discounts"][number], currency: string): Order
   };
 }
 
-/** الطلب برمزه العام، أو undefined إن لم يوجد. */
-export async function findOrderByPublicToken(
-  db: Db,
-  publicToken: string,
-  now: Date,
-): Promise<OrderView | undefined> {
-  const row = await findOrder(db, publicToken);
-  if (row === null) {
-    return undefined;
-  }
+/**
+ * الطلب كما يُعرض، من لقطته وحدها. المشترك بين صفحة العميل العامة وتفصيل الطلب في اللوحة؛ الفرق
+ * الوحيد عدد أرقام الجوال الظاهرة.
+ */
+export function toOrderView(row: OrderViewRow, now: Date, visiblePhoneDigits: number): OrderView {
   return {
     id: row.id,
     reference: row.reference,
     customerName: row.customerName,
-    maskedPhone: maskPhone(row.customerPhoneE164),
+    maskedPhone: maskSaudiMobile(row.customerPhoneE164, visiblePhoneDigits),
     locale: toLocale(row.locale),
     status: row.status,
     effectiveStatus: effectiveOrderStatus(row.status, row.expiresAt, now),
@@ -170,4 +154,14 @@ export async function findOrderByPublicToken(
     items: row.items.map(toItem),
     discounts: row.discounts.map((discount) => toDiscount(discount, row.currency)),
   };
+}
+
+/** الطلب برمزه العام، أو undefined إن لم يوجد. */
+export async function findOrderByPublicToken(
+  db: Db,
+  publicToken: string,
+  now: Date,
+): Promise<OrderView | undefined> {
+  const row = await db.order.findUnique({ where: { publicToken }, include: ORDER_VIEW_INCLUDE });
+  return row === null ? undefined : toOrderView(row, now, PUBLIC_VISIBLE_PHONE_DIGITS);
 }

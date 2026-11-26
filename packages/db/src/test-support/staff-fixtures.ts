@@ -25,6 +25,7 @@ export interface TestStaffOptions {
   /** يفعّل الخطوة الثانية بسر جديد ويرجعه. */
   readonly withTotp?: boolean;
   readonly email?: string;
+  readonly displayName?: string;
 }
 
 export interface TestStaff {
@@ -36,6 +37,14 @@ export interface TestStaff {
   readonly totpSecret: Uint8Array | null;
   readonly totpSecretBase32: string | null;
 }
+
+const STAFF_DEFAULTS = {
+  role: "owner",
+  status: "active",
+  mustChangePassword: false,
+  withTotp: false,
+  displayName: "موظف اختبار",
+} as const;
 
 export function uniqueStaffEmail(): string {
   const suffix = randomUUID().replaceAll("-", "").slice(0, EMAIL_SUFFIX_LENGTH);
@@ -49,20 +58,24 @@ export async function createTestStaff(
   options: TestStaffOptions = {},
 ): Promise<TestStaff> {
   const id = randomUUID();
-  const email = options.email ?? uniqueStaffEmail();
-  const secret = options.withTotp === true ? newTotpSecret() : null;
+  const { email, withTotp, ...profile } = {
+    ...STAFF_DEFAULTS,
+    email: uniqueStaffEmail(),
+    ...options,
+  };
+  const secret = withTotp ? newTotpSecret() : null;
+  const totp =
+    secret === null
+      ? {}
+      : { totpSecretEnc: sealSecret(TEST_ADMIN_KEY, secret, id), totpEnabledAt: new Date() };
   await db.staffUser.create({
     data: {
       id,
       clubId,
       email,
-      displayName: "موظف اختبار",
-      role: options.role ?? "owner",
-      status: options.status ?? "active",
+      ...profile,
+      ...totp,
       passwordHash: await hashPassword(TEST_STAFF_PASSWORD, TEST_SCRYPT_PARAMS),
-      mustChangePassword: options.mustChangePassword ?? false,
-      totpSecretEnc: secret === null ? null : sealSecret(TEST_ADMIN_KEY, secret, id),
-      totpEnabledAt: secret === null ? null : new Date(),
     },
   });
   return {

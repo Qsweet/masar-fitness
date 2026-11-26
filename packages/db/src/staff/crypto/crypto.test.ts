@@ -6,6 +6,7 @@ import {
   hmacSha1,
   issueRecoveryCodes,
   issueSessionToken,
+  issueTemporaryPassword,
   needsRehash,
   newTotpSecret,
   normalizeRecoveryCode,
@@ -139,6 +140,12 @@ describe("الرموز", () => {
       expect(normalized).not.toBeNull();
       expect(recoveryCodeHash(normalized ?? "")).toBe(hashes[index]);
     }
+  });
+
+  it("كلمة المرور المؤقتة 20 محرفًا عشوائيًا في أربع مجموعات", () => {
+    const password = issueTemporaryPassword();
+    expect(password).toMatch(/^[A-HJ-NP-Z2-9]{5}(-[A-HJ-NP-Z2-9]{5}){3}$/);
+    expect(issueTemporaryPassword()).not.toBe(password);
   });
 
   it("رمز الاسترجاع يُقبل بحروف صغيرة ومسافات، ويُرفض ما ليس بشكله", () => {

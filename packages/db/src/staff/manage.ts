@@ -193,11 +193,13 @@ export interface PasswordChange {
   readonly action: "password_changed" | "password_reset";
   /** كلمة مؤقتة يغيّرها صاحبها عند دخوله التالي. */
   readonly mustChangePassword: boolean;
+  /** جلسة صاحب التغيير نفسه (بعد تدوير رمزها) تبقى؛ كل ما عداها يُلغى. */
+  readonly keepSessionId?: string;
   readonly actor: StaffActor;
   readonly at: Date;
 }
 
-/** يكتب كلمة المرور الجديدة ويلغي كل جلسات صاحبها ويرفع القفل. المستدعي يصدر جلسة جديدة إن لزم. */
+/** يكتب كلمة المرور الجديدة ويلغي جلسات صاحبها (عدا المستثناة) ويرفع القفل. */
 export async function setStaffPassword(tx: Tx, change: PasswordChange): Promise<void> {
   const result = await tx.staffUser.updateMany({
     where: { id: change.staffId, clubId: change.clubId },
@@ -211,7 +213,7 @@ export async function setStaffPassword(tx: Tx, change: PasswordChange): Promise<
   if (result.count === 0) {
     abort(new DomainError("not_found", "staff.not_found"));
   }
-  await revokeAllStaffSessions(tx, change.staffId, change.at);
+  await revokeAllStaffSessions(tx, change.staffId, change.at, change.keepSessionId);
   await writeStaffAudit(tx, {
     clubId: change.clubId,
     staffId: change.staffId,

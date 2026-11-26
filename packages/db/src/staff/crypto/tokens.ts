@@ -68,6 +68,24 @@ export function issueRecoveryCodes(): IssuedRecoveryCodes {
   return { codes, hashes };
 }
 
+const TEMPORARY_PASSWORD_LENGTH = 20;
+const TEMPORARY_GROUP_LENGTH = 5;
+
+/**
+ * كلمة مرور مؤقتة لموظف جديد أو بعد إعادة الضبط: 20 محرفًا عشوائيًا (100 بت) في مجموعات، تُعرض
+ * للمالك مرة واحدة ويغيّرها الموظف عند أول دخول.
+ */
+export function issueTemporaryPassword(): string {
+  const chars = Array.from({ length: TEMPORARY_PASSWORD_LENGTH }, () =>
+    RECOVERY_ALPHABET.charAt(randomInt(RECOVERY_ALPHABET.length)),
+  );
+  const groups: string[] = [];
+  for (let start = 0; start < chars.length; start += TEMPORARY_GROUP_LENGTH) {
+    groups.push(chars.slice(start, start + TEMPORARY_GROUP_LENGTH).join(""));
+  }
+  return groups.join("-");
+}
+
 export function newTotpSecret(): Uint8Array {
   return new Uint8Array(randomBytes(TOTP_SECRET_BYTES));
 }

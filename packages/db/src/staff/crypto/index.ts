@@ -11,6 +11,7 @@ export {
   hmacSha1,
   issueRecoveryCodes,
   issueSessionToken,
+  issueTemporaryPassword,
   newTotpSecret,
   normalizeRecoveryCode,
   RECOVERY_CODE_COUNT,

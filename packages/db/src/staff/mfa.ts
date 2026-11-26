@@ -2,7 +2,7 @@
  * الخطوة الثانية في القاعدة (ADMIN_DESIGN §4.4): السر المعلّق والتفعيل، ومنع إعادة الرمز ذرّيًا،
  * ورموز الاسترجاع مرة واحدة، وإعادة الضبط.
  */
-import { DomainError } from "@masar/domain";
+import { CLEARED_LOGIN_GUARD, DomainError } from "@masar/domain";
 import type { Db } from "../client";
 import { abort, type Tx } from "../commerce/transaction";
 import type { StaffAccount } from "./accounts";
@@ -124,20 +124,22 @@ export async function resetTotp(tx: Tx, reset: TotpReset): Promise<void> {
   });
 }
 
-export interface MfaOutcome {
+export interface MfaVerified {
   readonly staff: StaffRef;
-  readonly action: "mfa_verified" | "mfa_failed";
   readonly method: "totp" | "recovery";
+  readonly ip: string;
   readonly at: Date;
 }
 
-export async function recordMfaOutcome(tx: Tx, outcome: MfaOutcome): Promise<void> {
+/** الخطوة الثانية نجحت: يُصفَّر عدّاد المحاولات الفاشلة ويُسجَّل النجاح بطريقته. */
+export async function recordMfaVerified(tx: Tx, verified: MfaVerified): Promise<void> {
+  await tx.staffUser.update({ where: { id: verified.staff.id }, data: CLEARED_LOGIN_GUARD });
   await writeStaffAudit(tx, {
-    clubId: outcome.staff.clubId,
-    staffId: outcome.staff.id,
-    action: outcome.action,
-    actor: staffActor(outcome.staff.id),
-    data: { method: outcome.method },
-    at: outcome.at,
+    clubId: verified.staff.clubId,
+    staffId: verified.staff.id,
+    action: "mfa_verified",
+    actor: staffActor(verified.staff.id),
+    data: { ip: verified.ip, method: verified.method },
+    at: verified.at,
   });
 }

@@ -17,6 +17,13 @@ export interface LoginAttempt {
   readonly at: Date;
 }
 
+/** ما فشل: كلمة المرور عند الدخول، أو رمز الخطوة الثانية، أو رمز الاسترجاع. العدّاد والقفل واحد. */
+export type FailedCredential = "password" | "totp" | "recovery";
+
+export interface FailedAttempt extends LoginAttempt {
+  readonly credential: FailedCredential;
+}
+
 export type LoginFailureReason = "locked" | "disabled";
 
 async function countFailure(tx: Tx, attempt: LoginAttempt): Promise<FailedLoginOutcome> {
@@ -34,18 +41,22 @@ async function countFailure(tx: Tx, attempt: LoginAttempt): Promise<FailedLoginO
 }
 
 /**
- * محاولة بكلمة خاطئة على حساب قائم غير مقفل: تُعدّ تحت قفل الصف (محاولتان متزامنتان تُعدّان
- * اثنتين)، وتُسجَّل، والخامسة تقفل وتُسجَّل قفلًا.
+ * محاولة خاطئة على حساب قائم غير مقفل (كلمة مرور أو رمز خطوة ثانية أو رمز استرجاع): تُعدّ تحت قفل
+ * الصف (محاولتان متزامنتان تُعدّان اثنتين)، وتُسجَّل، والخامسة المتتالية تقفل وتُسجَّل قفلًا. العدّاد
+ * واحد في القاعدة، فتخمين رموز الخطوة الثانية يقفل الحساب كما يقفله تخمين كلمة المرور.
  */
-export function recordFailedPassword(db: Db, attempt: LoginAttempt): Promise<FailedLoginOutcome> {
+export function recordFailedAttempt(db: Db, attempt: FailedAttempt): Promise<FailedLoginOutcome> {
   return ensureTransaction(db, async (tx) => {
     const outcome = await countFailure(tx, attempt);
     const actor = staffActor(attempt.staffId);
     const base = { clubId: attempt.clubId, staffId: attempt.staffId, actor, at: attempt.at };
+    const password = attempt.credential === "password";
     await writeStaffAudit(tx, {
       ...base,
-      action: "login_failed",
-      data: { ip: attempt.ip, reason: "bad_password" },
+      action: password ? "login_failed" : "mfa_failed",
+      data: password
+        ? { ip: attempt.ip, reason: "bad_password" }
+        : { ip: attempt.ip, method: attempt.credential },
     });
     if (outcome.lockedNow) {
       await writeStaffAudit(tx, { ...base, action: "account_locked", data: { ip: attempt.ip } });

@@ -4,7 +4,7 @@ import {
   createDb,
   findStaffCredentialsByEmail,
   inTransaction,
-  recordFailedPassword,
+  recordFailedAttempt,
   recordPasswordAccepted,
   recordRejectedLogin,
   UNKNOWN_STAFF_ID,
@@ -45,12 +45,18 @@ describe("عدّ المحاولات والقفل", () => {
   it("الخامسة تقفل 15 دقيقة، وكل فشل والقفل في التدقيق بعنوانه", async () => {
     const clubId = await createTestClub(db);
     const staff = await createTestStaff(db, clubId);
-    const attempt = { staffId: staff.id, clubId, ip: "10.9.8.7", at: NOW };
+    const attempt = {
+      staffId: staff.id,
+      clubId,
+      ip: "10.9.8.7",
+      at: NOW,
+      credential: "password",
+    } as const;
     for (let count = 1; count < MAX_FAILED_LOGINS; count += 1) {
-      const outcome = await recordFailedPassword(db, attempt);
+      const outcome = await recordFailedAttempt(db, attempt);
       expect(outcome).toMatchObject({ failedLogins: count, lockedNow: false });
     }
-    const locked = await recordFailedPassword(db, attempt);
+    const locked = await recordFailedAttempt(db, attempt);
     expect(locked.lockedNow).toBe(true);
     const row = await findStaffCredentialsByEmail(db, staff.email);
     expect(row?.lockedUntil).toEqual(new Date(NOW.getTime() + LOCKOUT_MINUTES * MINUTE_MS));
@@ -63,8 +69,14 @@ describe("عدّ المحاولات والقفل", () => {
   it("محاولات متزامنة تُعدّ كلها", async () => {
     const clubId = await createTestClub(db);
     const staff = await createTestStaff(db, clubId);
-    const attempt = { staffId: staff.id, clubId, ip: "10.9.8.7", at: NOW };
-    await Promise.all([1, 2, 3].map(() => recordFailedPassword(db, attempt)));
+    const attempt = {
+      staffId: staff.id,
+      clubId,
+      ip: "10.9.8.7",
+      at: NOW,
+      credential: "password",
+    } as const;
+    await Promise.all([1, 2, 3].map(() => recordFailedAttempt(db, attempt)));
     expect((await findStaffCredentialsByEmail(db, staff.email))?.failedLogins).toBe(3);
   });
 
@@ -72,7 +84,7 @@ describe("عدّ المحاولات والقفل", () => {
     const clubId = await createTestClub(db);
     const staff = await createTestStaff(db, clubId);
     const attempt = { staffId: staff.id, clubId, ip: "10.9.8.7", at: NOW };
-    await recordFailedPassword(db, attempt);
+    await recordFailedAttempt(db, { ...attempt, credential: "password" });
     await inTransaction(db, async (tx) => {
       await recordPasswordAccepted(tx, { ...attempt, rehashedPassword: HASH });
       return ok(null);
@@ -83,6 +95,27 @@ describe("عدّ المحاولات والقفل", () => {
       action: "login_succeeded",
       data: { ip: "10.9.8.7" },
     });
+  });
+
+  it("رموز الخطوة الثانية الخاطئة تُعدّ في العدّاد نفسه وتقفل، وتُسجَّل بطريقتها", async () => {
+    const clubId = await createTestClub(db);
+    const staff = await createTestStaff(db, clubId, { withTotp: true });
+    const base = { staffId: staff.id, clubId, ip: "10.9.8.7", at: NOW };
+    await recordFailedAttempt(db, { ...base, credential: "password" });
+    for (let count = 2; count < MAX_FAILED_LOGINS; count += 1) {
+      await recordFailedAttempt(db, { ...base, credential: "totp" });
+    }
+    const locked = await recordFailedAttempt(db, { ...base, credential: "recovery" });
+    expect(locked.lockedNow).toBe(true);
+    const log = await audits(staff.id);
+    const failed = log.filter((entry) => entry.action === "mfa_failed");
+    expect(failed.map((entry) => entry.data)).toEqual([
+      { ip: "10.9.8.7", method: "totp" },
+      { ip: "10.9.8.7", method: "totp" },
+      { ip: "10.9.8.7", method: "totp" },
+      { ip: "10.9.8.7", method: "recovery" },
+    ]);
+    expect(log.filter((entry) => entry.action === "account_locked")).toHaveLength(1);
   });
 
   it("محاولة على بريد بلا حساب تُسجَّل بلا البريد وبفاعل النظام", async () => {

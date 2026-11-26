@@ -9,7 +9,7 @@ import {
   inTransaction,
   issueRecoveryCodes,
   normalizeRecoveryCode,
-  recordMfaOutcome,
+  recordMfaVerified,
   recoveryCodeHash,
   resetTotp,
   savePendingTotpSecret,
@@ -181,21 +181,16 @@ describe("إعادة الضبط", () => {
 });
 
 describe("تدقيق الخطوة الثانية بلا أسرار", () => {
-  it("النجاح والفشل يُسجَّلان بالطريقة فقط", async () => {
+  it("النجاح يصفّر العدّاد ويُسجَّل بطريقته وعنوانه", async () => {
     const staff = await createTestStaff(db, clubId, { withTotp: true });
+    await db.staffUser.update({ where: { id: staff.id }, data: { failedLogins: 3 } });
     await run((tx) =>
-      recordMfaOutcome(tx, { staff, action: "mfa_failed", method: "totp", at: NOW }),
+      recordMfaVerified(tx, { staff, method: "recovery", ip: "10.4.4.4", at: NOW }),
     );
-    await run((tx) =>
-      recordMfaOutcome(tx, { staff, action: "mfa_verified", method: "recovery", at: NOW }),
-    );
-    const log = await db.auditLog.findMany({
-      where: { entityId: staff.id },
-      orderBy: { id: "asc" },
-    });
+    expect((await findStaffCredentialsById(db, staff.id))?.failedLogins).toBe(0);
+    const log = await db.auditLog.findMany({ where: { entityId: staff.id } });
     expect(log.map((entry) => [entry.action, entry.data])).toEqual([
-      ["mfa_failed", { method: "totp" }],
-      ["mfa_verified", { method: "recovery" }],
+      ["mfa_verified", { ip: "10.4.4.4", method: "recovery" }],
     ]);
   });
 

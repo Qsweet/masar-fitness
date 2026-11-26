@@ -16,8 +16,14 @@ export {
 } from "./audit";
 export type { StaffActor, StaffAuditAction, StaffAuditEntry } from "./audit";
 export * from "./crypto";
-export { recordFailedPassword, recordPasswordAccepted, recordRejectedLogin } from "./login-guard";
-export type { LoginAttempt, RejectedLogin, SuccessfulLogin } from "./login-guard";
+export { recordFailedAttempt, recordPasswordAccepted, recordRejectedLogin } from "./login-guard";
+export type {
+  FailedAttempt,
+  FailedCredential,
+  LoginAttempt,
+  RejectedLogin,
+  SuccessfulLogin,
+} from "./login-guard";
 export {
   changeStaffStanding,
   createFirstOwner,
@@ -29,12 +35,12 @@ export type { FirstOwner, NewStaff, PasswordChange, StandingChange } from "./man
 export {
   acceptTotpStep,
   completeTotpEnrolment,
+  recordMfaVerified,
   consumeRecoveryCode,
-  recordMfaOutcome,
   resetTotp,
   savePendingTotpSecret,
 } from "./mfa";
-export type { MfaOutcome, RecoveryCodeUse, TotpEnrolment, TotpReset } from "./mfa";
+export type { MfaVerified, RecoveryCodeUse, TotpEnrolment, TotpReset } from "./mfa";
 export { countOrdersToday, findClubSummary, listClubs } from "./overview";
 export type { ClubSummary, OrderCounts } from "./overview";
 export { AUDIT_ACTOR_KINDS, AUDIT_ENTITY_TYPES, listAuditLogs } from "./read-audit";

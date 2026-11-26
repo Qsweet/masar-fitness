@@ -45,7 +45,7 @@ describe("الخط الزمني للطلب", () => {
   });
 
   it("من التفاصيل ما يهم الموظف فقط، مترجمًا؛ والمعرّفات والمبالغ الخام لا تُعرض", () => {
-    const [cancelled, manual, verified] = timelineEvents(
+    const [cancelled, manual, verified, unknown, fake] = timelineEvents(
       [
         row({
           action: "order_cancelled",
@@ -69,6 +69,8 @@ describe("الخط الزمني للطلب", () => {
           action: "payment_verified",
           data: { provider: "manual", providerPaymentId: "018f", amountMinor: 1, currency: "SAR" },
         }),
+        row({ action: "payment_verified", data: { provider: "test_pay" } }),
+        row({ action: "payment_attempt_created", data: { provider: "fake" } }),
       ],
       names,
       dictionary,
@@ -80,6 +82,9 @@ describe("الخط الزمني للطلب", () => {
       "تاريخ الاستلام: 15 يونيو 2026",
     ]);
     expect(verified?.lines).toEqual(["المزوّد: دفع يدوي"]);
+    // مزوّد بلا اسم في القاموس يأخذ الاسم العام، لا رمزه الخام
+    expect(unknown?.lines).toEqual(["المزوّد: بوابة دفع إلكتروني"]);
+    expect(fake?.lines).toEqual(["المزوّد: بوابة الاختبار"]);
   });
 
   it("القيم الفارغة لا تصير أسطرًا", () => {

@@ -60,7 +60,11 @@ export function OrdersTable({ rows, sales, now, timezone, caption }: OrdersTable
             <OrderStatusBadge status={row.status} statuses={sales.statuses} />
           </Cell>
           <Cell label={columns.payment} muted nowrap>
-            <PaymentMethod provider={row.paidProvider} statuses={sales.statuses} />
+            <PaymentMethod
+              provider={row.paidProvider}
+              manualMethod={row.manualMethod}
+              statuses={sales.statuses}
+            />
           </Cell>
         </tr>
       ))}

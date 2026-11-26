@@ -50,8 +50,10 @@ export const salesErrorsAr = {
   "payment.currency_mismatch": "عملة الدفعة لا تطابق عملة الطلب.",
   "payment.already_used": "هذه الدفعة مسجّلة على طلب آخر.",
   "manual_payment.method_invalid": "اختر طريقة الدفع من القائمة.",
-  "manual_payment.reference_invalid": "المرجع الخارجي من 3 إلى 64 محرفًا.",
-  "manual_payment.reference_used": "هذا المرجع مسجّل على طلب آخر بالطريقة نفسها. تحقق من الرقم.",
+  "manual_payment.reference_invalid":
+    "المرجع الخارجي من 3 إلى 64 محرفًا، وفيه ثلاثة أحرف أو أرقام على الأقل.",
+  "manual_payment.reference_used":
+    "هذا المرجع مسجَّل من قبل على طلب آخر. المرجع الواحد لا يسوّي طلبين: تحقق من رقم الحوالة أو السند.",
   "manual_payment.received_on_invalid": "تاريخ الاستلام يجب أن يكون بين يوم إنشاء الطلب واليوم.",
   "manual_payment.note_too_long": "الملاحظة أطول من 500 محرف.",
   "amount.invalid_format": "اكتب المبلغ بالأرقام، مثل 1499 أو 1,499.50.",
@@ -112,8 +114,9 @@ export const salesAuditDetailsAr = {
   endsOn: "ينتهي",
 } as const;
 
-/** قيم تُترجم في أسطر تدقيق البيع: مصدر كشف الجوال، واسم «المزوّد» للدفع اليدوي (غيره برمزه). */
+/** قيم تُترجم في أسطر تدقيق البيع: مصدر كشف الجوال، واسم «المزوّد» (المجهول باسمه العام لا برمزه). */
 export const salesAuditValuesAr = {
   sources: { order: "تفصيل طلب", customer: "صفحة العميل" },
-  providers: { manual: salesStatusesAr.manualProvider },
+  providers: salesStatusesAr.payment.providers,
+  unknownProvider: salesStatusesAr.payment.unknownProvider,
 } as const;

@@ -61,7 +61,23 @@ export const salesStatusesAr = {
   startRule: { on_payment: "يبدأ يوم الدفع", on_first_visit: "يبدأ من أول زيارة" },
   discountSource: { automatic: "عرض تلقائي", coupon: "كوبون" },
   manualMethod: { bank_transfer: "حوالة بنكية", paid_at_club: "مدفوع في النادي" },
-  /** طريقة الدفع في القوائم: اليدوي باسمه، وغيره باسم المزوّد كما هو. */
-  manualProvider: "دفع يدوي",
-  unpaid: "لم يُدفع",
+  /**
+   * أسماء طرق الدفع كما تُعرض: لا معرّف مزوّد خامًا في الواجهة أبدًا. المزوّد أو الوسيلة بلا اسم هنا
+   * يأخذ الاسم العام.
+   */
+  payment: {
+    unpaid: "لم يُدفع",
+    providers: { manual: "دفع يدوي", moyasar: "ميسّر (Moyasar)", fake: "بوابة الاختبار" },
+    unknownProvider: "بوابة دفع إلكتروني",
+    /** {method}: «حوالة بنكية» أو «مدفوع في النادي». */
+    manualWith: "يدوي: {method}",
+    methods: {
+      creditcard: "بطاقة بنكية",
+      mada: "مدى",
+      applepay: "Apple Pay",
+      stcpay: "STC Pay",
+      fake_card: "بطاقة اختبار",
+    },
+    unknownMethod: "وسيلة أخرى",
+  },
 } as const;

@@ -87,7 +87,7 @@ function valueText(key: string, value: unknown, text: AdminDictionary["audit"]):
     return lookup(text.sources, raw, raw);
   }
   if (key === "provider") {
-    return lookup(text.providers, raw, raw);
+    return lookup(text.providers, raw, text.unknownProvider);
   }
   return key === "method" ? lookup(text.methods, raw, raw) : raw;
 }

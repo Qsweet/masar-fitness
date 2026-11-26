@@ -3,7 +3,8 @@ import type { AdminDictionary } from "@/i18n/admin";
 import { formatDateTime } from "@/i18n/admin/format";
 import { moneyParts } from "@/i18n/format";
 import { relativeTime } from "@/server/admin/overview-view";
-import { Badge, Ltr, type Tone } from "../ui/kit";
+import { paymentLabel } from "@/server/admin/sales/order-view";
+import { Badge, type Tone } from "../ui/kit";
 
 /** أجزاء صغيرة مشتركة بين قوائم المبيعات وتفصيلها. الحالات والنصوص من القاموس وحده. */
 export const ORDER_STATUS_TONES: Readonly<Record<OrderStatus, Tone>> = {
@@ -54,16 +55,16 @@ export function When({ at, now, timezone }: WhenProps) {
   );
 }
 
-/** طريقة الدفع في القوائم: اليدوي باسمه، وغيره باسم المزوّد كما هو، وغير المدفوع شرطة. */
+/** طريقة الدفع باسمها من القاموس: يدوي بطريقته، أو اسم المزوّد، أو شرطة لما لم يُدفع. */
 export function PaymentMethod({
   provider,
+  manualMethod,
   statuses,
 }: {
   readonly provider: string | null;
+  readonly manualMethod: string | null;
   readonly statuses: Statuses;
 }) {
-  if (provider === null) {
-    return <span aria-label={statuses.unpaid}>—</span>;
-  }
-  return provider === "manual" ? statuses.manualProvider : <Ltr>{provider}</Ltr>;
+  const label = paymentLabel(provider, manualMethod, statuses);
+  return provider === null ? <span aria-label={label}>—</span> : label;
 }

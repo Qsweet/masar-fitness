@@ -28,6 +28,7 @@ import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import { requireStaff } from "@/server/admin/guard";
 import { isUuid } from "@/server/admin/form";
+import { orderNoticeCode } from "@/server/admin/sales/order-view";
 import { timelineEvents } from "@/server/admin/sales/timeline";
 import { isCheckoutPreview } from "@/server/checkout/flag";
 import { getDb } from "@/server/db";
@@ -115,7 +116,7 @@ export default async function OrderPage(props: PageProps<"/admin/sales/orders/[i
       >
         <OrderActions detail={detail} role={staff.role} text={text} />
       </PageHeader>
-      <Notice text={noticeText(query.done, dictionary)} />
+      <Notice text={noticeText(orderNoticeCode(query.done, detail), dictionary)} />
       {waiting ? <Alert tone="info">{text.liveAttempt}</Alert> : null}
       <CardGrid>
         {/* حاوية: البطاقة بارتفاعها لا بارتفاع العمود المجاور */}

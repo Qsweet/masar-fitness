@@ -4,6 +4,7 @@ import { lookup, type AdminDictionary } from "@/i18n/admin";
 import { formatDateTime, formatPlainDay } from "@/i18n/admin/format";
 import { fill } from "@/i18n/fill";
 import { formatMonths } from "@/i18n/format";
+import { attemptMethodLabel, providerLabel } from "@/server/admin/sales/order-view";
 import { Cell, DataTable } from "../ui/data-table";
 import { Badge, Card, Facts, Ltr, type Tone } from "../ui/kit";
 import { Amount, PaymentMethod } from "./order-parts";
@@ -52,7 +53,12 @@ export function OrderPayment(props: SectionProps) {
   const facts: (readonly [string, ReactNode])[] = [
     [
       text.paidWith,
-      <PaymentMethod key="method" provider={payment.provider} statuses={sales.statuses} />,
+      <PaymentMethod
+        key="method"
+        provider={payment.provider}
+        manualMethod={detail.manualPayment?.method ?? null}
+        statuses={sales.statuses}
+      />,
     ],
     [text.paidAt, formatDateTime(payment.paidAt, order.timeZone)],
     [text.paidAmount, <Amount key="amount" value={payment.amount} />],
@@ -152,10 +158,10 @@ export function OrderAttempts({
               {formatDateTime(attempt.createdAt, detail.order.timeZone)}
             </Cell>
             <Cell label={columns.provider}>
-              <Ltr>{attempt.provider}</Ltr>
+              {providerLabel(attempt.provider, sales.statuses.payment)}
             </Cell>
             <Cell label={columns.method} muted={attempt.method === null}>
-              {attempt.method === null ? "—" : <Ltr>{attempt.method}</Ltr>}
+              {attemptMethodLabel(attempt.method, sales.statuses.payment) ?? "—"}
             </Cell>
             <Cell label={columns.status}>
               <Badge tone={ATTEMPT_TONES[attempt.status]}>

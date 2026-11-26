@@ -134,8 +134,18 @@ test("القائمة: التبويبات بالحالة الفعلية، وال�
 
   await page.goto(`${ORDERS}?from=2020-01-01&to=2020-01-31`);
   await expect(page.getByText(SALES.orders.empty.rangeTitle)).toBeVisible();
-  await page.goto(`${ORDERS}?from=2026-02-30`);
-  await expect(page.getByText(SALES.orders.empty.invalidRangeTitle)).toBeVisible();
+  for (const from of ["2026-02-30", "0001-01-01", "9999-12-31"]) {
+    const response = await page.goto(`${ORDERS}?from=${from}`);
+    expect(response?.status(), from).toBe(200);
+    await expect(page.getByText(SALES.orders.empty.invalidRangeTitle)).toBeVisible();
+  }
+  // طريقة الدفع باسمها من القاموس: لا معرّف مزوّد خامًا في القائمة ولا التفصيل
+  await page.goto(`${ORDERS}?tab=paid`);
+  await expect(page.locator("body")).not.toContainText("test_pay");
+  await page.goto(orderUrl(paid));
+  await expect(page.getByText(SALES.statuses.payment.unknownProvider).first()).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("test_pay");
+  await page.goto(ORDERS);
 
   const reference = page.getByLabel(SALES.orders.filters.reference);
   await reference.fill("MSR-9999999");

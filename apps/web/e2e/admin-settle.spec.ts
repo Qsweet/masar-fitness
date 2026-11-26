@@ -110,7 +110,7 @@ test("المدير يسجّل دفعًا يدويًا بخطوتين: مبلغ �
 
   await expect(page).toHaveURL(new RegExp(`${orderUrl(order)}\\?done=manual_payment_recorded$`));
   await expect(page.getByText(TEXT.notices.manual_payment_recorded)).toBeVisible();
-  await expect(page.getByText(SALES.statuses.manualProvider).first()).toBeVisible();
+  await expect(page.getByText("يدوي: حوالة بنكية").first()).toBeVisible();
   await expect(page.getByText("TRF-88412").first()).toBeVisible();
   await expect(page.getByText("وصلت الحوالة صباحًا")).toBeVisible();
   const timeline = page.getByTestId("order-timeline");
@@ -133,18 +133,37 @@ test("المرجع الخارجي لا يسوّي طلبين، والطلب ال
   await page.getByRole("button", { name: text.confirm }).click();
   await expect(page).toHaveURL(/done=manual_payment_recorded$/);
 
-  await page.goto(`${orderUrl(second)}/settle`);
-  await fillStepOne(page, "1499", "RCPT-2026-17");
-  await page.getByLabel(text.confirmCheck).check();
-  await page.getByRole("button", { name: text.confirm }).click();
-  await expect(formAlert(page)).toHaveText(TEXT.errors["manual_payment.reference_used"]);
+  // الكتابات الأخرى للمرجع نفسه، وبطريقة أخرى، كلها المرجع نفسه: تُرفض من الخطوة الأولى باسم طلبه
+  for (const variant of ["RCPT-2026-17", "rcpt 2026 17", "RCPT‑٢٠٢٦‑١٧"]) {
+    await page.goto(`${orderUrl(second)}/settle`);
+    await page.getByLabel(text.method).selectOption("paid_at_club");
+    await page.getByLabel(text.reference).fill(variant);
+    await page.getByLabel(text.amount).fill("1499");
+    await page.getByRole("button", { name: text.review, exact: true }).click();
+    await expect(formAlert(page)).toContainText(first.reference);
+    await expect(formAlert(page)).toContainText("مسجَّل من قبل على الطلب");
+    await expect(page.getByText(text.stepOne)).toBeVisible();
+  }
   expect((await db.order.findUniqueOrThrow({ where: { id: second.orderId } })).status).toBe(
     "pending_payment",
   );
+  expect(await db.manualPayment.count({ where: { orderId: second.orderId } })).toBe(0);
   // صفحة الدفع لطلب مدفوع لا تعرض نموذجًا
   await page.goto(`${orderUrl(first)}/settle`);
   await expect(page.getByText(text.unavailable)).toBeVisible();
   await expect(page.getByRole("button", { name: text.review, exact: true })).toHaveCount(0);
+});
+
+test("تنبيه النجاح من الرابط لا يظهر إلا إذا صدّقه حال الطلب", async ({ page }) => {
+  const order = await seedPendingOrder(db, plan);
+  await signIn(page, await newStaff(db, club, { withTotp: true }));
+  for (const done of ["manual_payment_recorded", "order_cancelled", "staff_created"]) {
+    await page.goto(`${orderUrl(order)}?done=${done}`);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(order.reference);
+    await expect(page.getByText(TEXT.notices.manual_payment_recorded)).toHaveCount(0);
+    await expect(page.getByText(TEXT.notices.order_cancelled)).toHaveCount(0);
+    await expect(page.locator('[role="status"]')).toHaveCount(0);
+  }
 });
 
 test("طلب بلغ مهلته لا يُدفع: لا زر، والصفحة تقول ذلك", async ({ page }) => {

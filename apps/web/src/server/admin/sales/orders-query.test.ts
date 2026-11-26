@@ -45,8 +45,19 @@ describe("parseOrdersQuery", () => {
     [{ from: "2026-02-30" }],
     [{ from: "2026-06-10", to: "2026-06-01" }],
     [{ from: "2026-06-16" }],
+    [{ from: "0001-01-01" }],
+    [{ from: "1999-12-31" }],
+    [{ to: "9999-12-31" }],
+    [{ from: "0001-01-01", to: "2101-01-01" }],
   ])("مدى غير صحيح %o لا يُستعلم", (query) => {
     expect(parseOrdersQuery(query, TODAY).invalidRange).toBe(true);
+  });
+
+  it("حدّا السنة المقبولان يمرّان", () => {
+    expect(parseOrdersQuery({ from: "2000-01-01" }, TODAY).invalidRange).toBe(false);
+    expect(parseOrdersQuery({ from: "2026-01-01", to: "2100-12-31" }, TODAY).invalidRange).toBe(
+      false,
+    );
   });
 
   it("قيم مجهولة أو بغير شكلها تعود إلى الافتراضي ولا ترمي", () => {

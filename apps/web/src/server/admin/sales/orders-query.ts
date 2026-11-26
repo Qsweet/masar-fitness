@@ -16,6 +16,9 @@ import { ADMIN_ROUTES, ORDERS_DEFAULT_RANGE_DAYS } from "@/config/admin";
  */
 const MAX_PAGE = 10_000;
 const DATE_INPUT_LENGTH = 10;
+/** لا طلب قبل المنصة ولا بعد قرن. */
+const MIN_YEAR = 2000;
+const MAX_YEAR = 2100;
 const REFERENCE_INPUT_LENGTH = 24;
 
 const text = (max: number) =>
@@ -59,7 +62,9 @@ function parseDay(value: string | undefined): PlainDate | null | undefined {
     return undefined;
   }
   const parsed = parsePlainDate(value);
-  return parsed.ok ? parsed.value : null;
+  // سنة خارج المدى المعقول («0001-01-01») تاريخ صحيح الشكل لا معنى له هنا: مدى غير صحيح
+  const inRange = parsed.ok && parsed.value.year >= MIN_YEAR && parsed.value.year <= MAX_YEAR;
+  return inRange ? parsed.value : null;
 }
 
 function parseReference(value: string | undefined): OrdersFilter["reference"] {

@@ -12,6 +12,32 @@ export {
   orderExpiry,
 } from "./order-state";
 export type { OrderEvent, OrderStatus } from "./order-state";
+export {
+  ORDER_CANCEL_REASONS,
+  decideOrderCancellation,
+  isOrderCancelReason,
+} from "./order-cancellation";
+export type {
+  CancellableOrder,
+  CancellationDecision,
+  OrderCancelReason,
+} from "./order-cancellation";
+export { parseOrderReference } from "./order-reference";
+export {
+  MANUAL_PAYMENT_METHODS,
+  MANUAL_PAYMENT_PROVIDER,
+  decideManualSettlement,
+  isManualPaymentMethod,
+  validateManualPayment,
+} from "./manual-settlement";
+export type {
+  ManualPaymentCalendar,
+  ManualPaymentDetails,
+  ManualPaymentDraft,
+  ManualPaymentMethod,
+  ManualSettlementRequest,
+  ManuallySettleableOrder,
+} from "./manual-settlement";
 export { decideSettlement } from "./settlement";
 export type {
   PaymentReference,

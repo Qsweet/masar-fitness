@@ -14,6 +14,7 @@ import {
 } from "@masar/domain";
 import { isCheckoutPreview } from "../../checkout/flag";
 import { getDb } from "../../db";
+import { logger } from "../../logger";
 import { adminSecretKey } from "../flag";
 import type { StaffContext } from "../session";
 import { allowManualSettle } from "../throttle";
@@ -127,15 +128,11 @@ export interface ConfirmSettlementInput {
   readonly confirmed: boolean;
 }
 
-/** الخطوة 2: تقبل الرمز المختوم وحده، فما يُنفَّذ هو ما رُوجع. */
-export async function confirmManualSettlement(
+async function confirmChecked(
   context: StaffContext,
   input: ConfirmSettlementInput,
   now: Date,
 ): Promise<Result<PaidOrder, DomainError>> {
-  if (isCheckoutPreview()) {
-    return refuse(PREVIEW_REFUSED, "forbidden");
-  }
   if (!allowManualSettle(context.staff.id)) {
     return refuse("orders.settle_too_many_attempts", "forbidden");
   }
@@ -156,4 +153,27 @@ export async function confirmManualSettlement(
     staffId: context.staff.id,
     now,
   });
+}
+
+/**
+ * الخطوة 2: تقبل الرمز المختوم وحده، فما يُنفَّذ هو ما رُوجع. المحاولة المرفوضة لا تكتب في القاعدة
+ * شيئًا (القرار يسبق أي كتابة)، فتُكتب في السجل المنظَّم: من، وأي طلب، ولماذا. بلا مبلغ ولا مرجع.
+ */
+export async function confirmManualSettlement(
+  context: StaffContext,
+  input: ConfirmSettlementInput,
+  now: Date,
+): Promise<Result<PaidOrder, DomainError>> {
+  if (isCheckoutPreview()) {
+    return refuse(PREVIEW_REFUSED, "forbidden");
+  }
+  const settled = await confirmChecked(context, input, now);
+  if (!settled.ok) {
+    logger.warn("admin.manual_settle_refused", {
+      staffId: context.staff.id,
+      orderId: input.orderId,
+      reason: settled.error.reason,
+    });
+  }
+  return settled;
 }

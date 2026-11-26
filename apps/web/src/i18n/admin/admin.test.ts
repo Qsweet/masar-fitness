@@ -52,17 +52,37 @@ describe("قاموس اللوحة", () => {
     expect(keys(sales.statuses.manualMethod)).toEqual([...MANUAL_PAYMENT_METHODS].sort());
     expect(keys(sales.orders.tabs)).toEqual([...ORDER_LIST_TABS].sort());
     expect(keys(sales.orders.cancel.reasons)).toEqual([...ORDER_CANCEL_REASONS].sort());
+    // كل سبب ترجعه خدمات المبيعات وقواعدها (مجموع من الكود): نقص ترجمة يظهر هنا لا أمام الموظف
     for (const reason of [
-      "order.not_cancellable",
+      "amount.invalid_format",
+      "amount.negative",
+      "amount.too_large",
+      "amount.too_many_decimals",
+      "customer.not_found",
+      "customers.mobile_invalid",
+      "customers.too_many_lookups",
+      "customers.too_many_reveals",
+      "manual_payment.method_invalid",
+      "manual_payment.note_too_long",
+      "manual_payment.received_on_invalid",
+      "manual_payment.reference_invalid",
+      "manual_payment.reference_used",
+      "order.already_paid",
       "order.cancel_blocked_by_live_attempt",
+      "order.cancel_reason_invalid",
+      "order.not_cancellable",
+      "order.not_found",
       "order.not_payable",
       "order.payment_window_passed",
-      "order.already_paid",
       "order.settle_blocked_by_live_attempt",
+      "orders.settle_confirmation_required",
       "orders.settle_preview_refused",
+      "orders.settle_token_invalid",
+      "orders.settle_too_many_attempts",
+      "payment.already_used",
       "payment.amount_mismatch",
-      "manual_payment.reference_used",
-      "customer.not_found",
+      "payment.currency_mismatch",
+      "sales.invalid_request",
     ]) {
       expect(lookup(errors, reason, "")).not.toBe("");
     }

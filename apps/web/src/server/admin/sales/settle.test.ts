@@ -1,6 +1,6 @@
 import type * as MasarDb from "@masar/db";
 import { TEST_ADMIN_KEY } from "@masar/db/test-support";
-import { money, ok } from "@masar/domain";
+import { DomainError, err, money, ok } from "@masar/domain";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { StaffContext } from "../session";
 import type { SettleValues } from "./form-state";
@@ -40,6 +40,8 @@ const actual = await vi.importActual<typeof MasarDb>("@masar/db");
 vi.mock("@masar/db", () => ({ ...actual, getOrderDetail, recordManualPayment }));
 vi.mock("../../db", () => ({ getDb: () => ({}) }));
 vi.mock("../flag", () => ({ adminSecretKey: () => TEST_ADMIN_KEY }));
+const warn = vi.fn();
+vi.mock("../../logger", () => ({ logger: { warn } }));
 const flags = { preview: false, allowed: true };
 vi.mock("../../checkout/flag", () => ({ isCheckoutPreview: () => flags.preview }));
 const allowManualSettle = vi.fn(() => flags.allowed);
@@ -205,5 +207,27 @@ describe("الخطوة 2: تنفّذ ما في الرمز وحده", () => {
     expect(reasonOf(await confirm(token))).toBe("orders.settle_too_many_attempts");
     expect(allowManualSettle).toHaveBeenCalledWith(STAFF.id);
     expect(recordManualPayment).not.toHaveBeenCalled();
+  });
+
+  it("المحاولة المرفوضة تُكتب في السجل المنظَّم: من وأي طلب ولماذا، بلا مبلغ ولا مرجع", async () => {
+    const token = await tokenFor();
+    await confirm(token);
+    expect(warn).not.toHaveBeenCalled();
+    recordManualPayment.mockResolvedValueOnce(
+      err(new DomainError("conflict", "order.already_paid")) as never,
+    );
+    expect(reasonOf(await confirm(token))).toBe("order.already_paid");
+    await confirm("forged");
+    expect(warn.mock.calls).toEqual([
+      [
+        "admin.manual_settle_refused",
+        { staffId: STAFF.id, orderId: ORDER_ID, reason: "order.already_paid" },
+      ],
+      [
+        "admin.manual_settle_refused",
+        { staffId: STAFF.id, orderId: ORDER_ID, reason: "orders.settle_token_invalid" },
+      ],
+    ]);
+    expect(JSON.stringify(warn.mock.calls)).not.toMatch(/TRF|149900|1,499/);
   });
 });

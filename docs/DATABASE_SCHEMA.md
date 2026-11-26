@@ -235,18 +235,19 @@ Refund:     requested → approved → processing → completed
 
 ## 12. إدارة المبيعات من اللوحة (المرحلة A2، الحزم WP1–WP4)
 
-ثلاثة ترحيلات صغيرة، كلٌّ مع حزمته (`ADMIN_A2_SALES.md` §3). لا تغيير في T1–T10 ولا S1–S4.
+أربعة ترحيلات صغيرة، كلٌّ مع حزمته (`ADMIN_A2_SALES.md` §3). لا تغيير في T1–T10 ولا S1–S4.
 
-| الترحيل                             | الحزمة | المحتوى                                                                                                                                       |
-| ----------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `20261126120000_sales_admin_base`   | WP1    | فهرس `orders(club_id, created_at)` لقائمة الطلبات. `audit_logs.entity_type` يقبل `product`، `promotion`، `customer`، `club`، `manual_payment` |
-| `20261126130000_order_cancel_guard` | WP3    | T11                                                                                                                                           |
-| `20261126140000_manual_payments`    | WP4    | جدول `manual_payments` وT12 وT13                                                                                                              |
+| الترحيل                                       | الحزمة       | المحتوى                                                                                                                                       |
+| --------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20261126120000_sales_admin_base`             | WP1          | فهرس `orders(club_id, created_at)` لقائمة الطلبات. `audit_logs.entity_type` يقبل `product`، `promotion`، `customer`، `club`، `manual_payment` |
+| `20261126130000_order_cancel_guard`           | WP3          | T11                                                                                                                                           |
+| `20261126140000_manual_payments`              | WP4          | جدول `manual_payments` وT12 وT13                                                                                                              |
+| `20261126150000_manual_payment_reference_key` | WP4 (مراجعة) | عمود `reference_key` وفهرسه الفريد لكل نادٍ، بدل الفرادة على النص ولكل طريقة (القرار 67)                                                      |
 
-**`manual_payments`** (إلحاق فقط): `id` (يولَّد عند رسم نموذج التأكيد، وهو `orders.paid_provider_payment_id`)، `club_id`، `order_id`، `method`، `external_reference`، `received_on` (DATE بتقويم النادي)، `amount_minor`، `currency`، `note` (نص حر لا يدخل التدقيق)، `recorded_by` (FK إلى `staff_users`)، `created_at`.
+**`manual_payments`** (إلحاق فقط): `id` (يولَّد عند رسم نموذج التأكيد، وهو `orders.paid_provider_payment_id`)، `club_id`، `order_id`، `method`، `external_reference` (كما كتبه الموظف، للعرض)، `reference_key` (مفتاح الفرادة الموحَّد من `manualReferenceKey`: حروف وأرقام فقط)، `received_on` (DATE بتقويم النادي)، `amount_minor`، `currency`، `note` (نص حر لا يدخل التدقيق)، `recorded_by` (FK إلى `staff_users`)، `created_at`.
 
-- **UNIQUE:** `manual_payments(order_id)` (دفعة يدوية واحدة للطلب)، و`(club_id, method, external_reference)` (المرجع لا يسوّي طلبين).
-- **CHECK:** الطريقة `bank_transfer` أو `paid_at_club`؛ المرجع مشذَّب وطوله 3 إلى 64؛ المبلغ موجب؛ شكل العملة؛ الملاحظة مشذَّبة وطولها 1 إلى 500 أو NULL.
+- **UNIQUE:** `manual_payments(order_id)` (دفعة يدوية واحدة للطلب)، و`(club_id, reference_key)` (المرجع لا يسوّي طلبين في النادي، بأي طريقة وبأي كتابة).
+- **CHECK:** الطريقة `bank_transfer` أو `paid_at_club`؛ المرجع مشذَّب وطوله 3 إلى 64؛ المبلغ موجب؛ شكل العملة؛ الملاحظة مشذَّبة وطولها 1 إلى 500 أو NULL؛ `reference_key` حروف كبيرة وأرقام بلا فراغ ولا ترقيم، وطوله 3 على الأقل.
 - **فحص التطبيق (المجال):** `received_on` ليس بعد اليوم ولا قبل يوم إنشاء الطلب بتقويم النادي (`validateManualPayment`)؛ والطلب الذي بلغ مهلته لا يُدفع ولو لم يُكتب منتهيًا (`decideManualSettlement`). القاعدة لا تقرأ الساعة: `now` يُمرَّر من الكود.
 
 | الرمز | الدالة                                                                | الرسائل الثابتة                                                                                                    | ما يفرضه                                                                                                                                                  |

@@ -14,19 +14,15 @@ import { formatAmount } from "@/i18n/admin/format";
 import { formatMonths } from "@/i18n/format";
 import type { Locale } from "@/i18n/locales";
 import type { FieldFormState } from "../field-form";
+import { percentInput } from "./promotion-form";
 
 /**
  * نماذج عرض الكتالوج في اللوحة. الحساب كله في `@masar/domain` (الضريبة المتضمَّنة، الأكثر قيمة)، وهنا
  * تركيب النصوص فقط. بلا اعتماد على الخادم، فيُختبر بلا Next ولا قاعدة.
  */
-const PERCENT_SCALE = 100;
-
 /** نسبة بنقاط الأساس كما تُكتب: «15%» أو «12.5%». */
 export function formatRate(bps: number): string {
-  const whole = Math.trunc(bps / PERCENT_SCALE);
-  const fraction = bps % PERCENT_SCALE;
-  const digits = String(fraction).padStart(2, "0").replace(/0+$/, "");
-  return `${String(whole)}${digits === "" ? "" : `.${digits}`}%`;
+  return `${percentInput(bps)}%`;
 }
 
 /** ضريبة القيمة المضافة المتضمَّنة في سعر شامل لها، بنسبة النادي. */

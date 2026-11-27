@@ -47,6 +47,8 @@ export const contentNamespacesAr = {
   blog: "المدونة",
   tools: "الأدوات",
   onlinePayment: "الدفع الإلكتروني",
+  consent: "شريط الخصوصية",
+  privacy: "سياسة الخصوصية",
 } as const satisfies Record<keyof Dictionary, string>;
 
 /** لماذا يبقى النص قراءةً. */

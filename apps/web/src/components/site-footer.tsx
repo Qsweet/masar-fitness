@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { hoursRows } from "@/components/home/hours-view";
 import { Icon } from "@/components/ui/icon";
+import { PrivacySettingsButton } from "@/components/tracking/privacy-settings-button";
 import { Logo } from "@/components/ui/logo";
 import { CLUB_CONTACT, whatsappUrl } from "@/config/club";
 import { CLUB_FACTS, SOCIAL_LINKS } from "@/config/club-facts";
@@ -14,6 +15,8 @@ import styles from "./site-footer.module.css";
 
 interface SiteFooterProps {
   readonly locale: Locale;
+  /** منصة قياس مفعّلة: رابط «إعدادات الخصوصية» يعيد فتح شريط الموافقة. */
+  readonly trackingActive?: boolean;
   /** للمدونة مقال ظاهر بهذه اللغة */
   readonly showBlog: boolean;
   /** الشراء الإلكتروني مفتوح: صف طرق الدفع بدل السطر الصادق عن واتساب */
@@ -165,7 +168,21 @@ function PaymentMarks({ dictionary }: { readonly dictionary: Dictionary }) {
  * الشراء الإلكتروني مغلقًا.
  * لا رقم سجل تجاري: الرقم الوحيد في موقع النادي من شارة سلة، ونوعه ينتظر تأكيد المالك (CLUB_FACTS §13).
  */
-function BottomBar({ checkoutEnabled, dictionary }: SiteFooterProps) {
+/** سياسة الخصوصية دائمًا، و«إعدادات الخصوصية» حين يوجد ما يُوافَق عليه. */
+function PrivacyLinks({ locale, trackingActive, dictionary }: SiteFooterProps) {
+  const { consent } = dictionary;
+  return (
+    <p className={styles.privacy}>
+      <Link href={localizedPath(locale, ROUTES.privacy)}>{consent.privacyLink}</Link>
+      {trackingActive === true ? (
+        <PrivacySettingsButton label={consent.settingsLink} className={styles.privacyButton} />
+      ) : null}
+    </p>
+  );
+}
+
+function BottomBar(props: SiteFooterProps) {
+  const { checkoutEnabled, dictionary } = props;
   const { footer, club } = dictionary;
   return (
     <div className={cx("container", styles.bottom)}>
@@ -173,6 +190,7 @@ function BottomBar({ checkoutEnabled, dictionary }: SiteFooterProps) {
         © <bdi>{new Date().getFullYear()}</bdi> {club.name}. {footer.rights}.
       </p>
       <PaymentMarks dictionary={dictionary} />
+      <PrivacyLinks {...props} />
       {checkoutEnabled ? null : <p className={styles.note}>{footer.joinNote}</p>}
     </div>
   );

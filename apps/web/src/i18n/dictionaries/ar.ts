@@ -1,9 +1,11 @@
 import { cartAr } from "./cart-ar";
 import { checkoutAr } from "./checkout-ar";
+import { consentAr } from "./consent-ar";
 import { homeAr } from "./home-ar";
 import { landingAr } from "./landing-ar";
 import type { Widen } from "./widen";
 import { paymentAr } from "./payment-ar";
+import { privacyAr } from "./privacy-ar";
 
 /** القاموس العربي هو المرجع: شكله يحدد المفاتيح المطلوبة من كل لغة أخرى. */
 export const ar = {
@@ -275,6 +277,8 @@ export const ar = {
     },
   },
   onlinePayment: paymentAr,
+  consent: consentAr,
+  privacy: privacyAr,
 } as const;
 
 export type Dictionary = Widen<typeof ar>;

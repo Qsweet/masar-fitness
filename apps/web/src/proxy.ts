@@ -10,6 +10,9 @@ import {
 } from "./config/admin";
 import { buildCsp, paymentFormActionOrigins } from "./config/csp";
 import { isSiteIndexable, NOINDEX_HEADER } from "./config/indexability";
+import { EMPTY_CSP_EXTENSION, trackingCsp, type CspExtension } from "./config/tracking-csp";
+import { captureAttribution } from "./server/tracking/attribution-cookie";
+import { enabledProviders, siteTracking, TRACKING_HEADER } from "./server/tracking/site-config";
 
 const CSP_HEADER = "Content-Security-Policy";
 
@@ -29,15 +32,29 @@ function isMalformedPath(pathname: string): boolean {
   }
 }
 
-export function proxy(request: NextRequest): NextResponse {
+/**
+ * منصات القياس المفعّلة لصفحات الموقع وحدها (اللوحة بلا وسوم): مضيفاتها في CSP، وأسماؤها في ترويسة
+ * طلب داخلية تقرؤها الصفحة فلا ترسم وسمًا لم تفتحه السياسة نفسها (ADMIN_A5_TRACKING §6).
+ */
+async function trackingFor(pathname: string): Promise<{ csp: CspExtension; names: string }> {
+  if (isAdminPath(pathname)) {
+    return { csp: EMPTY_CSP_EXTENSION, names: "" };
+  }
+  const providers = enabledProviders(await siteTracking());
+  return { csp: trackingCsp(providers), names: providers.join(",") };
+}
+
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   if (isMalformedPath(request.nextUrl.pathname)) {
     return new NextResponse(null, { status: HTTP_BAD_REQUEST });
   }
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const tracking = await trackingFor(request.nextUrl.pathname);
   const csp = buildCsp(
     nonce,
     process.env.NODE_ENV === "development",
     paymentFormActionOrigins(process.env),
+    tracking.csp,
   );
 
   // Next يقرأ الـnonce من ترويسة السياسة في الطلب ويضعه على سكربتاته
@@ -45,6 +62,7 @@ export function proxy(request: NextRequest): NextResponse {
   requestHeaders.set(CSP_HEADER, csp);
   // ما يرسله العميل بهذا الاسم يُحذف دائمًا: الوسيط وحده يقرر أن اللوحة مفتوحة
   requestHeaders.delete(ADMIN_OPEN_HEADER);
+  requestHeaders.set(TRACKING_HEADER, tracking.names);
   const openAdmin = isOpenAdminPath(request.nextUrl.pathname);
   if (openAdmin) {
     requestHeaders.set(ADMIN_OPEN_HEADER, ADMIN_OPEN_VALUE);
@@ -62,6 +80,9 @@ export function proxy(request: NextRequest): NextResponse {
   }
   if (previewing || openAdmin || !isSiteIndexable(process.env.SITE_INDEXABLE)) {
     response.headers.set(NOINDEX_HEADER.name, NOINDEX_HEADER.value);
+  }
+  if (!isAdminPath(request.nextUrl.pathname)) {
+    captureAttribution(request, response);
   }
   return response;
 }

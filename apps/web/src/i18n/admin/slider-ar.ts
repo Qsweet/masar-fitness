@@ -48,6 +48,7 @@ export const sliderAr = {
       memberships: "الاشتراكات",
       blog: "المدونة",
       costPerVisit: "حاسبة تكلفة الزيارة",
+      privacy: "سياسة الخصوصية",
     },
     anchors: {
       plans: "الرئيسية: الاشتراكات",

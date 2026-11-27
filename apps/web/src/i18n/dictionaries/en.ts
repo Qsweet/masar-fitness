@@ -1,9 +1,11 @@
 import type { Dictionary } from "./ar";
 import { cartEn } from "./cart-en";
 import { checkoutEn } from "./checkout-en";
+import { consentEn } from "./consent-en";
 import { homeEn } from "./home-en";
 import { landingEn } from "./landing-en";
 import { paymentEn } from "./payment-en";
+import { privacyEn } from "./privacy-en";
 
 export const en: Dictionary = {
   currency: { SAR: "SAR" },
@@ -248,4 +250,6 @@ export const en: Dictionary = {
     },
   },
   onlinePayment: paymentEn,
+  consent: consentEn,
+  privacy: privacyEn,
 };

@@ -8,6 +8,7 @@ export const ROUTES = {
   memberships: "/memberships",
   blog: "/blog",
   costPerVisit: "/tools/cost-per-visit",
+  privacy: "/privacy",
 } as const;
 
 export const STATIC_PATHS: readonly string[] = Object.values(ROUTES);

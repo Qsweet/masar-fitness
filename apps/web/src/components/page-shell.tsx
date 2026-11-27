@@ -6,6 +6,7 @@ import { hasVisibleBlog } from "@/server/blog";
 import { cartCount } from "@/server/cart/codec";
 import { readCart } from "@/server/cart/cookie";
 import { isCheckoutEnabled } from "@/server/checkout/flag";
+import { pageTracking } from "@/server/tracking/page-tracking";
 import type { CartLinkView } from "./cart/cart-link";
 import { whatsappUrl } from "@/config/club";
 import { CART_PATH, ROUTES } from "@/config/routes";
@@ -79,7 +80,7 @@ export async function PageShell({
   const joinHref = hasPlans ? "#plans" : localizedPath(locale, ROUTES.memberships);
   // رابط المدونة لا يظهر ما دامت بلا مقال ظاهر بلغة الزائر (لا صفحة فارغة ولا رابط إلى 404)
   const showBlog = hasVisibleBlog(locale);
-  const cart = await cartLink(locale);
+  const [cart, tracking] = await Promise.all([cartLink(locale), pageTracking()]);
   return (
     <>
       <SiteHeader
@@ -95,6 +96,7 @@ export async function PageShell({
         locale={locale}
         showBlog={showBlog}
         checkoutEnabled={isCheckoutEnabled()}
+        trackingActive={tracking !== null}
         dictionary={dictionary}
       />
       <ChatButton

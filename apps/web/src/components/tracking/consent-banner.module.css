@@ -1,0 +1,89 @@
+/* شريط الموافقة (ADMIN_A5_TRACKING §3.3): أسفل الشاشة بلا حجب للمحتوى، فوق شريط التبويب على الهاتف. */
+.banner {
+  position: fixed;
+  inset-inline: var(--gutter) var(--gutter-end);
+  bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom, 0px) + 0.75rem);
+  z-index: 30;
+  max-width: 44rem;
+  margin-inline: auto;
+  padding: 1.25rem;
+  border: 1px solid var(--line-hover);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--fg);
+  box-shadow: var(--shadow-lg);
+}
+
+.title {
+  margin: 0 0 0.5rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+}
+
+.lead {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.lead a {
+  color: var(--accent-fg);
+}
+
+.categories {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+
+.category {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.75rem;
+  align-items: start;
+}
+
+.category input {
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  margin-block-start: 0.15rem;
+  accent-color: var(--yellow);
+}
+
+.categoryLabel {
+  font-weight: 700;
+}
+
+.hint {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.actions > button {
+  flex: 1 1 10rem;
+  min-block-size: var(--target);
+}
+
+@media (width >= 48rem) {
+  .banner {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+    padding: 1.5rem;
+  }
+}

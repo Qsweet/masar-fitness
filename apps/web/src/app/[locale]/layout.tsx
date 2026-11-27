@@ -4,6 +4,7 @@ import { MAIN_CONTENT_ID } from "@/components/page-shell";
 import { PreviewBar } from "@/components/preview-bar";
 import { ScrollReset } from "@/components/scroll-reset";
 import { StagingNote } from "@/components/staging-note";
+import { TrackingRoot } from "@/components/tracking/tracking-root";
 import { directionOf, isLocale, LOCALES } from "@/i18n/locales";
 import { getSiteContent } from "@/server/content/site-content";
 import { fontVariables } from "../fonts";
@@ -52,6 +53,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
         <StagingNote rawIndexable={process.env.SITE_INDEXABLE} text={dictionary.staging} />
         {children}
         <ScrollReset />
+        <TrackingRoot locale={locale} />
       </body>
     </html>
   );

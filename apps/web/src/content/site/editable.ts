@@ -47,6 +47,9 @@ const FORBIDDEN: readonly Rule[] = [
   lock("photos", "media"),
   // الشريط تحت الواجهة: تسميات وصول؛ محتواه من صفحة الشريط لا من متصفح النصوص (ADMIN_A3_SLIDER §11)
   lock("slider", "accessibility"),
+  // شريط الموافقة وصفحة الخصوصية: وصف لما يفعله الكود، يعتمده المراجع القانوني (ADMIN_A5_TRACKING §3.4)
+  lock("consent", "terms"),
+  lock("privacy", "terms"),
 ];
 
 const HERO: readonly Rule[] = [

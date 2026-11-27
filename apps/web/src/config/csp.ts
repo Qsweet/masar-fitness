@@ -1,8 +1,11 @@
+import { EMPTY_CSP_EXTENSION, type CspExtension } from "./tracking-csp";
+
 /**
  * سياسة أمان المحتوى. السكربتات بـnonce لكل طلب (لذلك كل الصفحات تُعرض ديناميكيًا).
  * الأنماط: ملفات الموقع وما يحمل الـnonce؛ خاصية style على العناصر مسموحة
  * لأن next/image يكتبها، وهي لا تنفّذ كودًا (القرار 14 في docs/DECISIONS.md).
- * تُوسَّع القائمة صراحةً مع كل طرف ثالث يُضاف (الدفع، التحليلات، الخرائط).
+ * تُوسَّع القائمة صراحةً مع كل طرف ثالث يُضاف (الدفع، التحليلات، الخرائط). منصات القياس تضيف
+ * مضيفاتها حين تُفعَّل فقط (`tracking`، ADMIN_A5_TRACKING §6).
  * `form-action` يبقى 'self' إلا مع Moyasar مضبوطًا وأصل صفحته المستضافة معلنًا في الإعداد: زر الدفع
  * نموذج POST يرد الخادم عليه بتحويل 303 إلى صفحة المزوّد، والمتصفح بلا JavaScript يطبّق `form-action`
  * على وجهة التحويل أيضًا.
@@ -11,6 +14,7 @@ export function buildCsp(
   nonce: string,
   isDevelopment: boolean,
   formActionOrigins: readonly string[] = [],
+  tracking: CspExtension = EMPTY_CSP_EXTENSION,
 ): string {
   const directives = [
     "default-src 'self'",
@@ -18,9 +22,11 @@ export function buildCsp(
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDevelopment ? " 'unsafe-eval'" : ""}`,
     `style-src 'self' 'nonce-${nonce}'`,
     "style-src-attr 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    ["img-src 'self' data: blob:", ...tracking.img].join(" "),
     "font-src 'self'",
-    "connect-src 'self'",
+    ["connect-src 'self'", ...tracking.connect].join(" "),
+    // بلا منصة تحتاج إطارًا لا يُكتب التوجيه: يرث default-src 'self' كما كان
+    ...(tracking.frame.length === 0 ? [] : [["frame-src 'self'", ...tracking.frame].join(" ")]),
     "object-src 'none'",
     "base-uri 'self'",
     ["form-action 'self'", ...formActionOrigins].join(" "),

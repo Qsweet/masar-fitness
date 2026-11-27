@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildCsp, paymentFormActionOrigins } from "./csp";
+import { trackingCsp } from "./tracking-csp";
 
 describe("buildCsp", () => {
   const production = buildCsp("abc123", false);
@@ -62,5 +63,29 @@ describe("form-action وصفحة الدفع المستضافة", () => {
     ["نجمة", { ...moyasar, MOYASAR_HOSTED_PAGE_ORIGIN: "*" }],
   ])("%s: form-action يبقى 'self'", (_name, env) => {
     expect(formAction(env)).toBe("form-action 'self'");
+  });
+});
+
+describe("منصات القياس في CSP", () => {
+  it("بلا منصة لا تتغير السياسة حرفًا", () => {
+    expect(buildCsp("n", false, [], trackingCsp([]))).toBe(buildCsp("n", false));
+  });
+
+  it("كل منصة بمضيفاتها، وframe-src لـGTM وGoogle Ads وحدهما", () => {
+    const meta = buildCsp("n", false, [], trackingCsp(["meta"]));
+    expect(meta).toContain(
+      "connect-src 'self' https://connect.facebook.net https://www.facebook.com",
+    );
+    expect(meta).not.toContain("frame-src");
+    const ads = buildCsp("n", false, [], trackingCsp(["google_ads", "gtm"]));
+    expect(ads).toContain("frame-src 'self' https://www.googletagmanager.com");
+    expect(ads).toContain("https://www.google.com.sa");
+    expect(trackingCsp(["snap"]).connect).toEqual(["https://tr.snapchat.com"]);
+    expect(trackingCsp(["tiktok"]).img).toEqual(["https://analytics.tiktok.com"]);
+  });
+
+  it("لا تكرار بين منصات تشترك في مضيف", () => {
+    const { connect } = trackingCsp(["gtm", "ga4", "google_ads"]);
+    expect(connect.filter((host) => host === "https://www.googletagmanager.com")).toHaveLength(1);
   });
 });

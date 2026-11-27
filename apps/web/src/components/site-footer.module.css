@@ -171,6 +171,35 @@
   max-width: var(--measure);
 }
 
+/* سياسة الخصوصية و«إعدادات الخصوصية»: سطر مستقل بعرض الشريط */
+.privacy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  justify-content: center;
+  margin: 0;
+}
+
+.privacy a,
+.privacyButton {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--target);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.privacy a:hover,
+.privacyButton:hover {
+  color: var(--fg);
+}
+
 /* على الهاتف: الروابط والبرامج عمودان متجاوران، والعلامة والتواصل بعرض كامل */
 .inner {
   grid-template-columns: 1fr 1fr;
@@ -204,5 +233,10 @@
   .note {
     grid-column: 1 / -1;
     max-width: none;
+  }
+
+  .privacy {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
   }
 }

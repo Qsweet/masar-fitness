@@ -1,0 +1,18 @@
+.body {
+  display: grid;
+  gap: 2rem;
+  max-width: var(--measure);
+  padding-block: 3rem var(--section-space);
+}
+
+.section h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.section p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.8;
+}

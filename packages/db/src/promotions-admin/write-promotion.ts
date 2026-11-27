@@ -67,12 +67,23 @@ function productIdsOf(draft: PromotionDraft): readonly string[] {
   return draft.scope.kind === "listed_products" ? draft.scope.productIds : [];
 }
 
-/** منتجات النطاق كلها من النادي نفسه وغير مؤرشفة؛ وإلا فالطلب مصنوع لا من النموذج. */
-async function productsAreSelectable(tx: Tx, clubId: string, ids: readonly string[]) {
-  const found = await tx.product.count({
-    where: { id: { in: [...ids] }, clubId, kind: { not: "assessed_service" } },
-  });
-  return found === ids.length;
+/**
+ * منتجات النطاق من النادي نفسه ومن نوع يُباع، و`added` منها (ما يُضاف الآن) غير مؤرشف: النموذج لا
+ * يعرض المؤرشف، فمنتج مؤرشف جديد طلب مصنوع. منتج في النطاق أُرشف بعد إضافته يبقى ولا يمنع الحفظ.
+ */
+async function productsAreSelectable(
+  tx: Tx,
+  clubId: string,
+  scope: { readonly ids: readonly string[]; readonly added: readonly string[] },
+) {
+  const where = { clubId, kind: { not: "assessed_service" } } as const;
+  const [found, addable] = await Promise.all([
+    tx.product.count({ where: { ...where, id: { in: [...scope.ids] } } }),
+    tx.product.count({
+      where: { ...where, id: { in: [...scope.added] }, status: { not: "archived" } },
+    }),
+  ]);
+  return found === scope.ids.length && addable === scope.added.length;
 }
 
 export interface CreatePromotionInput {
@@ -95,7 +106,7 @@ async function createInTransaction(
 ): Promise<Result<CreatedPromotion, DomainError>> {
   const { draft, clubId, promotionId } = input;
   const productIds = productIdsOf(draft);
-  if (!(await productsAreSelectable(tx, clubId, productIds))) {
+  if (!(await productsAreSelectable(tx, clubId, { ids: productIds, added: productIds }))) {
     return err(new DomainError("validation", "promotion.products_invalid", { field: "scope" }));
   }
   const guarded = await checkAutomaticTerms(tx, { clubId, terms: draft, now: input.now }, true);
@@ -223,14 +234,21 @@ async function updateInTransaction(
     return locked;
   }
   const { rule, hasRedemptions, activeRedemptions, updatedAt } = locked.value;
-  const { draft } = input;
-  const policy = promotionEditPolicy({ status: rule.status, hasRedemptions });
-  const allowed = checkPromotionEdit(rule, draft, policy);
+  const policy = promotionEditPolicy({
+    status: rule.status,
+    hasRedemptions,
+    audience: rule.audience,
+  });
+  const allowed = checkPromotionEdit(rule, input.draft, policy);
   if (!allowed.ok) {
     return allowed;
   }
+  // الشروط المجمَّدة تساوي القائمة؛ البداية تُقارن بالدقيقة فتُحفظ كما هي لا مقصوصة إلى دقيقتها
+  const draft = policy.terms ? input.draft : { ...input.draft, startsAt: rule.startsAt };
   const productIds = productIdsOf(draft);
-  if (!(await productsAreSelectable(tx, input.clubId, productIds))) {
+  const existing = rule.scope.kind === "listed_products" ? rule.scope.productIds : [];
+  const added = productIds.filter((id) => !existing.includes(id));
+  if (!(await productsAreSelectable(tx, input.clubId, { ids: productIds, added }))) {
     return err(new DomainError("validation", "promotion.products_invalid", { field: "scope" }));
   }
   const terms = { clubId: input.clubId, terms: draft, now: input.now };

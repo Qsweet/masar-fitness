@@ -1,7 +1,7 @@
 export { PROMOTION_DISPLAY_STATES, promotionDisplayState } from "./display-state";
 export type { PromotionDisplayState, PromotionStateFacts } from "./display-state";
 export { checkPromotionEdit, promotionEditPolicy } from "./edit-policy";
-export type { PromotionEditPolicy, PromotionTerms } from "./edit-policy";
+export type { PromotionEditLock, PromotionEditPolicy, PromotionTerms } from "./edit-policy";
 export {
   DISCOUNT_KINDS,
   PROMOTION_LIMITS,

@@ -59,16 +59,21 @@ function Actions({ row, text }: { readonly row: PromotionAdminRow; readonly text
   );
 }
 
-/** لماذا لا يُعدَّل، أو ما الذي جُمِّد؛ undefined حين يُعدَّل كله. */
-function editNote(row: PromotionAdminRow, text: DetailText): string | undefined {
-  const policy = promotionEditPolicy({
+function policyOf(row: PromotionAdminRow) {
+  return promotionEditPolicy({
     status: row.rule.status,
     hasRedemptions: row.usage.total > 0,
+    audience: row.rule.audience,
   });
-  if (!policy.editable) {
+}
+
+/** لماذا لا يُعدَّل، أو ما الذي جُمِّد؛ undefined حين يُعدَّل كله. */
+function editNote(row: PromotionAdminRow, text: DetailText): string | undefined {
+  const policy = policyOf(row);
+  if (policy.lock === "archived") {
     return text.archivedNote;
   }
-  if (row.rule.audience !== "anyone") {
+  if (policy.lock === "restricted_audience") {
     return text.restrictedNote;
   }
   return policy.terms ? undefined : text.frozen;
@@ -88,17 +93,18 @@ export default async function PromotionPage(props: PageProps<"/admin/sales/promo
   }
   const [club, options] = await Promise.all([
     getSalesSettings(db, staff.clubId),
-    listPromotionProductOptions(db, staff.clubId),
+    listPromotionProductOptions(
+      db,
+      staff.clubId,
+      row.rule.scope.kind === "listed_products" ? row.rule.scope.productIds : [],
+    ),
   ]);
   const dictionary = getAdminDictionary();
   const { sales, errors } = dictionary;
   const text = sales.promotions;
   const canWrite = hasPermission(staff.role, "promotions.write");
-  const policy = promotionEditPolicy({
-    status: row.rule.status,
-    hasRedemptions: row.usage.total > 0,
-  });
-  const editable = canWrite && policy.editable && row.rule.audience === "anyone";
+  const policy = policyOf(row);
+  const editable = canWrite && policy.editable;
   const note = canWrite ? editNote(row, text.detail) : undefined;
   return (
     <>

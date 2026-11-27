@@ -139,13 +139,19 @@ export interface PromotionProductOption {
   readonly kind: ProductKind;
 }
 
-/** منتجات النادي غير المؤرشفة التي تُشترى (اشتراكات وإضافات وبرامج): خيارات نطاق العرض. */
+/** منتجات النادي غير المؤرشفة التي تُشترى (اشتراكات وإضافات وبرامج)، ومعها ما في نطاق العرض من قبل: خيارات نطاق العرض. */
 export async function listPromotionProductOptions(
   db: Db,
   clubId: string,
+  inScope: readonly string[] = [],
 ): Promise<PromotionProductOption[]> {
   const rows = await db.product.findMany({
-    where: { clubId, status: { not: "archived" }, kind: { not: "assessed_service" } },
+    where: {
+      clubId,
+      kind: { not: "assessed_service" },
+      // المؤرشف لا يُضاف؛ وما في نطاق العرض من قبل يبقى خيارًا محدَّدًا فلا يسقط بالحفظ
+      OR: [{ status: { not: "archived" } }, { id: { in: [...inScope] } }],
+    },
     orderBy: [{ kind: "asc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
     select: { id: true, nameAr: true, nameEn: true, kind: true },
   });

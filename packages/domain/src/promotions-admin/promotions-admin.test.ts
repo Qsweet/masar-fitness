@@ -191,17 +191,17 @@ describe("promotionEditPolicy و checkPromotionEdit", () => {
     audience: "anyone",
     startsAt: DRAFT.startsAt,
   };
-  const free = promotionEditPolicy({ status: "active", hasRedemptions: false });
-  const frozen = promotionEditPolicy({ status: "paused", hasRedemptions: true });
+  const ANYONE = "anyone" as const;
+  const free = promotionEditPolicy({ status: "active", hasRedemptions: false, audience: ANYONE });
+  const frozen = promotionEditPolicy({ status: "paused", hasRedemptions: true, audience: ANYONE });
 
   it("السياسة: قبل أول استخدام كل شيء، وبعده تُجمَّد الشروط، والمؤرشف لا يُعدَّل", () => {
-    expect(free).toEqual({ editable: true, terms: true });
-    expect(frozen).toEqual({ editable: true, terms: false });
+    expect(free).toEqual({ editable: true, lock: null, terms: true });
+    expect(frozen).toEqual({ editable: true, lock: null, terms: false });
     for (const hasRedemptions of [true, false]) {
-      expect(promotionEditPolicy({ status: "archived", hasRedemptions })).toEqual({
-        editable: false,
-        terms: false,
-      });
+      expect(promotionEditPolicy({ status: "archived", hasRedemptions, audience: ANYONE })).toEqual(
+        { editable: false, lock: "archived", terms: false },
+      );
     }
   });
 
@@ -243,8 +243,32 @@ describe("promotionEditPolicy و checkPromotionEdit", () => {
     expect(checkPromotionEdit({ ...CURRENT, scope: listed }, next, frozen).ok).toBe(true);
   });
 
+  it("الجمهور المقيَّد لا يُعدَّل من اللوحة: لا يصير «للجميع» بحفظ النموذج", () => {
+    for (const audience of ["new_customer", "existing_customer"] as const) {
+      const policy = promotionEditPolicy({ status: "active", hasRedemptions: false, audience });
+      expect(policy).toEqual({ editable: false, lock: "restricted_audience", terms: false });
+      const result = checkPromotionEdit({ ...CURRENT, audience }, DRAFT, policy);
+      expect(!result.ok && result.error.reason).toBe("promotion.audience_restricted");
+    }
+  });
+
+  it("بداية بثوانٍ (من خارج اللوحة) تساوي دقيقتها بعد أول استخدام؛ الدقيقة التالية تغيير", () => {
+    const withSeconds = new Date(DRAFT.startsAt.getTime() + 42_500);
+    const renamed = { ...DRAFT, name: { ar: "اسم آخر", en: "Other" } };
+    expect(checkPromotionEdit({ ...CURRENT, startsAt: withSeconds }, renamed, frozen).ok).toBe(
+      true,
+    );
+    const nextMinute = { ...renamed, startsAt: new Date(DRAFT.startsAt.getTime() + 60_000) };
+    const moved = checkPromotionEdit({ ...CURRENT, startsAt: withSeconds }, nextMinute, frozen);
+    expect(!moved.ok && moved.error.reason).toBe("promotion.terms_frozen");
+  });
+
   it("المؤرشف مرفوض قبل أي فحص آخر", () => {
-    const policy = promotionEditPolicy({ status: "archived", hasRedemptions: false });
+    const policy = promotionEditPolicy({
+      status: "archived",
+      hasRedemptions: false,
+      audience: ANYONE,
+    });
     const result = checkPromotionEdit(CURRENT, DRAFT, policy);
     expect(!result.ok && result.error.reason).toBe("promotion.archived_final");
   });

@@ -10,9 +10,9 @@ export const UPLOAD_FORM_OVERHEAD_BYTES = 65_536;
 export const MAX_INPUT_PIXELS = 25_000_000;
 export const MIN_IMAGE_SIDE = 640;
 export const MAX_IMAGE_SIDE = 8_000;
-/** جودة الترميز: AVIF أصغر بجودة مرئية مماثلة لـWebP 80. */
+/** جودة الترميز: AVIF أصغر بجودة مرئية مماثلة لـWebP 80. جهد AVIF ‏2: الجهد 4 أبطأ بست مرات على خادم صغير (22 ثانية لصورة 2400 بكسل مقابل 3.6) بفرق حجم صغير (القرار 77). */
 export const AVIF_QUALITY = 55;
-export const AVIF_EFFORT = 4;
+export const AVIF_EFFORT = 2;
 export const WEBP_QUALITY = 80;
 /** عرض صورة الضباب قبل التحميل. */
 export const BLUR_WIDTH = 16;

@@ -9,6 +9,7 @@ export * from "./payments";
 export * from "./promotions-admin";
 export * from "./sales-settings";
 export * from "./staff";
+export * from "./tracking";
 export { ensureTransaction, inTransaction } from "./commerce/transaction";
 export type { Tx } from "./commerce/transaction";
 export { Prisma } from "./generated/prisma/client";

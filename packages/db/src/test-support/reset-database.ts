@@ -26,7 +26,7 @@ export async function resetCommerceTables(db: Db): Promise<void> {
   await db.$executeRaw`ALTER TABLE content_release_media DISABLE TRIGGER content_release_media_forbid_truncate`;
   try {
     await db.$executeRaw`
-      TRUNCATE manual_payments, staff_recovery_codes, staff_sessions, staff_users, payment_incidents, payment_attempts, audit_logs, refunds, memberships, order_discounts, order_items, orders, assessment_requests,
+      TRUNCATE tracking_outbox, order_tracking, tracking_integrations, manual_payments, staff_recovery_codes, staff_sessions, staff_users, payment_incidents, payment_attempts, audit_logs, refunds, memberships, order_discounts, order_items, orders, assessment_requests,
         promotion_products, promotions, product_addons, customers, content_release_media, content_slides,
         content_slider_settings, media_assets, content_releases, content_draft_entries RESTART IDENTITY CASCADE`;
   } finally {

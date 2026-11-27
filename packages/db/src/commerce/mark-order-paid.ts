@@ -22,6 +22,7 @@ import type { Db } from "../client";
 import type { OrderStatus } from "../generated/prisma/client";
 import { writeAudit, type StaffAuditActor } from "./audit";
 import { createMembershipForOrder } from "./membership-write";
+import { enqueuePurchaseConversions } from "../tracking/enqueue";
 import { mapCommerceDbError } from "./sql-errors";
 import { inTransaction, type Tx } from "./transaction";
 
@@ -214,6 +215,12 @@ export async function settleInTransaction(
     return rejectPayment(tx, order, input, new DomainError("conflict", "payment.already_used"));
   }
   await recordPayment(tx, order, input);
+  // تحويل الشراء للمنصات في المعاملة نفسها، بلا اتصال خارجي (ADMIN_A5_TRACKING §4.1)
+  await enqueuePurchaseConversions(tx, {
+    orderId: order.id,
+    clubId: order.club_id,
+    paidAt: input.now,
+  });
   const membershipId = await createMembershipForOrder(tx, order, input.now);
   const status = await fulfilIfNoDigital(tx, order, input);
   return ok({

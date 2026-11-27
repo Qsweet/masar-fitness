@@ -28,23 +28,26 @@ model Club {
   createdAt                 DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt                 DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  products           Product[]
-  customers          Customer[]
-  promotions         Promotion[]
-  orders             Order[]
-  memberships        Membership[]
-  refunds            Refund[]
-  assessmentRequests AssessmentRequest[]
-  auditLogs          AuditLog[]
-  paymentAttempts    PaymentAttempt[]
-  paymentIncidents   PaymentIncident[]
-  staffUsers         StaffUser[]
-  manualPayments     ManualPayment[]
-  contentReleases    ContentRelease[]
-  contentDrafts      ContentDraftEntry[]
-  mediaAssets        MediaAsset[]
-  contentSlides      ContentSlide[]
-  sliderSettings     ContentSliderSettings?
+  products             Product[]
+  customers            Customer[]
+  promotions           Promotion[]
+  orders               Order[]
+  memberships          Membership[]
+  refunds              Refund[]
+  assessmentRequests   AssessmentRequest[]
+  auditLogs            AuditLog[]
+  paymentAttempts      PaymentAttempt[]
+  paymentIncidents     PaymentIncident[]
+  staffUsers           StaffUser[]
+  manualPayments       ManualPayment[]
+  contentReleases      ContentRelease[]
+  contentDrafts        ContentDraftEntry[]
+  mediaAssets          MediaAsset[]
+  contentSlides        ContentSlide[]
+  sliderSettings       ContentSliderSettings?
+  trackingIntegrations TrackingIntegration[]
+  orderTracking        OrderTracking[]
+  trackingOutbox       TrackingOutbox[]
 
   @@map("clubs")
 }
@@ -346,6 +349,8 @@ model Order {
   paymentAttempts  PaymentAttempt[]
   paymentIncidents PaymentIncident[]
   manualPayment    ManualPayment?
+  tracking         OrderTracking?
+  trackingOutbox   TrackingOutbox[]
 
   /// دفعة المزوّد تسوّي طلبًا واحدًا فقط
   @@unique([paidProvider, paidProviderPaymentId])
@@ -884,4 +889,77 @@ model ContentReleaseMedia {
   @@id([releaseId, assetId])
   @@index([assetId])
   @@map("content_release_media")
+}
+
+/// إعداد منصة ربط وقياس لنادٍ (ADMIN_A5_TRACKING §7). المعرّفات العامة في `config`، والمفتاح الخادمي
+/// مشفّرًا وحده (AES-256-GCM بمفتاح فرعي من ADMIN_SECRET_KEY)، ولا يُقرأ إلا عند الإرسال.
+model TrackingIntegration {
+  clubId        String   @map("club_id") @db.Uuid
+  provider      String
+  enabled       Boolean  @default(false)
+  config        Json     @default("{}")
+  secretEnc     String?  @map("secret_enc")
+  secretLast4   String?  @map("secret_last4")
+  testEventCode String?  @map("test_event_code")
+  updatedAt     DateTime @map("updated_at") @db.Timestamptz(3)
+  updatedBy     String?  @map("updated_by") @db.Uuid
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([clubId, provider])
+  @@map("tracking_integrations")
+}
+
+/// موافقة الزائر وإسناده ومعرّفات متصفحه لحظة إنشاء الطلب. للإدراج فقط: ما خُتم لا يتغير.
+model OrderTracking {
+  orderId          String    @id @map("order_id") @db.Uuid
+  clubId           String    @map("club_id") @db.Uuid
+  consentAnalytics Boolean   @map("consent_analytics")
+  consentAds       Boolean   @map("consent_ads")
+  consentVersion   Int?      @map("consent_version")
+  consentAt        DateTime? @map("consent_at") @db.Timestamptz(3)
+  firstTouch       Json?     @map("first_touch")
+  lastTouch        Json?     @map("last_touch")
+  gaClientId       String?   @map("ga_client_id")
+  fbp              String?
+  fbc              String?
+  scid             String?
+  ttp              String?
+  clientIp         String?   @map("client_ip")
+  userAgent        String?   @map("user_agent")
+  pageUrl          String?   @map("page_url")
+  createdAt        DateTime  @map("created_at") @db.Timestamptz(3)
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  club  Club  @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@map("order_tracking")
+}
+
+/// طابور الإرسال الخادمي وسجله: سطر لكل حدث ومنصة. الحي فريد بمعرّف حدثه، والاختبار بلا طلب.
+model TrackingOutbox {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  clubId        String    @map("club_id") @db.Uuid
+  orderId       String?   @map("order_id") @db.Uuid
+  provider      String
+  eventName     String    @map("event_name")
+  eventId       String    @map("event_id")
+  kind          String    @default("live")
+  status        String    @default("pending")
+  attempts      Int       @default(0)
+  nextAttemptAt DateTime  @map("next_attempt_at") @db.Timestamptz(3)
+  lastStatus    Int?      @map("last_status")
+  lastReason    String?   @map("last_reason")
+  eventTime     DateTime  @map("event_time") @db.Timestamptz(3)
+  createdAt     DateTime  @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime  @map("updated_at") @db.Timestamptz(3)
+  sentAt        DateTime? @map("sent_at") @db.Timestamptz(3)
+
+  club  Club   @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([status, nextAttemptAt])
+  @@index([clubId, createdAt])
+  @@index([orderId])
+  @@map("tracking_outbox")
 }

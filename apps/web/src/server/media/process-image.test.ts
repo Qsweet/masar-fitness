@@ -1,11 +1,12 @@
-import { mkdtemp, readdir, rm } from "node:fs/promises";
+import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { processImage } from "./process-image";
 import { parseMediaRequest } from "./serve";
-import { readVariant, removeAssetFiles, storeVariants } from "./store";
+import { withImageSlot } from "./slot";
+import { readVariant, removeAssetFiles, storeVariants, variantsComplete } from "./store";
 import { displayName } from "./upload";
 
 /**
@@ -72,6 +73,35 @@ describe("processImage", () => {
     expect(await processImage(svg)).toEqual({ ok: false, error: "media.type_unsupported" });
   });
 
+  it("أكثر من 25 ميغابكسل يُرفض من الترويسة قبل فك الترميز", async () => {
+    const huge = await photo(6000, 5000).png({ compressionLevel: 9 }).toBuffer();
+    expect(huge.byteLength).toBeLessThan(1_000_000);
+    const started = Date.now();
+    expect(await processImage(new Uint8Array(huge))).toEqual({
+      ok: false,
+      error: "media.too_large_pixels",
+    });
+    expect(Date.now() - started).toBeLessThan(1_000);
+  });
+
+  it("المتحركة وPNG المتشابك مرفوضان بسببهما", async () => {
+    const frame = (color: string) => photo(700, 700).tint(color).webp().toBuffer();
+    const animated = await sharp([await frame("red"), await frame("blue")], {
+      join: { animated: true },
+    })
+      .webp()
+      .toBuffer();
+    expect(await processImage(new Uint8Array(animated))).toEqual({
+      ok: false,
+      error: "media.animated",
+    });
+    const interlaced = await photo(800, 800).png({ progressive: true }).toBuffer();
+    expect(await processImage(new Uint8Array(interlaced))).toEqual({
+      ok: false,
+      error: "media.interlaced",
+    });
+  });
+
   it("صغيرة أو تالفة أو أكبر من 8 MiB: مرفوضة بسببها", async () => {
     const small = await photo(500, 900).jpeg().toBuffer();
     expect(await processImage(new Uint8Array(small))).toEqual({
@@ -87,16 +117,40 @@ describe("processImage", () => {
 });
 
 describe("التخزين", () => {
-  it("كتابة ذرية بالبصمة، والتكرار لا يكتب ثانية ولا يترك مؤقتًا", async () => {
+  it("كتابة ذرية بالبصمة، والاستبدال يصلح أصلًا ناقصًا ولا يترك مؤقتًا", async () => {
     const hash = "d".repeat(64);
-    const variants = [{ width: 640, format: "webp" as const, data: Buffer.from("x") }];
-    expect(await storeVariants(root, CLUB, hash, variants)).toBe(true);
-    expect(await storeVariants(root, CLUB, hash, variants)).toBe(false);
+    const variant = (format: "avif" | "webp", text: string) => ({
+      width: 640,
+      format,
+      data: Buffer.from(text),
+    });
+    await storeVariants(root, CLUB, hash, [variant("webp", "x"), variant("avif", "y")]);
+    expect(await variantsComplete(root, CLUB, hash, [640])).toBe(true);
+    expect(await variantsComplete(root, CLUB, hash, [640, 960])).toBe(false);
+    // ملف فارغ (انقطاع كهرباء قبل المزامنة) يُعدّ ناقصًا، والاستبدال يكتب الكل من جديد
+    await writeFile(join(root, CLUB, hash, "w640.avif"), "");
+    expect(await variantsComplete(root, CLUB, hash, [640])).toBe(false);
+    await storeVariants(root, CLUB, hash, [variant("webp", "x2"), variant("avif", "y2")]);
+    expect(await variantsComplete(root, CLUB, hash, [640])).toBe(true);
+    expect((await readVariant(root, CLUB, hash, 640, "avif"))?.toString()).toBe("y2");
     expect(await readdir(join(root, CLUB))).toEqual([hash]);
-    expect((await readVariant(root, CLUB, hash, 640, "webp"))?.toString()).toBe("x");
-    expect(await readVariant(root, CLUB, hash, 960, "webp")).toBeNull();
     await removeAssetFiles(root, CLUB, hash);
     expect(await readVariant(root, CLUB, hash, 640, "webp")).toBeNull();
+  });
+
+  it("خانة المعالجة واحدة: الثاني يُرفض وهي مشغولة، ثم تتحرر ولو فشل العمل", async () => {
+    let release: (value: string) => void = () => undefined;
+    const first = withImageSlot(
+      () =>
+        new Promise<string>((resolve) => {
+          release = resolve;
+        }),
+    );
+    expect(await withImageSlot(() => Promise.resolve("second"))).toBeNull();
+    release("done");
+    expect(await first).toBe("done");
+    await expect(withImageSlot(() => Promise.reject(new Error("x")))).rejects.toThrow("x");
+    expect(await withImageSlot(() => Promise.resolve("again"))).toBe("again");
   });
 
   it("مسار بغير شكل البصمة أو النادي يُرفض قبل القرص", async () => {

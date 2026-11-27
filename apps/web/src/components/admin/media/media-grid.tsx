@@ -5,7 +5,7 @@ import { mediaAssetPath } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import { Badge } from "../ui/kit";
-import styles from "../slider/slider.module.css";
+import styles from "./media.module.css";
 
 /** شبكة المكتبة: مصغّر وأبعاد واستعمال لكل صورة، والبطاقة كلها رابط صفحتها. */
 export function MediaGrid({

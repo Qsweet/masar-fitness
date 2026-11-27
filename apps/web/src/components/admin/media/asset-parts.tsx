@@ -6,7 +6,7 @@ import { fill } from "@/i18n/fill";
 import { formatNumber } from "@/i18n/format";
 import { deleteMediaAction } from "@/server/admin/actions/content-media";
 import { Alert, Card, Facts } from "../ui/kit";
-import styles from "../slider/slider.module.css";
+import styles from "./media.module.css";
 
 const KIB = 1_024;
 type Text = AdminDictionary["media"];

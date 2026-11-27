@@ -7,12 +7,10 @@ import { randomUUID } from "node:crypto";
 import { DomainError, err, ok, type Result, type SlideImage } from "@masar/domain";
 import type { Db } from "../client";
 import { writeAudit, type StaffAuditActor } from "../commerce/audit";
-import { isUniqueViolation } from "../commerce/sql-errors";
 import { ensureTransaction, inTransaction, type Tx } from "../commerce/transaction";
 import { lockContent } from "./lock";
 
 export const MEDIA_AUDIT_ACTIONS = ["media_asset_uploaded", "media_asset_deleted"] as const;
-const SHA_UNIQUE = "media_assets_club_id_sha256_key";
 
 export interface MediaAsset extends SlideImage {
   readonly bytes: number;
@@ -114,28 +112,34 @@ async function insertAsset(tx: Tx, input: NewMediaAsset): Promise<MediaAsset> {
 
 export interface CreatedAsset {
   readonly asset: MediaAsset;
-  /** الصورة نفسها رُفعت من قبل: يرجع الأصل القائم ولا يُكتب شيء. */
+  /** الصورة نفسها رُفعت من قبل: يرجع الأصل القائم ولا يُكتب صف. */
   readonly existing: boolean;
 }
 
-/** يسجّل صورة بعد كتابة ملفاتها؛ البصمة المكررة ترجع الأصل القائم (ومنها رفعان متزامنان). */
-export async function createMediaAsset(db: Db, input: NewMediaAsset): Promise<CreatedAsset> {
-  const existing = await findAssetByHash(db, input.clubId, input.sha256);
-  if (existing !== null) {
-    return { asset: existing, existing: true };
-  }
-  try {
-    const asset = await ensureTransaction(db, (tx) => insertAsset(tx, input));
-    return { asset, existing: false };
-  } catch (error) {
-    const raced = isUniqueViolation(error, SHA_UNIQUE)
-      ? await findAssetByHash(db, input.clubId, input.sha256)
-      : null;
-    if (raced === null) {
-      throw error;
-    }
-    return { asset: raced, existing: true };
-  }
+/**
+ * يضمن ملفات الأصل على القرص تحت القفل نفسه: يكتبها لأصل جديد، ويصلحها لأصل قائم ناقص الملفات. يرميه
+ * المستدعي (الويب) لأن القرص خارج القاعدة.
+ */
+export type EnsureFiles = (existing: MediaAsset | null) => Promise<void>;
+
+/**
+ * يسجّل صورة تحت قفل محتوى النادي: فحص البصمة، والملفات، والصف في معاملة واحدة، فلا يتقاطع رفع مع حذف
+ * الصورة نفسها (الحذف يأخذ القفل نفسه ويحذف ملفاته قبل أن يتركه). البصمة المكررة ترجع الأصل القائم بعد
+ * إصلاح ملفاته إن نقصت.
+ */
+export function createMediaAsset(
+  db: Db,
+  input: NewMediaAsset,
+  ensureFiles: EnsureFiles,
+): Promise<CreatedAsset> {
+  return ensureTransaction(db, async (tx) => {
+    await lockContent(tx, input.clubId);
+    const existing = await findAssetByHash(tx, input.clubId, input.sha256);
+    await ensureFiles(existing);
+    return existing === null
+      ? { asset: await insertAsset(tx, input), existing: false }
+      : { asset: existing, existing: true };
+  });
 }
 
 export interface AssetUsage {
@@ -172,15 +176,59 @@ export interface MediaListItem extends MediaAsset {
   readonly usage: AssetUsage;
 }
 
-/** صور النادي، الأحدث أولًا، مع استعمال كلٍّ. */
-export async function listMediaAssets(db: Db, clubId: string): Promise<MediaListItem[]> {
+export interface MediaPage {
+  readonly items: readonly MediaListItem[];
+  readonly total: number;
+}
+
+interface ListedRow extends AssetRow {
+  readonly draftSlides: number[];
+  readonly releases: number[];
+}
+
+/** صور النادي، الأحدث أولًا، بصفحات، واستعمال كلٍّ في الاستعلام نفسه (لا استعلام لكل صورة). */
+export async function listMediaAssets(
+  db: Db,
+  clubId: string,
+  page: { readonly offset: number; readonly limit: number },
+): Promise<MediaPage> {
+  const [rows, total] = await Promise.all([
+    db.$queryRaw<ListedRow[]>`
+      SELECT ma.id::text AS id, ma.sha256, ma.width, ma.height, ma.bytes,
+        ma.variant_widths AS "variantWidths", ma.blur_data_url AS "blurDataUrl",
+        ma.dominant_color AS "dominantColor", ma.original_name AS "originalName",
+        ma.created_at AS "createdAt",
+        ARRAY(SELECT s.position FROM content_slides s
+          WHERE s.desktop_asset_id = ma.id OR s.mobile_asset_id = ma.id ORDER BY s.position)
+          AS "draftSlides",
+        ARRAY(SELECT r.seq FROM content_release_media crm
+          JOIN content_releases r ON r.id = crm.release_id
+          WHERE crm.asset_id = ma.id ORDER BY r.seq) AS releases
+      FROM media_assets ma WHERE ma.club_id = ${clubId}::uuid
+      ORDER BY ma.created_at DESC, ma.id LIMIT ${page.limit} OFFSET ${page.offset}`,
+    db.mediaAsset.count({ where: { clubId } }),
+  ]);
+  return {
+    total,
+    items: rows.map((row) => ({
+      ...assetOf(row),
+      usage: { draftSlides: row.draftSlides, releases: row.releases },
+    })),
+  };
+}
+
+/** صور النادي لمنتقي الشريحة (بلا الاستعمال)، الأحدث أولًا، حتى `limit`. */
+export async function listMediaImages(
+  db: Db,
+  clubId: string,
+  limit: number,
+): Promise<MediaAsset[]> {
   const rows = await db.mediaAsset.findMany({
     where: { clubId },
     orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+    take: limit,
   });
-  return Promise.all(
-    rows.map(async (row) => ({ ...assetOf(row), usage: await assetUsage(db, row.id) })),
-  );
+  return rows.map(assetOf);
 }
 
 export interface DeleteAssetInput {
@@ -188,6 +236,11 @@ export interface DeleteAssetInput {
   readonly assetId: string;
   readonly actor: StaffAuditActor;
   readonly now: Date;
+  /**
+   * يحذف ملفات الأصل وهو تحت القفل، قبل أن يتركه: رفع الصورة نفسها ينتظر القفل، فيجد الصف والملفات
+   * محذوفين معًا. فشل نادر بعده يترك صفًا بلا ملفات يصلحه أول رفع للصورة نفسها.
+   */
+  readonly removeFiles: (asset: MediaAsset) => Promise<void>;
 }
 
 async function deleteInTransaction(
@@ -204,6 +257,7 @@ async function deleteInTransaction(
     return err(new DomainError("conflict", "media.in_use"));
   }
   await tx.mediaAsset.delete({ where: { id: asset.id } });
+  await input.removeFiles(asset);
   await writeAudit(tx, {
     clubId: input.clubId,
     entityType: "media_asset",
@@ -218,25 +272,10 @@ async function deleteInTransaction(
   return ok(asset);
 }
 
-/** يحذف صف صورة لا يستعملها شيء (الملفات يحذفها المستدعي بعد النجاح). */
+/** يحذف صورة لا يستعملها شيء: الصف وملفاتها تحت قفل المحتوى. */
 export function deleteMediaAsset(
   db: Db,
   input: DeleteAssetInput,
 ): Promise<Result<MediaAsset, DomainError>> {
   return inTransaction(db, (tx) => deleteInTransaction(tx, input));
-}
-
-/**
- * هل تُخدَّم الصورة للعامة؟ فقط إن كانت في آخر إصدار لنادي الموقع: صورة مسودة أو إصدار سابق لا تُرى
- * من خارج اللوحة.
- */
-export async function isPublishedAsset(db: Db, clubId: string, sha256: string): Promise<boolean> {
-  const rows = await db.$queryRaw<{ found: number }[]>`
-    SELECT 1 AS found FROM content_release_media crm
-    JOIN media_assets ma ON ma.id = crm.asset_id
-    WHERE ma.club_id = ${clubId}::uuid AND ma.sha256 = ${sha256}
-      AND crm.release_id = (SELECT id FROM content_releases WHERE club_id = ${clubId}::uuid
-        ORDER BY seq DESC LIMIT 1)
-    LIMIT 1`;
-  return rows.length > 0;
 }

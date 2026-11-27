@@ -77,6 +77,28 @@ async function writePositions(tx: Tx, ids: readonly string[]): Promise<void> {
   }
 }
 
+/**
+ * الصورتان ما زالتا في مكتبة النادي؟ تُفحصان بعد القفل: حذف الصورة يأخذ القفل نفسه، فصورة حُذفت بعد فتح
+ * النموذج تُرفض بسببها لا بخطأ FK.
+ */
+async function missingImage(tx: Tx, clubId: string, content: SlideContent): Promise<string | null> {
+  const ids =
+    content.mobile === null ? [content.desktop.id] : [content.desktop.id, content.mobile.id];
+  const found = await tx.mediaAsset.findMany({
+    where: { clubId, id: { in: ids } },
+    select: { id: true },
+  });
+  const known = new Set(found.map((row) => row.id));
+  if (!known.has(content.desktop.id)) {
+    return "desktop";
+  }
+  return content.mobile !== null && !known.has(content.mobile.id) ? "mobile" : null;
+}
+
+function imageUnknown(field: string): Result<never, DomainError> {
+  return err(new DomainError("not_found", "slider.image_unknown", { field }));
+}
+
 export interface CreateSlideInput extends SliderActor {
   readonly content: SlideContent;
 }
@@ -89,6 +111,10 @@ async function createInTransaction(
   const draft = await loadDraftSlider(tx, input.clubId);
   if (draft.slides.length >= MAX_SLIDES) {
     return err(new DomainError("validation", "slider.too_many"));
+  }
+  const missing = await missingImage(tx, input.clubId, input.content);
+  if (missing !== null) {
+    return imageUnknown(missing);
   }
   const id = randomUUID();
   const position = draft.slides.length;
@@ -147,6 +173,10 @@ async function updateInTransaction(
   const locked = await lockedSlide(tx, input);
   if (!locked.ok) {
     return locked;
+  }
+  const missing = await missingImage(tx, input.clubId, input.content);
+  if (missing !== null) {
+    return imageUnknown(missing);
   }
   const updatedAt = nextStamp(input.now, locked.value.slide.updatedAt);
   await tx.contentSlide.update({

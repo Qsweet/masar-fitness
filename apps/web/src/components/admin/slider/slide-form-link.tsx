@@ -5,7 +5,7 @@ import type { FieldForm } from "../ui/field-form";
 import { CheckboxField, DateField, FieldRow, TextField } from "../ui/fields";
 import { uiStyles } from "../ui/kit";
 import { TARGET_GROUPS, type SliderText, type TargetOption } from "./types";
-import styles from "./slider.module.css";
+import styles from "./editor.module.css";
 
 interface LinkProps {
   readonly form: FieldForm;

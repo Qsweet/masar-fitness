@@ -2,7 +2,7 @@ import { MediaPicture } from "@/components/ui/media-picture";
 import { textFieldName } from "@/server/admin/slider/slide-form-names";
 import type { FormValues } from "@/server/admin/field-form";
 import type { AssetOption, SliderText } from "./types";
-import styles from "./slider.module.css";
+import styles from "./editor.module.css";
 
 /**
  * معاينة حية للشريحة بجانب الحقول (docs/ADMIN_A3_SLIDER.md §11): الصورة والنصوص العربية بالتدرّج

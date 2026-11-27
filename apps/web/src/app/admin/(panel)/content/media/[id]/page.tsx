@@ -10,7 +10,7 @@ import { clubTimezone } from "@/server/admin/content/timezone";
 import { isUuid } from "@/server/admin/form";
 import { requireStaff } from "@/server/admin/guard";
 import { getDb } from "@/server/db";
-import styles from "@/components/admin/slider/slider.module.css";
+import styles from "@/components/admin/media/media.module.css";
 
 export function generateMetadata(): Metadata {
   return { title: getAdminDictionary().media.asset.title };

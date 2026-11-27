@@ -53,6 +53,12 @@ describe("parseSlideLink", () => {
     expect(internal("/admin")).toEqual({ ok: false, error: "slider.link_unknown" });
     expect(internal("https://example.com")).toEqual({ ok: false, error: "slider.link_unknown" });
     expect(internal("")).toEqual({ ok: false, error: "slider.link_required" });
+    // حتى لو دخل القائمة خطأً، الشكل يُفحص أولًا
+    const sneaky = parseSlideLink(
+      { kind: "internal", internal: "/\\evil.com", external: "", newTab: false },
+      new Set(["/\\evil.com"]),
+    );
+    expect(sneaky).toEqual({ ok: false, error: "slider.link_unknown" });
   });
 
   it("الخارجي يحمل اختيار اللسان الجديد، والنوع المجهول مرفوض", () => {
@@ -77,5 +83,16 @@ describe("isStoredLink", () => {
     expect(isStoredLink({ kind: "external", url: "javascript:x", newTab: false })).toBe(false);
     expect(isStoredLink({ kind: "internal", path: "//evil.example" })).toBe(false);
     expect(isStoredLink({ kind: "internal", path: "/memberships" })).toBe(true);
+    expect(isStoredLink({ kind: "internal", path: "/memberships/plan-12#top" })).toBe(true);
+    for (const path of [
+      "/\\evil.com",
+      "/%5cevil.com",
+      "/a//b",
+      "/Memberships",
+      "/a b",
+      "javascript:x",
+    ]) {
+      expect(isStoredLink({ kind: "internal", path }), path).toBe(false);
+    }
   });
 });

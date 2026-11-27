@@ -11,7 +11,7 @@ import { altField, textFieldName } from "@/server/admin/slider/slide-form-names"
 import { CountedField } from "../ui/char-counter";
 import type { FieldForm } from "../ui/field-form";
 import { CheckboxField } from "../ui/fields";
-import styles from "./slider.module.css";
+import styles from "./editor.module.css";
 
 type Text = AdminDictionary["slider"];
 const DIRECTIONS = { ar: "rtl", en: "ltr" } as const;

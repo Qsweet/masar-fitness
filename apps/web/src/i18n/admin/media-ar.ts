@@ -15,6 +15,11 @@ export const mediaAr = {
   gridTitle: "المكتبة",
   /** {count}: عدد الصور. */
   gridLead: "{count} صورة. الأحدث أولًا.",
+  pagination: "صفحات المكتبة",
+  /** {from}، {to}، {total}. */
+  range: "{from} إلى {to} من {total}",
+  newer: "الأحدث",
+  older: "الأقدم",
   emptyTitle: "لا صور بعد",
   emptyLead: "ارفع صورة لتستعملها في شريحة.",
   /** {width}×{height}: الأبعاد. */
@@ -89,12 +94,14 @@ export const sliderErrorsAr = {
   "media.no_file": "اختر ملف صورة.",
   "media.too_large": "الملف أكبر من 8 ميغابايت.",
   "media.too_small": "الصورة صغيرة: كل ضلع 640 بكسل على الأقل.",
-  "media.too_large_pixels": "الصورة أكبر من الحد: كل ضلع 8000 بكسل على الأكثر.",
+  "media.too_large_pixels": "الصورة أكبر من الحد: 25 ميغابكسل وكل ضلع 8000 بكسل على الأكثر.",
   "media.type_unsupported": "النوع غير مقبول: JPEG أو PNG أو WebP فقط (لا SVG ولا GIF ولا HEIC).",
   "media.animated": "الصور المتحركة غير مقبولة.",
   "media.unreadable": "تعذّرت قراءة الصورة: الملف تالف أو ليس صورة.",
   "media.rate_limited": "رفعت صورًا كثيرة في وقت قصير. انتظر دقائق ثم أعد المحاولة.",
   "media.store_failed": "تعذّر حفظ الصورة على الخادم. أبلغ مدير النظام.",
+  "media.busy": "الخادم يجهّز صورة أخرى الآن. أعد المحاولة بعد لحظات.",
+  "media.interlaced": "صور PNG المتشابكة (interlaced) غير مقبولة. احفظها بلا تشابك أو بصيغة JPEG.",
 } as const;
 
 /** تنبيهات النجاح (`?done=`). تُدمج في `adminAr.notices`. */

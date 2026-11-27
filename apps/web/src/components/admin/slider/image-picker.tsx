@@ -5,7 +5,7 @@ import { fill } from "@/i18n/fill";
 import { cx } from "@/lib/cx";
 import { uiStyles } from "../ui/kit";
 import type { AssetOption, SliderText } from "./types";
-import styles from "./slider.module.css";
+import styles from "./editor.module.css";
 
 interface ImagePickerProps {
   readonly name: string;

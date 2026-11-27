@@ -3,11 +3,12 @@ import { createMediaAsset, findAssetByHash, staffActor, type Db, type MediaAsset
 import { err, ok, singleLine, type Result } from "@masar/domain";
 import { MAX_ORIGINAL_NAME_LENGTH } from "@/config/media-library";
 import { processImage, sha256Of } from "./process-image";
-import { removeAssetFiles, storeVariants } from "./store";
+import { withImageSlot } from "./slot";
+import { storeVariants, variantsComplete } from "./store";
 
 /**
- * رفع صورة إلى المكتبة (docs/ADMIN_A3_SLIDER.md §6.1) بلا اعتماد على Next: البصمة أولًا (صورة رُفعت
- * من قبل ترجع أصلها بلا معالجة)، ثم المعالجة، ثم الملفات، ثم الصف. فشل الصف يحذف ما كُتب الآن.
+ * رفع صورة إلى المكتبة (docs/ADMIN_A3_SLIDER.md §6.1) بلا اعتماد على Next: البصمة أولًا، ثم المعالجة،
+ * ثم الملفات والصف معًا تحت القفل.
  */
 export interface UploadInput {
   readonly root: string;
@@ -32,20 +33,29 @@ export function displayName(raw: string): string {
   return name === "" ? FALLBACK_NAME : name;
 }
 
+/**
+ * الصورة القائمة تُرجع بلا معالجة ما دامت ملفاتها كاملة؛ وإلا تُعالج وتُكتب ملفاتها من جديد (الصف لا
+ * يتغير، C2). المعالجة في الخانة الوحيدة خارج القفل، والملفات والصف تحت قفل المحتوى (القرار 77).
+ */
 export async function uploadImage(db: Db, input: UploadInput): Promise<Result<Uploaded, string>> {
-  const known = await findAssetByHash(db, input.clubId, sha256Of(input.bytes));
-  if (known !== null) {
+  const { root, clubId } = input;
+  const hash = sha256Of(input.bytes);
+  const known = await findAssetByHash(db, clubId, hash);
+  if (known !== null && (await variantsComplete(root, clubId, hash, known.widths))) {
     return ok({ asset: known, existing: true });
   }
-  const processed = await processImage(input.bytes);
+  const processed = await withImageSlot(() => processImage(input.bytes));
+  if (processed === null) {
+    return err("media.busy");
+  }
   if (!processed.ok) {
     return err(processed.error);
   }
   const image = processed.value;
-  const written = await storeVariants(input.root, input.clubId, image.sha256, image.variants);
-  try {
-    const created = await createMediaAsset(db, {
-      clubId: input.clubId,
+  const created = await createMediaAsset(
+    db,
+    {
+      clubId,
       staffId: input.staffId,
       actor: staffActor(input.staffId),
       sha256: image.sha256,
@@ -57,12 +67,13 @@ export async function uploadImage(db: Db, input: UploadInput): Promise<Result<Up
       dominantColor: image.dominantColor,
       originalName: displayName(input.fileName),
       now: input.now,
-    });
-    return ok(created);
-  } catch (error) {
-    if (written) {
-      await removeAssetFiles(input.root, input.clubId, image.sha256);
-    }
-    throw error;
-  }
+    },
+    async (existing) => {
+      const widths = existing?.widths ?? image.widths;
+      if (!(await variantsComplete(root, clubId, image.sha256, widths))) {
+        await storeVariants(root, clubId, image.sha256, image.variants);
+      }
+    },
+  );
+  return ok(created);
 }

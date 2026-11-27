@@ -20,7 +20,7 @@ import { DisplaySection, LinkSection } from "./slide-form-link";
 import { AltSection, TextsSection } from "./slide-form-texts";
 import { SlidePreview } from "./slide-preview";
 import type { AssetOption, TargetOption } from "./types";
-import styles from "./slider.module.css";
+import styles from "./editor.module.css";
 
 interface SlideFormProps {
   readonly action: FieldFormAction;

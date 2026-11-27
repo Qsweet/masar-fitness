@@ -1,5 +1,6 @@
 import "server-only";
-import { listMediaAssets, loadDraftSlider, type DraftSlider } from "@masar/db";
+import { listMediaImages, loadDraftSlider, type DraftSlider } from "@masar/db";
+import { MEDIA_PICKER_LIMIT } from "@/config/media-library";
 import type { SlideLink, SliderState } from "@masar/domain";
 import type { AssetOption, TargetOption } from "@/components/admin/slider/types";
 import type { AdminDictionary } from "@/i18n/admin";
@@ -66,7 +67,7 @@ export function linkLabel(link: SlideLink, targets: readonly TargetOption[], tex
 }
 
 export async function assetOptions(clubId: string): Promise<AssetOption[]> {
-  return (await listMediaAssets(getDb(), clubId)).map((asset) => ({
+  return (await listMediaImages(getDb(), clubId, MEDIA_PICKER_LIMIT)).map((asset) => ({
     id: asset.id,
     hash: asset.hash,
     width: asset.width,

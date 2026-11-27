@@ -104,6 +104,23 @@ export function useCurrentSlide(
   }, [track, onChange]);
 }
 
+/**
+ * الشرائح غير الحالية خاملة (`inert`) مع JavaScript: لا تركيز ولا قارئ شاشة يدخلها وهي خارج الشاشة،
+ * والتنقل بالأسهم والنقاط. بلا JavaScript كلها حية (المسار يُمرَّر).
+ */
+export function useInertOthers(
+  track: RefObject<HTMLElement | null>,
+  index: number,
+  enabled: boolean,
+): void {
+  useEffect(() => {
+    const slides = track.current === null ? [] : [...track.current.children];
+    for (const [position, slide] of slides.entries()) {
+      slide.toggleAttribute("inert", enabled && position !== index);
+    }
+  }, [track, index, enabled]);
+}
+
 /** يمرّر المسار إلى شريحة (المسار باتجاه الصفحة: في RTL يكون الموضع سالبًا). */
 export function scrollToSlide(track: HTMLElement, index: number, smooth: boolean): void {
   const sign = getComputedStyle(track).direction === "rtl" ? -1 : 1;

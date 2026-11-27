@@ -148,6 +148,19 @@ test("الإيقاف ظاهر ويعمل، ولوحة المفاتيح بالا�
   const carousel = region(tab);
   const pause = carousel.getByRole("button", { name: PUBLIC.pause });
   await expect(pause).toBeVisible();
+  // الإيقاف أول عنصر تحكم في ترتيب التركيز، والتحكم قبل المسار، والشريحة غير الحالية خاملة
+  await expect(carousel.getByRole("button").first()).toHaveAccessibleName(PUBLIC.pause);
+  const controlsFirst = await carousel.evaluate((section) => {
+    const controls = section.querySelector('[role="group"]:not([aria-roledescription])');
+    const track = section.querySelector("#home-slider-track");
+    return (
+      controls !== null &&
+      track !== null &&
+      (controls.compareDocumentPosition(track) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
+    );
+  });
+  expect(controlsFirst).toBe(true);
+  await expect(carousel.locator("#home-slider-track > [inert]")).toHaveCount(1);
   await pause.click();
   await expect(carousel.getByRole("button", { name: PUBLIC.play })).toBeVisible();
   const second = carousel.getByRole("button", { name: "اعرض الشريحة 2" });
@@ -196,6 +209,7 @@ test("بلا JavaScript: الشرائح شريط يُمرَّر بروابطه،
   const carousel = region(tab);
   await expect(carousel.getByRole("group")).toHaveCount(2);
   await expect(carousel.getByRole("button")).toHaveCount(0);
+  await expect(carousel.locator("[inert]")).toHaveCount(0);
   await expect(carousel.getByRole("link", { name: "اكتشف الاشتراكات" })).toBeVisible();
   const overflow = await carousel
     .locator("#home-slider-track")

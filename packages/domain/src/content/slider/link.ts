@@ -54,13 +54,24 @@ export function parseExternalUrl(raw: string): Result<string, string> {
   return ok(`${HTTPS_PREFIX}${host}${tail}`);
 }
 
-/** مسار داخلي بلا لغة يطابق عنصرًا من القائمة المعروفة حرفيًا. */
+/**
+ * شكل المسار الداخلي: يبدأ بـ`/` وحروفه لاتينية صغيرة وأرقام و`/ _ # -` وحدها، ولا `//`. فلا `\`
+ * (المتصفح يقرأ `/\evil.com` رابطًا إلى موقع آخر) ولا ترميز نسبة ولا مخطط. المعرّفات النصية للباقات
+ * والمقالات بهذا الشكل.
+ */
+const INTERNAL_PATH = /^\/[a-z0-9/_#-]*$/;
+
+export function isInternalPathShape(path: string): boolean {
+  return INTERNAL_PATH.test(path) && !path.includes("//");
+}
+
+/** مسار داخلي بلا لغة بشكله الصارم، ويطابق عنصرًا من القائمة المعروفة حرفيًا. */
 export function parseInternalPath(raw: string, known: ReadonlySet<string>): Result<string, string> {
   const value = raw.trim();
   if (value === "") {
     return err("slider.link_required");
   }
-  return known.has(value) ? ok(value) : err("slider.link_unknown");
+  return isInternalPathShape(value) && known.has(value) ? ok(value) : err("slider.link_unknown");
 }
 
 export function parseSlideLink(
@@ -89,7 +100,7 @@ export function isStoredLink(link: SlideLink): boolean {
     case "none":
       return true;
     case "internal":
-      return link.path.startsWith("/") && !link.path.startsWith("//") && !UNSAFE.test(link.path);
+      return isInternalPathShape(link.path);
     case "external": {
       const url = parseExternalUrl(link.url);
       return url.ok && url.value === link.url;

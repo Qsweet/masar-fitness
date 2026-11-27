@@ -36,6 +36,18 @@ const readPublished = createPublishedReader(
   logger,
 );
 
+/**
+ * الشريط المنشور ونادي الموقع لخدمة الصور العامة (القرار 77): القارئ نفسه بذاكرة لقطاته، فلا يُعاد
+ * تحليل اللقطة لكل صورة، والقاعدة معطلة ⇒ آخر قراءة سليمة فتبقى صور الشريط المعروض تُخدَّم.
+ */
+export async function publishedSlider(): Promise<{
+  readonly clubId: string | null;
+  readonly slider: SliderState;
+}> {
+  const published = await readPublished();
+  return { clubId: published.clubId, slider: published.slider };
+}
+
 /** القاموس المدموج لكل مجموعة تجاوزات ولغة، فلا يُعاد الدمج في كل طلب. */
 const merged = new WeakMap<TextOverrides, Partial<Record<Locale, Dictionary>>>();
 

@@ -6,7 +6,10 @@ import { MediaGrid } from "@/components/admin/media/media-grid";
 import { UploadForm } from "@/components/admin/media/upload-form";
 import { Card, EmptyState, Notice, noticeText, PageHeader } from "@/components/admin/ui/kit";
 import { QueryError } from "@/components/admin/ui/query-error";
-import { getAdminDictionary } from "@/i18n/admin";
+import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
+import { Pagination } from "@/components/admin/ui/pagination";
+import { ADMIN_ROUTES } from "@/config/admin";
+import { MEDIA_PAGE_SIZE } from "@/config/media-library";
 import { fill } from "@/i18n/fill";
 import { formatNumber } from "@/i18n/format";
 import { requireStaff } from "@/server/admin/guard";
@@ -15,6 +18,45 @@ import { mediaStatus } from "@/server/media/status";
 
 export function generateMetadata(): Metadata {
   return { title: getAdminDictionary().media.title };
+}
+
+const MAX_PAGE = 10_000;
+
+function pageNumber(value: unknown): number {
+  const page = typeof value === "string" && /^[0-9]{1,5}$/.test(value) ? Number(value) : 1;
+  return Math.min(Math.max(page, 1), MAX_PAGE);
+}
+
+function pageHref(page: number): string {
+  return page > 1 ? `${ADMIN_ROUTES.contentMedia}?page=${String(page)}` : ADMIN_ROUTES.contentMedia;
+}
+
+function MediaPagination(props: {
+  readonly page: number;
+  readonly shown: number;
+  readonly total: number;
+  readonly text: AdminDictionary["media"];
+}) {
+  const { page, shown, total, text } = props;
+  if (total <= MEDIA_PAGE_SIZE) {
+    return null;
+  }
+  const from = (page - 1) * MEDIA_PAGE_SIZE + 1;
+  return (
+    <Pagination
+      label={text.pagination}
+      range={fill(text.range, {
+        from: formatNumber(from),
+        to: formatNumber(from + shown - 1),
+        total: formatNumber(total),
+      })}
+      previous={{ label: text.newer, href: page > 1 ? pageHref(page - 1) : null }}
+      next={{
+        label: text.older,
+        href: page * MEDIA_PAGE_SIZE < total ? pageHref(page + 1) : null,
+      }}
+    />
+  );
 }
 
 /**
@@ -27,7 +69,11 @@ export default async function MediaPage(props: PageProps<"/admin/content/media">
   const text = dictionary.media;
   const query = await props.searchParams;
   const status = mediaStatus();
-  const assets = await listMediaAssets(getDb(), staff.clubId);
+  const page = pageNumber(query.page);
+  const { items, total } = await listMediaAssets(getDb(), staff.clubId, {
+    offset: (page - 1) * MEDIA_PAGE_SIZE,
+    limit: MEDIA_PAGE_SIZE,
+  });
   return (
     <>
       <PageHeader title={text.title} description={text.lead} />
@@ -41,17 +87,14 @@ export default async function MediaPage(props: PageProps<"/admin/content/media">
       ) : null}
       <Card
         title={text.gridTitle}
-        description={
-          assets.length === 0
-            ? undefined
-            : fill(text.gridLead, { count: formatNumber(assets.length) })
-        }
+        description={total === 0 ? undefined : fill(text.gridLead, { count: formatNumber(total) })}
       >
-        {assets.length === 0 ? (
+        {items.length === 0 ? (
           <EmptyState icon="image" title={text.emptyTitle} description={text.emptyLead} />
         ) : (
-          <MediaGrid assets={assets} text={text} />
+          <MediaGrid assets={items} text={text} />
         )}
+        <MediaPagination page={page} shown={items.length} total={total} text={text} />
       </Card>
     </>
   );

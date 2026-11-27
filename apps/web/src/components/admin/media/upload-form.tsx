@@ -3,7 +3,7 @@ import { MAX_UPLOAD_BYTES, MIN_IMAGE_SIDE } from "@/config/media-library";
 import type { AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import { buttonClass, uiStyles } from "../ui/kit";
-import styles from "../slider/slider.module.css";
+import styles from "./media.module.css";
 
 const MIB = 1_048_576;
 

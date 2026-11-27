@@ -59,6 +59,8 @@ describe("قراءة الإصدار المنشور", () => {
     up = false;
     const result = await read();
     expect(result.releaseId).toBe("r1");
+    // نادي الموقع معه، فصور الشريط المعروض تبقى تُخدَّم والقاعدة معطلة
+    expect(result.clubId).toBe("club");
     expect(result.overrides.get("hero.title")?.ar?.value).toBe("عنوان منشور");
   });
 

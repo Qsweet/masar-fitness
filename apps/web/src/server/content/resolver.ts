@@ -32,6 +32,8 @@ export interface PublishedContent {
 }
 
 export interface PublishedTexts extends PublishedContent {
+  /** نادي الموقع (مجلد صوره)، أو null قبل أي قراءة سليمة. */
+  readonly clubId: string | null;
   readonly releaseId: string | null;
   /** `defaults`: تعذّرت القراءة ولا قراءة سليمة قبلها. */
   readonly mode: "published" | "defaults";
@@ -39,7 +41,7 @@ export interface PublishedTexts extends PublishedContent {
 
 export const NO_OVERRIDES: TextOverrides = new Map();
 const NOTHING: PublishedContent = { overrides: NO_OVERRIDES, slider: EMPTY_SLIDER };
-const DEFAULTS: PublishedTexts = { releaseId: null, ...NOTHING, mode: "defaults" };
+const DEFAULTS: PublishedTexts = { clubId: null, releaseId: null, ...NOTHING, mode: "defaults" };
 /** أربع لقطات تكفي: المنشور الحالي وما قبله أثناء التبديل. */
 const SNAPSHOT_CACHE_SIZE = 4;
 
@@ -105,7 +107,7 @@ export function createPublishedReader(
       }
       const releaseId = await source.latestReleaseId(clubId);
       const content = releaseId === null ? NOTHING : await contentFor(clubId, releaseId);
-      lastGood = { releaseId, ...content, mode: "published" };
+      lastGood = { clubId, releaseId, ...content, mode: "published" };
       return lastGood;
     } catch (error) {
       log.error("content.read_failed", { error });

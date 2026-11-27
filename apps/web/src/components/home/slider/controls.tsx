@@ -1,6 +1,6 @@
 import { Icon } from "@/components/ui/icon";
 import { fill } from "@/i18n/fill";
-import styles from "./slider.module.css";
+import styles from "./controls.module.css";
 
 export interface CarouselLabels {
   readonly controls: string;

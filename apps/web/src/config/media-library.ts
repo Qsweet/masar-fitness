@@ -6,8 +6,8 @@
 export const MAX_UPLOAD_BYTES = 8_388_608;
 /** هامش ترويسات النموذج متعدد الأجزاء فوق الملف نفسه. */
 export const UPLOAD_FORM_OVERHEAD_BYTES = 65_536;
-/** أقصى بكسلات الأصل (40 ميغابكسل) قبل فك الترميز. */
-export const MAX_INPUT_PIXELS = 40_000_000;
+/** أقصى بكسلات الأصل (25 ميغابكسل، 6000×4000 تقريبًا) تُفحص من الترويسة قبل فك الترميز. */
+export const MAX_INPUT_PIXELS = 25_000_000;
 export const MIN_IMAGE_SIDE = 640;
 export const MAX_IMAGE_SIDE = 8_000;
 /** جودة الترميز: AVIF أصغر بجودة مرئية مماثلة لـWebP 80. */
@@ -37,3 +37,7 @@ export function mediaFileUrl(hash: string, width: number, format: MediaFormat): 
 
 export const MEDIA_HASH_SHAPE = /^[0-9a-f]{64}$/;
 export const MEDIA_FILE_SHAPE = /^w(\d{3,4})\.(avif|webp)$/;
+
+/** صور المكتبة في الصفحة، وأقصى صور في منتقي الشريحة (الأحدث أولًا). */
+export const MEDIA_PAGE_SIZE = 24;
+export const MEDIA_PICKER_LIMIT = 120;

@@ -20,7 +20,7 @@ import {
 import { getDb } from "../../db";
 import { knownSlidePaths } from "../../content/slider-links";
 import { clubTimezone } from "../content/timezone";
-import { formFailure, type FormFailure, type FormValues } from "../field-form";
+import { failureOf, formFailure, type FormFailure, type FormValues } from "../field-form";
 import { isUuid } from "../form";
 import type { StaffContext } from "../session";
 import { parseSlide } from "./slide-form";
@@ -40,7 +40,7 @@ function who(context: StaffContext, now: Date) {
 }
 
 function refused(error: DomainError): Result<never, FormFailure> {
-  return err(formFailure(error.reason));
+  return err(failureOf(error));
 }
 
 /** أسماء الحقول التي تغيّرت عن المحفوظ (للتدقيق وللرفض بلا تغيير). */

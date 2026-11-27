@@ -9,7 +9,6 @@ import {
   discardDraft,
   draftSliderState,
   findRelease,
-  isPublishedAsset,
   latestRelease,
   loadDraftSlider,
   moveSlideInDraft,
@@ -79,6 +78,7 @@ async function setup() {
   return { clubId, staff, who, asset, addSlide, publish };
 }
 
+const noFiles = () => Promise.resolve();
 const raw = (promise: Promise<unknown>) =>
   promise.then(
     () => "ok",
@@ -87,7 +87,7 @@ const raw = (promise: Promise<unknown>) =>
 
 describe("قيود القاعدة", () => {
   it("C2: الأصل لا يتغير، وC3: ربط الإصدار بأصوله للإلحاق فقط", async () => {
-    const { clubId, asset, addSlide, publish } = await setup();
+    const { asset, addSlide, publish } = await setup();
     expect(
       await raw(db.$executeRaw`UPDATE media_assets SET width = 1 WHERE id = ${asset.id}::uuid`),
     ).toContain("media_asset_immutable");
@@ -102,7 +102,7 @@ describe("قيود القاعدة", () => {
     expect(await raw(db.$executeRaw`TRUNCATE content_release_media`)).toContain(
       "content_release_media_immutable",
     );
-    expect(await isPublishedAsset(db, clubId, asset.hash)).toBe(true);
+    expect(await db.contentReleaseMedia.count({ where: { assetId: asset.id } })).toBe(1);
   });
 
   it("CHECK يرفض رابطًا بغير https وزرًا بلا رابط", async () => {
@@ -113,6 +113,14 @@ describe("قيود القاعدة", () => {
         UPDATE content_slides SET link_kind = 'external', link_target = 'javascript:alert(1)'
         WHERE id = ${id}::uuid`),
     ).toContain("content_slides_link_shape");
+    for (const target of ["/\\evil.com", "/%5cevil.com", "//evil.com", "/Upper"]) {
+      expect(
+        await raw(db.$executeRaw`
+          UPDATE content_slides SET link_kind = 'internal', link_target = ${target}
+          WHERE id = ${id}::uuid`),
+        target,
+      ).toContain("content_slides_link_shape");
+    }
     expect(
       await raw(db.$executeRaw`UPDATE content_slides SET cta_ar = 'اشترك' WHERE id = ${id}::uuid`),
     ).toContain("content_slides_cta_needs_link");
@@ -120,30 +128,40 @@ describe("قيود القاعدة", () => {
 });
 
 describe("المكتبة", () => {
-  it("الصورة المكررة ترجع الأصل القائم بلا صف ثانٍ", async () => {
+  it("الصورة المكررة ترجع الأصل القائم بلا صف ثانٍ، وتمر بضمان ملفاتها", async () => {
     const { clubId, staff, asset } = await setup();
-    const again = await createMediaAsset(db, {
-      clubId,
-      staffId: staff.id,
-      actor: staffActor(staff.id),
-      sha256: asset.hash,
-      width: asset.width,
-      height: asset.height,
-      bytes: asset.bytes,
-      variantWidths: asset.widths,
-      blurDataUrl: asset.blur,
-      dominantColor: asset.color,
-      originalName: "again.jpg",
-      now: NOW,
-    });
+    const ensured: (string | null)[] = [];
+    const again = await createMediaAsset(
+      db,
+      {
+        clubId,
+        staffId: staff.id,
+        actor: staffActor(staff.id),
+        sha256: asset.hash,
+        width: asset.width,
+        height: asset.height,
+        bytes: asset.bytes,
+        variantWidths: asset.widths,
+        blurDataUrl: asset.blur,
+        dominantColor: asset.color,
+        originalName: "again.jpg",
+        now: NOW,
+      },
+      (existing) => {
+        ensured.push(existing?.id ?? null);
+        return Promise.resolve();
+      },
+    );
+    // الملفات تُضمن للأصل القائم أيضًا (إصلاح ملفات ناقصة)
     expect(again).toMatchObject({ existing: true, asset: { id: asset.id } });
+    expect(ensured).toEqual([asset.id]);
     expect(await db.mediaAsset.count({ where: { clubId } })).toBe(1);
   });
 
   it("حذف صورة تستعملها شريحة مسودة أو إصدار مرفوض، والقاعدة نفسها تمنعه", async () => {
     const { clubId, who, asset, addSlide, publish } = await setup();
     const id = await addSlide();
-    const input = { clubId, assetId: asset.id, actor: who.actor, now: NOW };
+    const input = { clubId, assetId: asset.id, actor: who.actor, now: NOW, removeFiles: noFiles };
     expect(await deleteMediaAsset(db, input)).toMatchObject({
       ok: false,
       error: { reason: "media.in_use" },
@@ -169,12 +187,18 @@ describe("المكتبة", () => {
   it("صورة لا يستعملها شيء تُحذف بسطر تدقيق", async () => {
     const { clubId, staff, who } = await setup();
     const unused = await createTestAsset(db, clubId, staff.id);
+    const removed: string[] = [];
     const result = await deleteMediaAsset(db, {
       clubId,
       assetId: unused.id,
       actor: who.actor,
       now: NOW,
+      removeFiles: (gone) => {
+        removed.push(gone.id);
+        return Promise.resolve();
+      },
     });
+    expect(removed).toEqual([unused.id]);
     expect(result.ok).toBe(true);
     expect(await db.mediaAsset.count({ where: { id: unused.id } })).toBe(0);
     expect(await db.auditLog.count({ where: { clubId, action: "media_asset_deleted" } })).toBe(1);

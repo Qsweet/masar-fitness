@@ -6,6 +6,7 @@ import {
   scrollToSlide,
   useCurrentSlide,
   useHold,
+  useInertOthers,
   useMouseDrag,
   usePageVisible,
   useReducedMotion,
@@ -40,6 +41,8 @@ export function keyTarget(key: string, rtl: boolean, index: number, count: numbe
 /**
  * الشريط في المتصفح (docs/ADMIN_A3_SLIDER.md §10، نمط APG «Carousel»): بلا JavaScript مسار أفقي يُمرَّر
  * بالتقاط الشرائح؛ ومعه أسهم ونقاط بتقدّم، وزر إيقاف/تشغيل أولًا، ولوحة المفاتيح، والسحب بالفأرة.
+ * عناصر التحكم قبل المسار في الترتيب (الإيقاف أول ما يُركَّز عليه، APG) وتحته في العرض، والشرائح غير
+ * الحالية خاملة (`inert`) بعد التحميل فلا يتنقل التركيز إلى روابط خارج الشاشة.
  * التشغيل التلقائي هو حركة شريط التقدّم نفسها (انتهاؤها ينقل)، فيتوقف معها عند المرور والتركيز وإخفاء
  * اللسان وإيقاف الزائر، ولا يعمل مع تقليل الحركة.
  */
@@ -69,6 +72,7 @@ export function Carousel({ count, autoplay, intervalMs, labels, children }: Caro
     }
   };
   useCurrentSlide(track, setIndex);
+  useInertOthers(track, index, enhanced);
   const { dragging, ...drag } = useMouseDrag(track, goTo);
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     const rtl = getComputedStyle(event.currentTarget).direction === "rtl";
@@ -85,16 +89,6 @@ export function Carousel({ count, autoplay, intervalMs, labels, children }: Caro
       onKeyDown={onKeyDown}
       {...hold.handlers}
     >
-      <div
-        id={TRACK_ID}
-        ref={track}
-        className={styles.track}
-        aria-live={playing ? "off" : "polite"}
-        data-dragging={dragging ? "" : undefined}
-        {...drag}
-      >
-        {children}
-      </div>
       {enhanced && count > 1 ? (
         <Controls
           state={{ count, index, canRotate, playing, stopped, intervalMs }}
@@ -106,6 +100,16 @@ export function Carousel({ count, autoplay, intervalMs, labels, children }: Caro
           }}
         />
       ) : null}
+      <div
+        id={TRACK_ID}
+        ref={track}
+        className={styles.track}
+        aria-live={playing ? "off" : "polite"}
+        data-dragging={dragging ? "" : undefined}
+        {...drag}
+      >
+        {children}
+      </div>
     </div>
   );
 }

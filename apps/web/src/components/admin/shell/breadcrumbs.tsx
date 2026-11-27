@@ -16,7 +16,7 @@ interface BreadcrumbsProps {
 export function Breadcrumbs({ label, labels, detailLabel }: BreadcrumbsProps) {
   const trail = breadcrumbTrail(usePathname(), labels, detailLabel);
   return (
-    <nav aria-label={label}>
+    <nav aria-label={label} className={styles.crumbsNav}>
       <ol className={styles.crumbs}>
         {trail.map((crumb, index) => (
           <li key={crumb.href}>

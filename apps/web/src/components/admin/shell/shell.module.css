@@ -12,6 +12,7 @@
 .column {
   display: grid;
   grid-template-rows: auto 1fr;
+  grid-template-columns: minmax(0, 1fr);
   min-width: 0;
 }
 
@@ -74,7 +75,16 @@
   color: var(--a-text);
 }
 
-/* مسار التنقل: على الهاتف آخر حلقتين */
+/* مسار التنقل: على الهاتف آخر حلقتين، ويتقلص قبل أزرار الشريط فلا تمرير أفقي */
+.crumbsNav {
+  flex: 0 1 auto;
+  min-width: 0;
+  /* هامش لحلقة التركيز داخل القص */
+  margin: -4px;
+  padding: 4px;
+  overflow: hidden;
+}
+
 .crumbs {
   display: flex;
   align-items: center;

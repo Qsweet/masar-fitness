@@ -99,6 +99,10 @@ services:
       # اسم ثابت للقطات: الحاوية تتغير كل دورة، وrestic يختار اللقطة الأم بالاسم
       RESTIC_HOST: masar
       RESTIC_CACHE_DIR: /cache
+      # أولوية منخفضة للمعالج والقرص يطبّقها entrypoint الصورة الرسمية (nice وionice): الموقع أولًا
+      NICE: "10"
+      IONICE_CLASS: "2"
+      IONICE_PRIORITY: "7"
     volumes:
       - media-data:/backup/media:ro
       - backup-status:/status

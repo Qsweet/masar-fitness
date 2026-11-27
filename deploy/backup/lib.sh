@@ -1,4 +1,5 @@
 # shellcheck shell=bash
+# shellcheck source-path=SCRIPTDIR
 # shellcheck disable=SC2034 # ثوابت يستعملها jobs.sh وrestore.sh بعد الاستيراد
 # مكتبة النسخ الاحتياطي (docs/BACKUP.md). يستوردها backup.sh وrestore.sh، ولا تُشغَّل وحدها.
 #
@@ -7,13 +8,18 @@
 #     بخدمة `backup` في deploy/compose.yml، وسجل الحالة في وحدة `backup-status`.
 #   local (الاختبار فقط): أدوات PostgreSQL وrestic على الجهاز نفسه، بمتغيرات PG* وRESTIC_* من البيئة.
 
+# استبدال الأوامر يرث `set -e`: فشل داخل $(...) يوقف السكربت لا يُبتلع
+shopt -s inherit_errexit
+
 MASAR_DIR="${MASAR_DIR:-/opt/masar}"
 ENV_FILE="${MASAR_ENV_FILE:-$MASAR_DIR/deploy/.env}"
 BACKUP_RUNTIME="${BACKUP_RUNTIME:-compose}"
 BACKUP_DB_NAME="${BACKUP_DB_NAME:-masar}"
-LOCK_FILE="${BACKUP_LOCK_FILE:-/var/lock/masar-backup.lock}"
-# انتظار القفل: دورة أخرى (نسخ أو فحص أو استرجاع) تعمل الآن
-LOCK_WAIT_SECONDS=1800
+# في /run (لـroot وحده، يُمحى عند الإقلاع). update.sh يتخطى دورته ما دام ممسوكًا.
+LOCK_FILE="${BACKUP_LOCK_FILE:-/run/masar-backup.lock}"
+# انتظار القفل: دورة أخرى (نسخ أو فحص أو استرجاع) تعمل الآن. يُقصَّر في الاختبار وحده.
+LOCK_WAIT_SECONDS="${BACKUP_LOCK_WAIT_SECONDS:-1800}"
+STAGE_PREFIX=/dev/shm/masar-backup.
 # الاحتفاظ (docs/BACKUP.md §4)
 KEEP_DAILY=14
 KEEP_WEEKLY=8
@@ -48,20 +54,16 @@ die() {
 }
 utc_now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
-# يقرأ قيمة من deploy/.env دون تنفيذه (لا `source`: القيم ليست صدفة). في الاختبار: من البيئة.
-env_value() {
-  local key="$1"
-  if [ "$BACKUP_RUNTIME" = local ]; then
-    printf '%s' "${!key:-}"
-    return
-  fi
-  [ -r "$ENV_FILE" ] || die "لا أستطيع قراءة $ENV_FILE"
-  sed -n "s/^${key}=//p" "$ENV_FILE" | tail -n 1 | sed -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'$/\1/"
-}
+HERE_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=envfile.sh
+. "$HERE_LIB/envfile.sh"
 
 require_config() {
-  [ -n "$(env_value RESTIC_REPOSITORY)" ] || die "RESTIC_REPOSITORY غير مكتوب في deploy/.env (docs/BACKUP.md §7)"
-  [ -n "$(env_value RESTIC_PASSWORD)" ] || die "RESTIC_PASSWORD غير مكتوب في deploy/.env (docs/BACKUP.md §7)"
+  local key value
+  for key in RESTIC_REPOSITORY RESTIC_PASSWORD; do
+    value="$(env_value "$key")"
+    [ -n "$value" ] || die "$key غير مكتوب في deploy/.env (docs/BACKUP.md §7)"
+  done
 }
 
 compose() {
@@ -72,8 +74,22 @@ compose() {
 take_lock() {
   # عملية فرعية لمن يمسك القفل (نسخة الأمان قبل الاسترجاع فوق الإنتاج) ترث واصفه
   [ "${BACKUP_LOCK_HELD:-}" = yes ] && return 0
-  exec 9>"$LOCK_FILE"
+  CURRENT_STEP=lock
+  (umask 077 && : >>"$LOCK_FILE")
+  exec 9>>"$LOCK_FILE"
   flock -w "$LOCK_WAIT_SECONDS" 9 || die "عملية نسخ أو استرجاع أخرى تعمل الآن (القفل $LOCK_FILE)"
+  remove_stale_stages
+}
+
+# نسخ قاعدة صريحة في الذاكرة تركتها دورة قُتلت (SIGKILL، انقطاع): تحت القفل لا يملكها أحد الآن.
+remove_stale_stages() {
+  local stale
+  [ "$BACKUP_RUNTIME" = compose ] || return 0
+  for stale in "$STAGE_PREFIX"*; do
+    [ -d "$stale" ] || continue
+    rm -rf "$stale"
+    log "حُذفت نسخة مؤقتة متروكة: $stale"
+  done
 }
 
 # ---------- القاعدة ----------
@@ -168,6 +184,16 @@ json_field() {
 
 # ---------- سجل الحالة ----------
 
+# status_read <name>: نص ملف من السجل، أو لا شيء إن غاب.
+status_read() {
+  local name="$1"
+  if [ "$BACKUP_RUNTIME" = local ]; then
+    cat "$BACKUP_STATUS_DIR/$name" 2>/dev/null || true
+  else
+    compose run --rm -T --no-deps --entrypoint cat backup "/status/$name" </dev/null 2>/dev/null || true
+  fi
+}
+
 # status_write <name>: يكتب JSON من stdin ذريًا إلى مجلد الحالة الذي يقرؤه الموقع.
 status_write() {
   local name="$1"
@@ -182,20 +208,20 @@ status_write() {
   fi
 }
 
-# نبضة اختيارية لخدمة مراقبة بنمط healthchecks.io: الرابط عند النجاح، و/fail عند الفشل.
+# نبضة اختيارية لخدمة مراقبة بنمط healthchecks.io: الرابط عند النجاح، و/fail عند الفشل. الرابط سر
+# (من يعرفه يزيّف النبضة)، فيُمرَّر لـcurl من stdin بملف إعداده (-K -) لا وسيطًا يظهر في قائمة العمليات.
 ping_monitor() {
   local outcome="$1" url
   url="$(env_value BACKUP_PING_URL)"
   [ -n "$url" ] || return 0
-  case "$url" in
-    https://*) ;;
-    *)
-      log "BACKUP_PING_URL يجب أن يبدأ بـhttps://؛ لم تُرسل النبضة"
-      return 0
-      ;;
-  esac
+  if [[ ! "$url" =~ ^https://[^[:space:]\"]+$ ]]; then
+    log "BACKUP_PING_URL يجب أن يبدأ بـhttps:// بلا مسافات ولا علامات تنصيص؛ لم تُرسل النبضة"
+    return 0
+  fi
   [ "$outcome" = ok ] || url="${url%/}/fail"
-  curl -fsS -m "$PING_TIMEOUT_SECONDS" --retry 3 -o /dev/null "$url" || log "تعذّر إرسال النبضة إلى المراقبة"
+  printf 'url = "%s"\n' "$url" |
+    curl -fsS -m "$PING_TIMEOUT_SECONDS" --retry 3 -o /dev/null -K - ||
+    log "تعذّر إرسال النبضة إلى المراقبة"
 }
 
 # مجلد مؤقت في الذاكرة (tmpfs) لنسخة القاعدة: النص الصريح لا يُكتب على القرص.
@@ -207,7 +233,7 @@ make_stage() {
     return
   fi
   [ "$(findmnt -n -o FSTYPE -T /dev/shm 2>/dev/null | tail -n 1)" = tmpfs ] || die "/dev/shm ليس tmpfs: لا أكتب نسخة القاعدة على القرص"
-  mktemp -d /dev/shm/masar-backup.XXXXXX
+  mktemp -d "${STAGE_PREFIX}XXXXXX"
 }
 
 # وسيط تركيب مجلد النسخة في حاوية restic للقراءة فقط (بيئة الخادم).

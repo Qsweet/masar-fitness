@@ -10,6 +10,12 @@ COMPOSE=(docker compose -f "$DIR/deploy/compose.yml" --env-file "$DIR/deploy/.en
 exec 9>/var/lock/masar-update.lock
 flock -n 9 || exit 0
 
+# نسخ احتياطي أو استرجاع يعمل الآن (docs/BACKUP.md): لا نشر يعيد تشغيل الموقع في منتصفه. الدورة التالية تنشر.
+BACKUP_LOCK=/run/masar-backup.lock
+if [ -e "$BACKUP_LOCK" ] && ! flock -n "$BACKUP_LOCK" true; then
+  exit 0
+fi
+
 cd "$DIR"
 git fetch --quiet origin "$BRANCH"
 current="$(git rev-parse HEAD)"

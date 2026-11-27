@@ -3,6 +3,7 @@
 #
 #   backup.sh init       ينشئ المستودع المشفر مرة واحدة (تكراره آمن)
 #   backup.sh run        نسخة الآن، ثم الاحتفاظ والتنظيف (يشغّلها masar-backup.timer يوميًا)
+#                        --no-retention: بلا احتفاظ ولا تنظيف (نسخة الأمان قبل الاسترجاع فوق الإنتاج)
 #   backup.sh check      فحص سلامة جزء من البيانات (يشغّلها masar-backup-check.timer أسبوعيًا)
 #   backup.sh snapshots  قائمة اللقطات
 #
@@ -17,7 +18,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/jobs.sh"
 
 usage() {
-  sed -n '2,8p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,9p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
   exit 2
 }
 
@@ -30,11 +31,17 @@ main() {
       do_init
       ;;
     run)
+      [ -z "${2:-}" ] || [ "$2" = --no-retention ] || usage
+      # المهمة معروفة قبل القفل: انتظار ينقضي، أو إيقاف أثناءه، يُسجَّل فشلًا
+      JOB=backup
+      trap_signals
       trap 'finish_job $?' EXIT
       take_lock
-      do_backup
+      do_backup "${2:-}"
       ;;
     check)
+      JOB=check
+      trap_signals
       trap 'finish_job $?' EXIT
       take_lock
       do_check

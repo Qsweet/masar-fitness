@@ -2,13 +2,14 @@
 # استرجاع نسخة احتياطية والتحقق منها (docs/BACKUP.md §6).
 #
 #   restore.sh [--snapshot ID] [--keep]
-#       الافتراضي، وهو تجربة الاسترجاع: يسترجع القاعدة إلى قاعدة جانبية جديدة والصور إلى مجلد جانبي،
+#       الافتراضي، وهو تجربة الاسترجاع: لقطة آخر نسخة ناجحة (last-success.json) أو المطلوبة. يتحقق من
+#       المساحة الحرة، ثم يسترجع القاعدة إلى قاعدة جانبية جديدة والصور إلى مجلد جانبي،
 #       ويتحقق من الترحيلات وعدد صفوف كل جدول ووجود ملفات كل صورة، ثم يحذف الجانبيين (إلا مع --keep).
 #       لا يمس الموقع ولا قاعدته ولا صوره.
 #   restore.sh --production [--snapshot ID] [--skip-safety-backup]
-#       بعد التجربة نفسها ونجاحها، وبتأكيدين مكتوبين: نسخة أمان من الحالة الحالية، ثم إيقاف الموقع،
-#       ثم القاعدة المسترجعة مكان قاعدة الإنتاج (القديمة تبقى باسم آخر ولا تُحذف)، والصور فوق
-#       وحدة media-data، ثم تشغيل الموقع.
+#       بعد التجربة نفسها ونجاحها، وفحص الترحيلات مقابل الكود، وبتأكيدين مكتوبين: نسخة أمان بلا تنظيف،
+#       وصور اللقطة في مجلد مرحلي، ثم إيقاف الموقع، والقاعدة المسترجعة مكان قاعدة الإنتاج والصور
+#       مكان الصور (السابقتان تبقيان بأسماء أخرى ولا تُحذفان)، ثم تشغيل الموقع. production.sh
 # shellcheck source-path=SCRIPTDIR
 set -euo pipefail
 
@@ -17,6 +18,8 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/lib.sh"
 # shellcheck source=jobs.sh
 . "$HERE/jobs.sh"
+# shellcheck source=production.sh
+. "$HERE/production.sh"
 
 SNAPSHOT=""
 KEEP=no
@@ -26,12 +29,14 @@ STAMP="$(date -u +%Y%m%d%H%M%S)"
 SCRATCH_DB="${BACKUP_DB_NAME}_restore_${STAMP}"
 WORK=""
 SCRATCH_CREATED=no
-MEDIA_VOLUME=masar_media-data
+# تقدير حجم القاعدة المسترجعة من حجم نسخة -Fc المضغوطة (البيانات والفهارس أكبر منها)
+DUMP_EXPANSION="${BACKUP_DUMP_EXPANSION:-5}"
+KIB=1024
 # أسماء الملفات الناقصة المطبوعة في السجل؛ العدد الكامل في رسالة الفشل
 MISSING_SHOWN=5
 
 usage() {
-  sed -n '2,12p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,14p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
   exit 2
 }
 
@@ -59,6 +64,7 @@ parse_args() {
 
 restore_exit() {
   local code="$1"
+  production_exit "$code"
   if [ "$SCRATCH_CREATED" = yes ] && [ "$KEEP" = no ]; then
     db_sql postgres "DROP DATABASE IF EXISTS $SCRATCH_DB" || log "تعذّر حذف القاعدة الجانبية $SCRATCH_DB"
   fi
@@ -68,16 +74,28 @@ restore_exit() {
   finish_job "$code"
 }
 
-# آخر لقطة بالوسم، أو اللقطة التي يبدأ معرّفها بالمطلوب؛ المخرَج معرّفها الكامل. (restic يرفض معرّفًا
-# صريحًا مع تصفية الاسم RESTIC_HOST، فالبحث في القائمة.)
+snapshot_ids() {
+  restic_run -- snapshots --json --tag "$SNAPSHOT_TAG" | grep -o '"id":"[0-9a-f]\{64\}"' | cut -d '"' -f 4 || true
+}
+
+# اللقطة: المطلوبة ببادئتها، وإلا لقطة آخر نسخة ناجحة في السجل (لا «آخر لقطة»: نسخة أمان أو لقطة
+# يدوية قد تكون أحدث)، وإلا آخر لقطة بالوسم. المخرَج معرّفها الكامل. (restic يرفض معرّفًا صريحًا مع
+# تصفية الاسم RESTIC_HOST، فالبحث في القائمة.)
 resolve_snapshot() {
-  local ids id
-  ids="$(restic_run -- snapshots --json --tag "$SNAPSHOT_TAG" | grep -o '"id":"[0-9a-f]\{64\}"' | cut -d '"' -f 4)" || ids=""
+  local ids id="" recorded
+  ids="$(snapshot_ids)"
   if [ -n "$SNAPSHOT" ]; then
-    ids="$(printf '%s\n' "$ids" | grep "^$SNAPSHOT")" || ids=""
-    [ "$(printf '%s\n' "$ids" | grep -c .)" -le 1 ] || die "أكثر من لقطة تبدأ بـ$SNAPSHOT: اكتب محارف أكثر"
+    id="$(printf '%s\n' "$ids" | grep "^$SNAPSHOT" || true)"
+    [ "$(printf '%s\n' "$id" | grep -c . || true)" -le 1 ] || die "أكثر من لقطة تبدأ بـ$SNAPSHOT: اكتب محارف أكثر"
+  else
+    recorded="$(status_read last-success.json | json_field snapshot)"
+    if [[ "$recorded" =~ ^[0-9a-f]{64}$ ]] && printf '%s\n' "$ids" | grep -qx "$recorded"; then
+      id="$recorded"
+    else
+      log "لا لقطة نجاح مسجّلة في المستودع؛ آخر لقطة بالوسم $SNAPSHOT_TAG"
+      id="$(printf '%s\n' "$ids" | tail -n 1)"
+    fi
   fi
-  id="$(printf '%s\n' "$ids" | tail -n 1)"
   [ -n "$id" ] || die "لا لقطة ${SNAPSHOT:-بالوسم $SNAPSHOT_TAG} في المستودع"
   printf '%s' "$id"
 }
@@ -152,9 +170,51 @@ fetch_metadata() {
   done
 }
 
+free_kib() { df -Pk "$1" | awk 'NR == 2 { print $4 }'; }
+device_of() { stat -c %d "$1"; }
+
+# مكان ملفات القاعدة (وحدة Docker على الخادم).
+db_storage() {
+  if [ "$BACKUP_RUNTIME" = local ]; then printf '%s' "$WORK"; else docker info -f '{{.DockerRootDir}}'; fi
+}
+
+# يرفض قبل إنشاء أي شيء إن لم تتسع المساحة: القاعدة ≈ نسخة -Fc × DUMP_EXPANSION، والصور ≤ حجم اللقطة
+# المسترجعة كاملة؛ والإنتاج يضيف صورًا مرحلية في الوحدة.
+check_space() {
+  local id="$1" dump_bytes media_bytes db_need media_need db_path db_free work_free
+  CURRENT_STEP=space
+  dump_bytes="$(sed -n 's/.*"bytes": *\([0-9]*\).*/\1/p' "$WORK/manifest.json" | head -n 1)"
+  [[ "$dump_bytes" =~ ^[0-9]+$ ]] || die "البيان بلا حجم النسخة"
+  # --host "": معرّف صريح مع تصفية RESTIC_HOST مرفوض
+  media_bytes="$(restic_run -- stats --json --mode restore-size --host "" "$id" | json_field total_size)"
+  [[ "$media_bytes" =~ ^[0-9]+$ ]] || die "تعذّر حساب حجم اللقطة"
+  db_need=$((dump_bytes * DUMP_EXPANSION / KIB + 1))
+  media_need=$((media_bytes / KIB + 1))
+  db_path="$(db_storage)"
+  [ "$PRODUCTION" = no ] || db_need=$((db_need + media_need))
+  db_free="$(free_kib "$db_path")"
+  work_free="$(free_kib "$WORK")"
+  if [ "$(device_of "$db_path")" = "$(device_of "$WORK")" ]; then
+    db_need=$((db_need + media_need))
+    media_need=0
+  fi
+  log "المساحة: يلزم ${db_need} KiB في $db_path (المتاح $db_free)، و${media_need} KiB في $WORK (المتاح $work_free)"
+  [ "$db_free" -ge "$db_need" ] || die "المساحة الحرة لا تكفي في $db_path: يلزم ${db_need} KiB والمتاح ${db_free}"
+  [ "$work_free" -ge "$media_need" ] || die "المساحة الحرة لا تكفي في $WORK: يلزم ${media_need} KiB والمتاح ${work_free}"
+}
+
+record_drill() {
+  local id="$1" tables="$2" rows="$3" files="$4" now
+  now="$(utc_now)"
+  printf '{"format":%d,"kind":"drill","ok":true,"finishedAt":"%s","snapshot":"%s","mode":"scratch","tables":%s,"rows":%s,"mediaFiles":%s}\n' \
+    "$STATUS_FORMAT" "$now" "$id" "$tables" "$rows" "$files" | status_write last-drill.json
+  JOB_DONE=yes
+}
+
 restore_scratch() {
   local id="$1" files tables rows
   fetch_metadata "$id"
+  check_space "$id"
   CURRENT_STEP=restore_database
   valid_db_name "$SCRATCH_DB" || die "اسم قاعدة غير صالح: $SCRATCH_DB"
   db_sql postgres "CREATE DATABASE $SCRATCH_DB"
@@ -168,76 +228,17 @@ restore_scratch() {
   tables="$(wc -l <"$WORK/row-counts.tsv" | tr -d ' ')"
   rows="$(awk -F '\t' '{ sum += $2 } END { print sum + 0 }' "$WORK/row-counts.tsv")"
   log "نجح التحقق. الجداول: $tables، الصفوف: $rows (مطابقة للبيان)، ملفات الصور: $files (كلها موجودة)"
-  printf '{"format":%d,"kind":"drill","ok":true,"finishedAt":"%s","snapshot":"%s","mode":"%s","tables":%s,"rows":%s,"mediaFiles":%s}\n' \
-    "$STATUS_FORMAT" "$(utc_now)" "$id" "$( [ "$PRODUCTION" = yes ] && echo production || echo scratch)" \
-    "$tables" "$rows" "$files" | status_write last-drill.json
-}
-
-confirm() {
-  local prompt="$1" expected="$2" answer
-  printf '\n%s\nاكتب: %s\n> ' "$prompt" "$expected" >&2
-  IFS= read -r answer || answer=""
-  [ "$answer" = "$expected" ] || die "لم يُؤكَّد: لم يتغير شيء في الإنتاج"
-}
-
-confirm_production() {
-  local id="$1"
-  CURRENT_STEP=confirm
-  log "اللقطة ${id:0:8} مسترجعة ومتحقق منها في $SCRATCH_DB."
-  confirm "سيُستبدل موقع الإنتاج وقاعدته وصوره بهذه اللقطة. القاعدة الحالية تبقى باسم آخر." "RESTORE PRODUCTION"
-  confirm "تأكيد ثانٍ: اكتب أول 8 محارف من معرّف اللقطة." "${id:0:8}"
-}
-
-app_stop() { [ "$BACKUP_RUNTIME" = local ] || compose stop app >&2 </dev/null; }
-app_start() { [ "$BACKUP_RUNTIME" = local ] || compose up -d app >&2 </dev/null; }
-
-# القاعدة المسترجعة المتحقق منها تأخذ اسم الإنتاج، والقديمة تبقى باسمها الجديد ولا تُحذف.
-swap_database() {
-  local previous="${BACKUP_DB_NAME}_before_restore_${STAMP}" exists
-  valid_db_name "$previous" || die "اسم قاعدة غير صالح: $previous"
-  exists="$(db_sql postgres "SELECT 1 FROM pg_database WHERE datname = '$BACKUP_DB_NAME'")"
-  db_sql postgres "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname IN ('$BACKUP_DB_NAME', '$SCRATCH_DB') AND pid <> pg_backend_pid()" >/dev/null
-  if [ "$exists" = 1 ]; then
-    db_sql postgres "ALTER DATABASE $BACKUP_DB_NAME RENAME TO $previous"
-    log "القاعدة السابقة محفوظة باسم $previous (تُحذف يدويًا بعد التأكد، docs/BACKUP.md §6.3)"
-  fi
-  db_sql postgres "ALTER DATABASE $SCRATCH_DB RENAME TO $BACKUP_DB_NAME"
-  SCRATCH_CREATED=no
-}
-
-restore_production_media() {
-  local id="$1"
-  if [ "$BACKUP_RUNTIME" = local ]; then
-    restic_run -- restore "$id:$SNAP_MEDIA" --target "$BACKUP_LOCAL_MEDIA" >&2
-  else
-    restic_run "--volume=$MEDIA_VOLUME:/restore-media" -- restore "$id:$SNAP_MEDIA" --target /restore-media >&2
-  fi
-}
-
-restore_production() {
-  local id="$1"
-  confirm_production "$id"
-  if [ "$SAFETY_BACKUP" = yes ]; then
-    CURRENT_STEP=safety_backup
-    log "نسخة أمان من الحالة الحالية قبل الاستبدال"
-    BACKUP_LOCK_HELD=yes "$HERE/backup.sh" run || die "فشلت نسخة الأمان؛ لم يتغير شيء. (--skip-safety-backup إن كانت القاعدة الحالية تالفة)"
-  fi
-  CURRENT_STEP=swap
-  app_stop
-  swap_database
-  CURRENT_STEP=production_media
-  restore_production_media "$id"
-  app_start
-  log "تم الاسترجاع فوق الإنتاج من اللقطة ${id:0:8}"
+  record_drill "$id" "$tables" "$rows" "$files"
 }
 
 main() {
   local id
   parse_args "$@"
   require_config
-  take_lock
   JOB=drill
+  trap_signals
   trap 'restore_exit $?' EXIT
+  take_lock
   CURRENT_STEP=snapshot
   id="$(resolve_snapshot)"
   log "اللقطة ${id:0:8} إلى القاعدة الجانبية $SCRATCH_DB"

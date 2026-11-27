@@ -49,5 +49,8 @@ export function interpret(provider: ServerProvider, result: TransportResult): Se
   if (result.kind === "network") {
     return result;
   }
-  return { kind: "response", status: result.status, apiError: bodyError(provider, result.body) };
+  const apiError = bodyError(provider, result.body);
+  // تيك توك: الحد (40100، وثيقة حدود المعدل الرسمية) وأعطال النظام مؤقتة، ولم نجد قائمة رموز رسمية
+  // مقروءة تفصل الدائم عن المؤقت؛ فكل رمز غير الصفر يُعاد حتى أقصى المحاولات ثم يموت (القرار 89-7)
+  return { kind: "response", status: result.status, apiError, apiRetryable: provider === "tiktok" };
 }

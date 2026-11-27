@@ -13,7 +13,7 @@ import {
 import { decideDelivery, isTooOld, providerCategories, type DeliveryDecision } from "@masar/domain";
 import { buildPurchase, interpret, type Built } from "./payloads";
 import { openTrackingSecret } from "./secret";
-import type { TrackingTransport } from "./transport";
+import { TRANSPORT_TIMEOUT_MS, type TrackingTransport } from "./transport";
 
 export interface DispatchDeps {
   readonly db: Db;
@@ -33,6 +33,7 @@ export interface DispatchSummary {
 }
 
 const DEFAULT_BATCH = 50;
+const LEASE_MARGIN_MS = 60_000;
 
 type Prepared =
   | { readonly kind: "built"; readonly built: Built }
@@ -92,11 +93,11 @@ async function deliver(
       prepared.outcome === "dead"
         ? ({ kind: "dead", status: null, reason: prepared.reason } as const)
         : ({ kind: "skipped", reason: prepared.reason } as const);
-    await recordAttempt(deps.db, event.id, result, now);
+    await recordAttempt(deps.db, event, result, now);
     return prepared.outcome;
   }
   if (prepared.built.kind === "skip") {
-    await recordAttempt(deps.db, event.id, { kind: "skipped", reason: prepared.built.reason }, now);
+    await recordAttempt(deps.db, event, { kind: "skipped", reason: prepared.built.reason }, now);
     return "skipped";
   }
   const response = await deps.transport(prepared.built.request);
@@ -108,20 +109,60 @@ async function deliver(
   );
   await recordAttempt(
     deps.db,
-    event.id,
+    event,
     decision.kind === "sent" ? { kind: "sent", status } : { ...decision, status },
     deps.clock(),
   );
   return decision.kind;
 }
 
+/** سبب ثابت لاستثناء غير متوقع في حدث واحد (حمولة، قاعدة، ناقل). */
+export const INTERNAL_ERROR = "internal_error";
+const INTERNAL_OUTCOME = {
+  kind: "response",
+  status: 0,
+  apiError: INTERNAL_ERROR,
+  apiRetryable: true,
+} as const;
+
+/**
+ * حدث يرمي لا يوقف الدفعة (القرار 89-3): يُسجَّل `internal_error` محاولةً تُعاد، فالرمي الثابت يموت
+ * بعد أقصى المحاولات. إن فشل التسجيل نفسه (القاعدة) يبقى الحجز وينقضي فيعود السطر.
+ */
+async function deliverSafely(
+  deps: DispatchDeps,
+  event: ClaimedEvent,
+  now: Date,
+): Promise<DeliveryDecision["kind"] | "skipped"> {
+  try {
+    return await deliver(deps, event, now);
+  } catch {
+    const decision = decideDelivery(INTERNAL_OUTCOME, event.attempts + 1, deps.clock());
+    const result =
+      decision.kind === "sent"
+        ? { kind: "sent" as const, status: null }
+        : { ...decision, status: null };
+    await recordAttempt(deps.db, event, result, deps.clock()).catch(() => false);
+    return decision.kind;
+  }
+}
+
+/**
+ * مهلة الحجز أطول من أسوأ زمن للدفعة (كل حدث بمهلة الناقل كاملة) بضعفين ودقيقة (القرار 89-2)، فلا
+ * يعود سطر إلى الطابور ومرسِله ما زال يعمل عليه؛ والرمز يمنع الكتابة المزدوجة إن حدث.
+ */
+export function leaseFor(batchSize: number): number {
+  return batchSize * TRANSPORT_TIMEOUT_MS * 2 + LEASE_MARGIN_MS;
+}
+
 /** دورة واحدة: يرجع عدد كل نتيجة. يُشغَّل بمؤقت كل دقيقة، ومرسِلان معًا لا يأخذان السطر نفسه. */
 export async function runDispatch(deps: DispatchDeps): Promise<DispatchSummary> {
   const now = deps.clock();
-  const events = await claimDueEvents(deps.db, now, deps.batchSize ?? DEFAULT_BATCH);
+  const batch = deps.batchSize ?? DEFAULT_BATCH;
+  const events = await claimDueEvents(deps.db, now, batch, leaseFor(batch));
   const counts = { sent: 0, retry: 0, dead: 0, skipped: 0 };
   for (const event of events) {
-    counts[await deliver(deps, event, now)] += 1;
+    counts[await deliverSafely(deps, event, now)] += 1;
   }
   return {
     claimed: events.length,

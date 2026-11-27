@@ -17,7 +17,7 @@ import {
   unwrap,
   type TestProduct,
 } from "@masar/db/test-support";
-import { CONSENT_VERSION, type TrackingProvider } from "@masar/domain";
+import { CONSENT_VERSION, MAX_DELIVERY_ATTEMPTS, type TrackingProvider } from "@masar/domain";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { runDispatch } from "./dispatch";
 import { sealTrackingSecret } from "./secret";
@@ -183,6 +183,30 @@ describe("المرسِل", () => {
     });
     expect(summary).toMatchObject({ skipped: 1 });
     expect((await rows("meta"))[0]?.lastReason).toBe("secret_unreadable");
+  });
+});
+
+describe("استثناء في حدث واحد", () => {
+  it("لا يوقف الدفعة: يُسجَّل internal_error إعادةً، والرمي الثابت يموت بعد أقصى المحاولات", async () => {
+    await enable("meta");
+    await enable("ga4");
+    await paidOrder();
+    const throwing = (request: { url: string }) =>
+      request.url.includes("facebook")
+        ? Promise.reject(new Error("boom"))
+        : fake.transport({ url: request.url, headers: {}, body: "" });
+    const run = (at: Date) =>
+      runDispatch({ db, transport: throwing, adminKey: KEY, siteUrl: SITE, clock: () => at });
+    expect(await run(now)).toMatchObject({ claimed: 2, sent: 1, retried: 1 });
+    expect((await rows("meta"))[0]).toMatchObject({
+      status: "pending",
+      attempts: 1,
+      lastReason: "internal_error",
+    });
+    for (let attempt = 2; attempt <= MAX_DELIVERY_ATTEMPTS; attempt += 1) {
+      await run(new Date(now.getTime() + attempt * 13 * 3_600_000));
+    }
+    expect((await rows("meta"))[0]).toMatchObject({ status: "dead", lastReason: "internal_error" });
   });
 });
 

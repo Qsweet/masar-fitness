@@ -5,7 +5,7 @@
  * `TRACKING_TRANSPORT=fake` (بيئة الاختبار) لا يرسل شيئًا إلى أي منصة.
  */
 import { createDb } from "@masar/db";
-import { createFakeTransport, fetchTransport, runDispatch } from "../src/index";
+import { createFakeTransport, fetchTransport, runDispatch, transportChoice } from "../src/index";
 
 const EXIT_INVALID_CONFIG = 1;
 const KEY_BYTES = 32;
@@ -26,10 +26,11 @@ if (adminKey.length !== KEY_BYTES) {
     "ADMIN_SECRET_KEY must be 32 bytes in base64: tracking secrets cannot be opened without it.",
   );
 }
-const transport =
-  process.env.TRACKING_TRANSPORT === "fake"
-    ? createFakeTransport().transport
-    : fetchTransport(fetch);
+const choice = transportChoice(process.env.TRACKING_TRANSPORT ?? "live", siteUrl);
+if (!choice.ok) {
+  fail(choice.error);
+}
+const transport = choice.value === "fake" ? createFakeTransport().transport : fetchTransport(fetch);
 const db = createDb(databaseUrl);
 const summary = await runDispatch({
   db,

@@ -1,6 +1,8 @@
 import type { PurchaseContext } from "@masar/db";
 import { describe, expect, it } from "vitest";
+import { leaseFor } from "./dispatch";
 import { sha256Hex } from "./hash";
+import { TRANSPORT_TIMEOUT_MS } from "./transport";
 import { buildPurchase, buildTest, interpret, type Built, type PurchaseInput } from "./payloads";
 
 const PHONE = "+966512345678";
@@ -217,15 +219,17 @@ describe("قراءة الرد", () => {
   const response = (status: number, body: string) => ({ kind: "response", status, body }) as const;
 
   it("خطأ الجسم لكل منصة، والانقطاع كما هو", () => {
-    expect(interpret("tiktok", response(200, '{"code":40001,"message":"x"}'))).toEqual({
+    expect(interpret("tiktok", response(200, '{"code":40100,"message":"x"}'))).toEqual({
       kind: "response",
       status: 200,
-      apiError: "api_40001",
+      apiError: "api_40100",
+      apiRetryable: true,
     });
     expect(interpret("tiktok", response(200, '{"code":0}'))).toEqual({
       kind: "response",
       status: 200,
       apiError: null,
+      apiRetryable: true,
     });
     expect(
       interpret("ga4", response(200, '{"validationMessages":[{"fieldPath":"x"}]}')),
@@ -234,15 +238,25 @@ describe("قراءة الرد", () => {
     });
     expect(interpret("snap", response(200, '{"status":"INVALID"}'))).toMatchObject({
       apiError: "api_invalid",
+      apiRetryable: false,
     });
     expect(interpret("meta", response(400, "{}"))).toEqual({
       kind: "response",
       status: 400,
       apiError: null,
+      apiRetryable: false,
     });
     expect(interpret("meta", { kind: "network", reason: "timeout" })).toEqual({
       kind: "network",
       reason: "timeout",
     });
+  });
+});
+
+describe("مهلة حجز المرسِل", () => {
+  it("أطول من أسوأ زمن للدفعة (كل حدث بمهلة الناقل كاملة)", () => {
+    for (const batch of [1, 20, 50]) {
+      expect(leaseFor(batch)).toBeGreaterThan(batch * TRANSPORT_TIMEOUT_MS);
+    }
   });
 });

@@ -14,7 +14,8 @@ export type TransportResult =
 
 export type TrackingTransport = (request: TrackingRequest) => Promise<TransportResult>;
 
-const TIMEOUT_MS = 10_000;
+/** مهلة كل طلب: يُبنى عليها حجز المرسِل (`leaseFor`). */
+export const TRANSPORT_TIMEOUT_MS = 10_000;
 /** ما يُقرأ من جسم الرد: يكفي لرمز خطأ تيك توك وعدد رسائل تحقق GA4. */
 const MAX_BODY_CHARS = 4096;
 
@@ -25,7 +26,7 @@ export function fetchTransport(fetchImpl: typeof fetch): TrackingTransport {
         method: "POST",
         headers: request.headers,
         body: request.body,
-        signal: AbortSignal.timeout(TIMEOUT_MS),
+        signal: AbortSignal.timeout(TRANSPORT_TIMEOUT_MS),
         redirect: "error",
       });
       const body = (await response.text()).slice(0, MAX_BODY_CHARS);

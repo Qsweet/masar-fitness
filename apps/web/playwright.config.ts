@@ -45,6 +45,8 @@ const CONTENT_SITE_SPEC = /[\\/]content-site\.spec\.ts$/;
  * اختباران محتوى نادٍ واحد في الوقت نفسه، ويزيل شرائحه في آخره.
  */
 const CONTENT_SLIDER_SPEC = /[\\/]content-slider\.spec\.ts$/;
+/** عدّة إطلاق الشريط (docs/SLIDER_KIT.md §4): بعد الشريط، وتنشر على نادي الموقع ثم تزيل شرائحها. */
+const SLIDER_KIT_SPEC = /[\\/]slider-kit\.spec\.ts$/;
 /** اللوحة مغلقة صراحةً: مفتاح من بيئة الصدفة لا يفتحها على الخوادم التي تثبت أنها مغلقة. */
 const ADMIN_OFF = { ADMIN_SECRET_KEY: "" };
 /** الدفع مغلق صراحةً: متغير من بيئة الصدفة لا يضبط مزوّدًا على الخادمين الأولين. */
@@ -100,6 +102,7 @@ export default defineConfig({
         PREVIEW_ADMIN_SPEC,
         CONTENT_SITE_SPEC,
         CONTENT_SLIDER_SPEC,
+        SLIDER_KIT_SPEC,
         PUBLIC_TEXT_SPEC,
         PLAN_PICKER_SPEC,
       ],
@@ -116,6 +119,7 @@ export default defineConfig({
         PREVIEW_ADMIN_SPEC,
         CONTENT_SITE_SPEC,
         CONTENT_SLIDER_SPEC,
+        SLIDER_KIT_SPEC,
         PUBLIC_TEXT_SPEC,
         PLAN_PICKER_SPEC,
       ],
@@ -198,6 +202,12 @@ export default defineConfig({
       name: "content-slider",
       testMatch: CONTENT_SLIDER_SPEC,
       dependencies: ["content-site"],
+      use: { ...devices["Desktop Chrome"], viewport: DESKTOP, baseURL: ADMIN_URL },
+    },
+    {
+      name: "slider-kit",
+      testMatch: SLIDER_KIT_SPEC,
+      dependencies: ["content-slider"],
       use: { ...devices["Desktop Chrome"], viewport: DESKTOP, baseURL: ADMIN_URL },
     },
   ],

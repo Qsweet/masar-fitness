@@ -22,6 +22,7 @@
     "admin:create-owner": "pnpm --filter @masar/db admin:create-owner",
     "admin:reset-owner-mfa": "pnpm --filter @masar/db admin:reset-owner-mfa",
     "admin:reset-owner-password": "pnpm --filter @masar/db admin:reset-owner-password",
+    "slider:launch-kit": "pnpm --filter @masar/web slider:launch-kit",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test"
   },
   "devDependencies": {

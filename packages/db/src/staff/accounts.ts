@@ -89,6 +89,16 @@ export async function countActiveOwners(db: Db | Tx, clubId: string): Promise<nu
   return db.staffUser.count({ where: { clubId, role: "owner", status: "active" } });
 }
 
+/** أقدم مالك نشط للنادي: تُنسب إليه أوامر الخادم التي تكتب محتوى (عدّة الشريط). */
+export async function oldestActiveOwnerId(db: Db | Tx, clubId: string): Promise<string | null> {
+  const row = await db.staffUser.findFirst({
+    where: { clubId, role: "owner", status: "active" },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    select: { id: true },
+  });
+  return row?.id ?? null;
+}
+
 /** يقفل صف الموظف حتى نهاية المعاملة: نقطة التسلسل لعدّ المحاولات وتغيير الحالة. */
 export async function lockStaff(tx: Tx, id: string): Promise<void> {
   await tx.$queryRaw`SELECT id::text AS id FROM staff_users WHERE id = ${id}::uuid FOR UPDATE`;

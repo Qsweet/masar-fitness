@@ -4,6 +4,7 @@ export {
   findStaffCredentialsById,
   findStaffInClub,
   listStaff,
+  oldestActiveOwnerId,
 } from "./accounts";
 export type { StaffAccount, StaffCredentials } from "./accounts";
 export {

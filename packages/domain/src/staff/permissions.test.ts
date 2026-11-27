@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { hasPermission, PERMISSIONS, permissionsOf, type Permission } from "./permissions";
 import { STAFF_ROLES, type StaffRole } from "./roles";
 
-/** جدول ADMIN_A2_SALES §2 خانةً خانة: مالك، مدير، محرر، مبيعات. */
+/** جدولا ADMIN_A2_SALES §2 وADMIN_A3_CONTENT §2 خانةً خانة: مالك، مدير، محرر، مبيعات. */
 const TABLE: Readonly<Record<Permission, readonly [boolean, boolean, boolean, boolean]>> = {
   "staff.manage": [true, false, false, false],
   "audit.read": [true, true, false, false],
@@ -20,6 +20,10 @@ const TABLE: Readonly<Record<Permission, readonly [boolean, boolean, boolean, bo
   "customers.read": [true, true, false, true],
   "customers.reveal_phone": [true, true, false, true],
   "sales.settings": [true, false, false, false],
+  "content.read": [true, true, true, false],
+  "content.write": [true, true, true, false],
+  "content.facts": [true, true, false, false],
+  "content.publish": [true, true, false, false],
 };
 const COLUMNS: readonly StaffRole[] = ["owner", "manager", "editor", "sales"];
 
@@ -63,8 +67,19 @@ describe("خريطة الصلاحيات", () => {
     expect(can("customers.reveal_phone")).toEqual(["owner", "manager", "sales"]);
   });
 
-  it("المحرر لا يملك شيئًا من المبيعات", () => {
-    expect(permissionsOf("editor")).toEqual(["account.self"]);
+  it("المحرر لا يملك شيئًا من المبيعات: حسابه والمحتوى كتابةً وقراءةً فقط", () => {
+    expect(permissionsOf("editor")).toEqual(["account.self", "content.read", "content.write"]);
+  });
+
+  it("النشر وحقائق النادي للمالك والمدير، والمبيعات لا ترى شيئًا من المحتوى", () => {
+    const can = (permission: Permission) =>
+      STAFF_ROLES.filter((role) => hasPermission(role, permission));
+    expect(can("content.publish")).toEqual(["owner", "manager"]);
+    expect(can("content.facts")).toEqual(["owner", "manager"]);
+    expect(can("content.write")).toEqual(["owner", "manager", "editor"]);
+    expect(
+      permissionsOf("sales").filter((permission) => permission.startsWith("content.")),
+    ).toEqual([]);
   });
 
   it("المحرر لا يرى أرقام المبيعات ولا سجل التدقيق", () => {

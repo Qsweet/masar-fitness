@@ -50,6 +50,7 @@ test("المالك يرى كل الأقسام، والمدير بلا «المو
       TEXT.nav.plans,
       TEXT.nav.promotions,
       TEXT.nav.salesSettings,
+      TEXT.nav.contentTexts,
       TEXT.nav.staff,
       TEXT.nav.audit,
       TEXT.nav.account,
@@ -60,6 +61,7 @@ test("المالك يرى كل الأقسام، والمدير بلا «المو
       TEXT.nav.customers,
       TEXT.nav.plans,
       TEXT.nav.promotions,
+      TEXT.nav.contentTexts,
       TEXT.nav.audit,
       TEXT.nav.account,
     ],
@@ -71,7 +73,7 @@ test("المالك يرى كل الأقسام، والمدير بلا «المو
       TEXT.nav.promotions,
       TEXT.nav.account,
     ],
-    editor: [TEXT.nav.account],
+    editor: [TEXT.nav.contentTexts, TEXT.nav.account],
   } as const;
   for (const role of ["owner", "manager", "sales", "editor"] as const) {
     const staff = await newStaff(db, club, { role, withTotp: true });
@@ -99,12 +101,12 @@ test("دور بلا صلاحية يُرفض بـ404: المبيعات لا تف�
     expect(response?.status(), path).toBe(404);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(TEXT.notFound.title);
   }
-  // المحرر لا يرى أرقام المبيعات: يُحوَّل من «نظرة عامة» إلى حسابه
+  // المحرر لا يرى أرقام المبيعات: يُحوَّل من «نظرة عامة» إلى نصوص الموقع (عمله)
   const editor = await newStaff(db, club, { role: "editor", withTotp: true });
   await signOut(page);
   await signIn(page, editor);
   await page.goto("/admin");
-  await expect(page).toHaveURL(/\/admin\/account$/);
+  await expect(page).toHaveURL(/\/admin\/content\/texts$/);
 });
 
 test("المالك ينشئ موظفًا بكلمة مؤقتة، والموظف يغيّرها ويسجّل خطوته", async ({ page, browser }) => {

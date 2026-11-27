@@ -1,0 +1,84 @@
+/* شجرة المساحات: مجموعات تُطوى بروابط مضغوطة. كل لون من رموز ‎--a-*‎. */
+.tree {
+  display: grid;
+  gap: var(--a-2);
+}
+
+.group {
+  border-bottom: 1px solid var(--a-border);
+  padding-bottom: var(--a-2);
+}
+
+.group:last-child {
+  border-bottom: 0;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--a-2);
+  padding: var(--a-2) var(--a-1);
+  border-radius: var(--a-radius-sm);
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.summary:focus-visible {
+  outline: 2px solid var(--a-focus);
+  outline-offset: 2px;
+}
+
+.groupCount {
+  color: var(--a-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.list {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--a-3);
+  min-height: 2.25rem;
+  padding: var(--a-1) var(--a-2);
+  border-inline-start: 2px solid transparent;
+  border-radius: var(--a-radius-sm);
+  color: var(--a-text);
+  text-decoration: none;
+}
+
+.link:hover {
+  background: var(--a-hover);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--a-focus);
+  outline-offset: -2px;
+}
+
+.link[aria-current="page"] {
+  border-inline-start-color: var(--a-accent);
+  background: var(--a-accent-soft);
+}
+
+.name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.count {
+  flex: none;
+  color: var(--a-subtle);
+  font-size: var(--a-text-caption);
+  font-variant-numeric: tabular-nums;
+}

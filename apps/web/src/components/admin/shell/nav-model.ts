@@ -5,8 +5,8 @@ import type { AdminIconName } from "../admin-icon";
 
 /**
  * أقسام اللوحة في مجموعاتها. المبني فقط: كل قسم بصلاحيته، وما لا يملكه الموظف لا يظهر له (والصفحة
- * نفسها ترفضه)، والمجموعة الفارغة لا تظهر. مجموعات المراحل القادمة (المبيعات، المحتوى، التسويق)
- * تُضاف هنا مع صفحاتها.
+ * نفسها ترفضه)، والمجموعة الفارغة لا تظهر. مجموعات المراحل القادمة (التسويق وما بعده) تُضاف هنا مع
+ * صفحاتها.
  */
 export interface NavItem {
   readonly href: string;
@@ -27,6 +27,7 @@ type NavKey =
   | "plans"
   | "promotions"
   | "salesSettings"
+  | "contentTexts"
   | "staff"
   | "audit"
   | "account";
@@ -68,6 +69,17 @@ const GROUPS: readonly { readonly id: GroupKey; readonly sections: readonly Sect
         href: ADMIN_ROUTES.salesSettings,
         icon: "settings",
         permission: "sales.settings",
+      },
+    ],
+  },
+  {
+    id: "content",
+    sections: [
+      {
+        key: "contentTexts",
+        href: ADMIN_ROUTES.contentTexts,
+        icon: "texts",
+        permission: "content.read",
       },
     ],
   },

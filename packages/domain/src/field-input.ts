@@ -1,4 +1,4 @@
-import { sanitizeFreeText } from "./commerce/lifecycle/manual-settlement";
+import { sanitizeFreeText } from "./free-text";
 import { toAsciiDigits } from "./digits";
 import type { Result } from "./result";
 

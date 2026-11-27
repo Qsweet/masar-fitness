@@ -1,4 +1,5 @@
 import { auditAr } from "./audit-ar";
+import { contentAr } from "./content-ar";
 import { overviewAr } from "./overview-ar";
 import { salesAr, salesErrorsAr, salesNoticesAr } from "./sales-ar";
 
@@ -14,6 +15,7 @@ export const adminAr = {
     label: "أقسام اللوحة",
     overview: "نظرة عامة",
     ...salesAr.nav,
+    ...contentAr.nav,
     staff: "الموظفون",
     audit: "سجل التدقيق",
     account: "حسابي",
@@ -23,6 +25,7 @@ export const adminAr = {
     groups: {
       general: "عام",
       sales: salesAr.breadcrumbs.group,
+      content: contentAr.breadcrumbs.group,
       management: "الإدارة",
       personal: "الحساب",
     },
@@ -50,7 +53,7 @@ export const adminAr = {
   roleHints: {
     owner: "كل شيء، ومنه إدارة الموظفين.",
     manager: "كل شيء عدا إدارة الموظفين.",
-    editor: "المحتوى والمدونة.",
+    editor: "نصوص الموقع: يكتب المسودة ويعاينها، ولا ينشر.",
     sales: "الطلبات والعملاء، وقراءة الكتالوج والعروض.",
   },
   statuses: { active: "نشط", disabled: "معطَّل" },
@@ -144,6 +147,7 @@ export const adminAr = {
   },
   overview: overviewAr,
   sales: salesAr,
+  content: contentAr,
   staff: {
     title: "الموظفون",
     lead: "حسابات من يدخلون هذه اللوحة وأدوارهم.",

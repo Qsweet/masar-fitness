@@ -66,12 +66,14 @@ async function loadSystem(club: ClubSummary, role: StaffRole) {
 
 /**
  * نظرة عامة: أرقام حقيقية من القاعدة فقط، وكل قسم بصلاحيته. من لا يملك `overview.read` (المحرر)
- * يُحوَّل إلى حسابه بدل صفحة أرقام مبيعات لا تخصه.
+ * يُحوَّل إلى نصوص الموقع (أو حسابه) بدل صفحة أرقام مبيعات لا تخصه.
  */
 export default async function OverviewPage() {
   const { staff } = await requireStaff("account.self");
   if (!hasPermission(staff.role, "overview.read")) {
-    redirect(ADMIN_ROUTES.account);
+    redirect(
+      hasPermission(staff.role, "content.read") ? ADMIN_ROUTES.contentTexts : ADMIN_ROUTES.account,
+    );
   }
   const club = (await staffClub(staff.clubId)) ?? notFound();
   const now = new Date();

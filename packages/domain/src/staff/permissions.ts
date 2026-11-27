@@ -6,6 +6,9 @@ import type { StaffRole } from "./roles";
  * `system.read`: بطاقة حالة النظام (الشراء، الدفع، الفهرسة، الإصدار) للمالك والمدير (القرار 64).
  * صلاحيات المبيعات (ADMIN_A2_SALES §2): `orders.settle` تسجيل دفع يدوي يفعّل اشتراكًا بلا تحقق مزوّد،
  * فهي للمالك والمدير وحدهما؛ و`sales.settings` سياسات مختومة على كل طلب، فهي للمالك وحده.
+ * صلاحيات المحتوى (ADMIN_A3_CONTENT §2): القراءة (ومعها المعاينة) والكتابة في المسودة للمحرر أيضًا؛
+ * `content.facts` اسم النادي وحقائقه (خطأ فيها يدّعي أو يضلّل)، و`content.publish` ما يغيّر الموقع
+ * الحي (النشر والاسترجاع وتجاهل المسودة)، فهما للمالك والمدير. `content.purge` تُضاف مع مكتبة الصور.
  */
 export const PERMISSIONS = [
   "staff.manage",
@@ -24,6 +27,10 @@ export const PERMISSIONS = [
   "customers.read",
   "customers.reveal_phone",
   "sales.settings",
+  "content.read",
+  "content.write",
+  "content.facts",
+  "content.publish",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -51,6 +58,16 @@ const SALES_MANAGEMENT: readonly Permission[] = [
   "orders.settle",
 ];
 
+/** ما يكتبه المحرر: المسودة ومعاينتها، بلا نشر ولا حقائق النادي. */
+const CONTENT_EDITING: readonly Permission[] = ["content.read", "content.write"];
+
+/** ما يزيده المدير على المحرر في المحتوى. */
+const CONTENT_MANAGEMENT: readonly Permission[] = [
+  ...CONTENT_EDITING,
+  "content.facts",
+  "content.publish",
+];
+
 const ROLE_PERMISSIONS: Readonly<Record<StaffRole, readonly Permission[]>> = {
   owner: [
     "staff.manage",
@@ -60,9 +77,17 @@ const ROLE_PERMISSIONS: Readonly<Record<StaffRole, readonly Permission[]>> = {
     "account.self",
     ...SALES_MANAGEMENT,
     "sales.settings",
+    ...CONTENT_MANAGEMENT,
   ],
-  manager: ["audit.read", "overview.read", "system.read", "account.self", ...SALES_MANAGEMENT],
-  editor: ["account.self"],
+  manager: [
+    "audit.read",
+    "overview.read",
+    "system.read",
+    "account.self",
+    ...SALES_MANAGEMENT,
+    ...CONTENT_MANAGEMENT,
+  ],
+  editor: ["account.self", ...CONTENT_EDITING],
   sales: ["overview.read", "account.self", ...SALES_DESK],
 };
 

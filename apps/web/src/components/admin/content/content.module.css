@@ -1,0 +1,140 @@
+/* أجزاء صفحات المحتوى فوق عدّة اللوحة. كل لون ومسافة من رموز ‎--a-*‎. */
+
+/* المتصفح: الشجرة جانبًا على الشاشة الواسعة، وفوق النتائج على الهاتف. */
+.browser {
+  display: grid;
+  gap: var(--a-4);
+  align-items: start;
+}
+
+@media (width >= 64rem) {
+  .browser {
+    grid-template-columns: 17rem minmax(0, 1fr);
+  }
+}
+
+.search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--a-3);
+}
+
+.search > div:first-child {
+  flex: 1 1 18rem;
+}
+
+.searchActions {
+  display: flex;
+  gap: var(--a-2);
+}
+
+.path {
+  direction: ltr;
+  color: var(--a-text);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: var(--a-text-caption);
+  overflow-wrap: normal;
+  unicode-bidi: isolate;
+}
+
+.defaults {
+  display: grid;
+  gap: var(--a-1);
+  min-width: 0;
+}
+
+.defaultEn {
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+}
+
+/* صف نص في المساحة: المسار وشاراته، ثم الافتراضيان متجاوران (عمود واحد على الهاتف). */
+.entries {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entry {
+  display: grid;
+  gap: var(--a-3);
+  padding: var(--a-4) 0;
+  border-bottom: 1px solid var(--a-border);
+  scroll-margin-top: 5rem;
+}
+
+.entry:first-child {
+  padding-top: 0;
+}
+
+.entry:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.entryHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-2);
+}
+
+.pair {
+  display: grid;
+  gap: var(--a-3);
+}
+
+@media (width >= 48rem) {
+  .pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.side {
+  display: grid;
+  gap: var(--a-1);
+  min-width: 0;
+}
+
+.sideLabel {
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  font-weight: 600;
+}
+
+.defaultText {
+  margin: 0;
+  padding: var(--a-2) var(--a-3);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-neutral-soft);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--a-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  direction: ltr;
+  padding: 0 var(--a-2);
+  border: 1px solid var(--a-border-strong);
+  border-radius: var(--a-radius-pill);
+  color: var(--a-text);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: var(--a-text-caption);
+  unicode-bidi: isolate;
+}
+
+.note {
+  margin: 0;
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+}

@@ -23,6 +23,8 @@ export const ADMIN_ROUTES = {
   promotions: `${ADMIN_PATH}/sales/promotions`,
   promotionsNew: `${ADMIN_PATH}/sales/promotions/new`,
   salesSettings: `${ADMIN_PATH}/sales/settings`,
+  content: `${ADMIN_PATH}/content`,
+  contentTexts: `${ADMIN_PATH}/content/texts`,
 } as const;
 
 export function staffMemberPath(id: string): string {
@@ -61,6 +63,11 @@ export function promotionPath(id: string): string {
 /** صفحة تأكيد تغيير حالة عرض؛ الإجراء في `?to=`. */
 export function promotionStatusPath(id: string): string {
   return `${promotionPath(id)}/status`;
+}
+
+/** نصوص مساحة واحدة من القاموس (‎/admin/content/texts/hero‎). */
+export function contentNamespacePath(namespace: string): string {
+  return `${ADMIN_ROUTES.contentTexts}/${namespace}`;
 }
 
 /** هل المسار داخل اللوحة؟ ‎/admin‎ نفسه وكل ما تحته، لا ‎/administrator‎. */
@@ -147,6 +154,9 @@ export const ORDERS_PAGE_SIZE = 25;
 export const ORDERS_DEFAULT_RANGE_DAYS = 30;
 /** طلبات العميل المعروضة في صفحته (الأحدث أولًا). */
 export const CUSTOMER_ORDERS_SHOWN = 50;
+/** أقصى نتائج بحث النصوص في الصفحة الواحدة، وأقصى طول لعبارة البحث. */
+export const CONTENT_SEARCH_RESULTS = 100;
+export const CONTENT_SEARCH_MAX_LENGTH = 80;
 /** عمر رمز تأكيد الدفع اليدوي المختوم بالدقائق. */
 export const SETTLE_TOKEN_MINUTES = 10;
 /** اسم مُصدر الرمز كما يظهر في تطبيق التحقق. */

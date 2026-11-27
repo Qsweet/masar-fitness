@@ -50,6 +50,7 @@ test("المالك والمدير يريان المبيعات ويسجّلان �
     TEXT.nav.customers,
     TEXT.nav.plans,
     TEXT.nav.promotions,
+    TEXT.nav.contentTexts,
     TEXT.nav.audit,
     TEXT.nav.account,
   ]);
@@ -85,7 +86,7 @@ test("المحرر لا يرى شيئًا من المبيعات: لا تنقل،
   const order = await seedPendingOrder(db, plan);
   const editor = await newStaff(db, club, { role: "editor", withTotp: true });
   await signIn(page, editor);
-  expect(await navLinks(page)).toEqual([TEXT.nav.account]);
+  expect(await navLinks(page)).toEqual([TEXT.nav.contentTexts, TEXT.nav.account]);
   for (const path of [
     "/admin/sales",
     ORDERS,

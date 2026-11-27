@@ -14,6 +14,7 @@ import {
   promotionPath,
   promotionStatusPath,
   staffMemberPath,
+  contentNamespacePath,
   type AdminTheme,
 } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
@@ -63,8 +64,12 @@ function Brand({
 
 /** أسماء المسارات لمسار التنقل، من القاموس. */
 function crumbLabels(dictionary: AdminDictionary): Record<string, string> {
-  const { nav, staffNew, breadcrumbs, sales } = dictionary;
+  const { nav, staffNew, breadcrumbs, sales, content } = dictionary;
+  const namespaces = Object.entries(content.namespaces).map(
+    ([namespace, label]): [string, string] => [contentNamespacePath(namespace), label],
+  );
   return {
+    ...Object.fromEntries(namespaces),
     [ADMIN_ROUTES.home]: breadcrumbs.root,
     [ADMIN_ROUTES.staff]: nav.staff,
     [ADMIN_ROUTES.staffNew]: staffNew.title,
@@ -87,6 +92,8 @@ function crumbLabels(dictionary: AdminDictionary): Record<string, string> {
     [promotionPath("*")]: sales.breadcrumbs.promotion,
     [promotionStatusPath("*")]: sales.breadcrumbs.promotionStatus,
     [ADMIN_ROUTES.salesSettings]: nav.salesSettings,
+    [ADMIN_ROUTES.content]: content.breadcrumbs.group,
+    [ADMIN_ROUTES.contentTexts]: nav.contentTexts,
   };
 }
 

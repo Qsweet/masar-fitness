@@ -1,3 +1,4 @@
+import { sanitizeFreeText } from "../../free-text";
 import { toAsciiDigits } from "../../digits";
 import { DomainError } from "../../errors";
 import type { Money } from "../../money";
@@ -123,16 +124,8 @@ export function manualReferenceKey(externalReference: string): string {
     .replace(/[^\p{L}\p{N}]/gu, "");
 }
 
-/** محارف التحكم عدا السطر الجديد والجدولة، ومحارف التنسيق غير المرئية (ومنها علامات الاتجاه). */
-const NOTE_FORBIDDEN = /[^\P{Cc}\n\t]|\p{Cf}/gu;
-
-/**
- * نص حر كما يُحفظ: بلا NUL ولا محارف تحكم (PostgreSQL يرفض NUL في النص) ولا علامات اتجاه تقلب
- * عرضه، ومشذَّبًا. السطر الجديد والجدولة يبقيان.
- */
-export function sanitizeFreeText(text: string): string {
-  return text.replace(NOTE_FORBIDDEN, "").trim();
-}
+/** نُقلت إلى `free-text.ts` (يستعملها المحتوى أيضًا)؛ الاستيراد القديم من هنا يبقى يعمل. */
+export { sanitizeFreeText };
 
 /**
  * بيانات الدفعة اليدوية كما تُحفظ: طريقة من القائمة، ومرجع خارجي إلزامي من 3 إلى 64 محرفًا (ومفتاحه

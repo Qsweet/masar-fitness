@@ -157,6 +157,8 @@ export const CUSTOMER_ORDERS_SHOWN = 50;
 /** أقصى نتائج بحث النصوص في الصفحة الواحدة، وأقصى طول لعبارة البحث. */
 export const CONTENT_SEARCH_RESULTS = 100;
 export const CONTENT_SEARCH_MAX_LENGTH = 80;
+/** أقصى طول خام لحقل نص محتوى قبل أي معالجة: أربعة أضعاف أطول نوع (700). */
+export const MAX_CONTENT_TEXT_INPUT = 2_800;
 /** عمر رمز تأكيد الدفع اليدوي المختوم بالدقائق. */
 export const SETTLE_TOKEN_MINUTES = 10;
 /** اسم مُصدر الرمز كما يظهر في تطبيق التحقق. */

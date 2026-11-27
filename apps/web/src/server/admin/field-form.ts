@@ -14,6 +14,8 @@ export interface FormFailure {
   readonly fields: Readonly<Record<string, string>>;
   /** ما يُملأ في `{name}` من نص السبب (اسم الباقة التي يمسّها الرفض)، إن وُجد. */
   readonly detail?: string;
+  /** ما يُملأ في `{name}` من نص سبب حقل بعينه (العنصر النائب الناقص، قاعدة التدقيق). */
+  readonly fieldDetails?: Readonly<Record<string, string>>;
 }
 
 export interface FieldFormState extends FormFailure {

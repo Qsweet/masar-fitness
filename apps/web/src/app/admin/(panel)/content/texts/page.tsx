@@ -19,7 +19,10 @@ import {
   searchTexts,
   type NamespaceSummary,
 } from "@/server/admin/content/texts-view";
+import { entryStates } from "@/server/admin/content/namespace-view";
+import { loadContentState } from "@/server/admin/content/state";
 import { requireStaff } from "@/server/admin/guard";
+import { DroppedOverrides } from "@/components/admin/content/dropped-overrides";
 import { textRegistry } from "@/server/content/registry";
 
 export function generateMetadata(): Metadata {
@@ -95,14 +98,17 @@ function SearchForm({
  * يعمل بلا JavaScript، والبحث رابط يُشارك ويُحفظ.
  */
 export default async function ContentTextsPage(props: PageProps<"/admin/content/texts">) {
-  await requireStaff("content.read");
+  const { staff } = await requireStaff("content.read");
   const query = parseTextSearch((await props.searchParams).q);
   const registry = textRegistry();
   const text = getAdminDictionary().content;
   const results = query === null ? null : searchTexts(registry, query);
+  const state = await loadContentState(staff.clubId, registry);
+  const states = entryStates([...registry.editable.values()], state);
   return (
     <>
       <PageHeader title={text.texts.title} description={text.texts.lead} />
+      <DroppedOverrides dropped={state.draft.dropped} text={text} />
       <Card>
         <SearchForm query={query ?? ""} text={text.texts} />
       </Card>
@@ -130,7 +136,7 @@ export default async function ContentTextsPage(props: PageProps<"/admin/content/
                 description={text.texts.noResultsLead}
               />
             ) : (
-              <TextsTable rows={results.rows} text={text} />
+              <TextsTable rows={results.rows} states={states} text={text} />
             )}
           </Card>
         )}

@@ -138,3 +138,19 @@
   color: var(--a-muted);
   font-size: var(--a-text-caption);
 }
+
+.warning {
+  margin: 0;
+  padding: var(--a-2) var(--a-3);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-warning-soft);
+  color: var(--a-text);
+  font-size: var(--a-text-caption);
+}
+
+.droppedList {
+  display: grid;
+  gap: var(--a-1);
+  margin: 0;
+  padding-inline-start: var(--a-4);
+}

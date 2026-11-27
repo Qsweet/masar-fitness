@@ -41,8 +41,8 @@ export function useFieldForm(
 ): FieldForm {
   const [state, formAction, pending] = useActionState(action, initialFieldForm(values));
   const fallback = lookup(errors, "fallback", "");
-  const text = (reason: string): string =>
-    fill(lookup(errors, reason, fallback), { name: state.detail ?? "" });
+  const text = (reason: string, detail?: string): string =>
+    fill(lookup(errors, reason, fallback), { name: detail ?? state.detail ?? "" });
   const hasFieldErrors = Object.keys(state.fields).length > 0;
   return {
     state,
@@ -51,7 +51,8 @@ export function useFieldForm(
     value: (name) => state.values[name] ?? "",
     errorOf: (name) => {
       const reason = Object.hasOwn(state.fields, name) ? state.fields[name] : undefined;
-      return reason === undefined ? undefined : text(reason);
+      const detail = state.fieldDetails?.[name];
+      return reason === undefined ? undefined : text(reason, detail);
     },
     formError:
       state.error === null ? (hasFieldErrors ? text("form.fix_fields") : null) : text(state.error),

@@ -47,6 +47,8 @@ export const contentAr = {
     columns: {
       path: "المسار",
       default: "الافتراضي",
+      published: "المنشور",
+      draft: "المسودة",
       status: "الحالة",
     },
     open: "افتح",
@@ -55,12 +57,46 @@ export const contentAr = {
   },
   statuses: {
     default: "الافتراضي",
+    published: "منشور",
+    draft: "معدَّل في المسودة",
+    baseChanged: "تغيّر الأصل",
     locked: "للقراءة فقط",
+  },
+  form: {
+    /** {locale}: اسم اللغة. */
+    fieldLabel: "النص المعروض · {locale}",
+    /** {count}: المكتوب، {limit}: الحد. */
+    counter: "{count} من {limit}",
+    revert: "عودة إلى الافتراضي",
+    publishedNow: "المنشور الآن:",
+    baseChanged:
+      "تغيّر النص الأصلي في الكود بعد تعديلك. قارن تعديلك بالأصل الجديد أعلاه، ثم احفظه أو أعده إلى الافتراضي.",
+    save: "احفظ في المسودة",
+    saveNote: "الحفظ لا يغيّر الموقع. يظهر التعديل للزوار بعد النشر.",
+  },
+  dropped: {
+    /** {count}: عددها. */
+    title: "تجاوزات معطّلة: {count}",
+    lead: "تعديلات في المسودة لم تعد تطابق نص الموقع بعد تحديث الكود (حُذف النص أو تغيّرت عناصره). لا تُنشر ولا تظهر في المعاينة: افتح المساحة وأعد كتابتها إن لزم.",
+  },
+  lintRules: {
+    "double-space": "مسافتان متتاليتان",
+    "edge-space": "مسافة في أول النص أو آخره",
+    "latin-punctuation": "فاصلة أو علامة استفهام لاتينية بين كلمات عربية",
+    "space-before-punctuation": "مسافة قبل علامة الترقيم",
+    "missing-space-after": "لا مسافة بعد علامة الترقيم",
+    tatweel: "تطويل (ـ) للزخرفة",
+    "arabic-indic-digits": "أرقام هندية (٣) بدل الأرقام (3)",
+    "latin-touching-arabic": "حرف لاتيني ملاصق لحرف عربي",
+    "ascii-ellipsis": "ثلاث نقاط بدل علامة الحذف (…)",
+    "unbalanced-pair": "قوس أو علامة اقتباس بلا نظير",
+    "inconsistent-quotes": "علامات اقتباس من نوعين",
   },
   namespace: {
     /** {count}: عدد نصوص المساحة. */
     lead: "{count} نصًا. ما في القسم الأول يُعدَّل، وما في الثاني يبقى من الكود بسببه.",
     editableTitle: "النصوص",
+    editableLead: "عدّل النص بلغته في حقله. ما تحفظه يدخل المسودة، ولا يراه الزوار قبل النشر.",
     lockedTitle: "للقراءة فقط",
     lockedLead: "تبقى كما في الكود، ولكلٍّ سببه.",
     reason: "لماذا للقراءة",
@@ -72,4 +108,24 @@ export const contentAr = {
     factsOnly: "يعدّله المالك والمدير وحدهما.",
     noEditable: "لا نص قابلًا للتعديل في هذه المساحة.",
   },
+} as const;
+
+/** أسباب رفض حفظ النصوص (`content.*`) بنصوصها. تُدمج في `adminAr.errors`. */
+export const contentErrorsAr = {
+  "content.empty": "النص فارغ. لإعادة النص الأصلي استعمل «عودة إلى الافتراضي».",
+  "content.placeholder_missing": "ينقص العنصر {name}. يبقى في النص كما هو بأقواسه.",
+  "content.placeholder_unknown": "العنصر {name} ليس في النص الأصلي. احذفه أو اكتبه بلا أقواس.",
+  "content.brace_stray": "قوس معقوف { أو } خارج عنصر صحيح. احذفه.",
+  "content.multiline": "النص سطر واحد: احذف السطر الجديد.",
+  "content.too_long": "النص أطول من {name} محرف.",
+  "content.copy_lint": "خطأ كتابة: {name}.",
+  "content.stale_edit":
+    "عدّل غيرك هذا النص بعد فتحك الصفحة. حدّث الصفحة لترى نسخته، ثم أعد تعديلك.",
+  "content.no_changes": "لا تغيير لحفظه.",
+} as const;
+
+/** تنبيهات النجاح بعد إجراءات المحتوى (`?done=`). تُدمج في `adminAr.notices`. */
+export const contentNoticesAr = {
+  content_draft_saved: "حُفظ في المسودة. لا يتغير الموقع حتى النشر.",
+  content_text_reverted: "أُعيد النص إلى الافتراضي في المسودة.",
 } as const;

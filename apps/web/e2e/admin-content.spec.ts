@@ -68,3 +68,33 @@ test.describe("بلا JavaScript", () => {
     await expect(page.getByText(CONTENT.texts.noResults)).toBeVisible();
   });
 });
+
+test("تعديل hero.title: رسالة التدقيق ثم التصحيح ثم الحفظ، بلا إصدار، ثم العودة إلى الافتراضي", async ({
+  page,
+}) => {
+  const club = await newClub(db);
+  await signIn(page, await newStaff(db, club, { role: "editor", withTotp: true }));
+  await page.goto(`${TEXTS}/hero`);
+  const title = page.locator("#text-hero\\.title");
+  const arabic = title.getByLabel(`النص المعروض · ${CONTENT.locales.ar}`);
+  await arabic.fill("أقوى  نسخة");
+  await page.getByRole("button", { name: CONTENT.form.save }).click();
+  await expect(title).toContainText("خطأ كتابة: مسافتان متتاليتان");
+  await expect(arabic).toHaveValue("أقوى  نسخة");
+  await arabic.fill("أقوى نسخة منك اليوم");
+  await page.getByRole("button", { name: CONTENT.form.save }).click();
+  await expect(page.getByText(TEXT.notices.content_draft_saved)).toBeVisible();
+  await expect(title.getByLabel(`النص المعروض · ${CONTENT.locales.ar}`)).toHaveValue(
+    "أقوى نسخة منك اليوم",
+  );
+  await expect(title).toContainText(CONTENT.statuses.draft);
+
+  // الحفظ في المسودة لا يُنشئ إصدارًا: الموقع العام يقرأ الإصدارات وحدها
+  expect(await db.contentRelease.count({ where: { clubId: club.id } })).toBe(0);
+
+  await title.getByRole("button", { name: CONTENT.form.revert }).click();
+  await expect(page.getByText(TEXT.notices.content_text_reverted)).toBeVisible();
+  await expect(title.getByLabel(`النص المعروض · ${CONTENT.locales.ar}`)).toHaveValue(
+    "أقوى نسخة منك",
+  );
+});

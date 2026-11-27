@@ -41,6 +41,7 @@ model Club {
   staffUsers         StaffUser[]
   manualPayments     ManualPayment[]
   contentReleases    ContentRelease[]
+  contentDrafts      ContentDraftEntry[]
 
   @@map("clubs")
 }
@@ -654,6 +655,7 @@ model StaffUser {
   recoveryCodes   StaffRecoveryCode[]
   manualPayments  ManualPayment[]
   contentReleases ContentRelease[]
+  contentDrafts   ContentDraftEntry[]
 
   @@index([clubId, role, status])
   @@map("staff_users")
@@ -750,4 +752,24 @@ model ContentRelease {
 
   @@unique([clubId, seq])
   @@map("content_releases")
+}
+
+/// مسودة المحتوى (ADMIN_A3_CONTENT §8.2): مجموعة التجاوزات الكاملة المرغوبة لكل نادٍ، صف لكل مفتاح ولغة.
+/// value = { value, baseHash } لتجاوز، أو NULL «عودة إلى الافتراضي». نسخة عمل لا سجل: النشر يلتقطها.
+model ContentDraftEntry {
+  clubId    String   @map("club_id") @db.Uuid
+  /// text:<مسار> (CHECK)
+  entryKey  String   @map("entry_key")
+  /// ar أو en (CHECK)
+  locale    String
+  value     Json?
+  updatedBy String   @map("updated_by") @db.Uuid
+  /// رمز القفل المتفائل: يُرفع بتسلسل صارم مع كل كتابة
+  updatedAt DateTime @map("updated_at") @db.Timestamptz(3)
+
+  club  Club      @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  staff StaffUser @relation(fields: [updatedBy], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([clubId, entryKey, locale])
+  @@map("content_draft_entries")
 }

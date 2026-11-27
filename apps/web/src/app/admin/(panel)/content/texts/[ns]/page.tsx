@@ -1,13 +1,15 @@
+import { hasPermission } from "@masar/domain";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { DefaultText, EntryHead, PathText } from "@/components/admin/content/entry-parts";
-import styles from "@/components/admin/content/content.module.css";
-import { textAnchor } from "@/components/admin/content/texts-table";
-import { Cell, DataTable } from "@/components/admin/ui/data-table";
-import { Card, EmptyState, PageHeader } from "@/components/admin/ui/kit";
+import { LockedTexts } from "@/components/admin/content/locked-texts";
+import { TextsForm } from "@/components/admin/content/texts-form";
+import { Card, EmptyState, Notice, noticeText, PageHeader } from "@/components/admin/ui/kit";
 import { getAdminDictionary, lookup } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import { formatNumber } from "@/i18n/format";
+import { saveTextsAction } from "@/server/admin/actions/content-texts";
+import { loadContentState } from "@/server/admin/content/state";
+import { formVersion, textRows } from "@/server/admin/content/texts-rows";
 import { namespaceTexts } from "@/server/admin/content/texts-view";
 import { requireStaff } from "@/server/admin/guard";
 import { textRegistry } from "@/server/content/registry";
@@ -21,14 +23,22 @@ export async function generateMetadata(
 }
 
 /**
- * نصوص مساحة واحدة: لكل نص قابل للتعديل الافتراضي العربي والإنجليزي متجاورين بعناصرهما النائبة ونوعه
- * وحده، ثم ما يبقى قراءةً بسببه.
+ * نصوص مساحة واحدة (ADMIN_A3_CONTENT §9): نموذج التجاوزات في المسودة لما يُعدَّل، وتحته ما يبقى من
+ * الكود بسببه. الحفظ لا يغيّر الموقع حتى ينشر من يملك النشر.
  */
 export default async function ContentNamespacePage(props: PageProps<"/admin/content/texts/[ns]">) {
-  await requireStaff("content.read");
+  const { staff } = await requireStaff("content.read");
   const { ns } = await props.params;
-  const texts = namespaceTexts(textRegistry(), ns) ?? notFound();
-  const text = getAdminDictionary().content;
+  const registry = textRegistry();
+  const texts = namespaceTexts(registry, ns) ?? notFound();
+  const dictionary = getAdminDictionary();
+  const text = dictionary.content;
+  const rows = textRows(
+    texts.editable,
+    await loadContentState(staff.clubId, registry),
+    staff.role,
+    text,
+  );
   const total = texts.editable.length + texts.locked.length;
   return (
     <>
@@ -36,51 +46,23 @@ export default async function ContentNamespacePage(props: PageProps<"/admin/cont
         title={lookup(text.namespaces, ns, ns)}
         description={fill(text.namespace.lead, { count: formatNumber(total) })}
       />
-      <Card title={text.namespace.editableTitle}>
-        {texts.editable.length === 0 ? (
+      <Notice text={noticeText((await props.searchParams).done, dictionary)} />
+      <Card title={text.namespace.editableTitle} description={text.namespace.editableLead}>
+        {rows.length === 0 ? (
           <EmptyState icon="texts" title={text.namespace.noEditable} />
         ) : (
-          <ul className={styles.entries}>
-            {texts.editable.map((entry) => (
-              <li key={entry.path} id={textAnchor(entry.path)} className={styles.entry}>
-                <EntryHead entry={entry} text={text} />
-                <div className={styles.pair}>
-                  <DefaultText entry={entry} locale="ar" text={text} />
-                  <DefaultText entry={entry} locale="en" text={text} />
-                </div>
-              </li>
-            ))}
-          </ul>
+          <TextsForm
+            key={formVersion(rows)}
+            action={saveTextsAction}
+            namespace={ns}
+            rows={rows}
+            text={text}
+            errors={dictionary.errors}
+            canWrite={hasPermission(staff.role, "content.write")}
+          />
         )}
       </Card>
-      {texts.locked.length === 0 ? null : (
-        <Card title={text.namespace.lockedTitle} description={text.namespace.lockedLead} flush>
-          <DataTable
-            caption={text.namespace.lockedTitle}
-            columns={[text.texts.columns.path, text.texts.columns.default, text.namespace.reason]}
-            testId="texts-locked"
-          >
-            {texts.locked.map((item) => (
-              <tr key={item.path} id={textAnchor(item.path)}>
-                <Cell label={text.texts.columns.path}>
-                  <PathText path={item.path} />
-                </Cell>
-                <Cell label={text.texts.columns.default}>
-                  <span className={styles.defaults}>
-                    <span>{item.defaults.ar}</span>
-                    <bdi className={styles.defaultEn} dir="ltr">
-                      {item.defaults.en}
-                    </bdi>
-                  </span>
-                </Cell>
-                <Cell label={text.namespace.reason} muted>
-                  {lookup(text.lockReasons, item.reason, text.lockReasons.notListed)}
-                </Cell>
-              </tr>
-            ))}
-          </DataTable>
-        </Card>
-      )}
+      <LockedTexts items={texts.locked} text={text} />
     </>
   );
 }

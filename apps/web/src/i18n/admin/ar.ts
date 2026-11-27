@@ -1,5 +1,5 @@
 import { auditAr } from "./audit-ar";
-import { contentAr } from "./content-ar";
+import { contentAr, contentErrorsAr, contentNoticesAr } from "./content-ar";
 import { overviewAr } from "./overview-ar";
 import { salesAr, salesErrorsAr, salesNoticesAr } from "./sales-ar";
 
@@ -86,6 +86,7 @@ export const adminAr = {
     "staff.not_found": "الموظف غير موجود.",
     "staff.invalid_request": "طلب غير صالح. حدّث الصفحة وحاول من جديد.",
     ...salesErrorsAr,
+    ...contentErrorsAr,
   },
   notices: {
     password_changed: "غُيّرت كلمة المرور، وأُلغيت جلساتك الأخرى.",
@@ -97,6 +98,7 @@ export const adminAr = {
     mfa_reset: "أُعيد ضبط التحقق بخطوتين. يسجّله الموظف من جديد عند دخوله التالي.",
     password_reset: "وُضعت كلمة مرور مؤقتة، وأُلغيت جلسات الموظف.",
     ...salesNoticesAr,
+    ...contentNoticesAr,
   },
   login: {
     title: "دخول الموظفين",

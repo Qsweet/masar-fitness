@@ -726,3 +726,16 @@
   font-size: var(--a-text-section);
   font-weight: 600;
 }
+
+/* عدّاد المحارف تحت حقل النص: خافت، وبلون الخطر حين يتجاوز الحد. */
+.counter {
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.counterOver {
+  color: var(--a-danger);
+  font-weight: 600;
+}

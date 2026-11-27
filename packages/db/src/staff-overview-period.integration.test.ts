@@ -196,6 +196,42 @@ describe("periodSalesByPlan وperiodFunnel", () => {
     });
   });
 
+  it("لفترة ماضية: القمع كما كان عند نهايتها لا كما صار بعدها", async () => {
+    // أمس حتى الآن بالطول نفسه: طلبا الصباح فقط، وطلب 10:00 خارج المدى
+    const { previous } = range({ range: "today" });
+    expect(await periodFunnel(db, clubId, previous)).toEqual({
+      created: 1,
+      attempted: 1,
+      paid: 1,
+      failed: 0,
+      expired: 0,
+    });
+    // نافذة تنتهي قبل محاولة الطلب الفاشل (06:00) وقبل دفع طلب 21:00: لا بدء دفع ولا دفع ولا فقد بعده
+    const early = {
+      start: new Date("2026-11-25T21:00:00Z"),
+      end: new Date("2026-11-25T21:05:00Z"),
+    };
+    expect(await periodFunnel(db, clubId, early)).toEqual({
+      created: 1,
+      attempted: 0,
+      paid: 0,
+      failed: 0,
+      expired: 0,
+    });
+    // تنتهي بعد محاولة طلب 07:00 المنقضية وقبل مهلته (08:00): بدأ ولم يُفقد بعد
+    const midway = {
+      start: new Date("2026-11-26T07:00:00Z"),
+      end: new Date("2026-11-26T07:45:00Z"),
+    };
+    expect(await periodFunnel(db, clubId, midway)).toEqual({
+      created: 1,
+      attempted: 1,
+      paid: 0,
+      failed: 0,
+      expired: 0,
+    });
+  });
+
   it("نادٍ بلا طلبات: قمع صفري، ولا طلب له", async () => {
     const empty = await createTestClub(db);
     expect(await periodFunnel(db, empty, range({ range: "30d" }))).toMatchObject({ created: 0 });

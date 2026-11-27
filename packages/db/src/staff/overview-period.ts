@@ -129,8 +129,9 @@ export interface FunnelRow {
 }
 
 /**
- * قمع الطلبات المنشأة في الفترة: كم بدأت لها محاولة دفع (أو دُفعت يدويًا بلا محاولة)، وكم دُفعت حتى
- * نهاية الفترة، وسبب فقد ما بدأ ولم يُدفع: محاولة فاشلة، أو مهلة انقضت. «الآن» نهاية الفترة نفسها.
+ * قمع الطلبات المنشأة في الفترة كما كان عند نهايتها: كم بدأت لها محاولة دفع قبل النهاية (أو دُفعت
+ * يدويًا بلا محاولة)، وكم دُفعت قبلها، وسبب فقد ما بدأ ولم يُدفع: محاولة فاشلة، أو مهلة انقضت قبل
+ * النهاية. لا يُقرأ وضع الطلب الحالي، فلفترة ماضية الأرقام نفسها مهما حدث بعدها.
  */
 export async function periodFunnel(
   db: Db,
@@ -139,11 +140,12 @@ export async function periodFunnel(
 ): Promise<FunnelRow> {
   const [row] = await db.$queryRaw<FunnelRow[]>`
     WITH cohort AS (
-      SELECT o.status, o.expires_at,
+      SELECT o.expires_at,
         (o.paid_at IS NOT NULL AND o.paid_at < ${window.end}::timestamptz) AS is_paid,
-        EXISTS (SELECT 1 FROM payment_attempts a WHERE a.order_id = o.id) AS has_attempt,
-        EXISTS (SELECT 1 FROM payment_attempts a WHERE a.order_id = o.id AND a.status = 'failed')
-          AS has_failure
+        EXISTS (SELECT 1 FROM payment_attempts a WHERE a.order_id = o.id
+          AND a.created_at < ${window.end}::timestamptz) AS has_attempt,
+        EXISTS (SELECT 1 FROM payment_attempts a WHERE a.order_id = o.id AND a.status = 'failed'
+          AND a.created_at < ${window.end}::timestamptz) AS has_failure
       FROM orders o
       WHERE o.club_id = ${clubId}::uuid
         AND o.created_at >= ${window.start}::timestamptz AND o.created_at < ${window.end}::timestamptz
@@ -153,9 +155,7 @@ export async function periodFunnel(
       (count(*) FILTER (WHERE is_paid))::int AS paid,
       (count(*) FILTER (WHERE NOT is_paid AND has_attempt AND has_failure))::int AS failed,
       (count(*) FILTER (WHERE NOT is_paid AND has_attempt AND NOT has_failure
-        AND (status = 'expired'
-          OR (status = 'pending_payment' AND expires_at <= ${window.end}::timestamptz))))::int
-          AS expired
+        AND expires_at <= ${window.end}::timestamptz))::int AS expired
     FROM cohort`;
   return row ?? { created: 0, attempted: 0, paid: 0, failed: 0, expired: 0 };
 }

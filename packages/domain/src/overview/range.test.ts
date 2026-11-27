@@ -56,6 +56,17 @@ describe("parseRange: الفترة بتقويم النادي", () => {
     expect(issue({ range: "1y" })).toMatchObject({ issue: "invalid", range: { preset: "30d" } });
   });
 
+  it("التواريخ القديمة جدًّا (رابط معدَّل) مرفوضة قبل أن تصل القاعدة، ومعها السابقة", () => {
+    const early = (from: string, to: string) => parseRange({ from, to }, NOW, RIYADH);
+    expect(early("0000-01-01", "0000-01-01").issue).toBe("too_early");
+    expect(early("0001-01-01", "0001-01-05").issue).toBe("too_early");
+    expect(early("2019-12-31", "2020-01-02").issue).toBe("too_early");
+    // السابقة تبدأ قبل الحد: 2020-01-01..2020-01-02 سابقتها 2019-12-30
+    expect(early("2020-01-01", "2020-01-02").issue).toBe("too_early");
+    expect(early("2020-01-03", "2020-01-04").issue).toBeNull();
+    expect(early("0001-01-01", "0001-01-05").range.preset).toBe("30d");
+  });
+
   it("الحد الأقصى 366 يومًا بالضبط", () => {
     const ok = parseRange({ from: "2025-11-27", to: "2026-11-27" }, NOW, RIYADH);
     expect(ok.range.days).toBe(MAX_RANGE_DAYS);

@@ -11,6 +11,11 @@ export type RangePreset = (typeof RANGE_PRESETS)[number];
 export const DEFAULT_RANGE: RangePreset = "30d";
 /** أطول مدى مخصص بالأيام. */
 export const MAX_RANGE_DAYS = 366;
+/**
+ * أقدم يوم تقبله الفترة (ومعها السابقة): قبل بيع الموقع بسنوات. رابط معدَّل بسنة 0001 كان يصل القاعدة
+ * فيرفضها (22008)؛ الآن يُرفض هنا كغيره من المرفوض.
+ */
+export const MIN_RANGE_DAY = "2020-01-01";
 
 const PRESET_DAYS: Readonly<Record<RangePreset, number>> = {
   today: 1,
@@ -35,7 +40,7 @@ export interface DateRange extends Window {
 }
 
 /** لماذا رُفض المدى المكتوب (فعُرض الافتراضي)، أو null. */
-export type RangeIssue = "invalid" | "reversed" | "too_long" | "future";
+export type RangeIssue = "invalid" | "reversed" | "too_long" | "future" | "too_early";
 
 export interface ParsedRange {
   readonly range: DateRange;
@@ -69,7 +74,7 @@ function dayString(number: number): string {
 /** بداية يوم النادي لحظةً. اليوم مضمون الشكل هنا، ومنتصف الليل موجود في كل منطقة بلا توقيت صيفي. */
 function dayStart(day: string, timeZone: string): Date {
   const parsed = parseZonedDateTime(`${day}T00:00`, timeZone);
-  return parsed.ok ? parsed.value : new Date(`${day}T00:00:00Z`);
+  return parsed.ok ? parsed.value : new Date((dayNumber(day) ?? 0) * MS_PER_DAY);
 }
 
 /** اليوم الحالي بتقويم النادي. */
@@ -120,7 +125,11 @@ function customIssue(first: number | null, last: number | null, today: number): 
   if (last > today) {
     return "future";
   }
-  return last - first + 1 > MAX_RANGE_DAYS ? "too_long" : null;
+  if (last - first + 1 > MAX_RANGE_DAYS) {
+    return "too_long";
+  }
+  // الفترة السابقة بالطول نفسه قبلها: تبدأ هي أيضًا بعد الحد
+  return first - (last - first + 1) < (dayNumber(MIN_RANGE_DAY) ?? 0) ? "too_early" : null;
 }
 
 /**

@@ -1,5 +1,6 @@
 import "server-only";
 import type { MfaCoverage } from "@masar/db";
+import type { BackupStatus } from "../backup/status";
 import { getEnv } from "../env";
 
 /** حالة النظام كما هي في إعداد هذا النشر وقاعدته: رموز يترجمها القاموس، لا نصوص. */
@@ -11,6 +12,7 @@ export interface SystemStatus {
   readonly indexing: "on" | "off";
   readonly version: string;
   readonly mfa: MfaCoverage;
+  readonly backup: BackupStatus;
 }
 
 function checkoutState(enabled: boolean, preview: boolean): SystemStatus["checkout"] {
@@ -20,7 +22,7 @@ function checkoutState(enabled: boolean, preview: boolean): SystemStatus["checko
   return preview ? "preview" : "open";
 }
 
-export function systemStatus(mfa: MfaCoverage): SystemStatus {
+export function systemStatus(mfa: MfaCoverage, backup: BackupStatus): SystemStatus {
   const env = getEnv();
   return {
     checkout: checkoutState(env.CHECKOUT_ENABLED, env.CHECKOUT_PREVIEW),
@@ -31,5 +33,6 @@ export function systemStatus(mfa: MfaCoverage): SystemStatus {
     indexing: env.SITE_INDEXABLE ? "on" : "off",
     version: env.APP_VERSION,
     mfa,
+    backup,
   };
 }

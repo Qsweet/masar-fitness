@@ -89,11 +89,12 @@ export default async function SliderPage(props: PageProps<"/admin/content/slider
   const dictionary = getAdminDictionary();
   const text = dictionary.slider;
   const query = await props.searchParams;
-  const [{ draft }, summary, timeZone, targets] = await Promise.all([
+  const [{ draft }, summary, timeZone, targets, media] = await Promise.all([
     loadSliderAdmin(staff.clubId),
     draftSummary(staff.clubId),
     clubTimezone(staff.clubId),
     targetOptions(text),
+    mediaStatus(),
   ]);
   const canWrite = hasPermission(staff.role, "content.write");
   const canPublish = hasPermission(staff.role, "content.publish");
@@ -110,7 +111,7 @@ export default async function SliderPage(props: PageProps<"/admin/content/slider
       </PageHeader>
       <Notice text={noticeText(query.done, dictionary)} />
       <QueryError error={query.error} dictionary={dictionary} />
-      <MediaBanner status={mediaStatus()} text={dictionary.media} />
+      <MediaBanner status={media} text={dictionary.media} backupText={dictionary.backup} />
       {summary.sliderChanges.length === 0 ? null : (
         <DirtyNote text={text} canPublish={canPublish} />
       )}

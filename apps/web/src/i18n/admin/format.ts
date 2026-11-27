@@ -38,3 +38,13 @@ export function formatAmount(value: Money, locale: AdminLocale = "ar"): string {
   const { amount, unit } = moneyParts(value, locale);
   return `${amount} ${unit}`;
 }
+
+const RELATIVE_LOCALES: Readonly<Record<AdminLocale, string>> = { ar: "ar-u-nu-latn" };
+
+/** مدة مضت بالساعات بصيغة اللغة وجمعها: «قبل 40 ساعة»، «قبل ساعتين». */
+export function formatHoursAgo(hours: number, locale: AdminLocale = "ar"): string {
+  return new Intl.RelativeTimeFormat(RELATIVE_LOCALES[locale], { numeric: "auto" }).format(
+    -hours,
+    "hour",
+  );
+}

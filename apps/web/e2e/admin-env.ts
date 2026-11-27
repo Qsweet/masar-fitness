@@ -20,3 +20,11 @@ export function mediaEnv(port: number) {
     BACKUP_CONFIGURED: "",
   } as const;
 }
+
+/**
+ * سجل النسخ الآلي على خادم اللوحة بمعاينة الشراء (docs/BACKUP.md §9): مجلد مؤقت لكل منفذ يكتب فيه
+ * `preview-admin-backup.spec.ts` حالات السجل ويقرؤها الخادم مع كل طلب.
+ */
+export function backupStatusDir(port: number): string {
+  return join(tmpdir(), `masar-e2e-backup-${String(port)}`);
+}

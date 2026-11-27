@@ -20,7 +20,7 @@ function problemsOf(raw: Record<string, string | undefined>): readonly string[] 
   throw new Error("expected parseEnv to throw");
 }
 
-describe("MEDIA_DIR و MEDIA_UPLOADS و BACKUP_CONFIGURED", () => {
+describe("MEDIA_DIR و MEDIA_UPLOADS و BACKUP_CONFIGURED و BACKUP_STATUS_DIR", () => {
   it("بلا قيم: لا مجلد، والرفع مطفأ، ولا نسخ احتياطي معلن", () => {
     expect(parseEnv(valid)).toMatchObject({
       MEDIA_DIR: null,
@@ -36,6 +36,17 @@ describe("MEDIA_DIR و MEDIA_UPLOADS و BACKUP_CONFIGURED", () => {
       false,
     );
     expect(parseEnv({ ...valid, BACKUP_CONFIGURED: "yes" }).BACKUP_CONFIGURED).toBe(true);
+  });
+
+  it("مجلد سجل النسخ الآلي: غيابه null، والمطلق يُقبل، والنسبي يرفض الإقلاع", () => {
+    expect(parseEnv(valid).BACKUP_STATUS_DIR).toBeNull();
+    expect(parseEnv({ ...valid, BACKUP_STATUS_DIR: "" }).BACKUP_STATUS_DIR).toBeNull();
+    expect(
+      parseEnv({ ...valid, BACKUP_STATUS_DIR: "/var/lib/masar/backup" }).BACKUP_STATUS_DIR,
+    ).toBe("/var/lib/masar/backup");
+    expect(problemsOf({ ...valid, BACKUP_STATUS_DIR: "backup" })).toEqual([
+      "BACKUP_STATUS_DIR: must be an absolute path",
+    ]);
   });
 
   it("مسار نسبي أو رفع بلا مجلد يرفضان الإقلاع", () => {

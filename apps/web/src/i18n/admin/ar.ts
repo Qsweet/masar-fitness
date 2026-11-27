@@ -1,4 +1,5 @@
 import { auditAr } from "./audit-ar";
+import { backupAr } from "./backup-ar";
 import { contentAr, contentErrorsAr, contentNoticesAr } from "./content-ar";
 import { mediaAr, sliderErrorsAr, sliderNoticesAr } from "./media-ar";
 import { sliderAr } from "./slider-ar";
@@ -157,6 +158,7 @@ export const adminAr = {
   content: contentAr,
   slider: sliderAr,
   media: mediaAr,
+  backup: backupAr,
   staff: {
     title: "الموظفون",
     lead: "حسابات من يدخلون هذه اللوحة وأدوارهم.",

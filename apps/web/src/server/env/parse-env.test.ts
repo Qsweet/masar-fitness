@@ -41,6 +41,7 @@ describe("parseEnv", () => {
       MEDIA_DIR: null,
       MEDIA_UPLOADS: false,
       BACKUP_CONFIGURED: false,
+      BACKUP_STATUS_DIR: null,
     });
   });
 

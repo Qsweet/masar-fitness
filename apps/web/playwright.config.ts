@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { ADMIN_ENV, mediaEnv } from "./e2e/admin-env";
+import { ADMIN_ENV, backupStatusDir, mediaEnv } from "./e2e/admin-env";
 import { FAKE_PAYMENTS_ENV } from "./e2e/payments-env";
 
 /** منفذ خادم الاختبار؛ يُغيَّر بـPLAYWRIGHT_PORT لتشغيل نسختين معًا على الجهاز نفسه دون تصادم. */
@@ -25,7 +25,7 @@ const SCREENS_SPEC = /screens\.spec\.ts/;
 const CHECKOUT_SPEC = /[\\/]checkout(?:-no-provider)?\.spec\.ts$/;
 const PAYMENTS_SPEC = /[\\/]payments(?:-[a-z]+)?\.spec\.ts$/;
 const ADMIN_SPEC = /[\\/]admin(?:-[a-z0-9]+)?\.spec\.ts$/;
-const PREVIEW_ADMIN_SPEC = /[\\/]preview-admin\.spec\.ts$/;
+const PREVIEW_ADMIN_SPEC = /[\\/]preview-admin(?:-[a-z]+)?\.spec\.ts$/;
 /**
  * نص الموقع العام مقارنةً بلقطات ما قبل طبقة المحتوى: مشروع أول تنتظره كل المشاريع، فيقرأ الموقع وفي
  * القاعدة البيانات التجريبية وحدها، قبل أن تنشر اختبارات اللوحة باقات أندية اختبار يقرؤها الموقع العام.
@@ -221,11 +221,14 @@ export default defineConfig({
       ...ADMIN_ENV,
       ...mediaEnv(ADMIN_PORT),
     }),
+    // ومعه سجل النسخ الآلي في مجلد مؤقت يكتب فيه اختبار حالات التنبيه (docs/BACKUP.md §9)
     server(PREVIEW_ADMIN_PORT, PREVIEW_ADMIN_URL, {
       CHECKOUT_ENABLED: "true",
       CHECKOUT_PREVIEW: "yes",
       ...PAYMENTS_OFF,
       ...ADMIN_ENV,
+      BACKUP_STATUS_DIR: backupStatusDir(PREVIEW_ADMIN_PORT),
+      BACKUP_CONFIGURED: "",
     }),
   ],
 });

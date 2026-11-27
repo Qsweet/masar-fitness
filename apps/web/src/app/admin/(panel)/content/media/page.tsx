@@ -68,7 +68,7 @@ export default async function MediaPage(props: PageProps<"/admin/content/media">
   const dictionary = getAdminDictionary();
   const text = dictionary.media;
   const query = await props.searchParams;
-  const status = mediaStatus();
+  const status = await mediaStatus();
   const page = pageNumber(query.page);
   const { items, total } = await listMediaAssets(getDb(), staff.clubId, {
     offset: (page - 1) * MEDIA_PAGE_SIZE,
@@ -79,7 +79,7 @@ export default async function MediaPage(props: PageProps<"/admin/content/media">
       <PageHeader title={text.title} description={text.lead} />
       <Notice text={noticeText(query.done, dictionary)} />
       <QueryError error={query.error} dictionary={dictionary} />
-      <MediaBanner status={status} text={text} />
+      <MediaBanner status={status} text={text} backupText={dictionary.backup} />
       {status.uploads && hasPermission(staff.role, "content.write") ? (
         <Card title={text.uploadTitle} narrow>
           <UploadForm text={text} />

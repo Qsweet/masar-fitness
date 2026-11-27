@@ -64,6 +64,7 @@ describe("parseEnv: الدفع اختياري ومغلق افتراضيًا", ()
       "ADMIN_SECRET_KEY",
       "APP_VERSION",
       "BACKUP_CONFIGURED",
+      "BACKUP_STATUS_DIR",
       "CHECKOUT_ENABLED",
       "CHECKOUT_PREVIEW",
       "DATABASE_URL",

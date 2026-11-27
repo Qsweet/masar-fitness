@@ -2,15 +2,15 @@ import { money, type OrderStatus } from "@masar/domain";
 import type { RecentOrder } from "@masar/db";
 import { ADMIN_ROUTES } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
-import { formatDateTime } from "@/i18n/admin/format";
 import { fill } from "@/i18n/fill";
 import { moneyParts } from "@/i18n/format";
 import type { ActivityItem } from "@/server/admin/overview-view";
-import { relativeTime } from "@/server/admin/overview-view";
 import type { SystemStatus } from "@/server/admin/system-status";
+import { backupRows } from "../backup/backup-rows";
 import { Cell, DataTable } from "../ui/data-table";
 import { Badge, Card, CardLink, EmptyState, Ltr, type Tone } from "../ui/kit";
 import styles from "./overview.module.css";
+import { When, type WhenProps } from "./when";
 
 type OverviewText = AdminDictionary["overview"];
 
@@ -23,22 +23,6 @@ const STATUS_TONES: Readonly<Record<OrderStatus, Tone>> = {
   partially_refunded: "info",
   refunded: "info",
 };
-
-interface WhenProps {
-  readonly at: Date;
-  readonly now: Date;
-  readonly timezone: string;
-}
-
-/** وقت نسبي قصير، والتاريخ الكامل بمنطقة النادي في التلميح وبعد أسبوع. */
-function When({ at, now, timezone }: WhenProps) {
-  const full = formatDateTime(at, timezone);
-  return (
-    <time dateTime={at.toISOString()} title={full}>
-      {relativeTime(at, now) ?? full}
-    </time>
-  );
-}
 
 interface RecentOrdersProps extends Omit<WhenProps, "at"> {
   readonly orders: readonly RecentOrder[];
@@ -124,13 +108,13 @@ export function ActivityFeed({ items, text, now, timezone }: ActivityFeedProps) 
 
 const CHECKOUT_TONES = { open: "success", preview: "info", closed: "neutral" } as const;
 
-export function SystemCard({
-  status,
-  text,
-}: {
-  status: SystemStatus;
-  text: OverviewText["system"];
-}) {
+interface SystemCardProps extends Omit<WhenProps, "at"> {
+  readonly status: SystemStatus;
+  readonly text: OverviewText["system"];
+  readonly backupText: AdminDictionary["backup"];
+}
+
+export function SystemCard({ status, text, backupText, now, timezone }: SystemCardProps) {
   const payments =
     status.payments.mode === "off" ? (
       <Badge>{text.paymentsOff}</Badge>
@@ -161,6 +145,7 @@ export function SystemCard({
         })}
       </Badge>,
     ],
+    ...backupRows(status.backup, backupText, { now, timezone }),
     [text.version, <Ltr key="version">{status.version}</Ltr>],
   ] as const;
   return (

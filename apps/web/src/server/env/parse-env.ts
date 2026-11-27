@@ -68,8 +68,13 @@ const rawSchema = z.object({
   MEDIA_DIR: optionalText,
   /** رفع الصور من اللوحة: "yes" حرفيًا، ويشترط MEDIA_DIR. مطفأ افتراضيًا. */
   MEDIA_UPLOADS: optionalText,
-  /** "yes" فقط حين توجد نسخة يومية مشفرة خارج الخادم للقاعدة ولـMEDIA_DIR؛ وإلا تنبيه في اللوحة. */
+  /**
+   * إعلان يدوي قديم ("yes") بوجود نسخة احتياطية. يُعمل به فقط ما دام سجل النسخ الآلي فارغًا
+   * (docs/BACKUP.md §9)؛ متى وُجد السجل فهو الحكم.
+   */
   BACKUP_CONFIGURED: optionalText,
+  /** مجلد سجل النسخ الآلي (وحدة `backup-status` للقراءة فقط): مسار مطلق. بلا قيمة لا سجل يُقرأ. */
+  BACKUP_STATUS_DIR: optionalText,
 });
 
 type RawEnv = z.infer<typeof rawSchema>;
@@ -168,6 +173,7 @@ const envSchema = rawSchema
       MEDIA_DIR: env.MEDIA_DIR ?? null,
       MEDIA_UPLOADS: env.MEDIA_UPLOADS === EXPLICIT_YES,
       BACKUP_CONFIGURED: env.BACKUP_CONFIGURED === EXPLICIT_YES,
+      BACKUP_STATUS_DIR: env.BACKUP_STATUS_DIR ?? null,
     };
   })
   .refine((env) => env.NODE_ENV !== "production" || isSecureOrLoopback(env.SITE_URL), {
@@ -196,6 +202,10 @@ const envSchema = rawSchema
   )
   .refine((env) => env.MEDIA_DIR === null || env.MEDIA_DIR.startsWith("/"), {
     path: ["MEDIA_DIR"],
+    error: "must be an absolute path",
+  })
+  .refine((env) => env.BACKUP_STATUS_DIR === null || env.BACKUP_STATUS_DIR.startsWith("/"), {
+    path: ["BACKUP_STATUS_DIR"],
     error: "must be an absolute path",
   })
   .refine((env) => !env.MEDIA_UPLOADS || env.MEDIA_DIR !== null, {

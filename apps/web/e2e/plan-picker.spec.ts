@@ -59,20 +59,26 @@ test.describe("محدِّد الاشتراك", () => {
   });
 
   test("السعر يدور مع الحركة، ويثبت فورًا بلا حركة مع تقليلها", async ({ page }) => {
-    // حركات القسم وحده (الدوران على ::before داخل الشجرة، والانتقالات)
-    const running = () =>
-      page.evaluate(
-        () => document.querySelector("#plans")?.getAnimations({ subtree: true }).length ?? 0,
+    // أطول حركة في القسم بالمللي ثانية (الدوران على ::before داخل الشجرة، والانتقالات)
+    const longest = () =>
+      page.evaluate(() =>
+        Math.max(
+          0,
+          ...(document.querySelector("#plans")?.getAnimations({ subtree: true }) ?? []).map(
+            (animation) => Number(animation.effect?.getTiming().duration ?? 0),
+          ),
+        ),
       );
     await page.goto("/");
     await radio(page, PLANS[0].slug).check();
-    expect(await running()).toBeGreaterThan(0);
+    expect(await longest()).toBeGreaterThan(100);
 
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     await radio(page, PLANS[0].slug).check();
     await expect(card(page)).toContainText(`${PLANS[0].price} ر.س`, VISIBLE);
-    expect(await running()).toBe(0);
+    // لا دوران؛ وما بقي انتقالات القاعدة العامة شبه الصفرية (0.01ms)
+    expect(await longest()).toBeLessThan(1);
     // لا انتقال في المؤشر ولا في تبدّل البطاقة
     const visible = card(page).locator(`[data-plan="${PLANS[0].slug}"]`).first();
     const duration = await visible.evaluate((node) => getComputedStyle(node).transitionDuration);

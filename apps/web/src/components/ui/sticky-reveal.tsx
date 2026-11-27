@@ -4,9 +4,9 @@ import { useEffect, useState, type ReactNode } from "react";
 
 interface StickyRevealProps {
   /** معرّف العنصر الذي يُخفي الشريط ما دام ظاهرًا أو تحت الشاشة (فعلا الواجهة، أو رأس الصفحة). */
-  readonly afterId?: string;
-  /** معرّف قسم لا يظهر الشريط إلا وهو على الشاشة (قسم الاشتراكات). */
-  readonly withinId?: string;
+  readonly afterId?: string | undefined;
+  /** معرّف عنصر يظهر الشريط من لحظة وصوله إلى الشاشة فما بعدها (محدِّد الاشتراك). */
+  readonly fromId?: string;
   /** عنصر يكرر محتوى الشريط (ملخص الاشتراك): الشريط يختفي ما دام ظاهرًا على الشاشة. */
   readonly hideWhileId?: string;
   readonly className: string | undefined;
@@ -77,19 +77,48 @@ function usePassed(id: string | undefined): boolean {
   return passed;
 }
 
+/**
+ * هل وصل العنصر إلى الشاشة (ظاهر أو صار فوقها)؟ بلا معرّف: نعم، فلا شرط. يُقاس عند التمرير لا
+ * بمراقب التقاطع: القفز من تحت العنصر إلى ما فوقه (رابط أو Home) لا يعبر حد الشاشة فلا يُبلَّغ به.
+ */
+function useReached(id: string | undefined): boolean {
+  const [reached, setReached] = useState(id === undefined);
+  useEffect(() => {
+    const target = id === undefined ? null : document.getElementById(id);
+    if (target === null) {
+      return undefined;
+    }
+    let frame = 0;
+    const measure = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        setReached(target.getBoundingClientRect().top < window.innerHeight);
+      });
+    };
+    measure();
+    window.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+    };
+  }, [id]);
+  return reached;
+}
+
 export function StickyReveal(props: StickyRevealProps) {
   const { className, label, children } = props;
   const passed = usePassed(props.afterId);
   const typing = useTyping();
   const duplicateInView = useInView(props.hideWhileId);
-  const within = useInView(props.withinId);
-  const outside = props.withinId !== undefined && !within;
+  const reached = useReached(props.fromId);
 
   return (
     <aside
       aria-label={label}
       className={className}
-      hidden={!passed || outside || typing || duplicateInView}
+      hidden={!passed || !reached || typing || duplicateInView}
       data-sticky-bar
     >
       {children}

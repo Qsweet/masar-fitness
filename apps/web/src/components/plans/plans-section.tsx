@@ -17,6 +17,8 @@ interface PlansSectionProps {
   readonly plans: readonly PlanView[];
   readonly locale: Locale;
   readonly dictionary: Dictionary;
+  /** شريط الهاتف لا يظهر قبل تجاوز هذا العنصر (رأس صفحة الاشتراكات، والمحدِّد ظاهر تحته مباشرة) */
+  readonly revealAfterId?: string;
   /** رابط «قارن الاشتراكات» (لا يظهر في صفحة المقارنة نفسها). */
   readonly showCompare?: boolean;
   /** سطر «الاشتراكات» فوق العنوان؛ يُسقط في صفحة الاشتراكات حيث رأس الصفحة يقوله. */
@@ -92,6 +94,11 @@ export function PlansSection(props: PlansSectionProps) {
             initialSlug={initialSlug}
             labels={dictionary.plans}
             planLabels={dictionary.plan}
+            revealAfterId={props.revealAfterId}
+            chat={{
+              href: whatsappUrl(dictionary.location.whatsappMessage),
+              label: dictionary.chat,
+            }}
             more={
               showCompare && plans.length > 1 ? (
                 <MoreLinks locale={locale} dictionary={dictionary} />

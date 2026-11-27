@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { PageIntro } from "@/components/page-intro";
+import { INTRO_ID, PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
 import { ComparisonTable } from "@/components/plans/comparison-table";
 import { toPlanViews } from "@/components/plans/plan-view";
@@ -58,6 +58,7 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
         plans={toPlanViews(plans, locale, checkoutEnabled)}
         locale={locale}
         dictionary={dictionary}
+        revealAfterId={INTRO_ID}
         showEyebrow={false}
         backdrop={false}
       >

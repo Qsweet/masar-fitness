@@ -225,7 +225,7 @@ async function scrollToSwitch(page: Page): Promise<void> {
 }
 
 test.describe("شريط الشراء الثابت", () => {
-  test("على الجوال: يظهر بالإجمالي ما دام المحدِّد ظاهرًا وزر بطاقته لا", async ({
+  test("على الجوال: يظهر بالإجمالي من وصول المحدِّد، ويختفي ما دام زر بطاقته ظاهرًا", async ({
     page,
     viewport,
   }) => {
@@ -248,8 +248,12 @@ test.describe("شريط الشراء الثابت", () => {
     // زر البطاقة ظاهر: الشريط يختفي فلا يتكرر
     await card(page).getByRole("link", { name: "اشترك عبر واتساب" }).scrollIntoViewIfNeeded();
     await expect(bar).toBeHidden();
-    // خارج القسم لا شريط
+    // بعد القسم يبقى، وقبله (الواجهة) لا شريط
     await page.locator("#services").scrollIntoViewIfNeeded();
+    await expect(bar).toBeVisible();
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
     await expect(bar).toBeHidden();
   });
 

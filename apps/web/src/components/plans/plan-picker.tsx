@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { Icon } from "@/components/ui/icon";
 import { Price } from "@/components/ui/price";
 import { StickyReveal } from "@/components/ui/sticky-reveal";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -18,9 +19,13 @@ export interface PlanPickerProps {
   readonly planLabels: Dictionary["plan"];
   /** روابط ثانوية تحت البطاقة (المقارنة والحاسبة). */
   readonly more?: ReactNode;
+  /** واتساب العام في شريط الهاتف، مكان زر المحادثة العائم المخفي على الهاتف */
+  readonly chat: { readonly href: string; readonly label: string };
+  /** شريط الهاتف لا يظهر قبل أن يتجاوز الزائر هذا العنصر (رأس صفحة الاشتراكات) */
+  readonly revealAfterId?: string | undefined;
 }
 
-/** المحدِّد كله: شريط الجوال يظهر ما دام على الشاشة. */
+/** المحدِّد كله: شريط الجوال يظهر من لحظة وصوله إلى الشاشة فما بعدها. */
 const PICKER_ID = "plan-picker";
 /** أزرار الشراء في البطاقة: شريط الجوال يختفي ما دامت ظاهرة، فلا يتكرر الزر. */
 const ACTIONS_ID = "plan-actions";
@@ -29,15 +34,19 @@ function purchaseLabel(plan: PlanView, planLabels: Dictionary["plan"]): string {
   return plan.purchase.kind === "whatsapp" ? planLabels.buyWhatsapp : planLabels.buyOnline;
 }
 
-type BarProps = Pick<PlanPickerProps, "planLabels"> & {
+type BarProps = Pick<PlanPickerProps, "planLabels" | "chat" | "revealAfterId"> & {
   readonly plan: PlanView;
 };
 
-/** شريط الشراء الثابت (تحت 64rem): الاسم والإجمالي وزر الشراء، ما دام المحدِّد ظاهرًا وزره لا. */
-function StickyBar({ plan, planLabels }: BarProps) {
+/**
+ * شريط الشراء الثابت (تحت 64rem): الاسم والإجمالي وزر الشراء، من وصول المحدِّد إلى الشاشة فما
+ * بعده، ويختفي ما دام زر البطاقة ظاهرًا. على الهاتف معه واتساب مكان الزر العائم.
+ */
+function StickyBar({ plan, planLabels, chat, revealAfterId }: BarProps) {
   return (
     <StickyReveal
-      withinId={PICKER_ID}
+      afterId={revealAfterId}
+      fromId={PICKER_ID}
       hideWhileId={ACTIONS_ID}
       label={planLabels.stickyLabel}
       className={styles.sticky}
@@ -53,6 +62,15 @@ function StickyBar({ plan, planLabels }: BarProps) {
       <PurchaseButton purchase={plan.purchase} className={styles.stickyBuy}>
         {purchaseLabel(plan, planLabels)}
       </PurchaseButton>
+      <a
+        href={chat.href}
+        rel="noopener noreferrer"
+        aria-label={chat.label}
+        title={chat.label}
+        className={styles.stickyChat}
+      >
+        <Icon name="chat" />
+      </a>
     </StickyReveal>
   );
 }
@@ -117,7 +135,12 @@ export function PlanPicker(props: PlanPickerProps) {
         {previousAmount === undefined ? "" : selectionText(selected, labels)}
       </p>
       {more === undefined ? null : <div className={styles.more}>{more}</div>}
-      <StickyBar plan={selected} planLabels={planLabels} />
+      <StickyBar
+        plan={selected}
+        planLabels={planLabels}
+        chat={props.chat}
+        revealAfterId={props.revealAfterId}
+      />
     </div>
   );
 }

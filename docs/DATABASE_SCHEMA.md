@@ -347,3 +347,5 @@ Refund:     requested → approved → processing → completed
 - **التدقيق** يقبل `tracking_integration` (الكيان = النادي)، والسطر بلا قيمة مفتاح ولا آخر أربعة (`platform`، `changed`، `testEventCodeChanged`، `secretChanged`).
 - **ما لا يُحذف بعد:** `order_tracking` يحمل عنوان IP ووكيل المتصفح ومعرّفات النقر بموافقة الإعلانات؛ مدة الاحتفاظ قرار مفتوح (`ADMIN_A5_TRACKING.md` §3.4-4)، فلا حذف آلي.
 - **النسخ الاحتياطي:** نسخة القاعدة كاملة (`pg_dump`)، فالجداول الثلاثة فيها بلا قائمة تُحدَّث؛ المفاتيح فيها مشفّرة، ومفتاح فكها `ADMIN_SECRET_KEY` لا يدخل النسخ.
+
+**تصحيحات المراجعة (القرار 89، ترحيل `20261203090000_tracking_claims`):** عمود `tracking_outbox.claim_token` (UUID، يُكتب مع كل حجز ويُفك مع تسجيل النتيجة، و`recordAttempt` يشترطه)، وجدول `tracking_browser_purchases` (`order_id` PK وFK، `created_at`): أول عرض لصفحة الطلب المدفوع حمل الجوال المجزّأ إلى المتصفح، مرة لكل طلب.

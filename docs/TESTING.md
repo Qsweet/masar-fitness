@@ -65,7 +65,7 @@ CI (`.github/workflows/ci.yml`) يشغّل التسلسل نفسه على كل �
 - Playwright يشغّل خادمًا رابعًا (`PLAYWRIGHT_PORT` + 3) بمفتاح اختبار ثابت (`e2e/admin-env.ts`، ليس سرًا)، ومشروعا `admin-390` و`admin-1440` يشغّلان `e2e/admin*.spec.ts` عليه. الخوادم الثلاثة الأخرى مضبوطة صراحةً بلا مفتاح، و`e2e/closed-admin.spec.ts` يثبت عليها أن اللوحة 404.
 - كل اختبار ينشئ ناديًا وموظفيه (`@masar/db/test-support`: ‏`createTestStaff` بتجزئة سريعة وسر TOTP معروف)، فلا تتداخل الاختبارات المتوازية في قاعدة «آخر مالك». رمز التطبيق يُحسب في الاختبار من السر (`totpCodeAt`)؛ الدخول الثاني في الاختبار نفسه يستعمل رمز الخطوة التالية لأن المستعمل لا يُقبل ثانية.
 - كل اختبار يرسل `X-Forwarded-For` عشوائيًا كاختبارات الشراء. القفل نفسه في القاعدة ويُختبر بخمس محاولات حقيقية.
-- `guard-coverage.test.ts` (وحدة) يقرأ شجرة الصياغة لكل `page.tsx` و`layout.tsx` تحت `app/admin` ولكل ملف في `server/admin/actions`، ويفشل إن لم يكن أول سطر `requireStaff` (أو `requireAdminOpen` في الدخول وحده).
+- `guard-coverage.test.ts` (وحدة) يقرأ شجرة الصياغة لكل `page.tsx` و`layout.tsx` و`route.ts` تحت `app/admin` ولكل ملف في `server/admin/actions`، ويفشل إن لم يكن أول سطر `requireStaff` (أو `requireAdminOpen` في الدخول وحده).
 - لقطات اللوحة: `e2e/admin-shots.spec.ts` يحفظها في `apps/web/screens/admin` بمقاسات 390 و768 و1440 و1920 وبالمظهرين (يغيّر المقاس بنفسه، فيعمل في مشروع `admin-1440` وحده)، ويفشل عند تمرير أفقي أو خطأ console.
 - `e2e/admin-shell.spec.ts`: طيّ الشريط الجانبي (شاشة واسعة)، والدرج بلوحة المفاتيح (هاتف)، وقائمة الحساب والمظهر، و«نظرة عامة» ببيانات مزروعة. `e2e/admin-a11y.spec.ts` يفحص axe في المظهرين.
 - `resetCommerceTables` يفرّغ جداول الموظفين أيضًا؛ أوامر المالك تُختبر بطرفية محقونة (`staff-cli.integration.test.ts`).
@@ -88,6 +88,14 @@ CI (`.github/workflows/ci.yml`) يشغّل التسلسل نفسه على كل �
 - تصحيحات المراجعة (القرار 70): `catalog-admin-order-race.integration.test.ts` (معاملة لوحة تمسك قفل النسخة والطلب ينتظرها)، و`promotions-admin-review.integration.test.ts` (الجمهور المقيَّد، المؤرشف في النطاق، البداية بثوانٍ)، وحارس العرض التلقائي في `promotions-admin-status.integration.test.ts` ووحدات المجال.
 - `plans-section.test.ts`: صفحة الاشتراكات بلا باقات حالة فارغة باللغتين (القاعدة المشتركة لا تُفرَّغ في e2e).
 - `e2e/admin-catalog.spec.ts` و`admin-promotions.spec.ts`: الأدوار، الإنشاء والأخطاء والنسخ، موظفان على النموذج نفسه، أثر النشر وتغيير السعر والإخفاء على الموقع والخريطة والسلة، آخر باقة، كوبون من الإنشاء إلى السلة العامة ثم الإيقاف، وإعدادات البيع. الموقع العام يقرأ كل الأندية، فباقة نادي الاختبار تظهر فيه بمعرّفها الفريد. `admin-cataloga11y.spec.ts` (axe بالمظهرين ولوحة المفاتيح) و`admin-catalogshots.spec.ts` (لقطات كل حالة بالمقاسات الأربعة والمظهرين).
+
+## إدارة المحتوى في اللوحة (من المرحلة A3)
+
+- `e2e/public-text.spec.ts` (مشروع `public-text` الأول، تنتظره كل المشاريع، بلا JavaScript): نص سبع صفحات عامة باللغتين وllms.txt والخلاصتين وrobots مقارنةً بلقطات محفوظة أُخذت من البناء قبل طبقة المحتوى. مناطق الكتالوج تُحذف قبل القراءة (اختبارات اللوحة تنشر باقات يقرؤها الموقع). اللقطات خارج Prettier (`.prettierignore`)؛ تحديثها بـ`--update-snapshots` لا يكون إلا لتغيير مقصود في النص. يحتاج قاعدة بلا باقات أندية اختبار (بعد `test:integration` والبذرة): «الأكثر قيمة» يُحسب من كل الأندية.
+- `server/content/content-consumers.test.ts`: لا `defaultDictionary(...)` يقرأ مساحة قابلة للتعديل، ولا مكوّن عميل يستورد قيمة من القواميس أو حقائق `config/`، والمسارات التي لا تُعاين لا تذكر `getSiteContent`.
+- تكامل `content-releases` و`content-drafts` و`content-publish`: C1 بـSQL خام، والقفل المتفائل، وتعديلان متزامنان، ونشران متزامنان، والاسترجاع والتجاهل.
+- مشروع Playwright `content-site` (`e2e/content-site.spec.ts`) يعمل بعد كل المشاريع الأخرى (`dependencies`) على نادي الموقع العام نفسه: التعديل في المعاينة قبل النشر وللزائر بعده فقط ويختفي بعد الاسترجاع، ثم يعيد النصوص الافتراضية. للتشغيل وحده: `--project content-site --no-deps`.
+- `admin-content*.spec.ts`: الأدوار والبحث بلا JavaScript والتحرير والنشر والمعاينة في نوادي اختبار، وaxe في المظهرين (`admin-contenta11y`)، واللقطات (`admin-contentshots`).
 
 ## المراجعة البصرية (من المرحلة 2)
 

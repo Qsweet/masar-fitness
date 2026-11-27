@@ -48,6 +48,8 @@ test("المالك والمدير يريان المبيعات ويسجّلان �
     TEXT.nav.overview,
     TEXT.nav.orders,
     TEXT.nav.customers,
+    TEXT.nav.plans,
+    TEXT.nav.promotions,
     TEXT.nav.audit,
     TEXT.nav.account,
   ]);
@@ -64,6 +66,8 @@ test("المالك والمدير يريان المبيعات ويسجّلان �
     TEXT.nav.overview,
     TEXT.nav.orders,
     TEXT.nav.customers,
+    TEXT.nav.plans,
+    TEXT.nav.promotions,
     TEXT.nav.account,
   ]);
   await salesPage.goto(orderUrl(order));

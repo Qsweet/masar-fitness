@@ -257,7 +257,7 @@ describe("changeProductVersion", () => {
         expect(item.listPriceMinor).toBe(90_000);
       }
       if (!created.ok) {
-        expect(created.error.reason).toBe("order.quote_stale");
+        expect(created.error.reason).toBe("cart.price_changed");
       }
     }
   });

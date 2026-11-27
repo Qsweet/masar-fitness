@@ -118,11 +118,40 @@ interface FactsContext {
   readonly customerId: string;
 }
 
+/** محاولتا قفل: سباق ثالث على النسخ نفسها في المعاملة نفسها لا يُطارَد. */
+const VERSION_LOCK_ATTEMPTS = 2;
+
+function sameIds(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && a.every((id, index) => id === b[index]);
+}
+
+/**
+ * الخطوة 5: قفل النسخ ثم إعادة قراءة السلة تحتها. القراءة الأولى سبقت القفل، فقد تكون نسخة أُغلقت أو
+ * منتج أُخفي في معاملة كان القفل ينتظرها: المنتج الذي لم يعد يُباع ⇒ `cart.product_unavailable`،
+ * والنسخة التي حلّت محلها تُقفل وتُسعَّر (فيرفض فحص الإجمالي المعروض بـ`cart.price_changed` وإجماليه
+ * الجديد إن تغيّر السعر). لا يُختم طلب على نسخة لم تعد سارية.
+ */
+async function lockCurrentCart(tx: Tx, input: CreateOrderInput, cart: CatalogCart) {
+  let current = cart;
+  for (let attempt = 0; attempt < VERSION_LOCK_ATTEMPTS; attempt += 1) {
+    const versionIds = cartVersionIds(current);
+    await lockVersionsForShare(tx, versionIds);
+    const fresh = await loadCartLines(tx, input);
+    if (!fresh.ok) {
+      abort(fresh.error);
+    }
+    if (sameIds(versionIds, cartVersionIds(fresh.value))) {
+      return { cart: fresh.value, versionIds };
+    }
+    current = fresh.value;
+  }
+  abort(new DomainError("conflict", "cart.price_changed"));
+}
+
 /** الخطوات 5-8: النسخ ثم العروض تحت أقفالها، وإنهاء المستحق، ثم الاستخدام والمكانة والمعلّق. */
 async function gatherFacts(tx: Tx, context: FactsContext): Promise<OrderFacts> {
-  const { input, cart, policy, customerId } = context;
-  const versionIds = cartVersionIds(cart);
-  await lockVersionsForShare(tx, versionIds);
+  const { input, policy, customerId } = context;
+  const { cart, versionIds } = await lockCurrentCart(tx, input, context.cart);
   const lines = withBenefits(cart, await loadBenefits(tx, versionIds));
   const productIds = [cart.primary, ...cart.addons].map((line) => line.productId);
   const ids = await loadCandidateIds(tx, cart.clubId, productIds, input.couponCode, input.now);

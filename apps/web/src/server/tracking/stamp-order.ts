@@ -2,6 +2,8 @@ import "server-only";
 import { recordOrderTracking, type OrderTrackingInput } from "@masar/db";
 import {
   ATTRIBUTION_COOKIE,
+  CLICK_ID_PARAMS,
+  type Touch,
   CONSENT_COOKIE,
   decodeAttribution,
   gaClientId,
@@ -42,6 +44,22 @@ function adIdentifiers(read: Read, requestHeaders: Headers) {
   };
 }
 
+/** سُحبت موافقة الإعلانات بعد حفظ معرّف نقر: لا يُختم مع الطلب، والحملة تبقى. */
+export function touchFor(touch: Touch | undefined, ads: boolean): Touch | null {
+  if (touch === undefined) {
+    return null;
+  }
+  if (ads) {
+    return touch;
+  }
+  const values = Object.fromEntries(
+    Object.entries(touch.values).filter(
+      ([key]) => !(CLICK_ID_PARAMS as readonly string[]).includes(key),
+    ),
+  );
+  return Object.keys(values).length === 0 ? null : { ...touch, values };
+}
+
 const NO_AD_IDENTIFIERS = {
   fbp: null,
   fbc: null,
@@ -65,8 +83,8 @@ export async function stampOrderTracking(orderId: string, pagePath: string): Pro
     await recordOrderTracking(getDb(), {
       orderId,
       consent,
-      firstTouch: attribution?.first ?? null,
-      lastTouch: attribution?.last ?? null,
+      firstTouch: touchFor(attribution?.first, consent.ads),
+      lastTouch: touchFor(attribution?.last, consent.ads),
       gaClientId: consent.analytics ? gaClientId(read("_ga")) : null,
       ...(consent.ads ? adIdentifiers(read, requestHeaders) : NO_AD_IDENTIFIERS),
       pageUrl: new URL(pagePath, getEnv().SITE_URL).toString(),

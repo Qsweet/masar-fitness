@@ -166,3 +166,10 @@ describe("لوحة التحكم في الوسيط", () => {
     expect(matcher.test("/admin/login")).toBe(true);
   });
 });
+
+describe("بلا منصة مفعّلة", () => {
+  it("لا كوكي إسناد ولو حمل الرابط حملة", async () => {
+    const response = await proxy(new NextRequest("https://example.com/?utm_source=google"));
+    expect(response.cookies.get("masar_attr")).toBeUndefined();
+  });
+});

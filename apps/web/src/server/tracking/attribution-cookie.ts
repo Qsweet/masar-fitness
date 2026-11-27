@@ -1,13 +1,17 @@
 /**
- * كوكي الإسناد في الوسيط (ADMIN_A5_TRACKING §5.1): رابط بمعرّف نقر أو حملة يكتب `masar_attr`
- * (HttpOnly) بأول لمسة وآخرها. ضروري (سجل تجاري داخلي) فلا ينتظر الموافقة، ولا يخرج لمنصة إلا مع
- * موافقة الإعلانات على الطلب. بلا `server-only`: يستورده الوسيط.
+ * كوكي الإسناد في الوسيط (ADMIN_A5_TRACKING §5.1، القرار 89-4): `masar_attr` (HttpOnly) بأول لمسة
+ * وآخرها. لا كوكي بلا منصة مفعّلة. قبل موافقة الإعلانات: معاملات الحملة وصفحة الهبوط وحدهما؛ معرّفات
+ * النقر الإعلانية مع الموافقة فقط (أو من رابط الصفحة لحظة الموافقة، `captureClickIdsAction`).
+ * بلا `server-only`: يستورده الوسيط.
  */
 import {
   ATTRIBUTION_COOKIE,
   ATTRIBUTION_MAX_AGE_SECONDS,
+  CONSENT_COOKIE,
+  parseConsent,
   decodeAttribution,
   encodeAttribution,
+  type Attribution,
   mergeAttribution,
   touchFromQuery,
 } from "@masar/domain";
@@ -25,26 +29,51 @@ function isHttps(): boolean {
   }
 }
 
-/** يكتب الكوكي إن حمل الرابط معاملًا صالحًا؛ غير ذلك لا يمسّ الرد. */
-export function captureAttribution(request: NextRequest, response: NextResponse): void {
-  const { searchParams } = request.nextUrl;
+export const ATTRIBUTION_COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: "lax",
+  path: "/",
+  maxAge: ATTRIBUTION_MAX_AGE_SECONDS,
+} as const;
+
+/** القيمة الجديدة للكوكي، أو null إن تجاوزت الحد (لا كتابة). */
+export function attributionValue(value: Attribution): string | null {
+  const encoded = encodeAttribution(value);
+  return encoded.length > MAX_COOKIE_CHARS ? null : encoded;
+}
+
+export function secureCookie(): boolean {
+  return isHttps();
+}
+
+/** يكتب الكوكي إن وُجدت منصة مفعّلة وحمل الرابط معاملًا مسموحًا؛ غير ذلك لا يمسّ الرد. */
+export function captureAttribution(
+  request: NextRequest,
+  response: NextResponse,
+  trackingActive: boolean,
+): void {
+  if (!trackingActive) {
+    return;
+  }
+  const { searchParams, pathname } = request.nextUrl;
+  const ads = parseConsent(request.cookies.get(CONSENT_COOKIE)?.value)?.ads === true;
   const touch = touchFromQuery(
     (name) => searchParams.get(name),
     Math.floor(Date.now() / MS_PER_SECOND),
+    {
+      clickIds: ads,
+      landing: pathname,
+    },
   );
   if (touch === null) {
     return;
   }
   const existing = decodeAttribution(request.cookies.get(ATTRIBUTION_COOKIE)?.value);
-  const value = encodeAttribution(mergeAttribution(existing, touch));
-  if (value.length > MAX_COOKIE_CHARS) {
-    return;
+  const value = attributionValue(mergeAttribution(existing, touch));
+  if (value !== null) {
+    response.cookies.set(ATTRIBUTION_COOKIE, value, {
+      ...ATTRIBUTION_COOKIE_OPTIONS,
+      secure: isHttps(),
+    });
   }
-  response.cookies.set(ATTRIBUTION_COOKIE, value, {
-    httpOnly: true,
-    secure: isHttps(),
-    sameSite: "lax",
-    path: "/",
-    maxAge: ATTRIBUTION_MAX_AGE_SECONDS,
-  });
 }

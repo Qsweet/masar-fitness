@@ -82,7 +82,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     response.headers.set(NOINDEX_HEADER.name, NOINDEX_HEADER.value);
   }
   if (!isAdminPath(request.nextUrl.pathname)) {
-    captureAttribution(request, response);
+    captureAttribution(request, response, tracking.names !== "");
   }
   return response;
 }

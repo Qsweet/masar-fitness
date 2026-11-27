@@ -43,24 +43,42 @@ describe("CSP مع منصات مفعّلة", () => {
 });
 
 describe("كوكي الإسناد", () => {
-  it("رابط بمعرّف نقر يكتب masar_attr، ورابط بلا معامل لا يكتب شيئًا", async () => {
+  function attr(response: Awaited<ReturnType<typeof proxy>>): string {
+    return decodeURIComponent(response.cookies.get("masar_attr")?.value ?? "");
+  }
+
+  it("قبل موافقة الإعلانات: الحملة وصفحة الهبوط وحدهما، ولا معرّف نقر", async () => {
     const response = await proxy(
       new NextRequest("https://example.com/memberships?gclid=Cj0KCQ_abc&utm_source=google"),
     );
     const cookie = response.cookies.get("masar_attr");
     expect(cookie?.httpOnly).toBe(true);
     expect(cookie?.sameSite).toBe("lax");
-    expect(decodeURIComponent(cookie?.value ?? "")).toContain('"gclid":"Cj0KCQ_abc"');
-    const plain = await proxy(new NextRequest("https://example.com/memberships"));
-    expect(plain.cookies.get("masar_attr")).toBeUndefined();
+    expect(attr(response)).toContain('"utm_source":"google"');
+    expect(attr(response)).toContain('"landing":"/memberships"');
+    expect(attr(response)).not.toContain("gclid");
+    const clickOnly = await proxy(new NextRequest("https://example.com/?fbclid=IwAR2F4"));
+    expect(clickOnly.cookies.get("masar_attr")).toBeUndefined();
   });
 
-  it("أول لمسة تبقى مع وصول جديد", async () => {
-    const first = await proxy(new NextRequest("https://example.com/?fbclid=IwAR2F4"));
-    const request = new NextRequest("https://example.com/?ttclid=E.C.P.abc");
-    request.cookies.set("masar_attr", first.cookies.get("masar_attr")?.value ?? "");
-    const value = decodeURIComponent((await proxy(request)).cookies.get("masar_attr")?.value ?? "");
-    const parsed = JSON.parse(value) as { first: { values: object }; last: { values: object } };
+  it("مع موافقة الإعلانات: معرّفات النقر، وأول لمسة تبقى مع وصول جديد", async () => {
+    const consented = (url: string, previous?: string) => {
+      const request = new NextRequest(url);
+      request.cookies.set("masar_consent", "v1.a0.m1.1800000000");
+      if (previous !== undefined) {
+        request.cookies.set("masar_attr", previous);
+      }
+      return proxy(request);
+    };
+    const first = await consented("https://example.com/?fbclid=IwAR2F4");
+    const second = await consented(
+      "https://example.com/?ttclid=E.C.P.abc",
+      first.cookies.get("masar_attr")?.value,
+    );
+    const parsed = JSON.parse(attr(second)) as {
+      first: { values: object };
+      last: { values: object };
+    };
     expect(parsed.first.values).toEqual({ fbclid: "IwAR2F4" });
     expect(parsed.last.values).toEqual({ ttclid: "E.C.P.abc" });
   });

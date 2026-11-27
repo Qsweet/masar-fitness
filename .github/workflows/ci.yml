@@ -67,11 +67,34 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
+      - name: Backup scripts (shellcheck)
+        run: shellcheck -x deploy/*.sh deploy/backup/*.sh
+
+      # restic الرسمي بالإصدار نفسه المثبّت في deploy/compose.yml وببصمته من SHA256SUMS الموقَّع (القرار 80)،
+      # لاختبار النسخ ثم الاسترجاع الحقيقي في test:integration
+      - name: Install restic (pinned, checksum verified)
+        env:
+          RESTIC_VERSION: "0.20.0"
+          RESTIC_SHA256: 0ccd9fa7885074a24603b051e01bf9bd8b5e45d6a1791e9d9887e9e9372107f7
+        run: |
+          curl -fsSLo restic.bz2 "https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic_${RESTIC_VERSION}_linux_amd64.bz2"
+          echo "${RESTIC_SHA256}  restic.bz2" | sha256sum -c -
+          bunzip2 restic.bz2
+          sudo install -m 755 restic /usr/local/bin/restic
+          rm restic
+          restic version
+
+      # أدوات PostgreSQL 16 في صورة ubuntu-latest؛ بلاها يفشل اختبار النسخ بدل أن يُتخطى صامتًا
+      - name: PostgreSQL client tools
+        run: pg_dump --version && pg_restore --version && psql --version
+
       - name: Apply migrations
         run: pnpm db:migrate
 
       - name: Integration tests (real PostgreSQL)
         run: pnpm test:integration
+        env:
+          BACKUP_TESTS_REQUIRED: "yes"
 
       - name: Production build
         run: pnpm build

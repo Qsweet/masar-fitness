@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly Masar backup integrity check, Sunday 05:00 to 06:00 Riyadh time
+
+[Timer]
+OnCalendar=Sun *-*-* 02:00:00 UTC
+RandomizedDelaySec=1h
+FixedRandomDelay=true
+Persistent=true
+
+[Install]
+WantedBy=timers.target

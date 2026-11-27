@@ -1,0 +1,13 @@
+[Unit]
+Description=Weekly Masar backup integrity check (reads part of the stored data)
+Documentation=file:///opt/masar/docs/BACKUP.md
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/masar/deploy/backup/backup.sh check
+TimeoutStartSec=6h
+Nice=10
+IOSchedulingClass=idle

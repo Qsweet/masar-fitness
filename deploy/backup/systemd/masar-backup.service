@@ -1,0 +1,14 @@
+[Unit]
+Description=Masar encrypted off-site backup (database and media)
+Documentation=file:///opt/masar/docs/BACKUP.md
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/masar/deploy/backup/backup.sh run
+# حد أعلى لدورة عالقة (شبكة المزوّد): تُسجَّل فاشلة وتعيد الدورة التالية
+TimeoutStartSec=6h
+Nice=10
+IOSchedulingClass=idle

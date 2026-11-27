@@ -46,12 +46,15 @@ services:
       # لوحة التحكم مغلقة (404) ما لم يُكتب مفتاحها في deploy/.env على الخادم (docs/DEPLOYMENT.md)
       ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-}
       # مكتبة الصور على وحدة media-data (docs/ADMIN_A3_SLIDER.md §6.4). الرفع مطفأ ما لم يُكتب
-      # MEDIA_UPLOADS=yes في deploy/.env، وBACKUP_CONFIGURED=yes لا يُكتب إلا بوجود نسخة خارج الخادم
+      # MEDIA_UPLOADS=yes في deploy/.env. BACKUP_CONFIGURED قديم: سجل النسخ الآلي يغني عنه (docs/BACKUP.md §9)
       MEDIA_DIR: /var/lib/masar/media
       MEDIA_UPLOADS: ${MEDIA_UPLOADS:-}
       BACKUP_CONFIGURED: ${BACKUP_CONFIGURED:-}
+      # سجل النسخ الاحتياطي الآلي (docs/BACKUP.md §9): يكتبه backup.sh ويقرؤه الموقع للقراءة فقط
+      BACKUP_STATUS_DIR: /var/lib/masar/backup
     volumes:
       - media-data:/var/lib/masar/media
+      - backup-status:/var/lib/masar/backup:ro
     healthcheck:
       test:
         [
@@ -80,9 +83,33 @@ services:
       - caddy-data:/data
       - caddy-config:/config
 
+  # النسخ الاحتياطي المشفر خارج الخادم (docs/BACKUP.md). لا يعمل مع `up`: يشغّله deploy/backup/backup.sh
+  # بـ`docker compose run` من مؤقت systemd. صورة restic الرسمية مثبّتة بالإصدار والبصمة (القرار 80).
+  backup:
+    image: restic/restic:0.20.0@sha256:93999df80d4ac6cb148e82d2ef1fe6a81996f17ff535e772723538211b31555a
+    profiles: ["backup"]
+    hostname: masar
+    environment:
+      # أسماء restic الرسمية؛ القيم في deploy/.env على الخادم وحده
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:-}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-}
+      # اسم ثابت للقطات: الحاوية تتغير كل دورة، وrestic يختار اللقطة الأم بالاسم
+      RESTIC_HOST: masar
+      RESTIC_CACHE_DIR: /cache
+    volumes:
+      - media-data:/backup/media:ro
+      - backup-status:/status
+      - backup-cache:/cache
+
 volumes:
   db-data:
   # الصور المرفوعة: لا توجد إلا هنا، فتدخل النسخة الاحتياطية مع القاعدة
   media-data:
   caddy-data:
   caddy-config:
+  # سجل آخر نسخة وفحص وتجربة استرجاع (JSON صغير)، وذاكرة restic المؤقتة (فهارس مشفرة، قابلة لإعادة البناء)
+  backup-status:
+  backup-cache:

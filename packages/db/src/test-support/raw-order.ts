@@ -64,6 +64,8 @@ export interface RawLine {
   vatMinor?: number;
   /** قاعدة البدء المختومة؛ الافتراضي on_payment لسطر الاشتراك و null لغيره */
   startRule?: MembershipStartRule | null;
+  /** اسم السطر المختوم بالعربية؛ الافتراضي «منتج» (لقطات «نظرة عامة» تحتاج أسماء مميزة) */
+  nameAr?: string;
 }
 
 export interface RawDiscount {
@@ -150,7 +152,7 @@ async function insertLine(
       name_ar, name_en, summary_ar, summary_en, benefits, duration_months, bonus_months,
       membership_start_rule, currency, vat_rate_bps, list_price_minor, discount_minor, total_minor, vat_minor)
     VALUES (${id}::uuid, ${orderId}::uuid, ${position}, ${product.kind}::product_kind,
-      ${product.productId}::uuid, ${product.versionId}::uuid, 'test-product', 'منتج', 'Product', 'وصف',
+      ${product.productId}::uuid, ${product.versionId}::uuid, 'test-product', ${line.nameAr ?? "منتج"}, 'Product', 'وصف',
       'Summary', '[{"ar":"ميزة","en":"Benefit"}]'::jsonb, ${product.durationMonths}::integer,
       ${product.bonusMonths}, ${startRule}::membership_start_rule, 'SAR', ${TEST_VAT_RATE_BPS},
       ${product.priceMinor}, ${discount}, ${total}, ${vat})`;

@@ -261,8 +261,6 @@ const SECONDS_PER_DAY = 86_400;
 /** عمر كوكيَي التفضيل بالثواني. */
 export const ADMIN_PREFERENCE_MAX_AGE = DAYS_PER_YEAR * SECONDS_PER_DAY;
 
-/** أيام الرسم البياني في «نظرة عامة»، وأيام الخط الصغير في بطاقات الأرقام. */
-export const OVERVIEW_CHART_DAYS = 14;
-export const OVERVIEW_SPARK_DAYS = 7;
-export const OVERVIEW_RECENT_ORDERS = 8;
+/** صفوف «آخر الطلبات» و«آخر النشاط» في «نظرة عامة». */
+export const OVERVIEW_RECENT_ORDERS = 5;
 export const OVERVIEW_ACTIVITY_ROWS = 8;

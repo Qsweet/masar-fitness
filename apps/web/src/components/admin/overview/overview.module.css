@@ -1,211 +1,328 @@
-/* «نظرة عامة»: شريط أرقام واحد بفواصل شعرية (لا بطاقات متطابقة)، ورسم الطلبات، والقوائم. */
-.kpis {
+/*
+ * «نظرة عامة» v2 (ADMIN_REDESIGN §5.1): الرأس ومحدِّد الفترة، والتخطيطات (2:1 والمؤشرات الأربعة)،
+ * وبطاقات المؤشرات، والنشاط وحالة النظام، وهياكل التحميل. الرسوم في charts.module.css، وقائمة
+ * الإطلاق والإجراءات السريعة في launch.module.css.
+ */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--a-4);
+}
+
+.eyebrow {
+  margin: 0 0 var(--a-1);
+  color: var(--a-subtle);
+  font-size: var(--a-fs-caption);
+}
+
+.greeting {
+  margin: 0;
+  font-size: var(--a-fs-title);
+  font-weight: 650;
+  line-height: var(--a-lh-tight);
+}
+
+.lead {
+  margin: 0.375rem 0 0;
+  color: var(--a-muted);
+}
+
+/* محدِّد الفترة: روابط بـaria-current (تعمل بلا JavaScript وتُشارك)، ومدى مخصص في ‎<details>‎ */
+.range {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-2);
+  width: 100%;
+}
+
+.segmented {
+  display: flex;
+  flex: 1 1 100%;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius);
+  background: var(--a-sunken);
+}
+
+.segment {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: 2.25rem;
+  padding-inline: var(--a-3);
+  border-radius: var(--a-radius-sm);
+  color: var(--a-muted);
+  font-size: var(--a-fs-small);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.segment:hover {
+  color: var(--a-text);
+}
+
+.segment[aria-current="true"] {
+  background: var(--a-raised);
+  box-shadow: var(--a-shadow-2);
+  color: var(--a-text);
+  font-weight: 600;
+}
+
+.custom {
+  position: relative;
+}
+
+.customButton {
+  display: flex;
+  align-items: center;
+  gap: var(--a-2);
+  min-height: var(--a-control);
+  padding-inline: var(--a-3);
+  border: 1px solid var(--a-border-strong);
+  border-radius: var(--a-radius);
+  background: var(--a-surface);
+  box-shadow: var(--a-shadow-1);
+  font-size: var(--a-fs-small);
+  font-weight: 550;
+  list-style: none;
+  cursor: pointer;
+}
+
+.customButton::-webkit-details-marker {
+  display: none;
+}
+
+.customButton[data-current] {
+  border-color: var(--a-accent-line);
+}
+
+.customPanel {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + var(--a-2));
+  z-index: 15;
+  display: grid;
+  gap: var(--a-3);
+  width: min(18rem, calc(100vw - 2rem));
+  padding: var(--a-4);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-overlay);
+  box-shadow: var(--a-shadow-3);
+}
+
+/* التخطيطات: عمود واحد تحت 1024px */
+.split,
+.halves {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--a-4);
+  align-items: start;
+}
+
+.kpiGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+
+/* بطاقة المؤشر: الاسم، الرقم، الفرق، الخط الصغير */
+.kpi {
+  display: grid;
+  align-content: start;
+  gap: 0.375rem;
+  min-width: 0;
+  padding: 0.875rem 0.875rem 0.625rem;
   border: 1px solid var(--a-border);
   border-radius: var(--a-radius-lg);
   background: var(--a-surface);
-  box-shadow: var(--a-shadow-raised);
-}
-
-.kpi {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: var(--a-1) var(--a-3);
-  min-width: 0;
-  padding: var(--a-4) var(--a-5);
-  border-bottom: 1px solid var(--a-border);
-  border-inline-end: 1px solid var(--a-border);
-}
-
-.kpi:nth-child(2n) {
-  border-inline-end: 0;
-}
-
-.kpi:nth-last-child(-n + 2) {
-  border-bottom: 0;
+  box-shadow: var(--a-shadow-1);
 }
 
 .kpiLabel {
-  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--a-1) var(--a-2);
   color: var(--a-muted);
-  font-size: var(--a-text-caption);
+  font-size: var(--a-fs-small);
   font-weight: 500;
 }
 
 .kpiValue {
-  font-size: 1.75rem;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.15;
 }
 
 .kpiUnit {
   color: var(--a-muted);
-  font-size: var(--a-text-caption);
+  font-size: var(--a-fs-small);
   font-weight: 500;
-  letter-spacing: 0;
 }
 
-.kpiNote {
-  grid-column: 1 / -1;
-  min-height: 1.3rem;
+.kpiMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-2);
+  min-height: 1.375rem;
+  margin: 0;
   color: var(--a-subtle);
-  font-size: var(--a-text-caption);
+  font-size: var(--a-fs-caption);
 }
 
-.up {
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 1.25rem;
+  padding-inline: 0.375rem;
+  border-radius: var(--a-radius-xs);
+  font-size: 0.71875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.deltaUp {
+  background: var(--a-success-soft);
   color: var(--a-success);
-  font-weight: 600;
 }
 
-.down {
+.deltaDown {
+  background: var(--a-danger-soft);
   color: var(--a-danger);
-  font-weight: 600;
 }
 
-.spark {
-  display: none;
-  width: 5rem;
-  height: 1.75rem;
-  overflow: visible;
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--a-success);
+  font-size: 0.71875rem;
+  font-weight: 500;
+}
+
+.live::before {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px var(--a-success-soft);
+  content: "";
+}
+
+.kpiLink {
+  margin-top: auto;
+  justify-self: start;
+}
+
+/* شريط المؤشرات المضغوط قبل البيع: أصفار رمادية بسببها */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.stripItem {
+  display: grid;
+  gap: var(--a-1);
+  padding: var(--a-3) 0.875rem;
+  border-top: 1px solid var(--a-border);
+}
+
+.stripItem:nth-child(-n + 2) {
+  border-top: 0;
+}
+
+.stripItem:nth-child(2n) {
+  border-inline-start: 1px solid var(--a-border);
+}
+
+.stripItem .kpiValue {
+  color: var(--a-muted);
+}
+
+/* هيكل التحميل بأبعاد البطاقة النهائية (لا انزياح) */
+.skeleton {
+  min-height: var(--skeleton-height, 12rem);
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-surface);
+  animation: pulse 1.6s var(--a-ease-out) infinite;
+}
+
+.skeletonKpi {
+  --skeleton-height: 9.5rem;
+}
+
+.skeletonChart {
+  --skeleton-height: 23rem;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
 }
 
 @media (width >= 40rem) {
-  .spark {
-    display: block;
+  .segmented {
+    flex: 0 1 auto;
   }
-}
 
-.sparkLine {
-  fill: none;
-  stroke: var(--a-accent-text);
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-
-.sparkFlat {
-  stroke: var(--a-border-strong);
-}
-
-.columns {
-  display: grid;
-  gap: var(--a-5);
-  min-width: 0;
-}
-
-.chart {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.gridLine {
-  stroke: var(--a-chart-grid);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-
-/* خط القاعدة: مسار الشعار المتقطع */
-.baseLine {
-  stroke: var(--a-accent-line);
-  stroke-width: 1.5;
-  stroke-dasharray: 6 4;
-  vector-effect: non-scaling-stroke;
-}
-
-.bar {
-  fill: var(--a-chart-bar);
-}
-
-.barToday {
-  fill: var(--a-accent);
-}
-
-.axisText {
-  fill: var(--a-subtle);
-  font-family: var(--font);
-  font-size: 11px;
-}
-
-.chartMeta {
-  color: var(--a-muted);
-  font-size: var(--a-text-caption);
-}
-
-.feed {
-  display: grid;
-}
-
-.feedItem {
-  display: grid;
-  gap: 0.1rem;
-  padding: var(--a-3) var(--a-5);
-  border-bottom: 1px solid var(--a-border);
-}
-
-.feedItem:last-child {
-  border-bottom: 0;
-}
-
-.feedTime {
-  color: var(--a-subtle);
-  font-size: var(--a-text-caption);
-}
-
-.status {
-  display: grid;
-}
-
-.statusRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--a-3);
-  padding: var(--a-3) var(--a-5);
-  border-bottom: 1px solid var(--a-border);
-}
-
-.statusRow:last-child {
-  border-bottom: 0;
-}
-
-.statusRow dt {
-  color: var(--a-muted);
-}
-
-.statusRow dd {
-  min-width: 0;
-  font-weight: 500;
-  text-align: end;
+  .range {
+    width: auto;
+  }
 }
 
 @media (width >= 64rem) {
-  .kpis {
+  .kpiGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--a-4);
+  }
+
+  .kpi {
+    padding: 1.125rem var(--a-4h) 0.875rem;
+  }
+
+  .kpiValue {
+    font-size: var(--a-fs-display);
+  }
+
+  .split {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+
+  .halves {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .strip {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .kpi,
-  .kpi:nth-last-child(-n + 2) {
-    border-bottom: 0;
+  .stripItem {
+    padding: var(--a-4) var(--a-4h);
+    border-top: 0;
+    border-inline-start: 1px solid var(--a-border);
   }
 
-  .kpi:nth-child(2n) {
-    border-inline-end: 1px solid var(--a-border);
-  }
-
-  .kpi:last-child {
-    border-inline-end: 0;
-  }
-}
-
-@media (width >= 72rem) {
-  .split {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-    align-items: start;
+  .stripItem:first-child {
+    border-inline-start: 0;
   }
 }

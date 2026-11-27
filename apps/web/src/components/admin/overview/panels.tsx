@@ -9,7 +9,7 @@ import type { SystemStatus } from "@/server/admin/system-status";
 import { backupRows } from "../backup/backup-rows";
 import { Cell, DataTable } from "../ui/data-table";
 import { Badge, Card, CardLink, EmptyState, Ltr, type Tone } from "../ui/kit";
-import styles from "./overview.module.css";
+import styles from "./panels.module.css";
 import { When, type WhenProps } from "./when";
 
 type OverviewText = AdminDictionary["overview"];
@@ -31,8 +31,9 @@ interface RecentOrdersProps extends Omit<WhenProps, "at"> {
 
 export function RecentOrders({ orders, text, now, timezone }: RecentOrdersProps) {
   const { columns } = text.orders;
+  const all = <CardLink href={ADMIN_ROUTES.orders}>{text.orders.all}</CardLink>;
   return (
-    <Card title={text.orders.title} flush>
+    <Card title={text.orders.title} action={all} flush>
       {orders.length === 0 ? (
         <EmptyState
           icon="orders"
@@ -161,5 +162,3 @@ export function SystemCard({ status, text, backupText, now, timezone }: SystemCa
     </Card>
   );
 }
-
-export { styles as overviewStyles };

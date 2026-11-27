@@ -1,35 +1,81 @@
+import { overviewLaunchAr, overviewRangeAr } from "./overview-launch-ar";
 import { orderStatusesAr } from "./statuses-ar";
 
 /** نصوص «نظرة عامة» في اللوحة. جزء من قاموس اللوحة العربي (ar.ts)، مفصول لحجمه. */
 export const overviewAr = {
   title: "نظرة عامة",
-  /** {name}: اسم الموظف. {date}: تاريخ اليوم بتقويم النادي. */
-  description: "أهلًا {name}. أرقام اليوم {date} حتى هذه اللحظة.",
+  /** {name}: اسم الموظف. */
+  greeting: "أهلًا {name}",
+  /** {date}: تاريخ اليوم بتقويم النادي. */
+  today: "{date} · تقويم النادي",
+  lead: {
+    /** {steps}: عدد الخطوات بمعدوده («أربع خطوات»). */
+    launch: "بقيت {steps} قبل أن يستقبل الموقع أول طلب مدفوع.",
+    launchWaiting: "اكتمل ما بيد الفريق. بقي ما ينتظر مرحلته أو قرار المالك.",
+    /** {range}: وصف الفترة («آخر 30 يومًا»). */
+    data: "{range} حتى هذه اللحظة، مقارنةً بالفترة السابقة بالطول نفسه.",
+  },
+  steps: { one: "خطوة واحدة", two: "خطوتان", few: "خطوات", many: "خطوة" },
+  range: overviewRangeAr,
   kpis: {
-    label: "أرقام اليوم",
-    created: "طلبات اليوم",
+    label: "مؤشرات الفترة",
+    revenue: "الإيراد",
+    revenueHint: "ما دُفع فعلًا بيوم الدفع، شامل الضريبة",
+    paid: "الطلبات المدفوعة",
+    completion: "نسبة إتمام الدفع",
+    completionHint: "ما دُفع من طلبات الفترة",
     awaiting: "بانتظار الدفع الآن",
     awaitingHint: "طلبات مفتوحة لم تبلغ مهلتها",
-    paid: "مدفوعة اليوم",
-    revenue: "إيراد اليوم",
-    revenueHint: "ما دُفع فعلًا، شامل الضريبة",
-    /** {percent}: النسبة بعلامتها، معزولة الاتجاه («50%»). */
-    up: "أعلى من أمس بنسبة {percent}",
-    down: "أقل من أمس بنسبة {percent}",
-    trend: "آخر 7 أيام",
+    live: "لحظي",
+    showAwaiting: "اعرضها",
+    /** {value}: رقم الفترة السابقة. */
+    against: "مقابل {value}",
+    /** {value}: الفرق («15.3%» أو «2.3»). */
+    up: "أعلى من الفترة السابقة بـ{value}",
+    down: "أقل من الفترة السابقة بـ{value}",
+    points: "{value} نقطة",
+    startsWithFirstOrder: "يبدأ العدّ مع أول طلب من الموقع",
+    noOrdersInRange: "لا طلبات في هذه الفترة",
+    trend: "الفترة الحالية بخط متصل والسابقة متقطعًا",
   },
   chart: {
-    title: "الطلبات في 14 يومًا",
-    description: "عدد الطلبات المنشأة كل يوم، بتقويم النادي.",
-    /** {count}: مجموع الفترة. */
-    total: "{count} طلبًا في الفترة",
-    day: "اليوم",
-    orders: "الطلبات",
-    emptyTitle: "لا طلبات في آخر 14 يومًا",
-    emptyLead: "يظهر الرسم هنا مع أول طلب يُنشأ من الموقع.",
+    title: { day: "الإيراد اليومي", week: "الإيراد الأسبوعي" },
+    current: "هذه الفترة",
+    previous: "الفترة السابقة",
+    today: "اليوم",
+    /** {amount}: مجموع الفترة. {previous}: مجموع السابقة. */
+    summary: "مجموع الفترة {amount}، والسابقة {previous}",
+    columns: { day: "اليوم", week: "الأسبوع من", revenue: "الإيراد", previous: "الفترة السابقة" },
+    emptyTitle: "لا إيراد في هذه الفترة",
+    emptyLead: "يظهر الرسم مع أول دفعة في الفترة المختارة.",
   },
+  plans: {
+    title: "المبيعات حسب الاشتراك",
+    lead: "الطلبات المدفوعة في الفترة، بسطرها الأول",
+    others: "غيرها",
+    orders: { one: "طلب واحد", two: "طلبان", few: "طلبات", many: "طلبًا" },
+    average: "متوسط قيمة الطلب",
+    emptyTitle: "لا مبيعات مدفوعة في هذه الفترة",
+  },
+  funnel: {
+    title: "من الطلب إلى الدفع",
+    lead: "الطلبات المنشأة في الفترة ومحاولات دفعها",
+    steps: { created: "أُنشئ طلب", attempted: "بدأ الدفع", paid: "دُفع" },
+    /** {count}: الفاقد. {percent}: نسبته من الخطوة السابقة. */
+    lostBefore: "فقد {count} ({percent}) قبل بدء الدفع",
+    lostAfter: "فقد {count} ({percent})",
+    reasons: {
+      failed: "{count} فشل الدفع",
+      expired: "{count} انتهت المهلة",
+      other: "{count} مفتوحة أو ملغاة",
+    },
+    emptyTitle: "لا طلبات أُنشئت في هذه الفترة",
+  },
+  quick: { title: "إجراءات سريعة", lead: "أو ⌘K من أي صفحة" },
+  launch: overviewLaunchAr,
   orders: {
     title: "آخر الطلبات",
+    all: "كل الطلبات",
     columns: {
       reference: "المرجع",
       customer: "الجوال",

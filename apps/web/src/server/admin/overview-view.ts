@@ -1,13 +1,12 @@
-import type { AuditRow, DailyOrders } from "@masar/db";
+import type { AuditRow } from "@masar/db";
 import { lookup, type AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import { auditRowView } from "./audit-view";
 
 /**
- * نماذج عرض «نظرة عامة»: هندسة الرسوم، والفرق عن أمس، والوقت النسبي، وجملة النشاط. منطق صرف يُختبر
+ * نماذج عرض «نظرة عامة»: هندسة الرسوم، والوقت النسبي، وجملة النشاط. منطق صرف يُختبر
  * بلا قاعدة ولا متصفح؛ المكوّنات ترسم ما يخرج من هنا فقط.
  */
-const PERCENT = 100;
 const DECIMAL_BASE = 10;
 /** خطوات المحور زوجية (2، 4، 6، 8، 10 مضروبة في قوة العشرة)، فمنتصف المحور عدد صحيح. */
 const AXIS_STEP = 2;
@@ -58,8 +57,11 @@ export interface BarChart {
  * أعمدة بالترتيب الممرَّر (المكوّن يضع الأقدم في جهة البداية). العمود الصفري بلا ارتفاع، والقيمة
  * الموجبة لا تقل عن بكسلين حتى تُرى.
  */
-export function barChart(values: readonly number[], box: ChartBox): BarChart {
-  const max = niceAxisMax(Math.max(0, ...values));
+export function barChart(
+  values: readonly number[],
+  box: ChartBox,
+  max: number = niceAxisMax(Math.max(0, ...values)),
+): BarChart {
   const slot = values.length === 0 ? 0 : box.width / values.length;
   const barWidth = slot * (1 - box.gapRatio);
   const minVisible = 2;
@@ -85,10 +87,17 @@ export function barChart(values: readonly number[], box: ChartBox): BarChart {
  * نقاط الخط الصغير (‎"x,y x,y"‎) داخل صندوق بهامش، من الأقدم إلى الأحدث. سلسلة كلها أصفار خط على
  * القاعدة، وسلسلة ثابتة موجبة خط في الوسط.
  */
-export function sparklinePoints(values: readonly number[], width: number, height: number): string {
+export function sparklinePoints(
+  values: readonly number[],
+  width: number,
+  height: number,
+  scale: { readonly min: number; readonly max: number } = {
+    min: Math.min(...values, 0),
+    max: Math.max(...values, 0),
+  },
+): string {
   const pad = 2;
-  const max = Math.max(...values, 0);
-  const min = Math.min(...values, 0);
+  const { max, min } = scale;
   const span = max - min;
   const step = values.length > 1 ? (width - 2 * pad) / (values.length - 1) : 0;
   return values
@@ -98,47 +107,6 @@ export function sparklinePoints(values: readonly number[], width: number, height
       return `${String(round(pad + index * step))},${String(round(y))}`;
     })
     .join(" ");
-}
-
-export interface Delta {
-  readonly direction: "up" | "down";
-  readonly percent: number;
-}
-
-/**
- * الفرق عن أمس بالنسبة المئوية، حين يكون له معنى فقط: أمس صفر لا نسبة له، وبلا تغيّر لا يُعرض شيء.
- */
-export function deltaFromYesterday(today: number, yesterday: number): Delta | null {
-  if (yesterday <= 0 || today === yesterday) {
-    return null;
-  }
-  const percent = Math.round((Math.abs(today - yesterday) / yesterday) * PERCENT);
-  return percent === 0 ? null : { direction: today > yesterday ? "up" : "down", percent };
-}
-
-export interface Kpi {
-  readonly today: number;
-  readonly yesterday: number;
-  readonly delta: Delta | null;
-  /** آخر الأيام المطلوبة للخط الصغير، الأقدم أولًا. */
-  readonly trend: readonly number[];
-}
-
-/** رقم اليوم وفرقه عن أمس وسلسلته القصيرة من السلسلة اليومية (الأقدم أولًا، وآخرها اليوم). */
-export function kpiOf(
-  series: readonly DailyOrders[],
-  pick: (day: DailyOrders) => number,
-  trendDays: number,
-): Kpi {
-  const values = series.map(pick);
-  const today = values.at(-1) ?? 0;
-  const yesterday = values[values.length - 2] ?? 0;
-  return {
-    today,
-    yesterday,
-    delta: deltaFromYesterday(today, yesterday),
-    trend: values.slice(-trendDays),
-  };
 }
 
 const SECOND_MS = 1000;

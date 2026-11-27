@@ -2,7 +2,6 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   countAwaitingPayment,
   createDb,
-  dailyOrderSeries,
   findClubSummary,
   listRecentOrders,
   staffMfaCoverage,
@@ -82,34 +81,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await resetCommerceTables(db);
   await db.$disconnect();
-});
-
-describe("السلسلة اليومية بتقويم النادي", () => {
-  it("كل يوم حاضر، والأقدم أولًا، واليوم حتى الآن فقط", async () => {
-    const series = await dailyOrderSeries(db, club, NOW, 4);
-    expect(series.map((day) => day.day)).toEqual([
-      "2026-11-23",
-      "2026-11-24",
-      "2026-11-25",
-      "2026-11-26",
-    ]);
-    expect(series.map((day) => day.created)).toEqual([0, 1, 2, 3]);
-  });
-
-  it("المدفوع والإيراد بيوم الدفع لا يوم الإنشاء", async () => {
-    const series = await dailyOrderSeries(db, club, NOW, 3);
-    expect(series.map((day) => day.paid)).toEqual([0, 1, 2]);
-    expect(series.map((day) => day.revenueMinor)).toEqual([0, PRICE_MINOR, 2 * PRICE_MINOR]);
-  });
-
-  it("نادٍ آخر: أصفار", async () => {
-    const other = await findClubSummary(db, await createTestClub(db));
-    const series = await dailyOrderSeries(db, other ?? club, NOW, 2);
-    expect(series).toEqual([
-      { day: "2026-11-25", created: 0, paid: 0, revenueMinor: 0 },
-      { day: "2026-11-26", created: 0, paid: 0, revenueMinor: 0 },
-    ]);
-  });
 });
 
 describe("ما ينتظر الدفع وآخر الطلبات", () => {

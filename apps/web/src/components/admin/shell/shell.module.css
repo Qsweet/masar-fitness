@@ -224,12 +224,28 @@ a.crumb:hover {
 }
 
 @media (width >= 64rem) {
+  /* أرضية العمود الجانبي بطول الصفحة كلها، والشريط نفسه لاصق بارتفاع الشاشة */
   .shell {
-    grid-template-columns: var(--a-sidebar-w) minmax(0, 1fr);
+    --shell-rail: var(--a-sidebar-w);
+
+    grid-template-columns: var(--shell-rail) minmax(0, 1fr);
+    background: linear-gradient(
+      to left,
+      var(--a-sidebar) var(--shell-rail),
+      transparent var(--shell-rail)
+    );
   }
 
   .shell[data-collapsed] {
-    grid-template-columns: var(--a-sidebar-collapsed) minmax(0, 1fr);
+    --shell-rail: var(--a-sidebar-collapsed);
+  }
+
+  .shell:dir(ltr) {
+    background: linear-gradient(
+      to right,
+      var(--a-sidebar) var(--shell-rail),
+      transparent var(--shell-rail)
+    );
   }
 
   .topbar {

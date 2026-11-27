@@ -1,0 +1,58 @@
+/* آخر النشاط وحالة النظام في «نظرة عامة»: قوائم بخطوط شعرية داخل بطاقة. */
+.feed {
+  display: grid;
+  margin: 0;
+  padding: var(--a-1) var(--a-4h) var(--a-2);
+  list-style: none;
+}
+
+.feedItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--a-3);
+  padding-block: 0.625rem;
+  font-size: var(--a-fs-small);
+}
+
+.feedItem + .feedItem {
+  border-top: 1px solid var(--a-border);
+}
+
+.feedTime {
+  flex: none;
+  padding-top: 2px;
+  color: var(--a-subtle);
+  font-size: var(--a-fs-caption);
+  white-space: nowrap;
+}
+
+.status {
+  display: grid;
+  margin: 0;
+  padding: var(--a-1) var(--a-4h) var(--a-3);
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--a-3);
+  padding-block: 0.625rem;
+  font-size: var(--a-fs-small);
+}
+
+.statusRow + .statusRow {
+  border-top: 1px solid var(--a-border);
+}
+
+.statusRow dt {
+  color: var(--a-muted);
+}
+
+.statusRow dd {
+  min-width: 0;
+  margin: 0;
+  font-weight: 500;
+  text-align: end;
+}

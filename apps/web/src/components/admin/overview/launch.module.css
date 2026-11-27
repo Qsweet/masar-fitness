@@ -1,0 +1,243 @@
+/*
+ * «جهّز النادي للبيع الإلكتروني» والإجراءات السريعة (ADMIN_REDESIGN §5.1): تقدّم بشكل خط المضمار
+ * (قطعة لكل بند)، والبنود المفتوحة أولًا بفعلها، والمكتملة رقائق، وشريط رفيع حين يكتمل الإعداد.
+ */
+.card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-surface);
+  box-shadow: var(--a-shadow-1);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--a-4);
+  padding: var(--a-4) var(--a-4) 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 650;
+}
+
+.lead {
+  max-width: 52ch;
+  margin: var(--a-1) 0 0;
+  color: var(--a-muted);
+  font-size: var(--a-fs-small);
+}
+
+.progress {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.progressOf {
+  color: var(--a-subtle);
+  font-size: var(--a-fs-small);
+  font-weight: 500;
+}
+
+.track {
+  display: flex;
+  gap: 0.375rem;
+  padding: 0.875rem var(--a-4) var(--a-1);
+}
+
+.segment {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--a-viz-track);
+}
+
+.segmentDone {
+  background: var(--a-accent);
+}
+
+html[data-theme="light"] .segmentDone {
+  background: var(--a-text);
+}
+
+.list {
+  margin: 0;
+  padding: var(--a-2);
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  gap: var(--a-1) var(--a-3);
+  align-items: center;
+  padding: 0.625rem var(--a-2);
+}
+
+.item + .item {
+  border-top: 1px solid var(--a-border);
+}
+
+.itemAction {
+  grid-column: 2;
+  justify-self: start;
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 50%;
+}
+
+.markTodo {
+  border: 1.5px dashed var(--a-field-border);
+}
+
+.markWarn {
+  background: var(--a-warning-soft);
+  color: var(--a-warning);
+}
+
+.markLater {
+  background: var(--a-neutral-soft);
+  color: var(--a-subtle);
+}
+
+.itemTitle {
+  margin: 0;
+  font-weight: 550;
+}
+
+.itemHint {
+  margin: 1px 0 0;
+  color: var(--a-subtle);
+  font-size: var(--a-fs-caption);
+}
+
+.done {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-2) 0.625rem;
+  margin: 0;
+  padding: var(--a-3) var(--a-4);
+  border-top: 1px solid var(--a-border);
+  color: var(--a-muted);
+  font-size: var(--a-fs-small);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 3px 0.625rem;
+  border-radius: var(--a-radius-pill);
+  background: var(--a-neutral-soft);
+  color: var(--a-muted);
+  font-size: var(--a-fs-caption);
+  white-space: nowrap;
+}
+
+.chip svg {
+  color: var(--a-success);
+}
+
+/* اكتمل الإعداد: شريط رفيع */
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-2) var(--a-3);
+  margin: 0;
+  padding: var(--a-3) var(--a-4);
+  border: 1px solid var(--a-info-soft);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-info-soft);
+  font-size: var(--a-fs-small);
+}
+
+.strip svg {
+  color: var(--a-success);
+}
+
+/* الإجراءات السريعة */
+.actions {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: var(--a-2);
+  list-style: none;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: 2.75rem;
+  padding: 0.625rem var(--a-3);
+  border-radius: var(--a-radius);
+  color: var(--a-text);
+  text-decoration: none;
+}
+
+.action:hover {
+  background: var(--a-hover);
+}
+
+.actionIcon {
+  display: grid;
+  place-items: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  flex: none;
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius);
+  background: var(--a-raised);
+}
+
+.actionText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.actionLabel {
+  font-size: var(--a-fs-small);
+  font-weight: 550;
+}
+
+.actionHint {
+  color: var(--a-subtle);
+  font-size: var(--a-fs-caption);
+}
+
+@media (width >= 64rem) {
+  .head {
+    padding: var(--a-4h) var(--a-4h) 0;
+  }
+
+  .track {
+    padding-inline: var(--a-4h);
+  }
+
+  .item {
+    grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+    padding: 0.6875rem var(--a-3);
+  }
+
+  .itemAction {
+    grid-column: auto;
+  }
+
+  .done {
+    padding-inline: var(--a-4h);
+  }
+}

@@ -47,13 +47,8 @@ export {
   savePendingTotpSecret,
 } from "./mfa";
 export type { MfaVerified, RecoveryCodeUse, TotpEnrolment, TotpReset } from "./mfa";
-export {
-  countAwaitingPayment,
-  dailyOrderSeries,
-  listRecentOrders,
-  staffMfaCoverage,
-} from "./dashboard";
-export type { DailyOrders, MfaCoverage, RecentOrder } from "./dashboard";
+export { countAwaitingPayment, listRecentOrders, staffMfaCoverage } from "./dashboard";
+export type { MfaCoverage, RecentOrder } from "./dashboard";
 export {
   clubHasOrders,
   periodDailySeries,

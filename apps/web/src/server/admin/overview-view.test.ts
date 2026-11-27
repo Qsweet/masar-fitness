@@ -1,11 +1,9 @@
-import type { AuditRow, DailyOrders } from "@masar/db";
+import type { AuditRow } from "@masar/db";
 import { describe, expect, it } from "vitest";
 import { getAdminDictionary } from "@/i18n/admin";
 import {
   activityItem,
   barChart,
-  deltaFromYesterday,
-  kpiOf,
   niceAxisMax,
   relativeTime,
   sparklinePoints,
@@ -63,6 +61,10 @@ describe("هندسة الأعمدة", () => {
     expect(bars[1]?.height).toBe(0);
   });
 
+  it("بأعلى محور ممرَّر (مقياس مشترك مع الفترة السابقة)", () => {
+    expect(barChart([2], box, 8).bars[0]?.height).toBe(25);
+  });
+
   it("سلسلة فارغة بلا أعمدة", () => {
     expect(barChart([], box).bars).toEqual([]);
   });
@@ -80,52 +82,9 @@ describe("الخط الصغير", () => {
   it("قيمة واحدة نقطة واحدة", () => {
     expect(sparklinePoints([3], 100, 20)).toBe("2,2");
   });
-});
 
-describe("الفرق عن أمس", () => {
-  it("يُعرض حين يكون له معنى فقط", () => {
-    expect(deltaFromYesterday(3, 2)).toEqual({ direction: "up", percent: 50 });
-    expect(deltaFromYesterday(1, 4)).toEqual({ direction: "down", percent: 75 });
-    expect(deltaFromYesterday(0, 5)).toEqual({ direction: "down", percent: 100 });
-  });
-
-  it("أمس صفر لا نسبة له، وبلا تغيّر لا شيء", () => {
-    expect(deltaFromYesterday(5, 0)).toBeNull();
-    expect(deltaFromYesterday(0, 0)).toBeNull();
-    expect(deltaFromYesterday(4, 4)).toBeNull();
-  });
-
-  it("فرق يُقرَّب إلى صفر بالمئة لا يُعرض", () => {
-    expect(deltaFromYesterday(1001, 1000)).toBeNull();
-  });
-});
-
-describe("رقم اليوم من السلسلة", () => {
-  const series: DailyOrders[] = [1, 2, 3, 4, 5, 6, 7, 8, 4, 6].map((created, index) => ({
-    day: `2026-11-${String(index + 10)}`,
-    created,
-    paid: 0,
-    revenueMinor: created * 100,
-  }));
-
-  it("اليوم آخر السلسلة، وأمس ما قبله، والخط آخر سبعة أيام", () => {
-    const kpi = kpiOf(series, (day) => day.created, 7);
-    expect(kpi).toEqual({
-      today: 6,
-      yesterday: 4,
-      delta: { direction: "up", percent: 50 },
-      trend: [4, 5, 6, 7, 8, 4, 6],
-    });
-    expect(kpiOf(series, (day) => day.revenueMinor, 7).today).toBe(600);
-  });
-
-  it("سلسلة فارغة أصفار", () => {
-    expect(kpiOf([], (day) => day.created, 7)).toEqual({
-      today: 0,
-      yesterday: 0,
-      delta: null,
-      trend: [],
-    });
+  it("بمقياس مشترك مع سلسلة أخرى: القمة نفسها لا تصل الأعلى", () => {
+    expect(sparklinePoints([0, 5], 100, 20, { min: 0, max: 10 })).toBe("2,18 98,10");
   });
 });
 

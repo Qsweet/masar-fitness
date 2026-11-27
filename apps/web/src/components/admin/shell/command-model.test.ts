@@ -1,4 +1,4 @@
-import { STAFF_ROLES } from "@masar/domain";
+import type { STAFF_ROLES } from "@masar/domain";
 import { describe, expect, it } from "vitest";
 import { getAdminDictionary } from "@/i18n/admin";
 import {

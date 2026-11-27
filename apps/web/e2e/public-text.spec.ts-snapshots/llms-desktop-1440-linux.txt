@@ -1,0 +1,26 @@
+200
+# مسار الأبطال الرياضي
+
+> نادي مسار الأبطال الرياضي للرجال في حي الرحاب ببريدة: صالة حديد وتمارين وظيفية وحصص جماعية ومسبح داخلي وجاكوزي وساونا وبخار. اختر مدتك واشترك.
+
+- 4870 الطريق الدائري الشمالي، 8177، حي الرحاب، بريدة 52581
+- +966163240111
+
+## روابط سريعة
+
+- [الرئيسية](http://127.0.0.1:3100/)
+- [العضويات](http://127.0.0.1:3100/memberships)
+- [حاسبة تكلفة الزيارة](http://127.0.0.1:3100/tools/cost-per-visit)
+
+## Masters Way Sports Club
+
+Masters Way Sports Club for men in Ar Rihab, Buraidah: strength floor, functional training, group classes, indoor pool, jacuzzi, sauna and steam room. Choose your duration and join.
+
+- 4870 Northern Ring Road, 8177, Ar Rihab, Buraidah 52581
+- +966163240111
+
+### Quick links
+
+- [Home](http://127.0.0.1:3100/en)
+- [Memberships](http://127.0.0.1:3100/en/memberships)
+- [Cost-per-visit calculator](http://127.0.0.1:3100/en/tools/cost-per-visit)

@@ -224,6 +224,11 @@
     display: block;
   }
 
+  /* التلميح يخرج من عرض الشريط: لا قص له (13 أيقونة تسعها الشاشة بلا تمرير) */
+  :global([data-collapsed]) .scroll {
+    overflow: visible;
+  }
+
   :global([data-collapsed]) .brand,
   :global([data-collapsed]) .navLink,
   :global([data-collapsed]) .footButton {

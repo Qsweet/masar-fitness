@@ -19,14 +19,24 @@ export interface KeyInput {
   readonly ctrlKey: boolean;
   readonly altKey: boolean;
   readonly shiftKey: boolean;
-  /** التركيز في حقل كتابة (input، textarea، select، contenteditable). */
+  /** التركيز في حقل كتابة (input نصي، textarea، select، contenteditable). */
   readonly inField: boolean;
+  /** حوار مفتوح (لوحة الأوامر، الاختصارات، الدرج، تأكيد): لا اختصار بحرف تحته. */
+  readonly dialogOpen: boolean;
 }
 
 export interface ShortcutState {
   readonly enabled: boolean;
   /** ضُغط G للتو، والحرف التالي يختار الوجهة. */
   readonly chordPending: boolean;
+}
+
+/**
+ * ضغطة جزء من تركيب بمحرر الإدخال: `isComposing`، أو `key` «Process» (المقابل الحديث لـ`keyCode` 229
+ * المهجور، يرسله Chrome وSafari لأول ضغطة قبل أن يبدأ التركيب).
+ */
+export function isComposingKey(event: { readonly isComposing: boolean; readonly key: string }) {
+  return event.isComposing || event.key === "Process";
 }
 
 /** `G` ثم حرف: الوجهة. */
@@ -84,7 +94,8 @@ function single(input: KeyInput): ShortcutAction | null {
 
 /** اختصار بحرف: يعمل مفعَّلًا، خارج الحقول، وبلا مفاتيح تعديل (عدا Shift). */
 function letterAllowed(input: KeyInput, state: ShortcutState): boolean {
-  return state.enabled && !input.inField && !input.metaKey && !input.ctrlKey && !input.altKey;
+  const modified = input.metaKey || input.ctrlKey || input.altKey;
+  return state.enabled && !input.inField && !input.dialogOpen && !modified;
 }
 
 export function shortcutFor(input: KeyInput, state: ShortcutState): ShortcutAction | null {
@@ -101,12 +112,29 @@ export function shortcutFor(input: KeyInput, state: ShortcutState): ShortcutActi
   return single(input);
 }
 
-/** هل العنصر حقل كتابة؟ حينها لا يعمل اختصار بحرف. */
+/** أنواع ‎<input>‎ التي ليست كتابة: الحرف فيها لا يُكتب، فالاختصار يعمل. */
+const NON_TEXT_INPUTS = new Set([
+  "checkbox",
+  "radio",
+  "button",
+  "submit",
+  "reset",
+  "file",
+  "range",
+  "color",
+  "image",
+  "hidden",
+]);
+
+/** هل العنصر حقل كتابة؟ حينها لا يعمل اختصار بحرف. خانة الاختيار والزر ليسا حقل كتابة. */
 export function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) {
     return false;
   }
-  return target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+  if (target instanceof HTMLInputElement) {
+    return !NON_TEXT_INPUTS.has(target.type);
+  }
+  return target.isContentEditable || ["TEXTAREA", "SELECT"].includes(target.tagName);
 }
 
 export type ShortcutKey = keyof typeof SHORTCUT_LIST_KEYS;

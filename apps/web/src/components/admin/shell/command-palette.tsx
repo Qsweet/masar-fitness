@@ -1,21 +1,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import type { AdminDictionary } from "@/i18n/admin";
-import { fill } from "@/i18n/fill";
-import { AdminIcon } from "../admin-icon";
-import {
-  paletteGroups,
-  type CommandEntry,
-  type CommandScope,
-  type PaletteGroup,
-} from "./command-model";
+import { useEffect, useId, useMemo, useState, type KeyboardEvent } from "react";
+import { countText } from "@/i18n/count";
+import { paletteGroups, type CommandEntry, type CommandScope } from "./command-model";
 import styles from "./palette.module.css";
+import {
+  Footer,
+  Options,
+  PaletteInput,
+  SCOPES,
+  ScopeChips,
+  type PaletteText,
+} from "./palette-parts";
+import { useModalOnMount } from "./use-modal";
 import { readRecent } from "./recent-store";
-import shellStyles from "./shell.module.css";
-
-type PaletteText = AdminDictionary["shell"]["palette"];
+import { isComposingKey } from "./shortcuts";
 
 interface CommandPaletteProps {
   readonly onClose: () => void;
@@ -25,111 +25,9 @@ interface CommandPaletteProps {
   readonly text: PaletteText;
 }
 
-const SCOPES: readonly CommandScope[] = ["all", "page", "action"];
-
 function nextScope(scope: CommandScope, step: 1 | -1): CommandScope {
   const index = SCOPES.indexOf(scope);
   return SCOPES[(index + step + SCOPES.length) % SCOPES.length] ?? "all";
-}
-
-/**
- * الحوار يُرسم حين يُفتح فقط: يُعرض نافذةً عند التركيب، ويعيد التركيز عند الإزالة إلى ما كان عليه قبل
- * الفتح (زر البحث أو حيث ضُغط ⌘K).
- */
-export function useModalOnMount() {
-  const dialog = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const opener = document.activeElement;
-    dialog.current?.showModal();
-    return () => {
-      if (opener instanceof HTMLElement) {
-        opener.focus();
-      }
-    };
-  }, []);
-  return dialog;
-}
-
-interface OptionsProps {
-  readonly groups: readonly PaletteGroup[];
-  readonly flat: readonly CommandEntry[];
-  readonly active: number;
-  readonly idOf: (index: number) => string;
-  readonly chords: Readonly<Record<string, string>>;
-  readonly text: PaletteText;
-  readonly onPick: (entry: CommandEntry) => void;
-  readonly onHover: (index: number) => void;
-}
-
-function Options({ groups, flat, active, idOf, chords, text, onPick, onHover }: OptionsProps) {
-  const baseId = useId();
-  return groups.map((group) => (
-    <li key={group.kind} role="presentation">
-      <div id={`${baseId}-${group.kind}`} className={styles.groupLabel}>
-        {text.groups[group.kind]}
-      </div>
-      <ul role="group" aria-labelledby={`${baseId}-${group.kind}`} className={styles.groupList}>
-        {group.entries.map((entry) => {
-          const index = flat.indexOf(entry);
-          const chord = chords[entry.id];
-          return (
-            <li
-              key={entry.id}
-              id={idOf(index)}
-              role="option"
-              aria-selected={index === active}
-              className={styles.option}
-              onClick={() => {
-                onPick(entry);
-              }}
-              onPointerMove={() => {
-                onHover(index);
-              }}
-            >
-              <span className={styles.optionIcon} aria-hidden="true">
-                <AdminIcon name={entry.icon} size={16} />
-              </span>
-              <span className={styles.optionText}>
-                <span className={styles.optionLabel}>{entry.label}</span>
-                <span className={styles.optionHint}>{entry.hint}</span>
-              </span>
-              {chord === undefined ? null : (
-                <span className={shellStyles.keys} aria-hidden="true">
-                  {chord.split(" ").map((key) => (
-                    <kbd key={key} className={shellStyles.kbd}>
-                      {key}
-                    </kbd>
-                  ))}
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </li>
-  ));
-}
-
-function Footer({ text }: { readonly text: PaletteText }) {
-  const hint = (keys: readonly string[], label: string) => (
-    <span className={styles.footHint}>
-      {keys.map((key) => (
-        <kbd key={key} className={shellStyles.kbd}>
-          {key}
-        </kbd>
-      ))}
-      {label}
-    </span>
-  );
-  return (
-    <div className={styles.foot} aria-hidden="true">
-      {hint(["↑", "↓"], text.hints.move)}
-      {hint(["↵"], text.hints.open)}
-      {hint(["Tab"], text.hints.scope)}
-      {hint(["Esc"], text.hints.close)}
-      <span className={styles.footNote}>{text.scopeNote}</span>
-    </div>
-  );
 }
 
 /** حالة البحث: العبارة والنطاق والخيار النشط. تبدأ من أولها مع كل فتح (الحوار يُركَّب من جديد). */
@@ -167,6 +65,9 @@ type PaletteState = ReturnType<typeof usePaletteState>;
 /** لوحة المفاتيح في الحقل: الأسهم تنقل الخيار النشط، وEnter يفتحه، وTab يبدّل النطاق. */
 function keyHandler(state: PaletteState, pick: (entry: CommandEntry) => void) {
   return (event: KeyboardEvent<HTMLInputElement>) => {
+    if (isComposingKey(event.nativeEvent)) {
+      return;
+    }
     const { flat, activeIndex } = state;
     const move = { ArrowDown: 1, ArrowUp: -1 }[event.key];
     const current = flat[activeIndex];
@@ -181,65 +82,6 @@ function keyHandler(state: PaletteState, pick: (entry: CommandEntry) => void) {
       state.rescope(nextScope(state.scope, event.shiftKey ? -1 : 1));
     }
   };
-}
-
-function ScopeChips({ state, text }: { readonly state: PaletteState; readonly text: PaletteText }) {
-  return (
-    <div className={styles.scopes} role="group" aria-label={text.scopesLabel}>
-      {SCOPES.map((item) => (
-        <button
-          key={item}
-          type="button"
-          tabIndex={-1}
-          className={styles.scope}
-          aria-pressed={item === state.scope}
-          onClick={() => {
-            state.rescope(item);
-          }}
-        >
-          {text.scopes[item]}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-interface PaletteInputProps {
-  readonly state: PaletteState;
-  readonly text: PaletteText;
-  readonly listId: string;
-  readonly activeId: string | undefined;
-  readonly onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
-  readonly onClose: () => void;
-}
-
-function PaletteInput({ state, text, listId, activeId, onKeyDown, onClose }: PaletteInputProps) {
-  return (
-    <div className={styles.inputRow}>
-      <AdminIcon name="search" />
-      <input
-        className={styles.input}
-        role="combobox"
-        aria-expanded="true"
-        aria-controls={listId}
-        aria-autocomplete="list"
-        aria-activedescendant={activeId}
-        aria-label={text.input}
-        placeholder={text.input}
-        autoComplete="off"
-        spellCheck={false}
-        value={state.query}
-        onChange={(event) => {
-          state.search(event.target.value);
-        }}
-        onKeyDown={onKeyDown}
-      />
-      <button type="button" tabIndex={-1} className={shellStyles.kbd} onClick={onClose}>
-        <span className="sr-only">{text.close} </span>
-        Esc
-      </button>
-    </div>
-  );
 }
 
 /**
@@ -301,7 +143,7 @@ export function CommandPalette(props: CommandPaletteProps) {
       </ul>
       {state.flat.length === 0 ? <p className={styles.empty}>{text.empty}</p> : null}
       <p role="status" className="sr-only">
-        {fill(text.results, { count: String(state.flat.length) })}
+        {state.flat.length === 0 ? text.noResults : countText(state.flat.length, text.results)}
       </p>
       <Footer text={text} />
     </dialog>

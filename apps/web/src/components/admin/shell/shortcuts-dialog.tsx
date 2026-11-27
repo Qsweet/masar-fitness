@@ -5,7 +5,7 @@ import { ADMIN_SHORTCUTS_OFF } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
 import { setShortcutsAction } from "@/server/admin/actions/preferences";
 import { AdminIcon } from "../admin-icon";
-import { useModalOnMount } from "./command-palette";
+import { useModalOnMount } from "./use-modal";
 import styles from "./palette.module.css";
 import shellStyles from "./shell.module.css";
 import { SHORTCUT_LIST_KEYS, type ShortcutKey } from "./shortcuts";

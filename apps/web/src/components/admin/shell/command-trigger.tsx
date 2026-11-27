@@ -24,6 +24,16 @@ export function CommandTrigger({ command, href, className, label, children }: Co
       aria-label={label}
       aria-haspopup="dialog"
       onClick={(event) => {
+        // تبويب جديد أو نافذة بمفتاح تعديل أو زر آخر: يبقى رابطًا كما يتوقع المستخدم
+        if (
+          event.button !== 0 ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey
+        ) {
+          return;
+        }
         event.preventDefault();
         window.dispatchEvent(new CustomEvent<ShellCommand>(COMMAND_EVENT, { detail: command }));
       }}

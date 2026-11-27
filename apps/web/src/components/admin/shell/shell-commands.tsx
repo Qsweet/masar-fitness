@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import type { AdminDictionary } from "@/i18n/admin";
 import {
@@ -10,17 +11,29 @@ import {
   type ShellCommand,
 } from "./attributes";
 import { rememberRecent, type CommandEntry } from "./command-model";
-import { CommandPalette } from "./command-palette";
 import type { NavKey } from "./nav-model";
 import { readRecent, writeRecent } from "./recent-store";
-import { ShortcutsDialog } from "./shortcuts-dialog";
 import {
   CHORD_TIMEOUT_MS,
+  isComposingKey,
   chordLabels,
   isTypingTarget,
   shortcutFor,
   type ShortcutAction,
 } from "./shortcuts";
+
+/**
+ * اللوحة والحوار يُحمَّلان عند أول فتح لا مع كل صفحة (ADMIN_REDESIGN §8): ما يحمّله الهيكل دائمًا
+ * المستمع والأزرار وحدها.
+ */
+const CommandPalette = dynamic(
+  () => import("./command-palette").then((module) => module.CommandPalette),
+  { ssr: false },
+);
+const ShortcutsDialog = dynamic(
+  () => import("./shortcuts-dialog").then((module) => module.ShortcutsDialog),
+  { ssr: false },
+);
 
 interface ShellCommandsProps {
   readonly entries: readonly CommandEntry[];
@@ -70,7 +83,8 @@ function useShortcuts(enabled: boolean, run: (action: ShortcutAction) => void): 
   });
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.repeat || event.defaultPrevented) {
+      // التركيب بمحرر الإدخال (لوحات عربية وآسيوية): الضغطات جزء من حرف يُكتب
+      if (event.repeat || event.defaultPrevented || isComposingKey(event)) {
         return;
       }
       const chordPending = Date.now() - chordAt.current < CHORD_TIMEOUT_MS;
@@ -81,6 +95,7 @@ function useShortcuts(enabled: boolean, run: (action: ShortcutAction) => void): 
         altKey: event.altKey,
         shiftKey: event.shiftKey,
         inField: isTypingTarget(event.target),
+        dialogOpen: document.querySelector("dialog[open]") !== null,
       };
       const action = shortcutFor(input, { enabled, chordPending });
       chordAt.current = action?.kind === "chord" ? Date.now() : 0;

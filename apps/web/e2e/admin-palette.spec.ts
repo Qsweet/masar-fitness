@@ -52,9 +52,7 @@ test("⌘K يفتح اللوحة، والأسهم تنقل الخيار النش
   await expect(input).toHaveAttribute("aria-controls", (await listbox.getAttribute("id")) ?? "");
 
   await input.fill("التدقيق");
-  await expect(palette(page).getByRole("status")).toHaveText(
-    PALETTE.results.replace("{count}", "1"),
-  );
+  await expect(palette(page).getByRole("status")).toHaveText(PALETTE.results.one);
   const first = palette(page).getByRole("option").first();
   await expect(first).toHaveAttribute("aria-selected", "true");
   await expect(input).toHaveAttribute(
@@ -143,6 +141,7 @@ test("اللوحة بصلاحيات الموظف: المحرر والمبيعا�
     }
     await hydrated(page);
     await page.keyboard.press("Control+KeyK");
+    await expect(palette(page).getByRole("option").first()).toBeVisible();
     const labels = await optionLabels(page);
     for (const label of expectations[role].present) {
       expect(labels, `${role} يرى ${label}`).toContain(label);
@@ -163,8 +162,11 @@ test("الاختصارات: G ثم O، و[ للطي، و/ لحقل البحث، 
   await page.keyboard.press("KeyO");
   await expect(page).toHaveURL(/\/admin\/sales\/orders$/);
   await hydrated(page);
+  // `/` يركّز حقل الصفحة إن وُجد، وإلا يفتح اللوحة: ننتظر الحقل قبل الضغط
+  const reference = page.getByLabel(TEXT.sales.orders.filters.reference);
+  await expect(reference).toBeVisible();
   await page.keyboard.press("Slash");
-  await expect(page.getByLabel(TEXT.sales.orders.filters.reference)).toBeFocused();
+  await expect(reference).toBeFocused();
   // داخل الحقل لا يعمل اختصار بحرف
   await page.keyboard.press("KeyG");
   await page.keyboard.press("KeyH");

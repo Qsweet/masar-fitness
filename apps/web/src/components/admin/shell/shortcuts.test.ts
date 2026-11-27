@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chordLabels, chordTargets, shortcutFor, type KeyInput } from "./shortcuts";
+import { chordLabels, chordTargets, isComposingKey, shortcutFor, type KeyInput } from "./shortcuts";
 
 const key = (code: string, extra: Partial<KeyInput> = {}): KeyInput => ({
   code,
@@ -8,6 +8,7 @@ const key = (code: string, extra: Partial<KeyInput> = {}): KeyInput => ({
   altKey: false,
   shiftKey: false,
   inField: false,
+  dialogOpen: false,
   ...extra,
 });
 const on = { enabled: true, chordPending: false };
@@ -47,6 +48,9 @@ describe("مطابق الاختصارات بـevent.code", () => {
     expect(shortcutFor(key("Slash", { inField: true }), on)).toBeNull();
     expect(shortcutFor(key("KeyG", { metaKey: true }), on)).toBeNull();
     expect(shortcutFor(key("BracketLeft"), { enabled: false, chordPending: false })).toBeNull();
+    // تحت حوار مفتوح لا حرف، و⌘K يبقى
+    expect(shortcutFor(key("KeyG", { dialogOpen: true }), on)).toBeNull();
+    expect(shortcutFor(key("KeyK", { ctrlKey: true, dialogOpen: true }), on)?.kind).toBe("palette");
   });
 });
 
@@ -60,4 +64,10 @@ describe("وجهات G بحسب الأقسام المتاحة", () => {
     expect(targets).toEqual({ overview: "/admin", orders: "/admin/sales/orders" });
     expect(chordLabels(targets)).toEqual({ "page:overview": "G H", "page:orders": "G O" });
   });
+});
+
+it("ضغطات التركيب بمحرر الإدخال لا تُعدّ اختصارًا", () => {
+  expect(isComposingKey({ isComposing: true, key: "g" })).toBe(true);
+  expect(isComposingKey({ isComposing: false, key: "Process" })).toBe(true);
+  expect(isComposingKey({ isComposing: false, key: "g" })).toBe(false);
 });

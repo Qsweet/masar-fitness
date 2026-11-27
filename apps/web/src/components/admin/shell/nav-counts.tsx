@@ -1,10 +1,8 @@
-import { countAwaitingPayment } from "@masar/db";
 import { hasPermission, type StaffRole } from "@masar/domain";
 import { Suspense, type ReactNode } from "react";
 import type { AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
-import { draftSummary } from "@/server/admin/content/overview";
-import { getDb } from "@/server/db";
+import { awaitingPaymentCount, clubDraftSummary } from "@/server/admin/cached-reads";
 import type { NavKey } from "./nav-model";
 import styles from "./sidebar.module.css";
 
@@ -28,19 +26,20 @@ function Count({ count, tone, label }: CountProps) {
 }
 
 async function AwaitingCount({ clubId, label }: { clubId: string; label: string }) {
-  const count = await countAwaitingPayment(getDb(), clubId, new Date());
+  const count = await awaitingPaymentCount(clubId);
   return <Count count={count} tone="accent" label={label} />;
 }
 
 async function DraftCount({ clubId, label }: { clubId: string; label: string }) {
-  const summary = await draftSummary(clubId);
+  const summary = await clubDraftSummary(clubId);
   const count = summary.changes.length + summary.sliderChanges.length;
   return <Count count={count} tone="neutral" label={label} />;
 }
 
 /**
  * عدّادات الشريط الجانبي (ADMIN_REDESIGN §4.1): «الطلبات» بانتظار الدفع الآن، و«النصوص» تعديلات المسودة
- * التي لم تُنشر. كلٌّ بصلاحية قسمه، ويُحسب على الخادم في حدّه الخاص فلا يؤخر الهيكل.
+ * التي لم تُنشر. كلٌّ بصلاحية قسمه، ويُحسب على الخادم في حدّه الخاص فلا يؤخر الهيكل، ومرة واحدة
+ * للطلب وإن رُسم مرتين (الشريط الجانبي والدرج).
  */
 export function navCounts(
   role: StaffRole,

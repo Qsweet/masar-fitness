@@ -43,6 +43,33 @@ test("الشريط الجانبي يُطوى ويبقى مطويًّا بعد ا
   // مطويّ: الأقسام تبقى بأسمائها لقارئ الشاشة ولوحة المفاتيح
   await expect(page.getByRole("link", { name: TEXT.nav.staff })).toBeVisible();
 
+  // مطويّ: الاسم تلميح ظاهر عند التركيز والمرور، لا مقصوص بحد الشريط
+  for (const reveal of ["focus", "hover"] as const) {
+    const link = page.getByRole("link", { name: TEXT.nav.audit });
+    if (reveal === "focus") {
+      // تركيز بلوحة المفاتيح (‎:focus-visible‎) كما يصل إليه المستخدم
+      await link.focus();
+      await page.keyboard.press("Shift+Tab");
+      await page.keyboard.press("Tab");
+    } else {
+      await link.hover();
+    }
+    const label = link.locator("span").last();
+    await expect(label).toHaveCSS("opacity", "1");
+    // التلميح لا يلتقط المؤشر (pointer-events: none)؛ يُفعَّل لحظة الفحص فيرى elementFromPoint ما يُرسم
+    const shown = await label.evaluate((node) => {
+      const element = node as HTMLElement;
+      element.style.pointerEvents = "auto";
+      const box = element.getBoundingClientRect();
+      const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+      element.style.pointerEvents = "";
+      return hit !== null && element.contains(hit);
+    });
+    expect(shown, reveal).toBe(true);
+    await page.mouse.move(0, 0);
+    await page.locator("main").focus();
+  }
+
   const expand = page.getByRole("button", { name: TEXT.shell.expand });
   await expect(expand).toHaveAttribute("aria-expanded", "false");
   await expand.click();

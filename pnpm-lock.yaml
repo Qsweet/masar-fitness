@@ -125,6 +125,19 @@ importers:
         specifier: 4.23.15
         version: 4.23.15
 
+  packages/tracking:
+    dependencies:
+      '@masar/db':
+        specifier: workspace:*
+        version: link:../db
+      '@masar/domain':
+        specifier: workspace:*
+        version: link:../domain
+    devDependencies:
+      tsx:
+        specifier: 4.23.15
+        version: 4.23.15
+
 packages:
 
   '@axe-core/playwright@4.14.1':

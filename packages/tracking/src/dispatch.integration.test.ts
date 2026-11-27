@@ -1,0 +1,228 @@
+import { randomUUID } from "node:crypto";
+import {
+  createDb,
+  createOrder,
+  markOrderPaid,
+  recordOrderTracking,
+  saveIntegration,
+  type Db,
+} from "@masar/db";
+import {
+  createPlan,
+  createTestClub,
+  createTestStaff,
+  orderInput,
+  resetCommerceTables,
+  testDatabaseUrl,
+  unwrap,
+  type TestProduct,
+} from "@masar/db/test-support";
+import { CONSENT_VERSION, type TrackingProvider } from "@masar/domain";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { runDispatch } from "./dispatch";
+import { sealTrackingSecret } from "./secret";
+import { sendTestEvent } from "./send-test";
+import { createFakeTransport, type FakeTransport } from "./transport";
+
+const PRICE = 60_000;
+const KEY = new Uint8Array(Array.from({ length: 32 }, (_, index) => index));
+const SITE = "https://masar.test";
+
+let db: Db;
+let clubId: string;
+let staffId: string;
+let plan: TestProduct;
+let fake: FakeTransport;
+let now: Date;
+
+beforeAll(async () => {
+  db = createDb(testDatabaseUrl());
+  await resetCommerceTables(db);
+  clubId = await createTestClub(db);
+  staffId = (await createTestStaff(db, clubId, { role: "owner" })).id;
+  plan = await createPlan(db, clubId, { priceMinor: PRICE, durationMonths: 1, bonusMonths: 0 });
+});
+
+beforeEach(async () => {
+  await db.$executeRaw`TRUNCATE tracking_outbox, order_tracking, tracking_integrations, audit_logs,
+    memberships, order_discounts, order_items, orders, customers CASCADE`;
+  fake = createFakeTransport();
+  now = new Date();
+});
+
+afterAll(async () => {
+  await resetCommerceTables(db);
+  await db.$disconnect();
+});
+
+const CONFIG = {
+  meta: { pixelId: "123456789012345" },
+  ga4: { measurementId: "G-ABC1234" },
+} as const;
+
+async function enable(provider: "meta" | "ga4", options: { testCode?: string } = {}) {
+  const sealed = sealTrackingSecret(KEY, clubId, provider, `${provider}-server-token`);
+  unwrap(
+    await saveIntegration(db, {
+      clubId,
+      provider,
+      enabled: true,
+      config: CONFIG[provider],
+      testEventCode: options.testCode ?? null,
+      secret: { kind: "set", ...sealed },
+      staffId,
+      actor: `staff:${staffId}`,
+      now,
+    }),
+  );
+}
+
+async function paidOrder(gaClientId: string | null = "123.456"): Promise<string> {
+  const { orderId } = unwrap(await createOrder(db, orderInput(plan.slug, PRICE)));
+  await recordOrderTracking(db, {
+    orderId,
+    consent: { analytics: true, ads: true, version: CONSENT_VERSION, at: now },
+    firstTouch: null,
+    lastTouch: null,
+    gaClientId,
+    fbp: null,
+    fbc: null,
+    scid: null,
+    ttp: null,
+    clientIp: "203.0.113.9",
+    userAgent: "Mozilla/5.0",
+    pageUrl: null,
+    now,
+  });
+  const payment = {
+    provider: "test_pay",
+    providerPaymentId: randomUUID(),
+    amountMinor: PRICE,
+    currency: "SAR",
+  };
+  unwrap(await markOrderPaid(db, { orderId, payment, actor: "provider", now }));
+  return orderId;
+}
+
+function dispatch(at = now) {
+  return runDispatch({
+    db,
+    transport: fake.transport,
+    adminKey: KEY,
+    siteUrl: SITE,
+    clock: () => at,
+  });
+}
+
+async function rows(provider: TrackingProvider) {
+  return db.trackingOutbox.findMany({ where: { provider } });
+}
+
+describe("المرسِل", () => {
+  it("يرسل الشراء مرة ويسجّل الرد، والدورة الثانية لا ترسل شيئًا", async () => {
+    await enable("meta");
+    await paidOrder();
+    expect(await dispatch()).toMatchObject({ claimed: 1, sent: 1 });
+    expect(fake.requests).toHaveLength(1);
+    expect(fake.requests[0]?.url).toContain("graph.facebook.com/v27.0/123456789012345/events");
+    expect(fake.requests[0]?.url).toContain("access_token=meta-server-token");
+    expect((await rows("meta"))[0]).toMatchObject({ status: "sent", attempts: 1, lastStatus: 200 });
+    expect(await dispatch()).toMatchObject({ claimed: 0 });
+    expect(fake.requests).toHaveLength(1);
+  });
+
+  it("503 يُعاد بعد دقيقة، و400 يموت، والميت لا يُرسل ثانية", async () => {
+    await enable("meta");
+    await paidOrder();
+    fake.respondWith({ kind: "response", status: 503, body: "" });
+    expect(await dispatch()).toMatchObject({ retried: 1 });
+    expect(await dispatch(new Date(now.getTime() + 30_000))).toMatchObject({ claimed: 0 });
+    fake.respondWith({ kind: "response", status: 400, body: '{"error":{}}' });
+    expect(await dispatch(new Date(now.getTime() + 61_000))).toMatchObject({ dead: 1 });
+    expect((await rows("meta"))[0]).toMatchObject({
+      status: "dead",
+      attempts: 2,
+      lastReason: "http_400",
+    });
+    expect(await dispatch(new Date(now.getTime() + 86_400_000))).toMatchObject({ claimed: 0 });
+  });
+
+  it("أُطفئت المنصة بعد الإدراج ⇒ تخطٍّ بلا إرسال، وGA4 بلا _ga ⇒ تخطٍّ", async () => {
+    await enable("meta");
+    await enable("ga4");
+    await paidOrder(null);
+    unwrap(
+      await saveIntegration(db, {
+        clubId,
+        provider: "meta",
+        enabled: false,
+        config: CONFIG.meta,
+        testEventCode: null,
+        secret: { kind: "keep" },
+        staffId,
+        actor: `staff:${staffId}`,
+        now,
+      }),
+    );
+    expect(await dispatch()).toMatchObject({ claimed: 2, skipped: 2 });
+    expect(fake.requests).toEqual([]);
+    expect((await rows("meta"))[0]?.lastReason).toBe("disabled");
+    expect((await rows("ga4"))[0]?.lastReason).toBe("no_client_id");
+  });
+
+  it("مفتاح لوحة آخر لا يفك المفتاح ⇒ تخطٍّ", async () => {
+    await enable("meta");
+    await paidOrder();
+    const other = new Uint8Array(32).fill(9);
+    const summary = await runDispatch({
+      db,
+      transport: fake.transport,
+      adminKey: other,
+      siteUrl: SITE,
+      clock: () => now,
+    });
+    expect(summary).toMatchObject({ skipped: 1 });
+    expect((await rows("meta"))[0]?.lastReason).toBe("secret_unreadable");
+  });
+});
+
+describe("حدث الاختبار", () => {
+  const deps = () => ({
+    db,
+    transport: fake.transport,
+    adminKey: KEY,
+    siteUrl: SITE,
+    clock: () => now,
+  });
+
+  it("ميتا بلا رمز اختبار لا ترسل، ومعه ترسل وتُسجَّل", async () => {
+    await enable("meta");
+    expect(await sendTestEvent(deps(), clubId, "meta")).toEqual({
+      kind: "not_sent",
+      reason: "no_test_event_code",
+    });
+    await enable("meta", { testCode: "TEST123" });
+    expect(await sendTestEvent(deps(), clubId, "meta")).toEqual({ kind: "sent", status: 200 });
+    expect(JSON.parse(fake.requests[0]?.body ?? "{}")).toMatchObject({
+      test_event_code: "TEST123",
+    });
+    const [row] = await db.trackingOutbox.findMany({ where: { kind: "test" } });
+    expect(row).toMatchObject({
+      provider: "meta",
+      status: "sent",
+      eventName: "MasarTestEvent",
+      orderId: null,
+    });
+  });
+
+  it("رفض المنصة يُسجَّل برمزه", async () => {
+    await enable("ga4");
+    fake.respondWith({ kind: "response", status: 200, body: '{"validationMessages":[{"x":1}]}' });
+    expect(await sendTestEvent(deps(), clubId, "ga4")).toEqual({
+      kind: "failed",
+      status: 200,
+      reason: "validation_failed",
+    });
+    expect(fake.requests[0]?.url).toContain("/debug/mp/collect?");
+  });
+});

@@ -1,0 +1,22 @@
+{
+  "name": "@masar/tracking",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "tracking:dispatch": "tsx scripts/dispatch.ts"
+  },
+  "dependencies": {
+    "@masar/db": "workspace:*",
+    "@masar/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "4.23.15"
+  }
+}

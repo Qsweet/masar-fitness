@@ -37,7 +37,9 @@ const PUBLIC_TEXT_SPEC = /[\\/]public-text\.spec\.ts$/;
  */
 const PLAN_PICKER_SPEC = /[\\/]plan-picker(?:-load)?\.spec\.ts$/;
 const PLAN_PICKER = ["plan-picker-390", "plan-picker-1440"];
-const FIRST = ["public-text", ...PLAN_PICKER];
+/** زر بطاقة المحدِّد على خادم الشراء المفتوح: معزول قبل أي مشروع ينشر باقات (القرار 85). */
+const PLAN_PICKER_CHECKOUT_SPEC = /[\\/]plan-picker-checkout\.spec\.ts$/;
+const FIRST = ["public-text", ...PLAN_PICKER, "plan-picker-checkout"];
 /** قبول المحتوى على نادي الموقع العام نفسه: مشروع أخير بعد كل المشاريع (يغيّر نصوص الموقع ثم يعيدها). */
 const CONTENT_SITE_SPEC = /[\\/]content-site\.spec\.ts$/;
 /**
@@ -93,6 +95,12 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], viewport: DESKTOP },
     },
     {
+      name: "plan-picker-checkout",
+      testMatch: PLAN_PICKER_CHECKOUT_SPEC,
+      dependencies: ["public-text"],
+      use: { ...devices["Desktop Chrome"], viewport: MOBILE, baseURL: CHECKOUT_URL },
+    },
+    {
       name: "mobile-390",
       testIgnore: [
         SCREENS_SPEC,
@@ -105,6 +113,7 @@ export default defineConfig({
         SLIDER_KIT_SPEC,
         PUBLIC_TEXT_SPEC,
         PLAN_PICKER_SPEC,
+        PLAN_PICKER_CHECKOUT_SPEC,
       ],
       dependencies: FIRST,
       use: { ...devices["Desktop Chrome"], viewport: MOBILE },
@@ -122,6 +131,7 @@ export default defineConfig({
         SLIDER_KIT_SPEC,
         PUBLIC_TEXT_SPEC,
         PLAN_PICKER_SPEC,
+        PLAN_PICKER_CHECKOUT_SPEC,
       ],
       dependencies: FIRST,
       use: { ...devices["Desktop Chrome"], viewport: DESKTOP },

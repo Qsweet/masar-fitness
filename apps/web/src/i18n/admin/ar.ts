@@ -1,5 +1,7 @@
 import { auditAr } from "./audit-ar";
 import { contentAr, contentErrorsAr, contentNoticesAr } from "./content-ar";
+import { mediaAr, sliderErrorsAr, sliderNoticesAr } from "./media-ar";
+import { sliderAr } from "./slider-ar";
 import { overviewAr } from "./overview-ar";
 import { salesAr, salesErrorsAr, salesNoticesAr } from "./sales-ar";
 
@@ -16,6 +18,7 @@ export const adminAr = {
     overview: "نظرة عامة",
     ...salesAr.nav,
     ...contentAr.nav,
+    ...sliderAr.nav,
     staff: "الموظفون",
     audit: "سجل التدقيق",
     account: "حسابي",
@@ -87,6 +90,7 @@ export const adminAr = {
     "staff.invalid_request": "طلب غير صالح. حدّث الصفحة وحاول من جديد.",
     ...salesErrorsAr,
     ...contentErrorsAr,
+    ...sliderErrorsAr,
   },
   notices: {
     password_changed: "غُيّرت كلمة المرور، وأُلغيت جلساتك الأخرى.",
@@ -99,6 +103,7 @@ export const adminAr = {
     password_reset: "وُضعت كلمة مرور مؤقتة، وأُلغيت جلسات الموظف.",
     ...salesNoticesAr,
     ...contentNoticesAr,
+    ...sliderNoticesAr,
   },
   login: {
     title: "دخول الموظفين",
@@ -150,6 +155,8 @@ export const adminAr = {
   overview: overviewAr,
   sales: salesAr,
   content: contentAr,
+  slider: sliderAr,
+  media: mediaAr,
   staff: {
     title: "الموظفون",
     lead: "حسابات من يدخلون هذه اللوحة وأدوارهم.",

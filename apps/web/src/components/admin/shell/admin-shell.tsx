@@ -17,6 +17,9 @@ import {
   contentNamespacePath,
   releasePath,
   releaseRollbackPath,
+  slidePath,
+  slideRemovePath,
+  mediaAssetPath,
   type AdminTheme,
 } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
@@ -66,7 +69,7 @@ function Brand({
 
 /** أسماء المسارات لمسار التنقل، من القاموس. */
 function crumbLabels(dictionary: AdminDictionary): Record<string, string> {
-  const { nav, staffNew, breadcrumbs, sales, content } = dictionary;
+  const { nav, staffNew, breadcrumbs, sales, content, slider } = dictionary;
   const namespaces = Object.entries(content.namespaces).map(
     ([namespace, label]): [string, string] => [contentNamespacePath(namespace), label],
   );
@@ -101,6 +104,12 @@ function crumbLabels(dictionary: AdminDictionary): Record<string, string> {
     [ADMIN_ROUTES.contentDiscard]: content.breadcrumbs.discard,
     [releasePath("*")]: content.breadcrumbs.release,
     [releaseRollbackPath("*")]: content.breadcrumbs.rollback,
+    [ADMIN_ROUTES.contentSlider]: slider.breadcrumbs.slider,
+    [ADMIN_ROUTES.contentSliderNew]: slider.breadcrumbs.slideNew,
+    [slidePath("*")]: slider.breadcrumbs.slide,
+    [slideRemovePath("*")]: slider.breadcrumbs.remove,
+    [ADMIN_ROUTES.contentMedia]: slider.breadcrumbs.media,
+    [mediaAssetPath("*")]: slider.breadcrumbs.asset,
   };
 }
 

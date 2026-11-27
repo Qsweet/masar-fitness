@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AdminForm } from "@/components/admin/admin-form";
-import { DiffList } from "@/components/admin/content/diff-list";
+import { ContentDiff } from "@/components/admin/content/content-diff";
 import { Card, EmptyState, PageHeader, uiStyles } from "@/components/admin/ui/kit";
 import { getAdminDictionary } from "@/i18n/admin";
 import { discardDraftAction } from "@/server/admin/actions/content-publish";
@@ -23,7 +23,11 @@ export default async function ContentDiscardPage() {
       {summary.dirty ? (
         <>
           <Card title={text.discard.whatTitle}>
-            <DiffList changes={summary.changes} text={text} />
+            <ContentDiff
+              changes={summary.changes}
+              sliderChanges={summary.sliderChanges}
+              dictionary={dictionary}
+            />
           </Card>
           <Card narrow>
             <ul className={uiStyles.consequences}>

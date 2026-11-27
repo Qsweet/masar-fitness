@@ -1,6 +1,13 @@
 import "server-only";
-import { findRelease, listDraftEntries } from "@masar/db";
-import { draftOverrides, hasPermission, parseSnapshot, type TextOverrides } from "@masar/domain";
+import { draftSliderState, findRelease, listDraftEntries, loadDraftSlider } from "@masar/db";
+import {
+  draftOverrides,
+  hasPermission,
+  parseSnapshot,
+  snapshotSlider,
+  type SliderState,
+  type TextOverrides,
+} from "@masar/domain";
 import { cookies } from "next/headers";
 import { PREVIEW_DRAFT } from "@/config/admin";
 import { isAdminEnabled, adminSecretKey } from "../admin/flag";
@@ -24,16 +31,22 @@ export interface PreviewTexts {
   readonly target: PreviewTarget;
   readonly releaseId: string | null;
   readonly overrides: TextOverrides;
+  /** شريط المسودة أو الإصدار المعاين (ADMIN_A3_SLIDER §7). */
+  readonly slider: SliderState;
 }
 
 async function textsFor(clubId: string, target: string): Promise<PreviewTexts | null> {
   const registry = textRegistry();
   if (target === PREVIEW_DRAFT) {
-    const rows = await listDraftEntries(getDb(), clubId);
+    const [rows, slider] = await Promise.all([
+      listDraftEntries(getDb(), clubId),
+      loadDraftSlider(getDb(), clubId),
+    ]);
     return {
       target: { kind: "draft" },
       releaseId: null,
       overrides: draftOverrides(rows, registry).texts,
+      slider: draftSliderState(slider),
     };
   }
   const release = await findRelease(getDb(), clubId, target);
@@ -44,6 +57,7 @@ async function textsFor(clubId: string, target: string): Promise<PreviewTexts | 
     target: { kind: "release", seq: release.seq },
     releaseId: release.id,
     overrides: parseSnapshot(release.snapshot, registry)?.texts ?? new Map(),
+    slider: snapshotSlider(release.snapshot).slider,
   };
 }
 

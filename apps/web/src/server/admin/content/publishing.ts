@@ -3,6 +3,7 @@ import { discardDraft, publishContent, rollbackContent, staffActor } from "@masa
 import { err, ok, DomainError, type Result } from "@masar/domain";
 import { getDb } from "../../db";
 import { textRegistry } from "../../content/registry";
+import { knownSlidePaths } from "../../content/slider-links";
 import { adminSecretKey } from "../flag";
 import type { StaffContext } from "../session";
 import { openPublishToken } from "./publish-token";
@@ -26,12 +27,12 @@ export async function publishDraft(
   if (reviewed === null) {
     return err(new DomainError("validation", "content.publish_token_invalid"));
   }
-  const registry = textRegistry();
+  const release = { registry: textRegistry(), knownPaths: await knownSlidePaths() };
   const published = await publishContent(getDb(), {
     ...who(context, now),
     expectedDigest: reviewed.digest,
     expectedLatestId: reviewed.latestId,
-    build: (rows, previous) => buildRelease(rows, previous, registry),
+    build: (rows, previous, slider) => buildRelease(rows, previous, slider, release),
   });
   return published.ok ? ok(published.value.seq) : published;
 }
@@ -41,12 +42,12 @@ export async function rollbackTo(
   input: { readonly releaseId: string; readonly expectedLatestId: string },
   now: Date,
 ): Promise<Result<number, DomainError>> {
-  const registry = textRegistry();
+  const release = { registry: textRegistry(), knownPaths: await knownSlidePaths() };
   const rolled = await rollbackContent(getDb(), {
     ...who(context, now),
     ...input,
-    isDirty: (rows, published) => isDraftDirty(rows, published, registry),
-    rebuild: (target, previous) => rebuildRelease(target, previous, registry),
+    isDirty: (rows, published, slider) => isDraftDirty(rows, published, slider, release.registry),
+    rebuild: (target, previous) => rebuildRelease(target, previous, release),
   });
   return rolled.ok ? ok(rolled.value.seq) : rolled;
 }
@@ -60,7 +61,7 @@ export async function discardDraftOf(
   return discardDraft(getDb(), {
     ...who(context, now),
     expectedDraftDigest,
-    draftDigest: (rows) => draftDigest(rows, registry),
-    isDirty: (rows, published) => isDraftDirty(rows, published, registry),
+    draftDigest: (rows, slider) => draftDigest(rows, registry, slider),
+    isDirty: (rows, published, slider) => isDraftDirty(rows, published, slider, registry),
   });
 }

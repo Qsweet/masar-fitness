@@ -6,17 +6,36 @@ import {
   type ReleaseDetail,
   type ReleaseHead,
 } from "@masar/db";
-import { diffContent, type ContentChange } from "@masar/domain";
+import { diffContent, diffSlider, type ContentChange, type SliderChange } from "@masar/domain";
 import { getDb } from "../../db";
 import { textRegistry } from "../../content/registry";
 import { isUuid } from "../form";
-import { publishedTexts } from "./release";
+import { publishedSlider, publishedTexts } from "./release";
 
 /** إصدار للوحة: تفصيله، وفرقه عن سابقه، وآخر إصدار (هل هو المنشور الآن، ولرمز الاسترجاع). */
 export interface ReleaseView {
   readonly release: ReleaseDetail;
   readonly changes: readonly ContentChange[];
+  readonly sliderChanges: readonly SliderChange[];
   readonly latest: ReleaseHead | null;
+}
+
+/** ما تغيّر بين لقطتين: النصوص والشريط. */
+export interface ReleaseDiff {
+  readonly changes: ContentChange[];
+  readonly sliderChanges: SliderChange[];
+}
+
+function diffSnapshots(before: unknown, after: unknown): ReleaseDiff {
+  const registry = textRegistry();
+  return {
+    changes: diffContent(
+      publishedTexts(before, registry),
+      publishedTexts(after, registry),
+      registry,
+    ),
+    sliderChanges: diffSlider(publishedSlider(before), publishedSlider(after)),
+  };
 }
 
 export async function loadRelease(clubId: string, id: string): Promise<ReleaseView | null> {
@@ -25,27 +44,16 @@ export async function loadRelease(clubId: string, id: string): Promise<ReleaseVi
   if (release === null) {
     return null;
   }
-  const registry = textRegistry();
   const [previous, latest] = await Promise.all([
     previousRelease(db, clubId, release.seq),
     latestRelease(db, clubId),
   ]);
-  const changes = diffContent(
-    publishedTexts(previous?.snapshot ?? null, registry),
-    publishedTexts(release.snapshot, registry),
-    registry,
-  );
-  return { release, changes, latest };
+  return { release, ...diffSnapshots(previous?.snapshot ?? null, release.snapshot), latest };
 }
 
 /** ما سيعود لو استُرجع الإصدار: الفرق من المنشور الآن إليه. */
-export async function rollbackChanges(clubId: string, view: ReleaseView): Promise<ContentChange[]> {
-  const registry = textRegistry();
+export async function rollbackChanges(clubId: string, view: ReleaseView): Promise<ReleaseDiff> {
   const current =
     view.latest === null ? null : await releaseDetail(getDb(), clubId, view.latest.id);
-  return diffContent(
-    publishedTexts(current?.snapshot ?? null, registry),
-    publishedTexts(view.release.snapshot, registry),
-    registry,
-  );
+  return diffSnapshots(current?.snapshot ?? null, view.release.snapshot);
 }

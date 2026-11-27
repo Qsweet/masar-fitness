@@ -28,6 +28,8 @@ type NavKey =
   | "promotions"
   | "salesSettings"
   | "contentTexts"
+  | "contentSlider"
+  | "contentMedia"
   | "contentPublishing"
   | "staff"
   | "audit"
@@ -80,6 +82,18 @@ const GROUPS: readonly { readonly id: GroupKey; readonly sections: readonly Sect
         key: "contentTexts",
         href: ADMIN_ROUTES.contentTexts,
         icon: "texts",
+        permission: "content.read",
+      },
+      {
+        key: "contentSlider",
+        href: ADMIN_ROUTES.contentSlider,
+        icon: "slider",
+        permission: "content.read",
+      },
+      {
+        key: "contentMedia",
+        href: ADMIN_ROUTES.contentMedia,
+        icon: "image",
         permission: "content.read",
       },
       {

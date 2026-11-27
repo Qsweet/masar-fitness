@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AdminForm } from "@/components/admin/admin-form";
-import { DiffList } from "@/components/admin/content/diff-list";
+import { ContentDiff } from "@/components/admin/content/content-diff";
 import { Alert, Card, EmptyState, PageHeader, uiStyles } from "@/components/admin/ui/kit";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
@@ -48,7 +48,7 @@ export default async function ContentPublishPage() {
   const dictionary = getAdminDictionary();
   const text = dictionary.content;
   const summary = await draftSummary(staff.clubId);
-  const count = summary.changes.length;
+  const count = summary.changes.length + summary.sliderChanges.length;
   if (count === 0) {
     return (
       <>
@@ -74,7 +74,11 @@ export default async function ContentPublishPage() {
       <PageHeader title={text.publish.title} description={text.publish.lead} />
       <Warnings summary={summary} text={text.publish} separator={text.listSeparator} />
       <Card title={fill(text.publish.count, { count: countText(count, text.counts.changes) })}>
-        <DiffList changes={summary.changes} text={text} />
+        <ContentDiff
+          changes={summary.changes}
+          sliderChanges={summary.sliderChanges}
+          dictionary={dictionary}
+        />
       </Card>
       <Card title={text.publish.confirmTitle} narrow accent>
         <ul className={uiStyles.consequences}>

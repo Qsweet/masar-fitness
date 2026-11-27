@@ -116,6 +116,19 @@ const PATHS = {
       <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
     </>
   ),
+  slider: (
+    <>
+      <rect x="3" y="5" width="18" height="11" rx="2" />
+      <path d="M9 20h.01M12 20h.01M15 20h.01" />
+    </>
+  ),
+  image: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <circle cx="9" cy="9.5" r="1.5" />
+      <path d="m21 16-5-5-9 9" />
+    </>
+  ),
   shield: (
     <>
       <path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.2 7.5 9.5 4.4-1.3 7.5-4.9 7.5-9.5V6L12 3Z" />

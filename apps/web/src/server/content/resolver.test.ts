@@ -77,6 +77,31 @@ describe("قراءة الإصدار المنشور", () => {
     });
   });
 
+  it("الشريط من اللقطة نفسها، والتالف يُسقط بسطر سجل ولا يُرسم", async () => {
+    const logger = log();
+    const db = source({
+      releaseSnapshot: vi.fn(() =>
+        Promise.resolve({
+          ...SNAPSHOT,
+          slider: { settings: { autoplay: true, intervalMs: 7000 }, slides: [{ id: "bad" }] },
+        }),
+      ),
+    });
+    const result = await createPublishedReader(db, textRegistry, logger)();
+    expect(result.slider.slides).toEqual([]);
+    expect(result.overrides.get("hero.title")?.ar?.value).toBe("عنوان منشور");
+    expect(logger.warn).toHaveBeenCalledWith("content.slider_dropped", {
+      releaseId: "r1",
+      dropped: ["slide:0"],
+    });
+  });
+
+  it("القاعدة معطلة قبل أي قراءة ⇒ لا شريط", async () => {
+    const db = source({ latestReleaseId: vi.fn(() => Promise.reject(new Error("down"))) });
+    const result = await createPublishedReader(db, textRegistry, log())();
+    expect(result.slider.slides).toEqual([]);
+  });
+
   it("الذاكرة بحجم أربع لقطات", async () => {
     let release = 0;
     const db = source({ latestReleaseId: vi.fn(() => Promise.resolve(`r${String(release)}`)) });

@@ -79,6 +79,19 @@ html[data-admin][data-theme="light"] {
   color-scheme: light;
 }
 
+/*
+ * معاينة الشريحة في اللوحة تحاكي الموقع العام الداكن في المظهرين: صورة تحت تدرّج أسود ونص أبيض وزر
+ * أصفر بنص أسود (الألوان نفسها في globals.css).
+ */
+html[data-admin] {
+  --a-slide-ink: #0a0a0a;
+  --a-slide-text: #ffffff;
+  --a-slide-muted: #d6d6d6;
+  --a-slide-scrim:
+    linear-gradient(to top, rgb(10 10 10 / 90%) 0%, rgb(10 10 10 / 45%) 45%, transparent 75%),
+    linear-gradient(to left, rgb(10 10 10 / 70%) 0%, transparent 60%);
+}
+
 html[data-admin] {
   /* إيقاع 8 نقاط */
   --a-1: 0.25rem;

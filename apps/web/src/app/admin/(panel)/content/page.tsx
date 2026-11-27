@@ -1,7 +1,7 @@
 import { releaseDetail, type ReleaseDetail } from "@masar/db";
 import { hasPermission } from "@masar/domain";
 import type { Metadata } from "next";
-import { DiffList } from "@/components/admin/content/diff-list";
+import { ContentDiff } from "@/components/admin/content/content-diff";
 import { ReleaseFacts } from "@/components/admin/content/release-facts";
 import {
   Alert,
@@ -48,13 +48,14 @@ function Attention({ summary, text }: { readonly summary: DraftSummary; readonly
 function DraftCard({
   summary,
   canPublish,
-  text,
+  dictionary,
 }: {
   readonly summary: DraftSummary;
   readonly canPublish: boolean;
-  readonly text: Text;
+  readonly dictionary: AdminDictionary;
 }) {
-  const count = summary.changes.length;
+  const text = dictionary.content;
+  const count = summary.changes.length + summary.sliderChanges.length;
   return (
     <Card
       title={text.overview.draftTitle}
@@ -74,7 +75,11 @@ function DraftCard({
       ) : (
         <>
           {canPublish ? null : <Alert tone="info">{text.overview.editorNote}</Alert>}
-          <DiffList changes={summary.changes} text={text} />
+          <ContentDiff
+            changes={summary.changes}
+            sliderChanges={summary.sliderChanges}
+            dictionary={dictionary}
+          />
         </>
       )}
     </Card>
@@ -134,7 +139,7 @@ export default async function ContentOverviewPage(props: PageProps<"/admin/conte
       </PageHeader>
       <Notice text={noticeText((await props.searchParams).done, dictionary)} />
       <Attention summary={summary} text={text} />
-      <DraftCard summary={summary} canPublish={canPublish} text={text} />
+      <DraftCard summary={summary} canPublish={canPublish} dictionary={dictionary} />
       <LatestCard latest={latest} timezone={await clubTimezone(staff.clubId)} text={text} />
     </>
   );

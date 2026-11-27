@@ -18,6 +18,13 @@ class DraftConflict extends Error {
 }
 vi.mock("@masar/db", () => ({
   listDraftEntries: () => Promise.resolve(rows),
+  loadDraftSlider: () =>
+    Promise.resolve({
+      settings: { autoplay: true, intervalMs: 7000 },
+      settingsToken: "",
+      settingsUpdatedAt: null,
+      slides: [],
+    }),
   latestRelease: () => Promise.resolve(null),
   findRelease: () => Promise.resolve(null),
   saveDraftEntries,

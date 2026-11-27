@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
+import { useEnhanced } from "../ui/use-enhanced";
 import type { AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import {
@@ -156,17 +157,6 @@ export function TermsFields({ form, labels, kind }: FieldsProps) {
         </>
       ) : null}
     </FieldRow>
-  );
-}
-
-const subscribeNever = (): (() => void) => () => undefined;
-
-/** هل JavaScript يعمل في المتصفح؟ زر «أضف صفًّا» لا يُرسم بلاه (والصفوف الفارغة الزائدة تكفي). */
-function useEnhanced(): boolean {
-  return useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false,
   );
 }
 

@@ -30,6 +30,10 @@ export const ADMIN_ROUTES = {
   contentDiscard: `${ADMIN_PATH}/content/discard`,
   contentPreview: `${ADMIN_PATH}/content/preview`,
   contentPreviewExit: `${ADMIN_PATH}/content/preview/exit`,
+  contentSlider: `${ADMIN_PATH}/content/slider`,
+  contentSliderNew: `${ADMIN_PATH}/content/slider/new`,
+  contentMedia: `${ADMIN_PATH}/content/media`,
+  contentMediaUpload: `${ADMIN_PATH}/content/media/upload`,
 } as const;
 
 export function staffMemberPath(id: string): string {
@@ -82,6 +86,19 @@ export function releasePath(id: string): string {
 /** صفحة تأكيد استرجاع إصدار. */
 export function releaseRollbackPath(id: string): string {
   return `${releasePath(id)}/rollback`;
+}
+
+export function slidePath(id: string): string {
+  return `${ADMIN_ROUTES.contentSlider}/${id}`;
+}
+
+/** صفحة تأكيد إزالة شريحة من المسودة. */
+export function slideRemovePath(id: string): string {
+  return `${slidePath(id)}/remove`;
+}
+
+export function mediaAssetPath(id: string): string {
+  return `${ADMIN_ROUTES.contentMedia}/${id}`;
 }
 
 /** هدف المعاينة: المسودة، أو إصدار بمعرّفه. */

@@ -1,12 +1,14 @@
 import "server-only";
-import type { ReleaseHead } from "@masar/db";
+import { draftSliderState, type ReleaseHead } from "@masar/db";
 import {
   CONTENT_LOCALES,
   contentDigest,
   diffContent,
+  diffSlider,
   TEXT_ADVISORY,
   textLength,
   type ContentChange,
+  type SliderChange,
 } from "@masar/domain";
 import { sha256Hex, textRegistry } from "../../content/registry";
 import { loadContentState } from "./state";
@@ -17,6 +19,8 @@ import { loadContentState } from "./state";
  */
 export interface DraftSummary {
   readonly changes: readonly ContentChange[];
+  /** تغييرات الشريط (ADMIN_A3_SLIDER §7)، تُعدّ مع النصوص. */
+  readonly sliderChanges: readonly SliderChange[];
   readonly digest: string;
   readonly head: ReleaseHead | null;
   readonly dirty: boolean;
@@ -42,7 +46,9 @@ export async function draftSummary(clubId: string): Promise<DraftSummary> {
   const registry = textRegistry();
   const state = await loadContentState(clubId, registry);
   const changes = diffContent(state.published.texts, state.draft.texts, registry);
-  const digest = contentDigest(state.draft.texts, sha256Hex);
+  const slider = draftSliderState(state.slider);
+  const sliderChanges = diffSlider(state.published.slider, slider);
+  const digest = contentDigest(state.draft.texts, sha256Hex, slider);
   const baseChanged = [...state.draft.texts].reduce((count, [path, locales]) => {
     const entry = registry.editable.get(path);
     return (
@@ -57,10 +63,11 @@ export async function draftSummary(clubId: string): Promise<DraftSummary> {
   }, 0);
   return {
     changes,
+    sliderChanges,
     digest,
     head: state.published.head,
-    // التعريف نفسه في الاسترجاع والتجاهل (`isDraftDirty`): فرق في النص المعروض بالسجل الحالي
-    dirty: changes.length > 0,
+    // التعريف نفسه في الاسترجاع والتجاهل (`isDraftDirty`): فرق في المعروض بالسجل الحالي
+    dirty: changes.length + sliderChanges.length > 0,
     dropped: state.draft.dropped,
     baseChanged,
     lengthWarnings: lengthWarnings(changes),

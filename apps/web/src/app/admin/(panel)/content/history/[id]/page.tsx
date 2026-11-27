@@ -1,7 +1,7 @@
 import { hasPermission } from "@masar/domain";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { DiffList } from "@/components/admin/content/diff-list";
+import { ContentDiff } from "@/components/admin/content/content-diff";
 import { ReleaseFacts } from "@/components/admin/content/release-facts";
 import { Badge, ButtonLink, Card, EmptyState, PageHeader } from "@/components/admin/ui/kit";
 import { contentPreviewHref, releaseRollbackPath } from "@/config/admin";
@@ -21,7 +21,8 @@ export default async function ContentReleasePage(props: PageProps<"/admin/conten
   const { staff } = await requireStaff("content.read");
   const { id } = await props.params;
   const view = (await loadRelease(staff.clubId, id)) ?? notFound();
-  const text = getAdminDictionary().content;
+  const dictionary = getAdminDictionary();
+  const text = dictionary.content;
   const isCurrent = view.latest?.id === view.release.id;
   const canRollback = hasPermission(staff.role, "content.publish") && !isCurrent;
   return (
@@ -45,10 +46,14 @@ export default async function ContentReleasePage(props: PageProps<"/admin/conten
         />
       </Card>
       <Card title={text.release.diffTitle} description={text.release.diffLead}>
-        {view.changes.length === 0 ? (
+        {view.changes.length + view.sliderChanges.length === 0 ? (
           <EmptyState icon="texts" title={text.release.noDiff} />
         ) : (
-          <DiffList changes={view.changes} text={text} />
+          <ContentDiff
+            changes={view.changes}
+            sliderChanges={view.sliderChanges}
+            dictionary={dictionary}
+          />
         )}
       </Card>
     </>

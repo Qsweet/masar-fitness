@@ -5,7 +5,7 @@ import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { processImage } from "./process-image";
 import { parseMediaRequest } from "./serve";
-import { withImageSlot } from "./slot";
+import { MAX_WAITING, withImageSlot } from "./slot";
 import { readVariant, removeAssetFiles, storeVariants, variantsComplete } from "./store";
 import { displayName } from "./upload";
 
@@ -138,17 +138,29 @@ describe("التخزين", () => {
     expect(await readVariant(root, CLUB, hash, 640, "webp")).toBeNull();
   });
 
-  it("خانة المعالجة واحدة: الثاني يُرفض وهي مشغولة، ثم تتحرر ولو فشل العمل", async () => {
-    let release: (value: string) => void = () => undefined;
+  it("خانة المعالجة واحدة: الوافدون ينتظرون بالترتيب حتى الحد، وما زاد يُرفض، وتتحرر ولو فشل العمل", async () => {
+    const order: string[] = [];
+    let release: () => void = () => undefined;
     const first = withImageSlot(
       () =>
         new Promise<string>((resolve) => {
-          release = resolve;
+          release = () => {
+            resolve("first");
+          };
         }),
     );
-    expect(await withImageSlot(() => Promise.resolve("second"))).toBeNull();
-    release("done");
-    expect(await first).toBe("done");
+    const waiters = Array.from({ length: MAX_WAITING }, (_, index) =>
+      withImageSlot(() => {
+        order.push(String(index));
+        return Promise.resolve(index);
+      }),
+    );
+    expect(await withImageSlot(() => Promise.resolve("overflow"))).toBeNull();
+    expect(order).toEqual([]);
+    release();
+    expect(await first).toBe("first");
+    expect(await Promise.all(waiters)).toEqual([0, 1, 2, 3]);
+    expect(order).toEqual(["0", "1", "2", "3"]);
     await expect(withImageSlot(() => Promise.reject(new Error("x")))).rejects.toThrow("x");
     expect(await withImageSlot(() => Promise.resolve("again"))).toBe("again");
   });

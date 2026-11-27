@@ -1,21 +1,46 @@
 import "server-only";
 
 /**
- * خانة معالجة واحدة في العملية (القرار 77): فك ترميز صورة كبيرة يأخذ مئات الميغابايتات وثواني، فلا تُعالج
- * صورتان معًا. الرفع والخانة مشغولة يُرفض برسالة («أعد المحاولة بعد لحظات») بدل طابور ينمو في الذاكرة.
+ * خانة معالجة واحدة في العملية بطابور قصير (القرار 77): فك ترميز صورة كبيرة يأخذ ذاكرة وثواني، فلا
+ * تُعالج صورتان معًا. ما يصل والخانة مشغولة ينتظر دوره بالترتيب حتى `MAX_WAITING` (كل منتظر يحمل ملفه
+ * وحده، 8 MiB على الأكثر)؛ ما زاد يُرفض برسالة «أعد المحاولة بعد لحظات» فلا ينمو الطابور بلا حد.
  * على globalThis كي تشترك فيها كل حزم المسارات.
  */
-const shared = globalThis as typeof globalThis & { masarImageSlotBusy?: boolean };
+export const MAX_WAITING = 4;
 
-/** يشغّل العمل إن كانت الخانة فارغة، وإلا يرجع null دون أن يشغّله. */
+interface Slot {
+  busy: boolean;
+  readonly waiting: (() => void)[];
+}
+
+const shared = globalThis as typeof globalThis & { masarImageSlot?: Slot };
+
+function slot(): Slot {
+  shared.masarImageSlot ??= { busy: false, waiting: [] };
+  return shared.masarImageSlot;
+}
+
+/** يشغّل العمل حين يأتي دوره، أو يرجع null فورًا إن امتلأ الطابور. */
 export async function withImageSlot<T>(work: () => Promise<T>): Promise<T | null> {
-  if (shared.masarImageSlotBusy === true) {
-    return null;
+  const state = slot();
+  if (state.busy) {
+    if (state.waiting.length >= MAX_WAITING) {
+      return null;
+    }
+    // الخانة تنتقل إلى المنتظر مباشرة عند تحريرها (تبقى «مشغولة»)، فلا يسبقه وافد جديد
+    await new Promise<void>((resolve) => {
+      state.waiting.push(resolve);
+    });
   }
-  shared.masarImageSlotBusy = true;
+  state.busy = true;
   try {
     return await work();
   } finally {
-    shared.masarImageSlotBusy = false;
+    const next = state.waiting.shift();
+    if (next === undefined) {
+      state.busy = false;
+    } else {
+      next();
+    }
   }
 }

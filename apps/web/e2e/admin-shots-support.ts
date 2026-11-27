@@ -25,8 +25,24 @@ export function watchProblems(page: Page): string[] {
   return problems;
 }
 
+/**
+ * تغيير المقاس ينقل الشريط الجانبي بين الدرج والعمود الثابت بحركة؛ اللقطة قبل نهايتها تلتقطه غائبًا.
+ * تُنتظر الحركات المنتهية وحدها (المتكررة بلا نهاية لا تنتهي).
+ */
+async function settleAnimations(page: Page): Promise<void> {
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+        .map((animation) => animation.finished.catch(() => undefined)),
+    ),
+  );
+}
+
 export async function shot(page: Page, name: string): Promise<void> {
   const width = page.viewportSize()?.width ?? 0;
+  await settleAnimations(page);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );

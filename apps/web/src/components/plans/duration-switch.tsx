@@ -11,6 +11,16 @@ interface DurationSwitchProps {
   readonly onSelect: () => void;
 }
 
+/** المدد المكررة بين الاشتراكات المعروضة: مقاطعها تحتاج اسم الاشتراك لتتميز. */
+function repeatedTerms(plans: readonly PlanView[]): ReadonlySet<string> {
+  const seen = new Set<string>();
+  const repeated = new Set<string>();
+  for (const plan of plans) {
+    (seen.has(plan.term) ? repeated : seen).add(plan.term);
+  }
+  return repeated;
+}
+
 /** العدد الأقصى للمقاطع بمؤشر منزلق؛ ما زاد عليه يلتف صفوفًا والمختار بخلفيته. */
 const THUMB_MAX = 4;
 
@@ -18,8 +28,10 @@ const THUMB_MAX = 4;
  * مبدّل المدة المقطّع: أزرار راديو حقيقية باسم واحد داخل `fieldset`، فالأسهم وTab وقارئ الشاشة تعمل
  * بنمط مجموعة الراديو الأصلي (والاتجاه من المتصفح في RTL)، وبلا JavaScript يبقى الاختيار يعمل ويبدّل
  * البطاقة بـCSS. المؤشر الأبيض ينزلق إلى المختار، و«الأكثر قيمة» شارة على مقطعه (محسوبة على الخادم).
+ * اسم المقطع المنطوق المدة كاملة («3 أشهر + شهر مجانًا»)، والمدة المكررة يميّزها اسم الاشتراك.
  */
 export function DurationSwitch({ plans, initialSlug, labels, onSelect }: DurationSwitchProps) {
+  const repeated = repeatedTerms(plans);
   return (
     <fieldset className={styles.switch}>
       <legend className="sr-only">{labels.legend}</legend>
@@ -43,7 +55,15 @@ export function DurationSwitch({ plans, initialSlug, labels, onSelect }: Duratio
               onChange={onSelect}
               className={styles.input}
             />
-            <span className={styles.term}>{plan.term}</span>
+            <span className={styles.term}>
+              {plan.term}
+              {plan.bonusText === undefined ? null : (
+                <span className="sr-only"> {plan.bonusText}</span>
+              )}
+            </span>
+            {repeated.has(plan.term) ? (
+              <span className={styles.sub}>{plan.tier ?? plan.name}</span>
+            ) : null}
             {plan.isBestValue ? <span className={styles.badge}>{labels.bestValue}</span> : null}
           </label>
         ))}

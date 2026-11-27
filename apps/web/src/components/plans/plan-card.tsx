@@ -18,11 +18,17 @@ export interface PlanCardProps {
   readonly planLabels: Dictionary["plan"];
   /** منطقة زر الشراء: شريط الجوال الثابت يختفي ما دامت ظاهرة */
   readonly actionsId?: string | undefined;
+  /**
+   * بعد الترطيب: النسخ غير المختارة `inert` فوق إخفائها، فلا يصلها Tab ولا النقر في أي لحظة من
+   * التبديل. قبله لا (بلا JavaScript يبدّل CSS وحده النسخة الظاهرة، و`inert` كان سيعطّلها).
+   */
+  readonly inertInactive?: boolean | undefined;
 }
 
 type VariantProps = Pick<PlanCardProps, "labels" | "planLabels"> & {
   readonly plan: PlanView;
   readonly active: boolean;
+  readonly inert: boolean;
   readonly previousAmount: string | undefined;
 };
 
@@ -67,11 +73,12 @@ function PlanFacts({ plan, active, previousAmount }: VariantProps) {
 }
 
 /** زر الشراء داخل البطاقة، وتحته واتساب (أو سطر الشراء المغلق) ورابط صفحة الاشتراك. */
-function PlanActions({ plan, active, labels, planLabels }: VariantProps) {
+function PlanActions({ plan, active, inert, labels, planLabels }: VariantProps) {
   const viaWhatsapp = plan.purchase.kind === "whatsapp";
   return (
     <div
       className={styles.actions}
+      inert={inert}
       data-variant
       data-plan={plan.slug}
       data-active={active ? "" : undefined}
@@ -153,6 +160,7 @@ export function PlanCard(props: PlanCardProps) {
   const variant = (plan: PlanView) => ({
     plan,
     active: plan.slug === activeSlug,
+    inert: props.inertInactive === true && plan.slug !== activeSlug,
     previousAmount,
     labels,
     planLabels,

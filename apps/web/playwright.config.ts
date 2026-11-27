@@ -31,7 +31,13 @@ const PREVIEW_ADMIN_SPEC = /[\\/]preview-admin\.spec\.ts$/;
  * القاعدة البيانات التجريبية وحدها، قبل أن تنشر اختبارات اللوحة باقات أندية اختبار يقرؤها الموقع العام.
  */
 const PUBLIC_TEXT_SPEC = /[\\/]public-text\.spec\.ts$/;
-const FIRST = ["public-text"];
+/**
+ * محدِّد الاشتراك (القرار 79): بعد نص الموقع وقبل كل مشروع ينشر باقات أندية اختبار، فيرى الموقع
+ * باقات النادي التجريبية وحدها (يؤرشف بقايا تشغيلات سابقة في أوله).
+ */
+const PLAN_PICKER_SPEC = /[\\/]plan-picker(?:-load)?\.spec\.ts$/;
+const PLAN_PICKER = ["plan-picker-390", "plan-picker-1440"];
+const FIRST = ["public-text", ...PLAN_PICKER];
 /** قبول المحتوى على نادي الموقع العام نفسه: مشروع أخير بعد كل المشاريع (يغيّر نصوص الموقع ثم يعيدها). */
 const CONTENT_SITE_SPEC = /[\\/]content-site\.spec\.ts$/;
 /**
@@ -73,6 +79,18 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], viewport: DESKTOP },
     },
     {
+      name: "plan-picker-390",
+      testMatch: PLAN_PICKER_SPEC,
+      dependencies: ["public-text"],
+      use: { ...devices["Desktop Chrome"], viewport: MOBILE },
+    },
+    {
+      name: "plan-picker-1440",
+      testMatch: PLAN_PICKER_SPEC,
+      dependencies: ["public-text"],
+      use: { ...devices["Desktop Chrome"], viewport: DESKTOP },
+    },
+    {
       name: "mobile-390",
       testIgnore: [
         SCREENS_SPEC,
@@ -83,6 +101,7 @@ export default defineConfig({
         CONTENT_SITE_SPEC,
         CONTENT_SLIDER_SPEC,
         PUBLIC_TEXT_SPEC,
+        PLAN_PICKER_SPEC,
       ],
       dependencies: FIRST,
       use: { ...devices["Desktop Chrome"], viewport: MOBILE },
@@ -98,6 +117,7 @@ export default defineConfig({
         CONTENT_SITE_SPEC,
         CONTENT_SLIDER_SPEC,
         PUBLIC_TEXT_SPEC,
+        PLAN_PICKER_SPEC,
       ],
       dependencies: FIRST,
       use: { ...devices["Desktop Chrome"], viewport: DESKTOP },
@@ -160,6 +180,7 @@ export default defineConfig({
       testMatch: CONTENT_SITE_SPEC,
       dependencies: [
         "public-text",
+        ...PLAN_PICKER,
         "mobile-390",
         "desktop-1440",
         "screens",

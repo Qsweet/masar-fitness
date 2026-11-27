@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { Icon } from "@/components/ui/icon";
 import { Price } from "@/components/ui/price";
 import { StickyReveal } from "@/components/ui/sticky-reveal";
@@ -119,6 +119,23 @@ function selectionText(plan: PlanView, labels: Dictionary["plans"]): string {
   });
 }
 
+/** مهلة الإعلان: يُعلَن الاختيار المستقر وحده، لا كل مدة يمر بها الزائر بالأسهم. */
+const ANNOUNCE_DELAY_MS = 450;
+
+/** القيمة بعد أن تثبت المهلة كاملة بلا تغيير. */
+function useSettled(value: string): string {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSettled(value);
+    }, ANNOUNCE_DELAY_MS);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value]);
+  return settled;
+}
+
 /**
  * محدِّد الاشتراك: مبدّل المدة فوق بطاقة كبيرة واحدة تتبدّل مع الاختيار. كل رقم ونص محسوب على
  * الخادم (plan-view)؛ هنا الاختيار، ودوران السعر من المبلغ السابق، والإعلان لقارئ الشاشة.
@@ -129,6 +146,9 @@ export function PlanPicker(props: PlanPickerProps) {
   const [previousAmount, setPreviousAmount] = useState<string | undefined>(undefined);
   const hydrated = useHydrated();
   const selected = plans.find((plan) => plan.slug === slug) ?? plans[0];
+  const announcement = useSettled(
+    selected === undefined || previousAmount === undefined ? "" : selectionText(selected, labels),
+  );
   if (selected === undefined) {
     return null;
   }
@@ -138,7 +158,9 @@ export function PlanPicker(props: PlanPickerProps) {
   };
   return (
     <div id={PICKER_ID} className={styles.picker} data-hydrated={hydrated ? "" : undefined}>
-      <DurationSwitch plans={plans} initialSlug={initialSlug} labels={labels} onSelect={select} />
+      {plans.length > 1 ? (
+        <DurationSwitch plans={plans} initialSlug={initialSlug} labels={labels} onSelect={select} />
+      ) : null}
       <PlanCard
         plans={plans}
         activeSlug={selected.slug}
@@ -146,9 +168,10 @@ export function PlanPicker(props: PlanPickerProps) {
         labels={labels}
         planLabels={planLabels}
         actionsId={ACTIONS_ID}
+        inertInactive={hydrated}
       />
       <p className="sr-only" aria-live="polite">
-        {previousAmount === undefined ? "" : selectionText(selected, labels)}
+        {announcement}
       </p>
       {more === undefined ? null : <div className={styles.more}>{more}</div>}
       <StickyBar

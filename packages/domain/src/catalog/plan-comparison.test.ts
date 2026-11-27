@@ -4,6 +4,8 @@ import { money } from "../money";
 import type { MembershipPlan } from "./membership-plan";
 import { MAX_STRIP_MONTHS, monthlyComparison, monthStrip, shortestPlan } from "./plan-comparison";
 
+const POOL = { ar: "المسبح", en: "Pool" };
+
 function plan(slug: string, amountMinor: number, paidMonths: number, bonusMonths = 0) {
   const value: MembershipPlan = {
     slug,
@@ -13,7 +15,7 @@ function plan(slug: string, amountMinor: number, paidMonths: number, bonusMonths
     price: money(amountMinor),
     paidMonths,
     bonusMonths,
-    benefits: [],
+    benefits: [POOL],
   };
   return value;
 }
@@ -48,10 +50,19 @@ describe("monthStrip", () => {
 });
 
 describe("shortestPlan", () => {
-  it("الأقصر مدة كاملة، والأول عند التعادل، ولا شيء لقائمة فارغة", () => {
+  it("الأقصر مدة كاملة، والأول عند التعادل التام، ولا شيء لقائمة فارغة", () => {
     expect(shortestPlan([annual, quarter, half])?.slug).toBe("three");
     expect(shortestPlan([plan("a", 1, 3, 1), plan("b", 1, 4)])?.slug).toBe("a");
     expect(shortestPlan([])).toBeUndefined();
+  });
+
+  it("من المتساوية مدةً الأرخص شهريًا، لا الأغلى الذي يضخّم التوفير", () => {
+    const dear = plan("dear", 99_900, 4);
+    const cheap = plan("cheap", 69_900, 3, 1);
+    expect(shortestPlan([dear, cheap, annual])?.slug).toBe("cheap");
+    expect(monthlyComparison(annual, [dear, cheap, annual])?.referenceMonthly).toEqual(
+      money(17_500),
+    );
   });
 });
 
@@ -76,6 +87,22 @@ describe("monthlyComparison", () => {
     // 1,398 ر.س على 8 أشهر = 174.75 ⇒ 175 بعد التقريب: لا فرق يُعرض
     const same = plan("same", 139_800, 8);
     expect(monthlyComparison(same, [quarter, same])).toBeUndefined();
+  });
+
+  it("لا مقارنة حين تختلف المزايا: الفرق حينها ليس في المدة وحدها", () => {
+    const extra = { ...annual, benefits: [POOL, { ar: "الساونا", en: "Sauna" }] };
+    expect(monthlyComparison(extra, [quarter, extra])).toBeUndefined();
+    const none = { ...annual, benefits: [] };
+    expect(monthlyComparison(none, [{ ...quarter, benefits: [] }, none])).toBeUndefined();
+  });
+
+  it("الفرق الحقيقي قبل التقريب ريال على الأقل", () => {
+    // المرجع 699 ÷ 4 = 174.75 (يُعرض 175). 1,392 ÷ 8 = 174.00: يبدو فرق ريال والحقيقي 75 هللة
+    const close = plan("close", 139_200, 8);
+    expect(monthlyComparison(close, [quarter, close])).toBeUndefined();
+    // 1,390 ÷ 8 = 173.75: فرق ريال كامل بالضبط
+    const exact = plan("exact", 139_000, 8);
+    expect(monthlyComparison(exact, [quarter, exact])?.monthly).toEqual(money(17_400));
   });
 
   it("لا مقارنة لمدة مساوية للمرجع حتى بسعر أقل", () => {

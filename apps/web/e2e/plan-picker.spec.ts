@@ -1,48 +1,19 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import {
+  archiveLeftoverPlans,
+  card,
+  expectSelected,
+  PLANS,
+  radio,
+  settled,
+  shownAmount,
+  VISIBLE,
+  WCAG_22_AA,
+} from "./plan-picker-support";
 
-/**
- * محدِّد الاشتراك (القرار 78): مبدّل مقطّع فوق بطاقة كبيرة واحدة. البيانات من بذرة المعاينة، والخادم
- * الأول (الشراء مغلق): زر البطاقة رابط واتساب يسمّي الاشتراك المختار.
- */
-const PLANS = [
-  { slug: "three-months", nameAr: "3 أشهر + شهر مجانًا", price: "699" },
-  { slug: "six-months", nameAr: "6 أشهر + شهران مجانًا", price: "999" },
-  { slug: "one-year", nameAr: "12 شهرًا + شهران مجانًا", price: "1,499" },
-] as const;
-const VISIBLE = { useInnerText: true };
-const WCAG_22_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
-
-function card(page: Page) {
-  return page.locator("#plans [data-plan-card]");
-}
-
-function radio(page: Page, slug: string) {
-  return page.locator(`#plans input[name="plan"][value="${slug}"]`);
-}
-
-/** رسالة واتساب في زر الشراء الظاهر (الوحيد في شجرة الوصول). */
-async function ctaMessage(page: Page): Promise<string> {
-  const link = card(page).getByRole("link", { name: /اشترك عبر واتساب/ });
-  await expect(link).toHaveCount(1);
-  const href = (await link.getAttribute("href")) ?? "";
-  expect(new URL(href).hostname).toBe("wa.me");
-  return new URL(href).searchParams.get("text") ?? "";
-}
-
-/** انتهت حركات القسم (تلاشي النسخة السابقة ودوران السعر)، فلا يُفحص منتصف الانتقال. */
-async function settled(page: Page): Promise<void> {
-  await page.waitForFunction(
-    () => (document.querySelector("#plans")?.getAnimations({ subtree: true }).length ?? 0) === 0,
-  );
-}
-
-async function expectSelected(page: Page, plan: (typeof PLANS)[number]) {
-  await expect(radio(page, plan.slug)).toBeChecked();
-  await expect(card(page)).toContainText(`${plan.price} ر.س`, VISIBLE);
-  await expect(card(page)).toContainText(plan.nameAr, VISIBLE);
-  expect(await ctaMessage(page)).toContain(plan.nameAr);
-}
+/** محدِّد الاشتراك (القراران 78 و79): التبديل، والحركة، ولوحة المفاتيح، والوصول. */
+test.beforeAll(archiveLeftoverPlans);
 
 test.describe("محدِّد الاشتراك", () => {
   test("تبديل المدة يحدّث السعر وزر الشراء، والمعلَن لقارئ الشاشة", async ({ page }) => {
@@ -89,26 +60,105 @@ test.describe("محدِّد الاشتراك", () => {
   test("لوحة المفاتيح: نقطة توقف واحدة، والأسهم بالاتجاه المرئي في العربية والإنجليزية", async ({
     page,
   }) => {
+    // تبدّل فوري: زر شراء واحد ظاهر حين ينتقل التركيز إليه
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    // الجيران من ترتيب الصفحة نفسها: قاعدة الاختبار المشتركة قد تعرض باقات أندية الاختبار بينها
+    const neighbour = async (slug: string, step: 1 | -1): Promise<string> => {
+      const values = await page
+        .locator('#plans input[name="plan"]')
+        .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value));
+      const index = values.indexOf(slug);
+      return values[(index + step + values.length) % values.length] ?? "";
+    };
     await page.goto("/");
+    await expect(page.locator("#plan-picker[data-hydrated]")).toHaveCount(1);
     await radio(page, "one-year").focus();
-    // العربية من اليمين: 3 أشهر أقصى اليمين و12 شهرًا أقصى اليسار؛ اليسار يتقدم ويلتف إلى الأول
+    // العربية من اليمين: الترتيب يمضي يسارًا، فالسهم الأيسر يتقدم (ويلتف من الأخير إلى الأول)
+    const next = await neighbour("one-year", 1);
     await page.keyboard.press("ArrowLeft");
-    await expect(radio(page, "three-months")).toBeFocused();
-    await expectSelected(page, PLANS[0]);
-    await page.keyboard.press("ArrowLeft");
-    await expectSelected(page, PLANS[1]);
+    await expect(radio(page, next)).toBeFocused();
+    await expect(radio(page, next)).toBeChecked();
     await page.keyboard.press("ArrowRight");
-    await expectSelected(page, PLANS[0]);
+    await expect(radio(page, "one-year")).toBeChecked();
     // Tab يغادر المجموعة إلى زر الشراء في البطاقة
+    // البطاقة تبدّلت (النسخة السابقة خارج ترتيب التنقل) قبل مغادرة المجموعة
+    await expect(page.locator(`#plan-actions > [data-plan="${next}"]`)).toBeHidden();
     await page.keyboard.press("Tab");
     await expect(card(page).getByRole("link", { name: /اشترك عبر واتساب/ })).toBeFocused();
 
     await page.goto("/en");
+    await expect(page.locator("#plan-picker[data-hydrated]")).toHaveCount(1);
     await radio(page, "one-year").focus();
+    const previous = await neighbour("one-year", -1);
     await page.keyboard.press("ArrowLeft");
-    await expect(radio(page, "six-months")).toBeChecked();
+    await expect(radio(page, previous)).toBeChecked();
     await page.keyboard.press("ArrowRight");
     await expect(radio(page, "one-year")).toBeChecked();
+  });
+
+  test("اسم المقطع المنطوق يشمل الأشهر المجانية", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("radio", { name: /^3 أشهر \+ شهر مجانًا/ })).toHaveValue(
+      "three-months",
+    );
+    await expect(page.getByRole("radio", { name: /^12 شهرًا \+ شهران مجانًا/ })).toHaveValue(
+      "one-year",
+    );
+  });
+
+  test("النقر بعد التبديل مباشرة يصيب زر الاشتراك المختار لا السابق المتلاشي", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("#plan-picker[data-hydrated]")).toHaveCount(1);
+    // اختيار ثم قياس في الإطار التالي، والنسخة السابقة ما زالت تتلاشى (260ms) فوق الخلية نفسها
+    const hit = await page.evaluate(async () => {
+      document.querySelector<HTMLInputElement>('#plans input[value="three-months"]')?.click();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const target = document.querySelector<HTMLElement>(
+        '#plan-actions > [data-plan="three-months"] :is(a, button)',
+      );
+      target?.scrollIntoView({ block: "center", behavior: "instant" });
+      const box = target?.getBoundingClientRect();
+      if (box === undefined) {
+        return "none";
+      }
+      const fading = document.querySelector<HTMLElement>('#plan-actions > [data-plan="one-year"]');
+      const top = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      const plan = top?.closest<HTMLElement>("[data-variant]")?.dataset.plan ?? "none";
+      return fading === null || getComputedStyle(fading).visibility === "visible" ? plan : "late";
+    });
+    expect(hit).toBe("three-months");
+  });
+
+  test("المعلَن لقارئ الشاشة الاختيار المستقر وحده، لا كل مدة مرّ بها", async ({ page }) => {
+    await page.goto("/");
+    await page.locator("#plans [aria-live]").evaluate((region) => {
+      const heard: string[] = [];
+      Reflect.set(window, "__heard", heard);
+      new MutationObserver(() => {
+        if (region.textContent !== "") {
+          heard.push(region.textContent);
+        }
+      }).observe(region, { childList: true, characterData: true, subtree: true });
+    });
+    await radio(page, "three-months").check();
+    await radio(page, "six-months").check();
+    await expect(page.locator("#plans [aria-live]")).toHaveText(
+      "مسار التغيير: 999 ر.س، 8 أشهر، منها شهران مجانًا",
+    );
+    expect(await page.evaluate(() => Reflect.get(window, "__heard") as unknown)).toEqual([
+      "مسار التغيير: 999 ر.س، 8 أشهر، منها شهران مجانًا",
+    ]);
+  });
+
+  test("الأرقام الظاهرة للسعر الدوّار بترتيبها على الشاشة، قبل الدوران وبعده", async ({ page }) => {
+    await page.goto("/");
+    expect(await shownAmount(page, "one-year")).toBe("1,499");
+    await radio(page, "three-months").check();
+    await settled(page);
+    expect(await shownAmount(page, "three-months")).toBe("699");
+    await radio(page, "one-year").check();
+    await settled(page);
+    expect(await shownAmount(page, "one-year")).toBe("1,499");
   });
 
   test("axe نظيف لكل مدة باللغتين", async ({ page }) => {
@@ -128,24 +178,5 @@ test.describe("محدِّد الاشتراك", () => {
         expect(summary, `${prefix} ${plan.slug}`).toEqual([]);
       }
     }
-  });
-});
-
-test.describe("محدِّد الاشتراك بلا JavaScript", () => {
-  test.use({ javaScriptEnabled: false });
-
-  test("الراديو الأصلي يبدّل البطاقة وزر الشراء بـCSS وحده", async ({ page }) => {
-    await page.goto("/memberships");
-    await expectSelected(page, PLANS[2]);
-    for (const plan of PLANS) {
-      await radio(page, plan.slug).check();
-      await expectSelected(page, plan);
-    }
-    // الأسهم من المتصفح نفسه
-    await radio(page, "three-months").focus();
-    await page.keyboard.press("ArrowLeft");
-    await expectSelected(page, PLANS[1]);
-    // شريط الجوال يحتاج JavaScript فيبقى مخفيًا
-    await expect(page.getByRole("complementary", { name: "ملخص الاشتراك" })).toBeHidden();
   });
 });

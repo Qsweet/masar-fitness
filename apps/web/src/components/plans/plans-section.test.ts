@@ -49,7 +49,7 @@ function plan(slug: string, amountMinor: number, paidMonths: number, bonusMonths
     price: money(amountMinor),
     paidMonths,
     bonusMonths,
-    benefits: [],
+    benefits: [{ ar: "المسبح", en: "Pool" }],
   };
   return value;
 }
@@ -69,5 +69,31 @@ describe("المحدِّد كما يصل بلا JavaScript", () => {
     expect(html.match(/href="https:\/\/wa\.me\/[^"]*"/g)?.length).toBeGreaterThanOrEqual(2);
     expect(html).toContain("تدفع شهريًا نحو 107\u00a0ر.س بدل 175\u00a0ر.س في three");
     expect(html).toContain('role="img" aria-label="14 شهرًا، منها شهران مجانًا"');
+  });
+});
+
+describe("حالات المبدّل", () => {
+  it("اشتراك واحد: بلا مبدّل (مقطع وحيد بمؤشر ثلث المسار لا يُقرأ)، والبطاقة بسعره وزره", () => {
+    const html = render("ar", [plan("twelve", 149_900, 12, 2)]);
+    expect(html).not.toContain('type="radio"');
+    expect(html).not.toContain("<fieldset");
+    expect(html.match(/data-plan="twelve"/g)).toHaveLength(3);
+    expect(html).toContain("1,499");
+    expect(html).toContain("wa.me");
+  });
+
+  it("الاسم المنطوق للمقطع يشمل الأشهر المجانية، والمدة المكررة يميّزها اسم الاشتراك", () => {
+    const html = render("ar", [
+      plan("three", 69_900, 3, 1),
+      plan("twelve", 149_900, 12, 2),
+      plan("twelve-plus", 179_900, 12, 0),
+    ]);
+    expect(html).toMatch(/3 أشهر<span class="sr-only"> \+ شهر مجانًا<\/span>/);
+    // «12 شهرًا» لاشتراكين: تحت كل منهما اسمه، و«3 أشهر» الفريدة بلا اسم
+    expect(html).toMatch(
+      /12 شهرًا<span class="sr-only"> \+ شهران مجانًا<\/span><\/span><span class="[^"]*">twelve<\/span>/,
+    );
+    expect(html).toMatch(/12 شهرًا<\/span><span class="[^"]*">twelve-plus<\/span>/);
+    expect(html).not.toMatch(/مجانًا<\/span><\/span><span class="[^"]*">three</);
   });
 });

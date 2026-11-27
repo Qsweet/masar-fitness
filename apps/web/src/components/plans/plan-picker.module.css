@@ -1,7 +1,7 @@
 /*
  * المحدِّد: المبدّل ثم البطاقة. بلا JavaScript الاختيار كله بـCSS على الراديو المختار: نسخة الاشتراك
- * رقم k في كل منطقة متغيرة تظهر حين يُختار المقطع رقم k (حتى 12 اشتراكًا)، وبعد الترطيب يتبع
- * `data-active` من React. المؤشر المنزلق (حتى أربعة مقاطع) يأخذ موضعه من --active.
+ * رقم k في كل منطقة متغيرة تظهر حين يُختار المقطع رقم k (حتى 12 اشتراكًا؛ بعدها نسخة الاختيار
+ * الأول التي علّمها الخادم)، وبعد الترطيب يتبع `data-active` من React. المؤشر المنزلق (حتى أربعة مقاطع) يأخذ موضعه من --active.
  */
 .picker {
   --active: 0;
@@ -35,8 +35,13 @@
 .picker:not([data-hydrated]):has([data-segment]:nth-child(11 of [data-segment]) :checked) [data-variant]:nth-child(11),
 .picker:not([data-hydrated]):has([data-segment]:nth-child(12 of [data-segment]) :checked) [data-variant]:nth-child(12),
 /* بعد الترطيب: النسخة التي علّمها React مختارةً، لأي عدد من الاشتراكات */
-.picker[data-hydrated] [data-variant][data-active] {
+.picker[data-hydrated] [data-variant][data-active],
+/* قبل الترطيب والمختار بعد الموضع 12: نسخة الاختيار الأول كما علّمها الخادم، لا بطاقة فارغة */
+.picker:not([data-hydrated]):has([data-segment]:nth-child(n + 13 of [data-segment]) :checked)
+  [data-variant][data-active] {
   --on: 1;
+  z-index: 1;
+  pointer-events: auto;
   visibility: visible;
   opacity: 1;
   translate: none;

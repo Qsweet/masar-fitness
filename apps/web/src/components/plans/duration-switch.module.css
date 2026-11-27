@@ -105,6 +105,23 @@
   white-space: nowrap;
 }
 
+/* اسم الاشتراك تحت مدة تتكرر بين اشتراكين */
+.sub {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.segment:has(.sub) {
+  align-content: center;
+  gap: 0.1rem;
+  padding-block: 0.35rem;
+}
+
 /* «الأكثر قيمة» حبة صفراء فوق حافة مقطعها */
 .badge {
   position: absolute;

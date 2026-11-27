@@ -10,6 +10,8 @@ import type { StaffRole } from "./roles";
  * `content.facts` اسم النادي وحقائقه (خطأ فيها يدّعي أو يضلّل)، و`content.publish` ما يغيّر الموقع
  * الحي (النشر والاسترجاع وتجاهل المسودة)، فهما للمالك والمدير. `content.purge` حذف صورة من المكتبة
  * نهائيًا (لا رجعة فيه)، فهو للمالك وحده (ADMIN_A3_SLIDER §6.3).
+ * صلاحيتا الربط (ADMIN_A5_TRACKING §8): `integrations.manage` التفعيل والمعرّفات العامة وحدث الاختبار
+ * للمالك والمدير، و`integrations.secrets` كتابة المفتاح الخادمي أو حذفه للمالك وحده.
  */
 export const PERMISSIONS = [
   "staff.manage",
@@ -33,12 +35,14 @@ export const PERMISSIONS = [
   "content.facts",
   "content.publish",
   "content.purge",
+  "integrations.manage",
+  "integrations.secrets",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
 /**
  * خريطة الأدوار. الرفض هو الافتراضي: ما ليس مذكورًا هنا ممنوع.
- * المالك كل شيء؛ المدير كل شيء عدا إدارة الموظفين (والربط والمفاتيح حين تُبنى)؛ المحرر المحتوى
+ * المالك كل شيء؛ المدير كل شيء عدا إدارة الموظفين وكتابة مفاتيح الربط الخادمية؛ المحرر المحتوى
  * والمدونة (A3/A4)؛ المبيعات الطلبات والعملاء (A2).
  */
 /** ما يقرؤه دور المبيعات ويفعله: يرى ويلغي معلّقًا ويكشف جوالًا، ولا يغيّر سعرًا ولا يسجّل دفعًا. */
@@ -81,6 +85,8 @@ const ROLE_PERMISSIONS: Readonly<Record<StaffRole, readonly Permission[]>> = {
     "sales.settings",
     ...CONTENT_MANAGEMENT,
     "content.purge",
+    "integrations.manage",
+    "integrations.secrets",
   ],
   manager: [
     "audit.read",
@@ -89,6 +95,7 @@ const ROLE_PERMISSIONS: Readonly<Record<StaffRole, readonly Permission[]>> = {
     "account.self",
     ...SALES_MANAGEMENT,
     ...CONTENT_MANAGEMENT,
+    "integrations.manage",
   ],
   editor: ["account.self", ...CONTENT_EDITING],
   sales: ["overview.read", "account.self", ...SALES_DESK],

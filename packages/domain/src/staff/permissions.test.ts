@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { hasPermission, PERMISSIONS, permissionsOf, type Permission } from "./permissions";
 import { STAFF_ROLES, type StaffRole } from "./roles";
 
-/** جدولا ADMIN_A2_SALES §2 وADMIN_A3_CONTENT §2 خانةً خانة: مالك، مدير، محرر، مبيعات. */
+/** جداول ADMIN_A2_SALES §2 وADMIN_A3_CONTENT §2 وADMIN_A5_TRACKING §8 خانةً خانة: مالك، مدير، محرر، مبيعات. */
 const TABLE: Readonly<Record<Permission, readonly [boolean, boolean, boolean, boolean]>> = {
   "staff.manage": [true, false, false, false],
   "audit.read": [true, true, false, false],
@@ -25,6 +25,8 @@ const TABLE: Readonly<Record<Permission, readonly [boolean, boolean, boolean, bo
   "content.facts": [true, true, false, false],
   "content.publish": [true, true, false, false],
   "content.purge": [true, false, false, false],
+  "integrations.manage": [true, true, false, false],
+  "integrations.secrets": [true, false, false, false],
 };
 const COLUMNS: readonly StaffRole[] = ["owner", "manager", "editor", "sales"];
 
@@ -90,5 +92,12 @@ describe("خريطة الصلاحيات", () => {
     expect(hasPermission("sales", "audit.read")).toBe(false);
     expect(hasPermission("sales", "system.read")).toBe(false);
     expect(hasPermission("editor", "system.read")).toBe(false);
+  });
+
+  it("الربط للمالك والمدير، وكتابة المفتاح الخادمي للمالك وحده", () => {
+    const can = (permission: Permission) =>
+      STAFF_ROLES.filter((role) => hasPermission(role, permission));
+    expect(can("integrations.manage")).toEqual(["owner", "manager"]);
+    expect(can("integrations.secrets")).toEqual(["owner"]);
   });
 });

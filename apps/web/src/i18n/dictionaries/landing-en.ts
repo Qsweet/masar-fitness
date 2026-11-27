@@ -17,6 +17,17 @@ export const landingEn: LandingDictionary = {
     scroll: "Discover more",
     offerWith: "With the {term} membership",
   },
+  slider: {
+    label: "Club highlights",
+    slide: "Slide {n} of {total}",
+    controls: "Slide controls",
+    previous: "Previous slide",
+    next: "Next slide",
+    pause: "Pause automatic rotation",
+    play: "Start automatic rotation",
+    goTo: "Show slide {n}",
+    newTab: "(opens in a new tab)",
+  },
   highlights: {
     title: "What sets the club apart",
     items: [

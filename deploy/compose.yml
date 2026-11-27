@@ -45,6 +45,13 @@ services:
       PAYMENTS_PUBLIC_SANDBOX: ${PAYMENTS_PUBLIC_SANDBOX:-}
       # لوحة التحكم مغلقة (404) ما لم يُكتب مفتاحها في deploy/.env على الخادم (docs/DEPLOYMENT.md)
       ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-}
+      # مكتبة الصور على وحدة media-data (docs/ADMIN_A3_SLIDER.md §6.4). الرفع مطفأ ما لم يُكتب
+      # MEDIA_UPLOADS=yes في deploy/.env، وBACKUP_CONFIGURED=yes لا يُكتب إلا بوجود نسخة خارج الخادم
+      MEDIA_DIR: /var/lib/masar/media
+      MEDIA_UPLOADS: ${MEDIA_UPLOADS:-}
+      BACKUP_CONFIGURED: ${BACKUP_CONFIGURED:-}
+    volumes:
+      - media-data:/var/lib/masar/media
     healthcheck:
       test:
         [
@@ -75,5 +82,7 @@ services:
 
 volumes:
   db-data:
+  # الصور المرفوعة: لا توجد إلا هنا، فتدخل النسخة الاحتياطية مع القاعدة
+  media-data:
   caddy-data:
   caddy-config:

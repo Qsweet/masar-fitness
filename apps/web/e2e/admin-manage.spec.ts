@@ -51,6 +51,8 @@ test("المالك يرى كل الأقسام، والمدير بلا «المو
       TEXT.nav.promotions,
       TEXT.nav.salesSettings,
       TEXT.nav.contentTexts,
+      TEXT.nav.contentSlider,
+      TEXT.nav.contentMedia,
       TEXT.nav.contentPublishing,
       TEXT.nav.staff,
       TEXT.nav.audit,
@@ -63,6 +65,8 @@ test("المالك يرى كل الأقسام، والمدير بلا «المو
       TEXT.nav.plans,
       TEXT.nav.promotions,
       TEXT.nav.contentTexts,
+      TEXT.nav.contentSlider,
+      TEXT.nav.contentMedia,
       TEXT.nav.contentPublishing,
       TEXT.nav.audit,
       TEXT.nav.account,
@@ -75,7 +79,13 @@ test("المالك يرى كل الأقسام، والمدير بلا «المو
       TEXT.nav.promotions,
       TEXT.nav.account,
     ],
-    editor: [TEXT.nav.contentTexts, TEXT.nav.contentPublishing, TEXT.nav.account],
+    editor: [
+      TEXT.nav.contentTexts,
+      TEXT.nav.contentSlider,
+      TEXT.nav.contentMedia,
+      TEXT.nav.contentPublishing,
+      TEXT.nav.account,
+    ],
   } as const;
   for (const role of ["owner", "manager", "sales", "editor"] as const) {
     const staff = await newStaff(db, club, { role, withTotp: true });

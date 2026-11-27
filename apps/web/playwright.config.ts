@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { ADMIN_ENV } from "./e2e/admin-env";
+import { ADMIN_ENV, mediaEnv } from "./e2e/admin-env";
 import { FAKE_PAYMENTS_ENV } from "./e2e/payments-env";
 
 /** منفذ خادم الاختبار؛ يُغيَّر بـPLAYWRIGHT_PORT لتشغيل نسختين معًا على الجهاز نفسه دون تصادم. */
@@ -34,6 +34,11 @@ const PUBLIC_TEXT_SPEC = /[\\/]public-text\.spec\.ts$/;
 const FIRST = ["public-text"];
 /** قبول المحتوى على نادي الموقع العام نفسه: مشروع أخير بعد كل المشاريع (يغيّر نصوص الموقع ثم يعيدها). */
 const CONTENT_SITE_SPEC = /[\\/]content-site\.spec\.ts$/;
+/**
+ * الشريط تحت الواجهة على نادي الموقع العام (ADMIN_A3_SLIDER §13): بعد قبول المحتوى لا معه، فلا ينشر
+ * اختباران محتوى نادٍ واحد في الوقت نفسه، ويزيل شرائحه في آخره.
+ */
+const CONTENT_SLIDER_SPEC = /[\\/]content-slider\.spec\.ts$/;
 /** اللوحة مغلقة صراحةً: مفتاح من بيئة الصدفة لا يفتحها على الخوادم التي تثبت أنها مغلقة. */
 const ADMIN_OFF = { ADMIN_SECRET_KEY: "" };
 /** الدفع مغلق صراحةً: متغير من بيئة الصدفة لا يضبط مزوّدًا على الخادمين الأولين. */
@@ -76,6 +81,7 @@ export default defineConfig({
         ADMIN_SPEC,
         PREVIEW_ADMIN_SPEC,
         CONTENT_SITE_SPEC,
+        CONTENT_SLIDER_SPEC,
         PUBLIC_TEXT_SPEC,
       ],
       dependencies: FIRST,
@@ -90,6 +96,7 @@ export default defineConfig({
         ADMIN_SPEC,
         PREVIEW_ADMIN_SPEC,
         CONTENT_SITE_SPEC,
+        CONTENT_SLIDER_SPEC,
         PUBLIC_TEXT_SPEC,
       ],
       dependencies: FIRST,
@@ -166,6 +173,12 @@ export default defineConfig({
       ],
       use: { ...devices["Desktop Chrome"], viewport: DESKTOP, baseURL: ADMIN_URL },
     },
+    {
+      name: "content-slider",
+      testMatch: CONTENT_SLIDER_SPEC,
+      dependencies: ["content-site"],
+      use: { ...devices["Desktop Chrome"], viewport: DESKTOP, baseURL: ADMIN_URL },
+    },
   ],
   webServer: [
     // صراحةً: علم من بيئة الصدفة لا يفتح الشراء على الخادم الذي يثبت أنه مغلق
@@ -180,7 +193,13 @@ export default defineConfig({
       ...FAKE_PAYMENTS_ENV,
       ...ADMIN_OFF,
     }),
-    server(ADMIN_PORT, ADMIN_URL, { CHECKOUT_ENABLED: "false", ...PAYMENTS_OFF, ...ADMIN_ENV }),
+    // الرفع مفتوح على خادم اللوحة وحده، بمجلد مؤقت لكل منفذ، وبلا نسخ احتياطي معلن (يظهر التنبيه)
+    server(ADMIN_PORT, ADMIN_URL, {
+      CHECKOUT_ENABLED: "false",
+      ...PAYMENTS_OFF,
+      ...ADMIN_ENV,
+      ...mediaEnv(ADMIN_PORT),
+    }),
     server(PREVIEW_ADMIN_PORT, PREVIEW_ADMIN_URL, {
       CHECKOUT_ENABLED: "true",
       CHECKOUT_PREVIEW: "yes",

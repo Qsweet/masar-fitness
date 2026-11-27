@@ -45,6 +45,8 @@ const FORBIDDEN: readonly Rule[] = [
   ...(["staging", "notFound", "error"] as const).map((prefix) => lock(prefix, "system")),
   lock("blog", "blog"),
   lock("photos", "media"),
+  // الشريط تحت الواجهة: تسميات وصول؛ محتواه من صفحة الشريط لا من متصفح النصوص (ADMIN_A3_SLIDER §11)
+  lock("slider", "accessibility"),
 ];
 
 const HERO: readonly Rule[] = [

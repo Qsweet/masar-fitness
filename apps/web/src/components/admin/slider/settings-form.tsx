@@ -7,6 +7,7 @@ import type { FormValues } from "@/server/admin/field-form";
 import {
   FormButton,
   FormFooter,
+  formStyles,
   FormTop,
   useFieldForm,
   type FieldFormAction,
@@ -35,7 +36,7 @@ export function SliderSettingsForm({
     <form action={form.formAction} noValidate>
       <FormTop form={form} />
       <input type="hidden" name="lockToken" value={lockToken} />
-      <div key={form.state.stamp}>
+      <div key={form.state.stamp} className={formStyles.form}>
         <CheckboxField
           id="slider-autoplay"
           name="autoplay"

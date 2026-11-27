@@ -67,6 +67,34 @@ function InternalSelect({ form, text, targets }: Omit<LinkProps, "kind">) {
   );
 }
 
+/** ما يُنقر: يُخفى بلا رابط (مع JavaScript) ويبقى في النموذج. */
+function ClickTargets({
+  form,
+  text,
+  hidden,
+}: Pick<LinkProps, "form" | "text"> & { readonly hidden: boolean }) {
+  return (
+    <fieldset className={styles.radios} hidden={hidden}>
+      <legend className={uiStyles.label}>{text.form.clickTarget}</legend>
+      {CLICK_TARGETS.map((target) => (
+        <label key={target} className={uiStyles.checkbox}>
+          <input
+            type="radio"
+            name={SLIDE_FIELDS.clickTarget}
+            value={target}
+            defaultChecked={form.value(SLIDE_FIELDS.clickTarget) === target}
+          />
+          <span>{text.form.clickTargets[target]}</span>
+        </label>
+      ))}
+      <p className={uiStyles.hint}>{text.form.clickHint}</p>
+      {form.errorOf("clickTarget") === undefined ? null : (
+        <p className={uiStyles.fieldError}>{form.errorOf("clickTarget")}</p>
+      )}
+    </fieldset>
+  );
+}
+
 /** الرابط: نوعه، ثم الصفحة أو الرابط الخارجي، ثم ما يُنقر. الحقول غير المعنية تُخفى مع JavaScript فقط. */
 export function LinkSection({ form, text, targets, kind }: LinkProps) {
   const show = (wanted: string) => kind === null || kind === wanted;
@@ -106,23 +134,7 @@ export function LinkSection({ form, text, targets, kind }: LinkProps) {
           {form.errorOf("link")}
         </p>
       )}
-      {kind === "none" ? null : (
-        <fieldset className={styles.radios}>
-          <legend className={uiStyles.label}>{text.form.clickTarget}</legend>
-          {CLICK_TARGETS.map((target) => (
-            <label key={target} className={uiStyles.checkbox}>
-              <input
-                type="radio"
-                name={SLIDE_FIELDS.clickTarget}
-                value={target}
-                defaultChecked={form.value(SLIDE_FIELDS.clickTarget) === target}
-              />
-              <span>{text.form.clickTargets[target]}</span>
-            </label>
-          ))}
-          <p className={uiStyles.hint}>{text.form.clickHint}</p>
-        </fieldset>
-      )}
+      <ClickTargets form={form} text={text} hidden={kind === "none"} />
     </section>
   );
 }

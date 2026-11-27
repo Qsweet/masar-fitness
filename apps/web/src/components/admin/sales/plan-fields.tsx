@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useEnhanced } from "../ui/use-enhanced";
+import { useEnhanced } from "@/components/ui/use-enhanced";
 import type { AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import {

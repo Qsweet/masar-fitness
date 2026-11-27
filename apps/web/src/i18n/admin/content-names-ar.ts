@@ -35,6 +35,7 @@ export const contentNamespacesAr = {
   contact: "التواصل",
   chat: "زر المحادثة",
   hero: "الواجهة",
+  slider: "تسميات شريط الشرائح",
   highlights: "المزايا",
   goals: "الأهداف",
   stats: "الأرقام",

@@ -12,6 +12,7 @@ import { offerView, ratingView } from "@/components/home/home-view";
 import { Hours } from "@/components/home/hours";
 import { Reviews } from "@/components/home/reviews";
 import { Services } from "@/components/home/services";
+import { HomeSlider } from "@/components/home/slider/home-slider";
 import { friendsView, serviceViews } from "@/components/home/services-view";
 import { Stats } from "@/components/home/stats";
 import { Team } from "@/components/home/team";
@@ -47,7 +48,8 @@ export async function generateMetadata({ params }: PageProps<"/[locale]">): Prom
 }
 
 /**
- * الرئيسية بترتيب تصميم المالك (القرار 57) وبمحتوى النادي الحقيقي: الواجهة بالفيديو، المزايا الخمس،
+ * الرئيسية بترتيب تصميم المالك (القرار 57) وبمحتوى النادي الحقيقي: الواجهة بالفيديو، ثم شريط الشرائح
+ * من اللوحة إن سرت شريحة (ADMIN_A3_SLIDER §10)، المزايا الخمس،
  * الأهداف، المرافق، الأرقام، الاشتراكات وعرض الأصدقاء، من نحن، البرامج، الفريق، الآراء، الأوقات،
  * الدعوة، التواصل.
  */
@@ -56,7 +58,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   if (!isLocale(locale)) {
     notFound();
   }
-  const { dictionary } = await getSiteContent(locale);
+  const { dictionary, slider } = await getSiteContent(locale);
   const plans = toPlanViews(await getMembershipPlans(), locale, isCheckoutEnabled());
   const offer = offerView(plans, dictionary);
   const rating = ratingView(dictionary, locale);
@@ -64,6 +66,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   return (
     <PageShell locale={locale} path={PATH} hasPlans={plans.length > 0}>
       <Hero dictionary={dictionary} />
+      <HomeSlider slider={slider} locale={locale} dictionary={dictionary} now={new Date()} />
       <Highlights dictionary={dictionary} />
       <Goals dictionary={dictionary} />
       <Facilities dictionary={dictionary} />

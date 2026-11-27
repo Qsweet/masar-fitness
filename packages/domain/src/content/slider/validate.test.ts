@@ -120,3 +120,20 @@ describe("validateSlide", () => {
     ]);
   });
 });
+
+describe("هدف النقر بلا رابط", () => {
+  it("حقل الهدف الغائب (مخفي بلا رابط) يُحفظ «الزر»، ومع رابط إلزامي", () => {
+    expect(validateSlide(testInput({ clickTarget: "" }), CONTEXT)).toMatchObject({
+      ok: true,
+      value: { clickTarget: "button" },
+    });
+    const linked = validateSlide(
+      testInput({
+        clickTarget: "",
+        link: { kind: "external", internal: "", external: "https://example.com", newTab: false },
+      }),
+      CONTEXT,
+    );
+    expect(fieldsOf(linked)).toEqual(["clickTarget:slider.click_target_unknown"]);
+  });
+});

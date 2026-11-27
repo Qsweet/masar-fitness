@@ -110,8 +110,10 @@ export function slideRuleIssues(slide: SlideContent): SlideIssue[] {
   );
 }
 
-function clickTargetOf(raw: string): ClickTarget | null {
-  return CLICK_TARGETS.find((target) => target === raw) ?? null;
+/** بلا رابط لا معنى لهدف النقر (حقله مخفي في النموذج): «الزر» افتراضيًا. */
+function clickTargetOf(raw: string, linkKind: string): ClickTarget | null {
+  const known = CLICK_TARGETS.find((target) => target === raw);
+  return known ?? (linkKind === "none" ? "button" : null);
 }
 
 function emptyTexts(): Texts {
@@ -135,7 +137,7 @@ export function validateSlide(
   if (!link.ok) {
     issues.push({ field: "link", reason: link.error });
   }
-  const clickTarget = clickTargetOf(input.clickTarget);
+  const clickTarget = clickTargetOf(input.clickTarget, input.link.kind);
   if (clickTarget === null) {
     issues.push({ field: "clickTarget", reason: "slider.click_target_unknown" });
   }

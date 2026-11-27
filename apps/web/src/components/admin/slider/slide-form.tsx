@@ -14,7 +14,7 @@ import {
   type FieldForm,
   type FieldFormAction,
 } from "../ui/field-form";
-import { useEnhanced } from "../ui/use-enhanced";
+import { useEnhanced } from "@/components/ui/use-enhanced";
 import { ImagePicker } from "./image-picker";
 import { DisplaySection, LinkSection } from "./slide-form-link";
 import { AltSection, TextsSection } from "./slide-form-texts";

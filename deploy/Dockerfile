@@ -26,6 +26,9 @@ ENV APP_VERSION=$APP_VERSION \
     NODE_ENV=production \
     PORT=3000
 
+# مجلد مكتبة الصور مملوك لـnode قبل التبديل إليه: الوحدة المسمّاة تأخذ مالكه عند أول تركيب
+RUN mkdir -p /var/lib/masar/media && chown node:node /var/lib/masar/media
+
 USER node
 EXPOSE 3000
 CMD ["sh", "deploy/start.sh"]

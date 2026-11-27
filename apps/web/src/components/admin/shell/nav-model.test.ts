@@ -20,7 +20,7 @@ describe("مجموعات التنقل بحسب الدور", () => {
         "المبيعات",
         ["الطلبات", "العملاء", "الاشتراكات والإضافات", "العروض والكوبونات", "إعدادات البيع"],
       ],
-      ["المحتوى", ["النصوص"]],
+      ["المحتوى", ["النصوص", "النشر والسجل"]],
       ["الإدارة", ["الموظفون", "سجل التدقيق"]],
       ["الحساب", ["حسابي"]],
     ]);
@@ -30,7 +30,7 @@ describe("مجموعات التنقل بحسب الدور", () => {
     expect(labels("manager")).toEqual([
       ["عام", ["نظرة عامة"]],
       ["المبيعات", ["الطلبات", "العملاء", "الاشتراكات والإضافات", "العروض والكوبونات"]],
-      ["المحتوى", ["النصوص"]],
+      ["المحتوى", ["النصوص", "النشر والسجل"]],
       ["الإدارة", ["سجل التدقيق"]],
       ["الحساب", ["حسابي"]],
     ]);
@@ -60,7 +60,7 @@ describe("مجموعات التنقل بحسب الدور", () => {
 
   it("المحرر: المحتوى وحسابه، ولا مجموعة فارغة تظهر", () => {
     expect(labels("editor")).toEqual([
-      ["المحتوى", ["النصوص"]],
+      ["المحتوى", ["النصوص", "النشر والسجل"]],
       ["الحساب", ["حسابي"]],
     ]);
     for (const role of STAFF_ROLES) {
@@ -75,6 +75,14 @@ describe("القسم الحالي", () => {
     expect(isCurrentSection("/admin/staff", "/admin")).toBe(false);
     expect(isCurrentSection("/admin/staff/new", "/admin/staff")).toBe(true);
     expect(isCurrentSection("/admin/staffing", "/admin/staff")).toBe(false);
+  });
+
+  it("«النشر والسجل» حالية في مساراتها وحدها، لا في النصوص تحتها", () => {
+    expect(isCurrentSection("/admin/content", "/admin/content")).toBe(true);
+    expect(isCurrentSection("/admin/content/history/x", "/admin/content")).toBe(true);
+    expect(isCurrentSection("/admin/content/publish", "/admin/content")).toBe(true);
+    expect(isCurrentSection("/admin/content/texts/hero", "/admin/content")).toBe(false);
+    expect(isCurrentSection("/admin/content/texts/hero", "/admin/content/texts")).toBe(true);
   });
 });
 

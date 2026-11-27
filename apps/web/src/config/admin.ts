@@ -25,6 +25,9 @@ export const ADMIN_ROUTES = {
   salesSettings: `${ADMIN_PATH}/sales/settings`,
   content: `${ADMIN_PATH}/content`,
   contentTexts: `${ADMIN_PATH}/content/texts`,
+  contentPublish: `${ADMIN_PATH}/content/publish`,
+  contentHistory: `${ADMIN_PATH}/content/history`,
+  contentDiscard: `${ADMIN_PATH}/content/discard`,
 } as const;
 
 export function staffMemberPath(id: string): string {
@@ -68,6 +71,15 @@ export function promotionStatusPath(id: string): string {
 /** نصوص مساحة واحدة من القاموس (‎/admin/content/texts/hero‎). */
 export function contentNamespacePath(namespace: string): string {
   return `${ADMIN_ROUTES.contentTexts}/${namespace}`;
+}
+
+export function releasePath(id: string): string {
+  return `${ADMIN_ROUTES.contentHistory}/${id}`;
+}
+
+/** صفحة تأكيد استرجاع إصدار. */
+export function releaseRollbackPath(id: string): string {
+  return `${releasePath(id)}/rollback`;
 }
 
 /** هل المسار داخل اللوحة؟ ‎/admin‎ نفسه وكل ما تحته، لا ‎/administrator‎. */
@@ -159,6 +171,9 @@ export const CONTENT_SEARCH_RESULTS = 100;
 export const CONTENT_SEARCH_MAX_LENGTH = 80;
 /** أقصى طول خام لحقل نص محتوى قبل أي معالجة: أربعة أضعاف أطول نوع (700). */
 export const MAX_CONTENT_TEXT_INPUT = 2_800;
+/** عمر رمز النشر المختوم بالدقائق، وصفوف سجل الإصدارات في الصفحة. */
+export const CONTENT_PUBLISH_TOKEN_MINUTES = 10;
+export const CONTENT_HISTORY_PAGE_SIZE = 25;
 /** عمر رمز تأكيد الدفع اليدوي المختوم بالدقائق. */
 export const SETTLE_TOKEN_MINUTES = 10;
 /** اسم مُصدر الرمز كما يظهر في تطبيق التحقق. */

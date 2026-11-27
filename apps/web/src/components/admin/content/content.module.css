@@ -154,3 +154,19 @@
   margin: 0;
   padding-inline-start: var(--a-4);
 }
+
+.diff {
+  display: grid;
+  gap: var(--a-5);
+}
+
+.diffGroup {
+  display: grid;
+  gap: var(--a-1);
+}
+
+.diffTitle {
+  margin: 0;
+  font-size: var(--a-text-body);
+  font-weight: 700;
+}

@@ -28,6 +28,7 @@ type NavKey =
   | "promotions"
   | "salesSettings"
   | "contentTexts"
+  | "contentPublishing"
   | "staff"
   | "audit"
   | "account";
@@ -81,6 +82,12 @@ const GROUPS: readonly { readonly id: GroupKey; readonly sections: readonly Sect
         icon: "texts",
         permission: "content.read",
       },
+      {
+        key: "contentPublishing",
+        href: ADMIN_ROUTES.content,
+        icon: "publish",
+        permission: "content.read",
+      },
     ],
   },
   {
@@ -108,12 +115,29 @@ export function navGroupsFor(role: StaffRole, dictionary: AdminDictionary): NavG
   })).filter((group) => group.items.length > 0);
 }
 
+const isUnderPath = (pathname: string, href: string) =>
+  pathname === href || pathname.startsWith(`${href}/`);
+
+/**
+ * أقسام جذرها يشمل أقسامًا أخرى: تطابق نفسها ومساراتها المعلنة وحدها («النشر والسجل» في ‎/admin/content‎
+ * لا تُعلَّم حالية في ‎/admin/content/texts‎).
+ */
+const OWNED_PATHS: Readonly<Record<string, readonly string[]>> = {
+  [ADMIN_ROUTES.home]: [],
+  [ADMIN_ROUTES.content]: [
+    ADMIN_ROUTES.contentPublish,
+    ADMIN_ROUTES.contentHistory,
+    ADMIN_ROUTES.contentDiscard,
+  ],
+};
+
 /** القسم الحالي: الرئيسية بمطابقة تامة، وغيرها ببادئة المسار (صفحة موظف داخل «الموظفون»). */
 export function isCurrentSection(pathname: string, href: string): boolean {
-  if (href === ADMIN_ROUTES.home) {
-    return pathname === href;
+  const owned = Object.hasOwn(OWNED_PATHS, href) ? OWNED_PATHS[href] : undefined;
+  if (owned !== undefined) {
+    return pathname === href || owned.some((path) => isUnderPath(pathname, path));
   }
-  return pathname === href || pathname.startsWith(`${href}/`);
+  return isUnderPath(pathname, href);
 }
 
 export interface Crumb {

@@ -15,6 +15,8 @@ export const AUDIT_ENTITY_TYPES = [
   "product",
   "promotion",
   "club",
+  "content_release",
+  "content_draft",
   STAFF_AUDIT_ENTITY,
 ] as const satisfies readonly (AuditEntityType | typeof STAFF_AUDIT_ENTITY)[];
 export type AuditEntityFilter = (typeof AUDIT_ENTITY_TYPES)[number];

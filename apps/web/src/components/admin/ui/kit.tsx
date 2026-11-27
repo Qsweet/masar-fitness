@@ -66,7 +66,7 @@ export function PageHeader({ title, description, badge, children }: PageHeaderPr
 
 interface CardProps {
   readonly title?: string;
-  readonly description?: string;
+  readonly description?: string | undefined;
   /** فعل في رأس البطاقة. */
   readonly action?: ReactNode;
   /** المحتوى يلامس حواف البطاقة (جدول). */
@@ -165,7 +165,7 @@ export function Notice({ text }: { readonly text: string | undefined }) {
 interface EmptyStateProps {
   readonly icon: AdminIconName;
   readonly title: string;
-  readonly description?: string;
+  readonly description?: string | undefined;
   readonly children?: ReactNode;
 }
 

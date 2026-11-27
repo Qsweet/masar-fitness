@@ -15,6 +15,8 @@ import {
   promotionStatusPath,
   staffMemberPath,
   contentNamespacePath,
+  releasePath,
+  releaseRollbackPath,
   type AdminTheme,
 } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
@@ -94,6 +96,11 @@ function crumbLabels(dictionary: AdminDictionary): Record<string, string> {
     [ADMIN_ROUTES.salesSettings]: nav.salesSettings,
     [ADMIN_ROUTES.content]: content.breadcrumbs.group,
     [ADMIN_ROUTES.contentTexts]: nav.contentTexts,
+    [ADMIN_ROUTES.contentPublish]: content.breadcrumbs.publish,
+    [ADMIN_ROUTES.contentHistory]: content.breadcrumbs.history,
+    [ADMIN_ROUTES.contentDiscard]: content.breadcrumbs.discard,
+    [releasePath("*")]: content.breadcrumbs.release,
+    [releaseRollbackPath("*")]: content.breadcrumbs.rollback,
   };
 }
 

@@ -1,0 +1,62 @@
+/* سطر فرق القديم والجديد. كل لون من رموز ‎--a-*‎. */
+.row {
+  display: grid;
+  gap: var(--a-2);
+  padding-block: var(--a-3);
+  border-bottom: 1px solid var(--a-border);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-2);
+}
+
+.pair {
+  display: grid;
+  gap: var(--a-2);
+}
+
+@media (width >= 48rem) {
+  .pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.before,
+.after {
+  display: grid;
+  gap: var(--a-1);
+  min-width: 0;
+  padding: var(--a-2) var(--a-3);
+  border-inline-start: 3px solid;
+  border-radius: var(--a-radius-sm);
+}
+
+.before {
+  border-color: var(--a-danger);
+  background: var(--a-danger-soft);
+}
+
+.after {
+  border-color: var(--a-success);
+  background: var(--a-success-soft);
+}
+
+.label {
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  font-weight: 600;
+}
+
+.before p,
+.after p {
+  margin: 0;
+  color: var(--a-text);
+  overflow-wrap: anywhere;
+}

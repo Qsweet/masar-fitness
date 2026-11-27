@@ -92,6 +92,7 @@ function codeMaps(
     discountKind: promotions.form.kinds,
     startRuleBefore: statuses.startRule,
     startRuleAfter: statuses.startRule,
+    target: dictionary.content.namespaces,
   };
 }
 

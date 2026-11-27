@@ -108,3 +108,25 @@ export function buildSnapshot(texts: TextOverrides): Snapshot {
     ),
   };
 }
+
+/**
+ * شكل اللقطة وحده بلا سجل (القاعدة تعيد لقطة إصدار إلى المسودة كما هي): نصوص وتجاوزات بقيمة وبصمة.
+ * null لغير ذلك. التحقق بالسجل الحالي يجري عند القراءة والنشر.
+ */
+export function snapshotShape(json: unknown): Snapshot | null {
+  if (!isRecord(json) || json.v !== SNAPSHOT_VERSION || !isRecord(json.texts)) {
+    return null;
+  }
+  const texts = new Map<string, LocaleOverrides>();
+  for (const [path, raw] of Object.entries(json.texts)) {
+    const locales: Partial<Record<ContentLocale, TextOverride>> = {};
+    for (const [locale, value] of Object.entries(isRecord(raw) ? raw : {})) {
+      const override = overrideOf(value);
+      if (isContentLocale(locale) && override !== null) {
+        locales[locale] = override;
+      }
+    }
+    texts.set(path, locales);
+  }
+  return buildSnapshot(texts);
+}

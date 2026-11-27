@@ -60,3 +60,87 @@ export async function findRelease(
   const row = await db.contentRelease.findFirst({ where: { id, clubId } });
   return row === null ? null : recordOf(row);
 }
+
+export interface ReleaseListItem {
+  readonly id: string;
+  readonly seq: number;
+  readonly source: "publish" | "rollback";
+  readonly changedCount: number;
+  readonly rolledBackFromSeq: number | null;
+  readonly publishedAt: Date;
+  readonly publisherName: string;
+}
+
+export interface ReleasePage {
+  readonly items: readonly ReleaseListItem[];
+  readonly total: number;
+}
+
+/** سجل الإصدارات للوحة، الأحدث أولًا، بصفحات. */
+export async function listReleases(
+  db: Db,
+  clubId: string,
+  page: { readonly offset: number; readonly limit: number },
+): Promise<ReleasePage> {
+  const [rows, total] = await Promise.all([
+    db.contentRelease.findMany({
+      where: { clubId },
+      orderBy: { seq: "desc" },
+      skip: page.offset,
+      take: page.limit,
+      include: { staff: { select: { displayName: true } }, rolledBack: { select: { seq: true } } },
+    }),
+    db.contentRelease.count({ where: { clubId } }),
+  ]);
+  return {
+    total,
+    items: rows.map((row) => ({
+      id: row.id,
+      seq: row.seq,
+      source: row.source === "rollback" ? "rollback" : "publish",
+      changedCount: row.changedCount,
+      rolledBackFromSeq: row.rolledBack?.seq ?? null,
+      publishedAt: row.publishedAt,
+      publisherName: row.staff.displayName,
+    })),
+  };
+}
+
+/** الإصدار الذي سبق إصدارًا (للفرق في صفحة الإصدار)، أو null للأول. */
+export async function previousRelease(
+  db: Db,
+  clubId: string,
+  seq: number,
+): Promise<ReleaseRecord | null> {
+  const row = await db.contentRelease.findFirst({
+    where: { clubId, seq: { lt: seq } },
+    orderBy: { seq: "desc" },
+  });
+  return row === null ? null : recordOf(row);
+}
+
+export interface ReleaseDetail extends ReleaseRecord {
+  readonly publisherName: string;
+  readonly rolledBackFromSeq: number | null;
+}
+
+/** إصدار بمعرّفه لصفحته في اللوحة: مع اسم الناشر ورقم الإصدار المسترجَع منه. */
+export async function releaseDetail(
+  db: Db,
+  clubId: string,
+  id: string,
+): Promise<ReleaseDetail | null> {
+  const row = await db.contentRelease.findFirst({
+    where: { id, clubId },
+    include: { staff: { select: { displayName: true } }, rolledBack: { select: { seq: true } } },
+  });
+  if (row === null) {
+    return null;
+  }
+  const { staff, rolledBack, ...release } = row;
+  return {
+    ...recordOf(release),
+    publisherName: staff.displayName,
+    rolledBackFromSeq: rolledBack?.seq ?? null,
+  };
+}

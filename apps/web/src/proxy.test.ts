@@ -93,11 +93,11 @@ describe("matcher", () => {
     "/memberships/x.png",
     "/page.txt",
     "/robots.txt",
-  ])("يشمل الصفحة %s حتى لو انتهى رابطها بامتداد", async (path) => {
+  ])("يشمل الصفحة %s حتى لو انتهى رابطها بامتداد", (path) => {
     expect(pattern.test(path)).toBe(true);
   });
 
-  it.each(["/api/health", "/_next/static/chunk.js", "/_next/image"])("يستثني %s", async (path) => {
+  it.each(["/api/health", "/_next/static/chunk.js", "/_next/image"])("يستثني %s", (path) => {
     expect(pattern.test(path)).toBe(false);
   });
 });
@@ -159,7 +159,7 @@ describe("لوحة التحكم في الوسيط", () => {
     }
   });
 
-  it("المطابق يشمل مسارات اللوحة", async () => {
+  it("المطابق يشمل مسارات اللوحة", () => {
     const [pattern = ""] = config.matcher;
     const matcher = new RegExp(`^${pattern}$`);
     expect(matcher.test("/admin")).toBe(true);

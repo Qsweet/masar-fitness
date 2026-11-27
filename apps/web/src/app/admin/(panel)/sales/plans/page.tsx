@@ -1,4 +1,4 @@
-import { countCatalogProducts, listCatalogProducts, listMembershipPlans } from "@masar/db";
+import { countCatalogProducts, listCatalogProducts, listClubMembershipPlans } from "@masar/db";
 import { hasPermission, isProductAdminKind, PRODUCT_KINDS, type ProductKind } from "@masar/domain";
 import type { Metadata } from "next";
 import { PlansTable } from "@/components/admin/sales/plans-table";
@@ -44,7 +44,7 @@ export default async function PlansPage(props: PageProps<"/admin/sales/plans">) 
   const kind = kinds.find((candidate) => candidate === query.kind) ?? "membership";
   const [rows, published] = await Promise.all([
     listCatalogProducts(db, staff.clubId, kind, now),
-    listMembershipPlans(db, now),
+    listClubMembershipPlans(db, staff.clubId, now),
   ]);
   const { sales } = getAdminDictionary();
   const text = sales.plans;

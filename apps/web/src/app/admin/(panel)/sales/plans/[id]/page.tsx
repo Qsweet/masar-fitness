@@ -1,7 +1,7 @@
 import {
   getCatalogProduct,
   getSalesSettings,
-  listMembershipPlans,
+  listClubMembershipPlans,
   type CatalogProductDetail,
 } from "@masar/db";
 import { hasPermission, isProductAdminKind, type StaffRole } from "@masar/domain";
@@ -184,7 +184,7 @@ export default async function PlanPage(props: PageProps<"/admin/sales/plans/[id]
       {tab === "preview" ? (
         <PlanPreviewCard
           product={product}
-          published={await listMembershipPlans(db, now)}
+          published={await listClubMembershipPlans(db, staff.clubId, now)}
           text={sales.plans}
         />
       ) : null}

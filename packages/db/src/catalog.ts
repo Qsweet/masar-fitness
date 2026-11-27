@@ -18,9 +18,9 @@ function currentVersionQuery(now: Date) {
 
 type ProductRow = Awaited<ReturnType<typeof findMembershipRows>>[number];
 
-function findMembershipRows(db: Db, now: Date) {
+function findMembershipRows(db: Db, now: Date, clubId?: string) {
   return db.product.findMany({
-    where: { kind: "membership", status: "active" },
+    where: { kind: "membership", status: "active", ...(clubId === undefined ? {} : { clubId }) },
     orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
     include: { versions: currentVersionQuery(now) },
   });
@@ -52,5 +52,18 @@ function toPlan(row: ProductRow): MembershipPlan | undefined {
 /** الباقات المعروضة للبيع الآن، بترتيب العرض. */
 export async function listMembershipPlans(db: Db, now: Date): Promise<MembershipPlan[]> {
   const rows = await findMembershipRows(db, now);
+  return rows.map(toPlan).filter((plan) => plan !== undefined);
+}
+
+/**
+ * الباقات المعروضة للبيع الآن من نادٍ واحد: ما تقارن به اللوحة («الأكثر قيمة» والمعاينة)، فلا تقرأ
+ * لوحة نادٍ باقات نادٍ آخر. الموقع العام نادٍ واحد، فالنتيجة فيه هي `listMembershipPlans` نفسها.
+ */
+export async function listClubMembershipPlans(
+  db: Db,
+  clubId: string,
+  now: Date,
+): Promise<MembershipPlan[]> {
+  const rows = await findMembershipRows(db, now, clubId);
   return rows.map(toPlan).filter((plan) => plan !== undefined);
 }

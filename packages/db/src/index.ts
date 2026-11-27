@@ -1,4 +1,4 @@
-export { listMembershipPlans } from "./catalog";
+export { listClubMembershipPlans, listMembershipPlans } from "./catalog";
 export { createDb, isDbReachable } from "./client";
 export type { Db } from "./client";
 export * from "./catalog-admin";

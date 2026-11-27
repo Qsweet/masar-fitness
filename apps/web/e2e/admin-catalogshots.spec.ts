@@ -102,6 +102,12 @@ test("الكتالوج بالمظهرين والمقاسات الأربعة", as
     false,
   );
   await page.goto("/admin/sales/plans");
+  // «الأكثر قيمة» تُحسب بين باقات هذا النادي وحده، لا باقات الأندية الأخرى في القاعدة المشتركة
+  const table = page.getByTestId("plans-table");
+  await expect(table.getByText(PLANS.bestValue, { exact: true })).toHaveCount(1);
+  await expect(page.getByRole("row").filter({ hasText: YEAR.nameAr })).toContainText(
+    PLANS.bestValue,
+  );
   await shootAll(page, "catalog-plans");
   await page.goto("/admin/sales/plans?kind=addon");
   await shootAll(page, "catalog-addons");

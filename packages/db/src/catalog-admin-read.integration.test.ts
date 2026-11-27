@@ -6,6 +6,7 @@ import {
   createOrder,
   getCatalogProduct,
   listCatalogProducts,
+  listClubMembershipPlans,
   listMembershipPlans,
   type Db,
 } from "./index";
@@ -39,6 +40,7 @@ let draft: TestProduct;
 let archived: TestProduct;
 let noDuration: TestProduct;
 let addon: TestProduct;
+let otherPlan: TestProduct;
 
 /** نسخة ثانية للمنتج من `CHANGED_AT`: تُغلق الأولى عندها (كما تفعل اللوحة)، فسجل النسخ نسختان. */
 async function addSecondVersion(product: TestProduct, priceMinor: number): Promise<string> {
@@ -74,7 +76,7 @@ beforeAll(async () => {
   noDuration = await createPlan(db, clubId, { priceMinor: PRICE, durationMonths: 1 });
   addon = await createAddon(db, clubId, active.productId, { priceMinor: 5_000 });
   await createAssessedService(db, clubId, { priceMinor: 0 });
-  await createPlan(db, otherClubId, { priceMinor: PRICE, durationMonths: 1 });
+  otherPlan = await createPlan(db, otherClubId, { priceMinor: PRICE, durationMonths: 1 });
   await db.product.update({
     where: { id: draft.productId },
     data: { status: "draft", sortOrder: 2 },
@@ -227,5 +229,16 @@ describe("listMembershipPlans (الموقع العام)", () => {
       tier: { ar: "رحلة الأبطال", en: "Champions' Journey" },
       price: { amountMinor: PRICE },
     });
+  });
+});
+
+describe("listClubMembershipPlans (مقارنة اللوحة)", () => {
+  it("باقات نادي الموظف المعروضة وحدها: لا باقة من نادٍ آخر في «الأكثر قيمة» ولا في المعاينة", async () => {
+    const own = await listClubMembershipPlans(db, clubId, TEST_NOW);
+    expect(own.map((plan) => plan.slug)).toEqual([active.slug]);
+    const other = await listClubMembershipPlans(db, otherClubId, TEST_NOW);
+    expect(other.map((plan) => plan.slug)).toEqual([otherPlan.slug]);
+    const everyClub = (await listMembershipPlans(db, TEST_NOW)).map((plan) => plan.slug);
+    expect(everyClub).toEqual(expect.arrayContaining([active.slug, otherPlan.slug]));
   });
 });

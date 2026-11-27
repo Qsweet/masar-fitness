@@ -51,9 +51,12 @@
   user-select: none;
 }
 
+/* الصورة والتدرّج يملآن الشريحة، والنص في أسفلها؛ نص أطول من النسبة يمدّها ولا يُقص */
 .slide {
   position: relative;
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   overflow: hidden;
   aspect-ratio: 4 / 5;
   background: var(--card);
@@ -74,17 +77,13 @@
   }
 }
 
-.slide > * {
-  grid-area: 1 / 1;
-}
-
 .slide picture {
   display: contents;
 }
 
-/* الصورة ابن الإطار مباشرةً (picture بلا صندوق)، فتأخذ خانة الإطار نفسها */
 .image {
-  grid-area: 1 / 1;
+  position: absolute;
+  inset: 0;
   z-index: -2;
   width: 100%;
   height: 100%;
@@ -96,6 +95,8 @@
 
 /* ظل خفيف دائمًا يفصل الشريحة عن الأرضية، وتدرّج كامل حين فوقها نص */
 .scrim {
+  position: absolute;
+  inset: 0;
   z-index: -1;
   background: linear-gradient(to top, rgb(10 10 10 / 45%) 0%, transparent 35%);
 }
@@ -118,7 +119,7 @@
   justify-items: start;
   gap: 0.75rem;
   max-width: 40rem;
-  padding: clamp(1.5rem, 4vw, 3.5rem);
+  padding: clamp(1.5rem, 3.5vw, 3rem);
   color: var(--white);
 }
 
@@ -141,7 +142,7 @@
 
 .title {
   margin: 0;
-  font-size: clamp(1.75rem, 2.6vw + 1rem, 3.5rem);
+  font-size: clamp(1.75rem, 2vw + 1rem, 3rem);
   font-weight: var(--weight-display);
   letter-spacing: var(--display-tracking);
   line-height: 1.3;

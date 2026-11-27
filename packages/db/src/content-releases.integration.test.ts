@@ -52,8 +52,12 @@ describe("content_releases", () => {
     await expect(
       db.$executeRaw`DELETE FROM content_releases WHERE id = ${id}::uuid`,
     ).rejects.toThrow("content_release_immutable"); // ولا يُفرَّغ: مباشرةً ولا بالتتالي من جدول يشير إليه
+    // منذ الشريط يشير إليه `content_release_media` (FK)، فالتفريغ وحده يُرفض قبل المحفّز؛ معه يبلغ C1
     await expect(db.$executeRaw`TRUNCATE content_releases`).rejects.toThrow(
-      "content_release_immutable",
+      "cannot truncate a table referenced in a foreign key constraint",
+    );
+    await expect(db.$executeRaw`TRUNCATE content_releases, content_release_media`).rejects.toThrow(
+      /content_release(_media)?_immutable/,
     );
     await expect(db.$executeRaw`TRUNCATE staff_users CASCADE`).rejects.toThrow(
       "content_release_immutable",

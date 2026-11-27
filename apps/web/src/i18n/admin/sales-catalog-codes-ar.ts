@@ -12,6 +12,8 @@ export const catalogErrorsAr = {
   "catalog.slug_taken": "هذا المعرّف مستعمل لمنتج آخر. اختر غيره.",
   "catalog.name_length": "من حرفين إلى 80 حرفًا.",
   "catalog.summary_too_long": "الوصف أطول من 200 حرف.",
+  "catalog.texts_required_published":
+    "المنتج منشور، فلا يُفرَّغ اسمه ولا وصفه بأي لغة. اكتبه، أو أخفِ المنتج أولًا.",
   "catalog.tier_both_languages": "اكتب اسم الفئة باللغتين، أو اتركه فارغًا فيهما.",
   "catalog.tier_too_long": "اسم الفئة أطول من 60 حرفًا.",
   "catalog.sort_order_invalid": "رقم صحيح من 0 إلى 9999.",

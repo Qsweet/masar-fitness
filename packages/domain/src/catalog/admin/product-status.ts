@@ -68,14 +68,44 @@ export interface PublishReadiness {
   readonly warnings: readonly PublishWarning[];
 }
 
+type ProductTextField = "nameAr" | "nameEn" | "summaryAr" | "summaryEn";
+
+/**
+ * حقول نصوص المنتج الفارغة: المنتج المنشور نصوصه كاملة باللغتين. تعريف واحد يمنع النشر بنص ناقص
+ * ويمنع تفريغ نص منتج منشور.
+ */
+function missingTexts(texts: {
+  readonly name: LocalizedText;
+  readonly summary: LocalizedText;
+}): readonly ProductTextField[] {
+  const values: readonly (readonly [ProductTextField, string])[] = [
+    ["nameAr", texts.name.ar],
+    ["nameEn", texts.name.en],
+    ["summaryAr", texts.summary.ar],
+    ["summaryEn", texts.summary.en],
+  ];
+  return values.filter(([, text]) => text.trim() === "").map(([field]) => field);
+}
+
+/** هوية منتج منشور: لا يُفرَّغ نص منه، وإلا صار ما يعرضه الموقع ناقصًا. */
+export function checkPublishedTexts(
+  status: ProductStatus,
+  texts: { readonly name: LocalizedText; readonly summary: LocalizedText },
+): Result<true, DomainError> {
+  const missing = status === "active" ? missingTexts(texts) : [];
+  const [field] = missing;
+  return field === undefined
+    ? ok(true)
+    : err(new DomainError("validation", "catalog.texts_required_published", { field }));
+}
+
 /** ما يمنع نشر المنتج وما يُنبَّه إليه: نسخة سارية، ومدة للاشتراك، ونصوص باللغتين. */
 export function publishBlockers(facts: PublishFacts): PublishReadiness {
-  const texts = [facts.name.ar, facts.name.en, facts.summary.ar, facts.summary.en];
   const failed: Readonly<Record<PublishBlocker, boolean>> = {
     no_current_version: facts.currentVersion === null,
     membership_without_duration:
       facts.kind === "membership" && facts.currentVersion?.durationMonths === null,
-    texts_incomplete: texts.some((text) => text.trim() === ""),
+    texts_incomplete: missingTexts(facts).length > 0,
   };
   return {
     blockers: PUBLISH_BLOCKERS.filter((blocker) => failed[blocker]),

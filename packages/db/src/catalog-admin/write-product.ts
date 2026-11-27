@@ -4,6 +4,7 @@
  */
 import {
   DomainError,
+  checkPublishedTexts,
   err,
   ok,
   type ProductDraft,
@@ -200,6 +201,11 @@ async function updateInTransaction(
   }
   const { product } = locked.value;
   const { identity } = input;
+  // الحالة تحت قفل الصف: نشر متزامن لا يسبق الفحص
+  const texts = checkPublishedTexts(product.status, identity);
+  if (!texts.ok) {
+    return texts;
+  }
   // اسم الفئة للاشتراك وحده: الإضافة تحفظه فارغًا مهما أُرسل
   const tier = product.kind === "membership" ? identity.tier : null;
   const changed = changedFields(product, { ...identity, tier });

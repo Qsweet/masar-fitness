@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ProductTerms } from "./product-draft";
 import {
   PRODUCT_STATUS_ACTIONS,
+  checkPublishedTexts,
   decideProductStatus,
   publishBlockers,
   type PublishFacts,
@@ -122,5 +123,29 @@ describe("publishBlockers", () => {
   it("كل الموانع معًا بترتيب ثابت", () => {
     const facts = { ...FACTS, currentVersion: null, name: { ar: "", en: "" } };
     expect(publishBlockers(facts).blockers).toEqual(["no_current_version", "texts_incomplete"]);
+  });
+});
+
+describe("checkPublishedTexts", () => {
+  const TEXTS = { name: { ar: "3 أشهر", en: "3 months" }, summary: { ar: "وصف", en: "Summary" } };
+
+  it("المنشور لا يُفرَّغ وصفه بأي لغة: الخطأ على الحقل الفارغ", () => {
+    for (const [summary, field] of [
+      [{ ar: "", en: "Summary" }, "summaryAr"],
+      [{ ar: "وصف", en: "  " }, "summaryEn"],
+    ] as const) {
+      const result = checkPublishedTexts("active", { ...TEXTS, summary });
+      expect(!result.ok && [result.error.reason, result.error.field]).toEqual([
+        "catalog.texts_required_published",
+        field,
+      ]);
+    }
+  });
+
+  it("المسودة والمؤرشف يُفرَّغان (والنشر يمنعه publishBlockers بالتعريف نفسه)", () => {
+    const empty = { ...TEXTS, summary: { ar: "", en: "" } };
+    expect(checkPublishedTexts("draft", empty).ok).toBe(true);
+    expect(checkPublishedTexts("archived", empty).ok).toBe(true);
+    expect(checkPublishedTexts("active", TEXTS).ok).toBe(true);
   });
 });

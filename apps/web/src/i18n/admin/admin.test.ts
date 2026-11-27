@@ -53,6 +53,7 @@ const CATALOG_TRACK_REASONS = [
   "catalog.too_many_benefits",
   "catalog.version_overlap",
   "catalog.publish_required",
+  "catalog.texts_required_published",
   "catalog.status_not_allowed",
   "catalog.last_sellable_membership",
   "catalog.addon_links_invalid",

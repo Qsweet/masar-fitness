@@ -6,6 +6,7 @@ import {
   getCatalogProduct,
   setAddonLinks,
   staffActor,
+  updateProductIdentity,
   type CatalogProductDetail,
   type Db,
 } from "./index";
@@ -184,5 +185,31 @@ describe("setAddonLinks", () => {
       }),
     );
     expect(stale.reason).toBe("catalog.stale_edit");
+  });
+});
+
+describe("updateProductIdentity لمنتج منشور", () => {
+  it("لا يُفرَّغ وصفه بأي لغة (تعريف موانع النشر نفسه)، والمسودة تُفرَّغ", async () => {
+    const product = await newProduct();
+    const emptied = (summaryEn: string, target: CatalogProductDetail) =>
+      updateProductIdentity(db, {
+        productId: target.id,
+        clubId,
+        lockToken: target.lockToken,
+        identity: productDraft({ summaryEn }).identity,
+        actor,
+        now: at(2),
+      });
+    unwrap(await emptied("", product));
+    await db.product.update({
+      where: { id: product.id },
+      data: { status: "active", summaryEn: "Summary" },
+    });
+    const published = await detailOf(product.id, at(3));
+    expect(failure(await emptied("", published))).toMatchObject({
+      reason: "catalog.texts_required_published",
+      field: "summaryEn",
+    });
+    expect((await detailOf(product.id, at(3))).summary.en).toBe("Summary");
   });
 });

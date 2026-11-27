@@ -20,6 +20,7 @@ export {
   PRODUCT_STATUS_ACTIONS,
   PUBLISH_BLOCKERS,
   PUBLISH_WARNINGS,
+  checkPublishedTexts,
   decideProductStatus,
   isProductStatusAction,
   publishBlockers,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EMPTY_FORM_STATE, failed, idField, isUuid, textField } from "./form";
+import { EMPTY_FORM_STATE, failed, idField, idListField, isUuid, textField } from "./form";
 
 function form(fields: Record<string, string | Blob>): FormData {
   const data = new FormData();
@@ -22,6 +22,21 @@ describe("حقول نماذج اللوحة", () => {
   it("الأطول من الحد يُعامل كفارغ لا مقصوصًا", () => {
     expect(textField(form({ password: "x".repeat(21) }), "password", 20)).toBe("");
     expect(textField(form({ password: "x".repeat(20) }), "password", 20)).toHaveLength(20);
+  });
+
+  it("قائمة المعرّفات: كلها UUID وإلا رُفضت كلها، بطول 36 لا يكفي، وحتى الحد", () => {
+    const data = new FormData();
+    data.append("ids", ID);
+    data.append("ids", "018f4e2a-1b2c-7d3e-8f40-0123456789ac");
+    expect(idListField(data, "ids", 5)).toHaveLength(2);
+    expect(idListField(data, "ids", 1)).toBeNull();
+    expect(idListField(new FormData(), "ids", 5)).toEqual([]);
+    // 36 محرفًا ليست UUID: كانت تمر بفحص الطول وتسقط الاستعلام (P2007)
+    data.append("ids", "zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz");
+    expect(idListField(data, "ids", 5)).toBeNull();
+    const withFile = new FormData();
+    withFile.append("ids", new Blob(["x"]));
+    expect(idListField(withFile, "ids", 5)).toBeNull();
   });
 
   it("المعرّف UUID فقط", () => {

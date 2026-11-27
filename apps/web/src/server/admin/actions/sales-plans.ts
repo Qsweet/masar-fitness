@@ -11,7 +11,7 @@ import {
   reviewForm,
   type FieldFormState,
 } from "../field-form";
-import { failed, idField, textField, type AdminFormState } from "../form";
+import { failed, idField, idListField, textField, type AdminFormState } from "../form";
 import { requireStaff } from "../guard";
 import {
   changePlanStatus,
@@ -26,7 +26,6 @@ import { CREATE_LIMITS, IDENTITY_LIMITS, TERMS_LIMITS } from "../sales/plan-form
 const INVALID = "sales.invalid_request";
 const TOKEN_INPUT_LENGTH = 80;
 const CODE_INPUT_LENGTH = 32;
-const UUID_LENGTH = 36;
 const MAX_LINKS = 200;
 
 function done(productId: string, notice: string, tab?: string): never {
@@ -114,10 +113,8 @@ export async function savePlanLinksAction(
 ): Promise<AdminFormState> {
   const context = await requireStaff("catalog.write");
   const productId = idField(formData, "productId");
-  const membershipIds = formData
-    .getAll("membershipIds")
-    .filter((value): value is string => typeof value === "string" && value.length === UUID_LENGTH);
-  if (productId === null || membershipIds.length > MAX_LINKS) {
+  const membershipIds = idListField(formData, "membershipIds", MAX_LINKS);
+  if (productId === null || membershipIds === null) {
     return failed(INVALID);
   }
   const lockToken = textField(formData, "lockToken", TOKEN_INPUT_LENGTH);

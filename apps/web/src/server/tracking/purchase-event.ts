@@ -1,17 +1,38 @@
 import "server-only";
-import { loadPurchaseContext, type OrderView } from "@masar/db";
+import { claimBrowserPurchase, loadPurchaseContext, type OrderView } from "@masar/db";
 import { majorNumber, phoneE164ForHash, purchaseEventId } from "@masar/domain";
 import { createHash } from "node:crypto";
 import type { TrackPayload } from "@/components/tracking/types";
 import { getDb } from "../db";
 import { logger } from "../logger";
+import { pageTracking } from "./page-tracking";
+import { mayShareHashedPhone } from "./phone-share";
 
 const SETTLED = new Set(["paid", "fulfilled"]);
 
+/** الجوال E.164 إن جاز نشره مجزّأً في هذا العرض، وإلا null. «أول عرض» يُستهلك آخرًا. */
+async function shareablePhone(orderId: string): Promise<string | null> {
+  const tracking = await pageTracking();
+  if (tracking === null) {
+    return null;
+  }
+  const context = await loadPurchaseContext(getDb(), orderId);
+  const allowed = mayShareHashedPhone({
+    requestAds: tracking.consent?.ads === true,
+    orderAds: context?.consentAds === true,
+    providers: tracking.providers,
+  });
+  if (!allowed || context === null || !(await claimBrowserPurchase(getDb(), orderId, new Date()))) {
+    return null;
+  }
+  return phoneE164ForHash(context.phoneE164);
+}
+
 /**
  * نسخة المتصفح من الشراء (ADMIN_A5_TRACKING §2.2): فقط لطلب حالته في القاعدة مدفوع، بمعرّف الخادم
- * نفسه (`purchase.<order_id>`). الجوال مجزّأً (E.164 لجوجل وتيك توك) فقط إن وافق صاحب الطلب على
- * الإعلانات حين طلب. null لطلب غير مدفوع.
+ * نفسه (`purchase.<order_id>`). الجوال مجزّأً (E.164) لا يُكتب في الصفحة إلا بشروط `mayShareHashedPhone`
+ * وفي أول عرض للطلب وحده (القرار 89-1): الرابط يُعاد إرساله، والتجزئة تُعكس بتجربة الأرقام. null لطلب
+ * غير مدفوع.
  */
 export async function purchasePayload(
   order: OrderView,
@@ -33,8 +54,7 @@ export async function purchasePayload(
     lines,
   };
   try {
-    const context = await loadPurchaseContext(getDb(), order.id);
-    const e164 = context?.consentAds === true ? phoneE164ForHash(context.phoneE164) : null;
+    const e164 = await shareablePhone(order.id);
     return e164 === null
       ? base
       : { ...base, sha256Phone: createHash("sha256").update(e164).digest("hex") };

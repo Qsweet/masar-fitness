@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { localizedPath } from "@/i18n/locales";
 import { EMPTY_CART } from "../cart/codec";
 import { saveCart } from "../cart/cookie";
+import { stampOrderTracking } from "../tracking/stamp-order";
 import { requireCheckout } from "./flag";
 import { parseCheckoutForm, typedValues } from "./form-schema";
 import { domainFieldErrors, stateAfterRejection, type CheckoutFormState } from "./form-state";
@@ -56,7 +57,11 @@ export async function submitCheckout(
   if (!placed.ok) {
     return stateAfterRejection(state, publicSubmitError(placed.error), form.value.locale);
   }
-  // الطلب أُنشئ: السلة أدّت غرضها
+  // الموافقة والإسناد مع الطلب (لا يُسقطه فشلها)، ثم السلة أدّت غرضها
+  await stampOrderTracking(
+    placed.value.orderId,
+    localizedPath(form.value.locale, `/checkout/${form.value.slug}`),
+  );
   await saveCart(EMPTY_CART);
   redirect(localizedPath(form.value.locale, `/checkout/orders/${placed.value.publicToken}`));
 }

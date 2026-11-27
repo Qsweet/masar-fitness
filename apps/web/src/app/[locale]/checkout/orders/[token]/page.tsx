@@ -7,6 +7,7 @@ import { toPaymentPanelView, withPaymentHeadline } from "@/components/checkout/p
 import { toReviewView } from "@/components/checkout/review-view";
 import { PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
+import { PageEvent } from "@/components/tracking/page-event";
 import { PAY_NOTICE_PARAM, orderPath, parsePayNotice } from "@/config/payments";
 import { defaultDictionary } from "@/i18n/dictionaries";
 import { isLocale } from "@/i18n/locales";
@@ -15,6 +16,7 @@ import { checkoutMetadata } from "@/server/checkout/metadata";
 import { getOrderView } from "@/server/checkout/order-view";
 import { getPaymentPanelState } from "@/server/payments/panel";
 import { getSiteContent } from "@/server/content/site-content";
+import { purchasePayload } from "@/server/tracking/purchase-event";
 
 type Props = PageProps<"/[locale]/checkout/orders/[token]">;
 
@@ -47,6 +49,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
   const notice = parsePayNotice((await searchParams)[PAY_NOTICE_PARAM]);
   const view = payment === null ? review : withPaymentHeadline(review, payment.state, locale);
   const { dictionary } = await getSiteContent(locale);
+  const purchase = await purchasePayload(order, locale);
   const panel =
     payment === null ? null : toPaymentPanelView(order, { ...payment, notice }, locale, token);
   return (
@@ -60,6 +63,9 @@ export default async function OrderPage({ params, searchParams }: Props) {
         payment={panel === null ? null : <PaymentPanel view={panel} />}
         preview={isCheckoutPreview()}
       />
+      {purchase === null ? null : (
+        <PageEvent event="purchase" payload={purchase} onceKey={purchase.eventId} />
+      )}
     </PageShell>
   );
 }

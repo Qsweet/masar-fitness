@@ -7,6 +7,8 @@ import { toPlanViews } from "@/components/plans/plan-view";
 import { Contact } from "@/components/home/contact";
 import { Benefits, Payment } from "@/components/plans/extras";
 import { isLocale } from "@/i18n/locales";
+import { PageEvent } from "@/components/tracking/page-event";
+import { planPayload } from "@/components/tracking/plan-payload";
 import { getMembershipPlan, getMembershipPlans } from "@/server/catalog";
 import { isCheckoutEnabled } from "@/server/checkout/flag";
 import { pageMetadata } from "@/server/metadata";
@@ -69,6 +71,7 @@ export default async function PlanPage({ params }: Props) {
       <PlanTerms plan={view} locale={locale} dictionary={dictionary} />
       {checkoutEnabled ? <Payment dictionary={dictionary} /> : null}
       <Contact locale={locale} dictionary={dictionary} />
+      <PageEvent event="view_item" payload={planPayload(plan, locale)} />
     </PageShell>
   );
 }

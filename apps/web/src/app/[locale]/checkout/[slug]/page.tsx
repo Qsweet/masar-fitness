@@ -1,4 +1,4 @@
-import type { DomainError } from "@masar/domain";
+import { majorNumber, type DomainError, type Quote } from "@masar/domain";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -11,6 +11,8 @@ import { addonChoices, couponMessage, toQuoteView } from "@/components/checkout/
 import { UnavailableNotice } from "@/components/checkout/unavailable-notice";
 import { PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
+import { PageEvent } from "@/components/tracking/page-event";
+import type { TrackPayload } from "@/components/tracking/types";
 import { whatsappUrl } from "@/config/club";
 import { type Dictionary, defaultDictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
@@ -132,6 +134,19 @@ function introLead(intro: Dictionary["checkout"]["intro"]): string {
  * صفحة الشراء (خلف العلم): الملخص المسعَّر على الخادم، ونموذج GET للإضافات والكوبون،
  * ثم نموذج البيانات. منتج غير قابل للبيع ⇒ 404، وسياسة غير محسومة ⇒ «غير متاح» بلا نموذج.
  */
+/** بدء الشراء بإجمالي العرض المحسوب على الخادم وسطوره. */
+function quotePayload(quote: Quote, locale: Locale): Omit<TrackPayload, "eventId"> {
+  return {
+    value: majorNumber(quote.total.amountMinor),
+    currency: quote.total.currency,
+    lines: quote.lines.map((line) => ({
+      id: line.slug,
+      name: line.name[locale],
+      price: majorNumber(line.total.amountMinor),
+    })),
+  };
+}
+
 export default async function CheckoutPage({ params, searchParams }: Props) {
   requireCheckout();
   const { locale, slug } = await params;
@@ -156,7 +171,10 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
       planName={result.value.quote.lines[0]?.name[locale] ?? slug}
     />
   ) : (
-    <CheckoutForms locale={locale} slug={slug} options={options} data={result.value} />
+    <>
+      <CheckoutForms locale={locale} slug={slug} options={options} data={result.value} />
+      <PageEvent event="begin_checkout" payload={quotePayload(result.value.quote, locale)} />
+    </>
   );
   return (
     <PageShell locale={locale} path={`/checkout/${slug}`} mobileAction={null}>

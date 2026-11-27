@@ -8,6 +8,8 @@ import { toQuoteView } from "@/components/checkout/quote-view";
 import { UnavailableNotice } from "@/components/checkout/unavailable-notice";
 import { PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
+import { PageEvent } from "@/components/tracking/page-event";
+import { planPayload } from "@/components/tracking/plan-payload";
 import { toPlanViews } from "@/components/plans/plan-view";
 import { whatsappUrl } from "@/config/club";
 import { CART_PATH, ROUTES } from "@/config/routes";
@@ -16,7 +18,7 @@ import { fill } from "@/i18n/fill";
 import { isLocale, localizedPath, type Locale } from "@/i18n/locales";
 import { readCart } from "@/server/cart/cookie";
 import { parseCartNote, type CartNote } from "@/server/cart/notes";
-import { getMembershipPlans } from "@/server/catalog";
+import { getMembershipPlan, getMembershipPlans } from "@/server/catalog";
 import { requireCheckout } from "@/server/checkout/flag";
 import { checkoutMetadata } from "@/server/checkout/metadata";
 import { getCheckoutQuote } from "@/server/checkout/quote";
@@ -87,6 +89,22 @@ function Note({ note, locale }: { readonly note: CartNote | undefined; readonly 
 }
 
 /** السلة (خلف العلم، بلا فهرسة): الخطوة الأولى من ثلاث قبل البيانات والدفع. */
+/** «أُضيف» والاشتراك في السلة: حدث الإضافة بسعر الباقة من القاعدة. */
+async function AddedEvent({
+  note,
+  slug,
+  locale,
+}: {
+  readonly note: CartNote | undefined;
+  readonly slug: string | null;
+  readonly locale: Locale;
+}) {
+  const plan = note === "added" && slug !== null ? await getMembershipPlan(slug) : undefined;
+  return plan === undefined ? null : (
+    <PageEvent event="add_to_cart" payload={planPayload(plan, locale)} />
+  );
+}
+
 export default async function CartPage({ params, searchParams }: Props) {
   requireCheckout();
   const { locale } = await params;
@@ -107,6 +125,7 @@ export default async function CartPage({ params, searchParams }: Props) {
         <Note note={parseCartNote(query.note)} locale={locale} />
       </PageIntro>
       <CartBody locale={locale} slug={cart.slug} />
+      <AddedEvent note={parseCartNote(query.note)} slug={cart.slug} locale={locale} />
     </PageShell>
   );
 }

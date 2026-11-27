@@ -2,6 +2,7 @@
 
 import { useId, type SubmitEvent } from "react";
 import { buttonClass } from "@/components/ui/button-link";
+import { newEventId, track } from "@/components/tracking/track";
 import { Icon } from "@/components/ui/icon";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { composeMessage } from "./contact-message";
@@ -77,7 +78,16 @@ export function ContactForm({ copy, whatsappNumber, fallbackHref }: ContactFormP
 
   function onSubmit(event: SubmitEvent<HTMLFormElement>): void {
     event.preventDefault();
-    const text = composeMessage(new FormData(event.currentTarget), copy);
+    const data = new FormData(event.currentTarget);
+    const text = composeMessage(data, copy);
+    // نوع الاهتمام وحده (قائمة مغلقة)، لا شيء مما كُتب: يُرسل فقط إن وافق الزائر وفُعّلت منصة
+    const interest = data.get("interest");
+    track("generate_lead", {
+      eventId: newEventId(),
+      ...(typeof interest === "string" && Object.hasOwn(copy.interests, interest)
+        ? { interest }
+        : {}),
+    });
     window.location.assign(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`);
   }
 

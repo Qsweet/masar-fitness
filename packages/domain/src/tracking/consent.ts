@@ -49,9 +49,9 @@ export function grants(consent: Consent | null, category: ConsentCategory): bool
   return category === "analytics" ? consent.analytics : consent.ads;
 }
 
-/** وسم المنصة يُحمَّل إن وافق الزائر على إحدى فئاتها. */
+/** وسم المنصة يُحمَّل إن وافق الزائر على كل فئاتها (GTM: التحليلات والإعلانات معًا). */
 export function consentAllows(provider: TrackingProvider, consent: Consent | null): boolean {
-  return providerCategories(provider).some((category) => grants(consent, category));
+  return providerCategories(provider).every((category) => grants(consent, category));
 }
 
 export type GoogleConsentValue = "granted" | "denied";

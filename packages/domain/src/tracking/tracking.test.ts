@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  addClickIds,
   decodeAttribution,
   encodeAttribution,
   mergeAttribution,
@@ -91,10 +92,11 @@ describe("الموافقة", () => {
     expect(parseConsent(undefined)).toBeNull();
   });
 
-  it("الوسم بفئته، وGTM بأي فئة، ولا شيء بلا موافقة", () => {
+  it("الوسم بفئته، وGTM بالفئتين معًا، ولا شيء بلا موافقة", () => {
     expect(consentAllows("ga4", consent)).toBe(true);
     expect(consentAllows("meta", consent)).toBe(false);
-    expect(consentAllows("gtm", consent)).toBe(true);
+    expect(consentAllows("gtm", consent)).toBe(false);
+    expect(consentAllows("gtm", { ...consent, ads: true })).toBe(true);
     expect(consentAllows("gtm", null)).toBe(false);
   });
 
@@ -112,13 +114,36 @@ describe("الموافقة", () => {
 describe("الإسناد", () => {
   const query = (values: Record<string, string>) => (name: string) => values[name] ?? null;
 
-  it("يلتقط معرّفات النقر والحملات ويُسقط ما خالف النمط", () => {
+  it("بلا موافقة الإعلانات: الحملة وصفحة الهبوط وحدهما، ولا معرّف نقر", () => {
+    const values = { gclid: "Cj0KCQ_abc-123", utm_source: "snapchat", x: "1" };
+    expect(
+      touchFromQuery(query(values), 100, { clickIds: false, landing: "/memberships" }),
+    ).toEqual({
+      values: { utm_source: "snapchat" },
+      at: 100,
+      landing: "/memberships",
+    });
+    expect(touchFromQuery(query({ fbclid: "IwAR2F4" }), 1)).toBeNull();
+  });
+
+  it("مع الموافقة: معرّفات النقر أيضًا، وما خالف النمط يُسقط", () => {
     const touch = touchFromQuery(
-      query({ gclid: "Cj0KCQ_abc-123", utm_source: "snapchat", ttclid: "bad value<>", x: "1" }),
+      query({ gclid: "Cj0KCQ_abc-123", utm_source: "snapchat", ttclid: "bad value<>" }),
       100,
+      { clickIds: true, landing: "/bad path" },
     );
     expect(touch).toEqual({ values: { gclid: "Cj0KCQ_abc-123", utm_source: "snapchat" }, at: 100 });
-    expect(touchFromQuery(query({ utm_source: "" }), 1)).toBeNull();
+    expect(touchFromQuery(query({ utm_source: "" }), 1, { clickIds: true })).toBeNull();
+  });
+
+  it("معرّفات النقر بعد الموافقة تُضاف إلى آخر لمسة بلا مسّ الأولى", () => {
+    const first = { values: { utm_source: "snap" }, at: 1, landing: "/" };
+    const clicks = { values: { ScCid: "7b3a7917" }, at: 5 };
+    expect(addClickIds({ first, last: first }, clicks)).toEqual({
+      first,
+      last: { values: { utm_source: "snap", ScCid: "7b3a7917" }, at: 1, landing: "/" },
+    });
+    expect(addClickIds(null, clicks)).toEqual({ first: clicks, last: clicks });
   });
 
   it("أول لمسة ثابتة وآخر لمسة تُحدَّث، والكوكي يُفك بالفحص نفسه", () => {

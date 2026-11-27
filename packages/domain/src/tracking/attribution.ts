@@ -1,6 +1,7 @@
 /**
- * الإسناد في كوكي طرف أول (ADMIN_A5_TRACKING §5.1): أول لمسة لا تُستبدل، وآخر لمسة تُحدَّث مع كل
- * وصول بمعرّف نقر أو حملة. القيم من رابط يكتبه أي أحد، فلكل مفتاح حد طول ونمط محارف، وما خالف يُسقط.
+ * الإسناد في كوكي طرف أول (ADMIN_A5_TRACKING §5.1، القرار 89-4): أول لمسة لا تُستبدل، وآخر لمسة
+ * تُحدَّث مع كل وصول بحملة. قبل موافقة الإعلانات تُحفظ معاملات الحملة وصفحة الهبوط وحدهما؛ معرّفات النقر
+ * الإعلانية لا تُحفظ إلا مع الموافقة. القيم من رابط يكتبه أي أحد، فلكل مفتاح حد طول ونمط، وما خالف يُسقط.
  */
 export const CLICK_ID_PARAMS = ["gclid", "gbraid", "wbraid", "fbclid", "ScCid", "ttclid"] as const;
 export const UTM_PARAMS = [
@@ -28,7 +29,20 @@ export interface Touch {
   readonly values: TouchValues;
   /** ثواني يونكس. */
   readonly at: number;
+  /** مسار صفحة الهبوط بلا معاملات. */
+  readonly landing?: string;
 }
+
+/** مسار يبدأ بـ/ بلا مسافات ولا علامات تنسيق، حتى 200 محرف. */
+const LANDING_SHAPE = /^\/[^\s<>"'`?#]{0,199}$/u;
+
+export interface TouchOptions {
+  /** معرّفات النقر الإعلانية: فقط مع موافقة الإعلانات. */
+  readonly clickIds: boolean;
+  readonly landing?: string | undefined;
+}
+
+const UTM_ONLY: TouchOptions = { clickIds: false };
 
 export interface Attribution {
   readonly first: Touch;
@@ -45,17 +59,37 @@ function cleanValue(param: AttributionParam, value: string): string | undefined 
   return shape.test(trimmed) ? trimmed : undefined;
 }
 
-/** لمسة من معاملات الرابط، أو null إن لم يحمل الرابط معاملًا صالحًا واحدًا. */
-export function touchFromQuery(read: (name: string) => string | null, at: number): Touch | null {
+/** لمسة من معاملات الرابط، أو null إن لم يحمل الرابط معاملًا صالحًا واحدًا مسموحًا. */
+export function touchFromQuery(
+  read: (name: string) => string | null,
+  at: number,
+  options: TouchOptions = UTM_ONLY,
+): Touch | null {
   const values: Partial<Record<AttributionParam, string>> = {};
-  for (const param of ATTRIBUTION_PARAMS) {
+  const params = options.clickIds ? ATTRIBUTION_PARAMS : UTM_PARAMS;
+  for (const param of params) {
     const raw = read(param);
     const value = raw === null ? undefined : cleanValue(param, raw);
     if (value !== undefined) {
       values[param] = value;
     }
   }
-  return Object.keys(values).length === 0 ? null : { values, at };
+  if (Object.keys(values).length === 0) {
+    return null;
+  }
+  const landing = options.landing;
+  return landing !== undefined && LANDING_SHAPE.test(landing)
+    ? { values, at, landing }
+    : { values, at };
+}
+
+/** معرّفات النقر بعد موافقة الإعلانات: تُضاف إلى آخر لمسة (والأولى إن لم توجد) بلا مسّ الحملة. */
+export function addClickIds(existing: Attribution | null, clicks: Touch): Attribution {
+  if (existing === null) {
+    return { first: clicks, last: clicks };
+  }
+  const last = { ...existing.last, values: { ...existing.last.values, ...clicks.values } };
+  return { first: existing.first, last };
 }
 
 export function mergeAttribution(existing: Attribution | null, touch: Touch): Attribution {
@@ -64,6 +98,10 @@ export function mergeAttribution(existing: Attribution | null, touch: Touch): At
 
 export function encodeAttribution(attribution: Attribution): string {
   return encodeURIComponent(JSON.stringify(attribution));
+}
+
+function landingOf(value: object): string | undefined {
+  return "landing" in value && typeof value.landing === "string" ? value.landing : undefined;
 }
 
 function parseTouch(value: unknown): Touch | null {
@@ -79,7 +117,7 @@ function parseTouch(value: unknown): Touch | null {
     const item = Object.hasOwn(record, name) ? record[name] : undefined;
     return typeof item === "string" ? item : null;
   };
-  return touchFromQuery(read, at);
+  return touchFromQuery(read, at, { clickIds: true, landing: landingOf(value) });
 }
 
 /** null لكوكي غائب أو مشوّه: كل قيمة تمر بالفحص نفسه من جديد، فلا يدخل الطلب ما كتبه الزائر بيده. */

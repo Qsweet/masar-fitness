@@ -11,10 +11,16 @@ describe("قرار الإرسال", () => {
     expect(decideDelivery(response(204), 1, now)).toEqual({ kind: "sent" });
   });
 
-  it("خطأ واجهة في جسم 200 (تيك توك): يموت بسببه", () => {
-    expect(decideDelivery(response(200, "api_40001"), 1, now)).toEqual({
+  it("خطأ واجهة دائم في جسم 200: يموت بسببه، والمؤقت (حد المعدل) يُعاد حتى أقصى المحاولات", () => {
+    expect(decideDelivery(response(200, "api_invalid"), 1, now)).toEqual({
       kind: "dead",
-      reason: "api_40001",
+      reason: "api_invalid",
+    });
+    const throttled = { ...response(200, "api_40100"), apiRetryable: true };
+    expect(decideDelivery(throttled, 1, now)).toMatchObject({ kind: "retry", reason: "api_40100" });
+    expect(decideDelivery(throttled, MAX_DELIVERY_ATTEMPTS, now)).toEqual({
+      kind: "dead",
+      reason: "api_40100",
     });
   });
 

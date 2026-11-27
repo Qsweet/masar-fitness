@@ -24,7 +24,13 @@ const HTTP_TOO_MANY = 429;
 const HTTP_SERVER_MIN = 500;
 
 export type SendOutcome =
-  | { readonly kind: "response"; readonly status: number; readonly apiError: string | null }
+  | {
+      readonly kind: "response";
+      readonly status: number;
+      readonly apiError: string | null;
+      /** خطأ الجسم مؤقت (حد معدل أو عطل عند المنصة): يُعاد حتى أقصى المحاولات. */
+      readonly apiRetryable?: boolean;
+    }
   | { readonly kind: "network"; readonly reason: "timeout" | "network" };
 
 export type DeliveryDecision =
@@ -37,6 +43,9 @@ function isRetryable(outcome: SendOutcome): boolean {
     return true;
   }
   const { status } = outcome;
+  if (outcome.apiError !== null) {
+    return outcome.apiRetryable === true;
+  }
   return status === HTTP_TIMEOUT || status === HTTP_TOO_MANY || status >= HTTP_SERVER_MIN;
 }
 

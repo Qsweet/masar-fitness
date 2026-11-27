@@ -1,6 +1,7 @@
 /**
  * منصات الربط والقياس (ADMIN_A5_TRACKING §0). الترتيب هو ترتيب العرض في اللوحة.
- * `gtm` حاوية تحمل وسومًا لأي فئة، فتُحمَّل بموافقة التحليلات أو الإعلانات؛ الباقي بفئته وحدها.
+ * `gtm` حاوية تحمل وسومًا لأي فئة، فلا تُحمَّل إلا بموافقة الفئتين معًا (القرار 89-6)، وConsent Mode
+ * ينقل لها الحالة لكل فئة؛ الباقي بفئته وحدها.
  */
 export const TRACKING_PROVIDERS = ["gtm", "ga4", "google_ads", "meta", "snap", "tiktok"] as const;
 export type TrackingProvider = (typeof TRACKING_PROVIDERS)[number];
@@ -21,7 +22,7 @@ const CATEGORIES: Readonly<Record<TrackingProvider, readonly ConsentCategory[]>>
   tiktok: ["ads"],
 };
 
-/** الفئات التي تكفي إحداها لتحميل وسم المنصة. */
+/** فئات المنصة: كلها شرط لتحميل وسمها (`gtm` فئتان، والبقية فئة واحدة). */
 export function providerCategories(provider: TrackingProvider): readonly ConsentCategory[] {
   return CATEGORIES[provider];
 }

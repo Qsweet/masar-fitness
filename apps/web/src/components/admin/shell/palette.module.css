@@ -61,7 +61,7 @@
 }
 
 /* التركيز ظاهر بخط أسفل الصف كله بدل حلقة حول الحقل وحده */
-.input:focus-visible {
+.inputRow .input:focus-visible {
   outline: none;
 }
 

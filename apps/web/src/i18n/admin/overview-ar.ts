@@ -64,6 +64,8 @@ export const overviewAr = {
     /** {count}: الفاقد. {percent}: نسبته من الخطوة السابقة. */
     lostBefore: "فقد {count} ({percent}) قبل بدء الدفع",
     lostAfter: "فقد {count} ({percent})",
+    /** {reasons}: أسباب الفقد بعد بدء الدفع («4 فشل الدفع و2 انتهت المهلة»). */
+    lostAfterReasons: "فقد {count} ({percent}): {reasons}",
     reasons: {
       failed: "{count} فشل الدفع",
       expired: "{count} انتهت المهلة",

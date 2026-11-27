@@ -234,12 +234,7 @@ function PaletteInput({ state, text, listId, activeId, onKeyDown, onClose }: Pal
         }}
         onKeyDown={onKeyDown}
       />
-      <button
-        type="button"
-        tabIndex={-1}
-        className={shellStyles.kbd}
-        onClick={onClose}
-      >
+      <button type="button" tabIndex={-1} className={shellStyles.kbd} onClick={onClose}>
         <span className="sr-only">{text.close} </span>
         Esc
       </button>

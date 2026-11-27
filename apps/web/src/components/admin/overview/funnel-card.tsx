@@ -2,7 +2,7 @@ import type { ClubSummary } from "@masar/db";
 import type { DateRange, FunnelDrop, FunnelStep as FunnelStepView } from "@masar/domain";
 import type { AdminDictionary } from "@/i18n/admin";
 import { fill, fillNodes } from "@/i18n/fill";
-import { formatNumber } from "@/i18n/format";
+import { formatList, formatNumber } from "@/i18n/format";
 import { loadFunnel } from "@/server/admin/overview/period";
 import { AdminIcon } from "../admin-icon";
 import { Card, EmptyState } from "../ui/kit";
@@ -26,12 +26,16 @@ function Drop({ drop, text, first }: { drop: FunnelDrop; text: FunnelText; first
   const reasons = (["failed", "expired", "other"] as const)
     .filter((reason) => drop[reason] > 0)
     .map((reason) => fill(text.reasons[reason], { count: formatNumber(drop[reason]) }));
+  const template = first
+    ? text.lostBefore
+    : reasons.length === 0
+      ? text.lostAfter
+      : text.lostAfterReasons;
   return (
     <li>
       <p className={charts.drop}>
         <AdminIcon name="down" size={12} />
-        <span>{fillNodes(first ? text.lostBefore : text.lostAfter, values)}</span>
-        {first || reasons.length === 0 ? null : `: ${reasons.join("، ")}`}
+        <span>{fillNodes(template, { ...values, reasons: formatList(reasons, "ar") })}</span>
       </p>
     </li>
   );

@@ -170,3 +170,8 @@
   font-size: var(--a-text-body);
   font-weight: 700;
 }
+
+/* «عودة إلى الافتراضي» بعرض نصه في بداية العمود، لا بعرض الحقل. */
+.side > button {
+  justify-self: start;
+}

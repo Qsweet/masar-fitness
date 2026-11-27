@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { DiffList } from "@/components/admin/content/diff-list";
 import { ReleaseFacts } from "@/components/admin/content/release-facts";
 import { Badge, ButtonLink, Card, EmptyState, PageHeader } from "@/components/admin/ui/kit";
-import { releaseRollbackPath } from "@/config/admin";
+import { contentPreviewHref, releaseRollbackPath } from "@/config/admin";
 import { getAdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import { formatNumber } from "@/i18n/format";
@@ -30,6 +30,7 @@ export default async function ContentReleasePage(props: PageProps<"/admin/conten
         title={fill(text.release.title, { seq: formatNumber(view.release.seq) })}
         badge={isCurrent ? <Badge tone="success">{text.release.current}</Badge> : undefined}
       >
+        <ButtonLink href={contentPreviewHref(view.release.id)}>{text.preview.release}</ButtonLink>
         {canRollback ? (
           <ButtonLink href={releaseRollbackPath(view.release.id)} variant="danger">
             {text.release.rollback}

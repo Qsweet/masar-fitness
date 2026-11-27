@@ -5,6 +5,8 @@ import {
   isAdminConfigured,
   isAdminPath,
   NO_STORE_HEADER,
+  PREVIEW_COOKIE_NAMES,
+  PREVIEW_NO_STORE_HEADER,
 } from "./config/admin";
 import { buildCsp, paymentFormActionOrigins } from "./config/csp";
 import { isSiteIndexable, NOINDEX_HEADER } from "./config/indexability";
@@ -50,10 +52,15 @@ export function proxy(request: NextRequest): NextResponse {
   const response = NextResponse.next({ request: { headers: requestHeaders } });
 
   response.headers.set(CSP_HEADER, csp);
+  // كوكي المعاينة (صحيحًا كان أو لا): الرد قد يحمل مسودة، فلا يُخزَّن في أي ذاكرة ولا يُفهرس
+  const previewing = PREVIEW_COOKIE_NAMES.some((name) => request.cookies.has(name));
+  if (previewing) {
+    response.headers.set(PREVIEW_NO_STORE_HEADER.name, PREVIEW_NO_STORE_HEADER.value);
+  }
   if (openAdmin) {
     response.headers.set(NO_STORE_HEADER.name, NO_STORE_HEADER.value);
   }
-  if (openAdmin || !isSiteIndexable(process.env.SITE_INDEXABLE)) {
+  if (previewing || openAdmin || !isSiteIndexable(process.env.SITE_INDEXABLE)) {
     response.headers.set(NOINDEX_HEADER.name, NOINDEX_HEADER.value);
   }
   return response;

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { MAIN_CONTENT_ID } from "@/components/page-shell";
+import { PreviewBar } from "@/components/preview-bar";
 import { ScrollReset } from "@/components/scroll-reset";
 import { StagingNote } from "@/components/staging-note";
 import { directionOf, isLocale, LOCALES } from "@/i18n/locales";
@@ -34,7 +35,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   if (!isLocale(locale)) {
     notFound();
   }
-  const { dictionary } = await getSiteContent(locale);
+  const { dictionary, preview } = await getSiteContent(locale);
   return (
     // data-scroll-behavior: الانتقال بين الصفحات فوري، والتمرير الناعم للروابط داخل الصفحة فقط
     <html
@@ -47,6 +48,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
         <a href={`#${MAIN_CONTENT_ID}`} className="skip-link">
           {dictionary.nav.skipToContent}
         </a>
+        <PreviewBar target={preview} />
         <StagingNote rawIndexable={process.env.SITE_INDEXABLE} text={dictionary.staging} />
         {children}
         <ScrollReset />

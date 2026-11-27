@@ -7,6 +7,7 @@ import type { Locale } from "@/i18n/locales";
 import { getDb } from "../db";
 import { logger } from "../logger";
 import { textRegistry } from "./registry";
+import { previewTexts, type PreviewTarget } from "./preview";
 import { createPublishedReader } from "./resolver";
 
 /**
@@ -18,6 +19,8 @@ export interface SiteContent {
   readonly dictionary: Dictionary;
   readonly releaseId: string | null;
   readonly mode: "published" | "preview" | "defaults";
+  /** ما يُعاين (لشريط المعاينة)، أو null للمنشور. */
+  readonly preview: PreviewTarget | null;
 }
 
 const readPublished = createPublishedReader(
@@ -55,10 +58,20 @@ export const getPublishedContent = cache(async (locale: Locale): Promise<SiteCon
     dictionary: dictionaryWith(published.overrides, locale),
     releaseId: published.releaseId,
     mode: published.mode,
+    preview: null,
   };
 });
 
-/** محتوى الصفحة العامة. */
-export const getSiteContent = cache(
-  (locale: Locale): Promise<SiteContent> => getPublishedContent(locale),
-);
+/** محتوى الصفحة العامة: معاينة الموظف إن صحّت كل شروطها، وإلا المنشور. */
+export const getSiteContent = cache(async (locale: Locale): Promise<SiteContent> => {
+  const preview = await previewTexts();
+  if (preview === null) {
+    return getPublishedContent(locale);
+  }
+  return {
+    dictionary: dictionaryWith(preview.overrides, locale),
+    releaseId: preview.releaseId,
+    mode: "preview",
+    preview: preview.target,
+  };
+});

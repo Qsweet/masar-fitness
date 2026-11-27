@@ -13,7 +13,7 @@ import {
   noticeText,
   PageHeader,
 } from "@/components/admin/ui/kit";
-import { ADMIN_ROUTES, releasePath } from "@/config/admin";
+import { ADMIN_ROUTES, contentPreviewHref, PREVIEW_DRAFT, releasePath } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import { formatNumber } from "@/i18n/format";
@@ -122,6 +122,7 @@ export default async function ContentOverviewPage(props: PageProps<"/admin/conte
     <>
       <PageHeader title={text.overview.title} description={text.overview.lead}>
         <ButtonLink href={ADMIN_ROUTES.contentHistory}>{text.overview.history}</ButtonLink>
+        <ButtonLink href={contentPreviewHref(PREVIEW_DRAFT)}>{text.preview.draft}</ButtonLink>
         {canPublish && summary.dirty ? (
           <ButtonLink href={ADMIN_ROUTES.contentPublish} variant="primary">
             {text.overview.publish}

@@ -26,6 +26,8 @@ const CHECKOUT_SPEC = /[\\/]checkout(?:-no-provider)?\.spec\.ts$/;
 const PAYMENTS_SPEC = /[\\/]payments(?:-[a-z]+)?\.spec\.ts$/;
 const ADMIN_SPEC = /[\\/]admin(?:-[a-z0-9]+)?\.spec\.ts$/;
 const PREVIEW_ADMIN_SPEC = /[\\/]preview-admin\.spec\.ts$/;
+/** قبول المحتوى على نادي الموقع العام نفسه: مشروع أخير بعد كل المشاريع (يغيّر نصوص الموقع ثم يعيدها). */
+const CONTENT_SITE_SPEC = /[\\/]content-site\.spec\.ts$/;
 /** اللوحة مغلقة صراحةً: مفتاح من بيئة الصدفة لا يفتحها على الخوادم التي تثبت أنها مغلقة. */
 const ADMIN_OFF = { ADMIN_SECRET_KEY: "" };
 /** الدفع مغلق صراحةً: متغير من بيئة الصدفة لا يضبط مزوّدًا على الخادمين الأولين. */
@@ -56,12 +58,26 @@ export default defineConfig({
   projects: [
     {
       name: "mobile-390",
-      testIgnore: [SCREENS_SPEC, CHECKOUT_SPEC, PAYMENTS_SPEC, ADMIN_SPEC, PREVIEW_ADMIN_SPEC],
+      testIgnore: [
+        SCREENS_SPEC,
+        CHECKOUT_SPEC,
+        PAYMENTS_SPEC,
+        ADMIN_SPEC,
+        PREVIEW_ADMIN_SPEC,
+        CONTENT_SITE_SPEC,
+      ],
       use: { ...devices["Desktop Chrome"], viewport: MOBILE },
     },
     {
       name: "desktop-1440",
-      testIgnore: [SCREENS_SPEC, CHECKOUT_SPEC, PAYMENTS_SPEC, ADMIN_SPEC, PREVIEW_ADMIN_SPEC],
+      testIgnore: [
+        SCREENS_SPEC,
+        CHECKOUT_SPEC,
+        PAYMENTS_SPEC,
+        ADMIN_SPEC,
+        PREVIEW_ADMIN_SPEC,
+        CONTENT_SITE_SPEC,
+      ],
       use: { ...devices["Desktop Chrome"], viewport: DESKTOP },
     },
     // المقاسات السبعة للمراجعة البصرية: يغيّر الاختبار المقاس بنفسه ويحفظ اللقطات
@@ -104,6 +120,23 @@ export default defineConfig({
       name: "admin-preview",
       testMatch: PREVIEW_ADMIN_SPEC,
       use: { ...devices["Desktop Chrome"], viewport: DESKTOP, baseURL: PREVIEW_ADMIN_URL },
+    },
+    {
+      name: "content-site",
+      testMatch: CONTENT_SITE_SPEC,
+      dependencies: [
+        "mobile-390",
+        "desktop-1440",
+        "screens",
+        "checkout-390",
+        "checkout-1440",
+        "payments-390",
+        "payments-1440",
+        "admin-390",
+        "admin-1440",
+        "admin-preview",
+      ],
+      use: { ...devices["Desktop Chrome"], viewport: DESKTOP, baseURL: ADMIN_URL },
     },
   ],
   webServer: [

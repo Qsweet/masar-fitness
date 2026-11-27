@@ -28,6 +28,8 @@ export const ADMIN_ROUTES = {
   contentPublish: `${ADMIN_PATH}/content/publish`,
   contentHistory: `${ADMIN_PATH}/content/history`,
   contentDiscard: `${ADMIN_PATH}/content/discard`,
+  contentPreview: `${ADMIN_PATH}/content/preview`,
+  contentPreviewExit: `${ADMIN_PATH}/content/preview/exit`,
 } as const;
 
 export function staffMemberPath(id: string): string {
@@ -82,6 +84,15 @@ export function releaseRollbackPath(id: string): string {
   return `${releasePath(id)}/rollback`;
 }
 
+/** هدف المعاينة: المسودة، أو إصدار بمعرّفه. */
+export const PREVIEW_DRAFT = "draft";
+
+/** رابط بدء معاينة صفحة عامة (Route Handler يضع الكوكي ثم يحوّل إليها). */
+export function contentPreviewHref(target: string, path = "/", locale = "ar"): string {
+  const query = new URLSearchParams({ target, path, locale });
+  return `${ADMIN_ROUTES.contentPreview}?${query.toString()}`;
+}
+
 /** هل المسار داخل اللوحة؟ ‎/admin‎ نفسه وكل ما تحته، لا ‎/administrator‎. */
 export function isAdminPath(pathname: string): boolean {
   return pathname === ADMIN_PATH || pathname.startsWith(`${ADMIN_PATH}/`);
@@ -121,6 +132,19 @@ export const ADMIN_SEGMENT_PATTERN = Array.from(ADMIN_PATH.slice(1), anySpelling
 
 /** ردود اللوحة لا تُخزَّن في أي ذاكرة وسيطة. */
 export const NO_STORE_HEADER = { name: "Cache-Control", value: "no-store" } as const;
+
+/**
+ * كوكي معاينة المحتوى (ADMIN_A3_CONTENT §8.3): مختوم بمفتاح اللوحة لموظف وهدف، ثلاثون دقيقة، ولا يعمل
+ * إلا مع جلسة الموظف نفسه. الوسيط يمنع تخزين أي رد يحمله وفهرسته، صحيحًا كان أو لا.
+ */
+export const PREVIEW_COOKIE_SECURE = "__Host-masar_preview";
+export const PREVIEW_COOKIE_LOCAL = "masar_preview";
+export const PREVIEW_COOKIE_NAMES = [PREVIEW_COOKIE_SECURE, PREVIEW_COOKIE_LOCAL] as const;
+export const PREVIEW_MAX_AGE_SECONDS = 1_800;
+export const PREVIEW_NO_STORE_HEADER = {
+  name: "Cache-Control",
+  value: "private, no-store",
+} as const;
 
 /** اسم كوكي الجلسة: البادئة ‎__Host-‎ تفرض Secure و Path=/ وبلا Domain، ولا تُقبل إلا على https. */
 export const ADMIN_COOKIE_SECURE = "__Host-masar_admin";

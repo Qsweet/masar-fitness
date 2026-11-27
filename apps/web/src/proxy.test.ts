@@ -34,6 +34,32 @@ describe("proxy", () => {
   });
 });
 
+describe("كوكي المعاينة", () => {
+  function withCookie(name: string): Headers {
+    const request = new NextRequest("https://example.com/");
+    request.cookies.set(name, "anything");
+    return proxy(request).headers;
+  }
+
+  it("وجوده (صحيحًا أو لا) يمنع التخزين والفهرسة ولو فُتحت الفهرسة", () => {
+    vi.stubEnv("SITE_INDEXABLE", "true");
+    for (const name of ["__Host-masar_preview", "masar_preview"]) {
+      const headers = withCookie(name);
+      expect(headers.get("cache-control")).toBe("private, no-store");
+      expect(headers.get("x-robots-tag")).toBe("noindex, nofollow");
+    }
+    expect(run().get("cache-control")).toBeNull();
+    expect(run().get("x-robots-tag")).toBeNull();
+  });
+
+  it("سياسة أمان المحتوى بالشكل نفسه معه وبدونه (عدا nonce)", () => {
+    const strip = (csp: string | null) => (csp ?? "").replace(/'nonce-[^']+'/g, "'nonce'");
+    expect(strip(withCookie("masar_preview").get("content-security-policy"))).toBe(
+      strip(run().get("content-security-policy")),
+    );
+  });
+});
+
 describe("الروابط الفاسدة", () => {
   it("ترميز نسبة مئوية لا يُفك ⇒ 400 بلا معالجة", () => {
     const response = proxy(new NextRequest("https://example.com/memberships/%E0%A4%A"));

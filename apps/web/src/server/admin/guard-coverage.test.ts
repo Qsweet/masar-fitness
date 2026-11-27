@@ -69,6 +69,8 @@ function expectedGuard(file: string): string {
 const pages = filesUnder(ADMIN_APP).filter((path) =>
   PAGE_FILES.has(path.split(/[\\/]/).at(-1) ?? ""),
 );
+/** Route Handlers تحت اللوحة (المعاينة وما بعدها): كل دالة طريقة HTTP مصدَّرة تبدأ بالحارس. */
+const routes = filesUnder(ADMIN_APP).filter((path) => path.split(/[\\/]/).at(-1) === "route.ts");
 const actions = filesUnder(ACTIONS).filter(
   (path) => path.endsWith(".ts") && !path.endsWith(".test.ts"),
 );
@@ -122,6 +124,34 @@ describe("كل Server Action تحت اللوحة يبدأ بالحارس", () =>
       .filter((path) => /\.tsx?$/.test(path))
       .filter((path) => /^\s*["']use server["']/m.test(readFileSync(path, "utf8")));
     expect(stray.map(name)).toEqual([]);
+  });
+});
+
+describe("كل Route Handler تحت اللوحة يبدأ بالحارس", () => {
+  it("ملفات المسارات موجودة حيث يتوقعها الفحص", () => {
+    expect(routes.map(name)).toEqual(
+      expect.arrayContaining(["app/admin/(panel)/content/preview/route.ts"]),
+    );
+  });
+
+  it.each(routes.map(name))("%s", (file) => {
+    const source = parse(join(SRC, file));
+    const exported = exportedFunctions(source);
+    expect(exported.length).toBeGreaterThan(0);
+    for (const handler of exported) {
+      expect(`${handler.name?.text ?? "?"}: ${firstCall(handler) ?? "لا استدعاء"}`).toBe(
+        `${handler.name?.text ?? "?"}: requireStaff`,
+      );
+    }
+    // لا طريقة تُصدَّر بغير تعريف دالة (const أو إعادة تصدير) فتفلت من الفحص
+    const otherExports = source.statements.filter(
+      (node) =>
+        ts.isExportDeclaration(node) ||
+        ts.isExportAssignment(node) ||
+        (ts.isVariableStatement(node) &&
+          (node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) ?? false)),
+    );
+    expect(otherExports).toEqual([]);
   });
 });
 

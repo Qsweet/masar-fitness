@@ -154,3 +154,16 @@ describe("مكوّنات العميل لا تحمل القاموس ولا حقا
     expect(clientValueImports(sample)).toEqual(["@/i18n/dictionaries", "@/config/club"]);
   });
 });
+
+describe("خريطة الموقع وllms.txt والخلاصة وrobots تقرأ المنشور دائمًا، بلا معاينة", () => {
+  it.each([
+    "app/sitemap.ts",
+    "app/robots.ts",
+    "app/llms.txt/route.ts",
+    "app/[locale]/blog/feed.xml/route.ts",
+  ])("%s", (file) => {
+    const text = readFileSync(join(SRC, file), "utf8");
+    expect(text).not.toContain("getSiteContent");
+    expect(text).not.toContain("previewTexts");
+  });
+});

@@ -13,7 +13,7 @@
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "test:integration": "pnpm -r test:integration",
+    "test:integration": "pnpm -r --workspace-concurrency=1 test:integration",
     "build": "pnpm --filter @masar/web build",
     "e2e": "pnpm --filter @masar/web e2e",
     "db:generate": "pnpm --filter @masar/db generate",

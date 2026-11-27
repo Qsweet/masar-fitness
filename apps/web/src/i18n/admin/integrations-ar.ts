@@ -17,7 +17,7 @@ export const integrationsAr = {
   providers: {
     gtm: {
       name: "Google Tag Manager",
-      lead: "حاوية وسومك. تُحمَّل بموافقة التحليلات أو الإعلانات، ومعها حالة Consent Mode.",
+      lead: "حاوية وسومك. تُحمَّل بموافقة الزائر على التحليلات والإعلانات معًا، ومعها حالة Consent Mode لكل فئة.",
     },
     ga4: {
       name: "Google Analytics 4",
@@ -97,6 +97,8 @@ export const integrationsAr = {
     },
     submit: "أرسل حدث اختبار",
   },
+  gtmContainerNote:
+    "الوسوم غير Google داخل الحاوية (بكسلات أو سكربتات تضيفها أنت) مسؤوليتك: اضبط لكل منها «فحوص الموافقة الإضافية» في Tag Manager، وأضف مضيفها إلى CSP بقرار، وإلا تحجبه السياسة.",
   gtmOverlap:
     "GTM مفعَّل مع Google Analytics أو Google Ads هنا: إن كان الوسم نفسه داخل الحاوية أيضًا فسيُقاس كل حدث مرتين. فعّله في مكان واحد.",
   log: {

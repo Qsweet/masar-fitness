@@ -8,6 +8,7 @@ export const privacyEn: Dictionary["privacy"] = {
   },
   title: "Privacy policy",
   lead: "What this website collects and why, and how you control it.",
+  providers: ["Google", "Meta", "Snapchat", "TikTok"],
   sections: [
     {
       heading: "What we collect when you buy",
@@ -19,7 +20,7 @@ export const privacyEn: Dictionary["privacy"] = {
     },
     {
       heading: "Analytics and advertising, with your consent",
-      body: "When you consent, the measurement and advertising tools the club has turned on from Google, Meta, Snapchat and TikTok are loaded. Without your consent none of them load. These parties process data on their own servers, some outside Saudi Arabia.",
+      body: "When you consent, the measurement and advertising tools the club has turned on from {providers} are loaded. Without your consent none of them load. These parties process data on their own servers, some outside Saudi Arabia.",
     },
     {
       heading: "What ad platforms receive when you buy",

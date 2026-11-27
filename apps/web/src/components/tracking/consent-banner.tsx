@@ -4,7 +4,9 @@ import { Fragment, useEffect, useId, useRef, useState } from "react";
 import { buttonClass } from "@/components/ui/button-link";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { fillNodes } from "@/i18n/fill";
+import { captureClickIdsAction } from "@/server/tracking/click-ids-action";
 import { CONSENT_OPEN, readConsent, saveConsent } from "./consent-cookie";
+import { ProviderNames } from "./provider-names";
 import styles from "./consent-banner.module.css";
 
 interface ConsentBannerProps {
@@ -15,27 +17,6 @@ interface ConsentBannerProps {
   readonly privacyHref: string;
   /** لا موافقة صالحة على النص الحالي: يظهر عند أول زيارة. */
   readonly initiallyOpen: boolean;
-}
-
-/**
- * الأسماء بقائمة اللغة («Google وMeta»)، وكل اسم لاتيني معزول بـ`bdi` فلا يقلب اتجاهُه ما حوله في النص
- * العربي.
- */
-function ProviderList({
-  names,
-  locale,
-}: {
-  readonly names: readonly string[];
-  readonly locale: string;
-}) {
-  const parts = new Intl.ListFormat(locale, { type: "conjunction" }).formatToParts(names);
-  return (
-    <>
-      {parts.map((part, index) =>
-        part.type === "element" ? <bdi key={index}>{part.value}</bdi> : part.value,
-      )}
-    </>
-  );
 }
 
 interface Choice {
@@ -159,6 +140,14 @@ function Categories({
   );
 }
 
+/** يحفظ الاختيار، ومع الإعلانات يحفظ معرّفات النقر في رابط هذه الصفحة (القرار 89-4). */
+function persistChoice(next: Choice): void {
+  saveConsent(next);
+  if (next.ads && window.location.search !== "") {
+    void captureClickIdsAction(window.location.search);
+  }
+}
+
 /**
  * شريط الموافقة (ADMIN_A5_TRACKING §3): ثلاثة أزرار بالوزن نفسه، والرفض بنقرة كالقبول، ولا خانة مختارة
  * مسبقًا. يُفتح من رابط «إعدادات الخصوصية» في التذييل في أي وقت، باختيار الزائر الحالي.
@@ -194,7 +183,7 @@ export function ConsentBanner({
     return null;
   }
   const decide = (next: Choice) => {
-    saveConsent(next);
+    persistChoice(next);
     setOpen(false);
   };
   return (
@@ -204,7 +193,7 @@ export function ConsentBanner({
       </h2>
       <p className={styles.lead}>
         {fillNodes(copy.lead, {
-          providers: <ProviderList names={providers} locale={locale} />,
+          providers: <ProviderNames names={providers} locale={locale} />,
         }).map((node, index) => (
           <Fragment key={index}>{node}</Fragment>
         ))}{" "}

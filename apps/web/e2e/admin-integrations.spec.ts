@@ -128,9 +128,13 @@ test("المدير يرى الإعداد بلا حقل المفتاح، والم
   }
 });
 
-test("منصة مجهولة 404، وحدث اختبار بلا مفتاح يُرفض بسببه", async ({ page }) => {
+test("منصة مجهولة 404، وحدث اختبار بلا مفتاح يُرفض بسببه، وصفحة GTM تنبّه لوسوم الحاوية", async ({
+  page,
+}) => {
   const club = await newClub(db);
   await signIn(page, await newStaff(db, club, { withTotp: true }));
+  await page.goto("/admin/integrations/gtm");
+  await expect(page.getByText(TEXTS.gtmContainerNote)).toBeVisible();
   expect((await page.goto("/admin/integrations/myspace"))?.status()).toBe(404);
   await page.goto("/admin/integrations/ga4");
   await page.getByRole("button", { name: TEXTS.test.submit }).click();

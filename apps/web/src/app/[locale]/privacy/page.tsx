@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Fragment } from "react";
 import { PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
+import { ProviderNames } from "@/components/tracking/provider-names";
 import { ROUTES } from "@/config/routes";
 import { defaultDictionary } from "@/i18n/dictionaries";
+import { fillNodes } from "@/i18n/fill";
 import { isLocale } from "@/i18n/locales";
 import { cx } from "@/lib/cx";
 import { pageMetadata } from "@/server/metadata";
@@ -42,7 +45,13 @@ export default async function PrivacyPage({ params }: Props) {
         {text.sections.map((section) => (
           <section key={section.heading} className={styles.section}>
             <h2>{section.heading}</h2>
-            <p>{section.body}</p>
+            <p>
+              {fillNodes(section.body, {
+                providers: <ProviderNames names={text.providers} locale={locale} />,
+              }).map((node, index) => (
+                <Fragment key={index}>{node}</Fragment>
+              ))}
+            </p>
           </section>
         ))}
       </div>

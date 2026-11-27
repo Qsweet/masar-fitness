@@ -97,8 +97,9 @@ test("المالك يفعّل GA4 وميتا، والزائر يرى الشري�
       expect(csp).toContain("https://*.google-analytics.com");
       expect(csp).not.toContain("snapchat");
       await expect(banner(page)).toBeVisible();
-      await expect(banner(page)).toContainText("Google");
-      await expect(banner(page)).toContainText("Meta");
+      // الأسماء اللاتينية معزولة الاتجاه بفاصل لغة الصفحة (لا «Metag Google»)
+      expect(await banner(page).locator("bdi").allTextContents()).toEqual(["Google", "Meta"]);
+      await expect(banner(page)).toContainText("Google، Meta");
       await page.screenshot({
         path: `${SHOTS_DIR}/consent-${colorScheme}-${String(size.width)}.png`,
       });
@@ -143,6 +144,7 @@ test("الرفض بنقرة، ثم السحب والتعديل من التذيي
 test("صفحة الخصوصية من القاموس", async ({ page }) => {
   await page.goto("/privacy");
   await expect(page.getByRole("heading", { level: 1, name: privacyAr.title })).toBeVisible();
+  expect(await page.locator("main bdi").allTextContents()).toEqual([...privacyAr.providers]);
   for (const section of privacyAr.sections) {
     await expect(page.getByRole("heading", { level: 2, name: section.heading })).toBeVisible();
   }

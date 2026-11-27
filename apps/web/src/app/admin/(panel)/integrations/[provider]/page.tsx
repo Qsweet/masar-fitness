@@ -4,7 +4,15 @@ import { notFound } from "next/navigation";
 import { ProviderForm } from "@/components/admin/integrations/provider-form";
 import { TestEventCard } from "@/components/admin/integrations/test-event-card";
 import { TrackingLog } from "@/components/admin/integrations/tracking-log";
-import { Badge, ButtonLink, Card, Notice, noticeText, PageHeader } from "@/components/admin/ui/kit";
+import {
+  Alert,
+  Badge,
+  ButtonLink,
+  Card,
+  Notice,
+  noticeText,
+  PageHeader,
+} from "@/components/admin/ui/kit";
 import { ADMIN_ROUTES, FALLBACK_TIMEZONE } from "@/config/admin";
 import { getAdminDictionary } from "@/i18n/admin";
 import { staffClub } from "@/server/admin/club";
@@ -51,6 +59,7 @@ export default async function IntegrationPage(props: Props) {
         </ButtonLink>
       </PageHeader>
       <Notice text={noticeText(query.done, dictionary)} />
+      {provider === "gtm" ? <Alert tone="info">{text.gtmContainerNote}</Alert> : null}
       <Card title={text.form.title} narrow>
         <ProviderForm
           provider={provider}

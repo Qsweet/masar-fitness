@@ -15,6 +15,8 @@ export const ADMIN_ROUTES = {
   staffNew: `${ADMIN_PATH}/staff/new`,
   audit: `${ADMIN_PATH}/audit`,
   account: `${ADMIN_PATH}/account`,
+  /** صفحة البحث: بديل لوحة الأوامر بلا JavaScript (ADMIN_REDESIGN §4.3). */
+  search: `${ADMIN_PATH}/search`,
   sales: `${ADMIN_PATH}/sales`,
   orders: `${ADMIN_PATH}/sales/orders`,
   customers: `${ADMIN_PATH}/sales/customers`,
@@ -228,6 +230,23 @@ export const DEFAULT_ADMIN_THEME: AdminTheme = "dark";
 
 export function parseAdminTheme(value: string | undefined): AdminTheme {
   return ADMIN_THEMES.find((theme) => theme === value) ?? DEFAULT_ADMIN_THEME;
+}
+
+/** كثافة اللوحة (ADMIN_REDESIGN §3.2): مريحة افتراضيًا، ومضغوطة تفضيلًا. كوكي يقرؤه الخادم كالمظهر. */
+export const ADMIN_DENSITY_COOKIE = "masar_admin_density";
+export const ADMIN_DENSITIES = ["comfortable", "compact"] as const;
+export type AdminDensity = (typeof ADMIN_DENSITIES)[number];
+
+export function parseAdminDensity(value: string | undefined): AdminDensity {
+  return ADMIN_DENSITIES.find((density) => density === value) ?? "comfortable";
+}
+
+/** اختصارات لوحة المفاتيح بحرف واحد: تعمل افتراضيًا، ويطفئها الموظف (WCAG 2.1.4). */
+export const ADMIN_SHORTCUTS_COOKIE = "masar_admin_shortcuts";
+export const ADMIN_SHORTCUTS_OFF = "off";
+
+export function shortcutsEnabled(value: string | undefined): boolean {
+  return value !== ADMIN_SHORTCUTS_OFF;
 }
 
 /**

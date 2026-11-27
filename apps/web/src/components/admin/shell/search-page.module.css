@@ -1,0 +1,66 @@
+/* صفحة البحث في اللوحة: نموذج GET ونتائج روابط (بديل لوحة الأوامر بلا JavaScript). */
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--a-3);
+}
+
+.form > :first-child {
+  flex: 1 1 18rem;
+}
+
+.list {
+  display: grid;
+  margin: 0;
+  padding: var(--a-2);
+  list-style: none;
+}
+
+.result {
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: 2.75rem;
+  padding: var(--a-2) var(--a-3);
+  border-radius: var(--a-radius);
+  color: var(--a-text);
+  text-decoration: none;
+}
+
+.result:hover {
+  background: var(--a-hover);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  flex: none;
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-raised);
+  color: var(--a-muted);
+}
+
+.text {
+  display: grid;
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--a-fs-small);
+  font-weight: 550;
+}
+
+.hint {
+  color: var(--a-subtle);
+  font-size: var(--a-fs-caption);
+}
+
+.heading {
+  margin: 0 0 var(--a-2);
+  font-size: var(--a-fs-h2);
+  font-weight: 600;
+}

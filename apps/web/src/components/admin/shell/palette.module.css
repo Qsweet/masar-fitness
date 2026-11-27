@@ -1,0 +1,282 @@
+/*
+ * لوحة الأوامر ⌘K وحوار الاختصارات (ADMIN_REDESIGN §4.3، §7): ‎<dialog>‎ أصلي فوق ستار، بعرض 680px
+ * على الشاشة الواسعة، وملء العرض من الأعلى على الهاتف.
+ */
+.dialog {
+  width: min(42.5rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: min(36rem, 80dvh);
+  margin: 12vh auto auto;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--a-radius-xl);
+  background: var(--a-overlay);
+  box-shadow: var(--a-shadow-3);
+  color: var(--a-text);
+}
+
+.dialog[open] {
+  display: flex;
+  flex-direction: column;
+  animation: palette-in var(--a-dur-2) var(--a-ease-out);
+}
+
+.dialog::backdrop {
+  background: var(--a-scrim);
+  backdrop-filter: blur(2px);
+}
+
+@keyframes palette-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.99);
+  }
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  height: 3.5rem;
+  padding-inline: 1.125rem;
+  border-bottom: 1px solid var(--a-border);
+  color: var(--a-subtle);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--a-text);
+  font: inherit;
+  font-size: 1rem;
+  outline: none;
+}
+
+.inputRow:focus-within {
+  box-shadow: inset 0 -2px 0 var(--a-focus);
+}
+
+/* التركيز ظاهر بخط أسفل الصف كله بدل حلقة حول الحقل وحده */
+.input:focus-visible {
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--a-subtle);
+}
+
+.scopes {
+  display: flex;
+  gap: 0.375rem;
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid var(--a-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.scope {
+  height: 1.75rem;
+  padding-inline: 0.75rem;
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-pill);
+  background: transparent;
+  color: var(--a-muted);
+  font: inherit;
+  font-size: var(--a-fs-caption);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.scope[aria-pressed="true"] {
+  border-color: transparent;
+  background: var(--a-text);
+  color: var(--a-page);
+  font-weight: 600;
+}
+
+.results {
+  flex: 1;
+  margin: 0;
+  padding: 0.375rem var(--a-2) var(--a-2);
+  overflow-y: auto;
+  list-style: none;
+}
+
+.groupList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.groupLabel {
+  padding: 0.625rem 0.625rem var(--a-1);
+  color: var(--a-subtle);
+  font-size: var(--a-fs-label);
+  font-weight: 500;
+}
+
+.option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  padding: 0.5625rem 0.625rem;
+  border-radius: var(--a-radius);
+  font-size: var(--a-fs-small);
+  cursor: pointer;
+}
+
+.option[aria-selected="true"] {
+  background: var(--a-active);
+}
+
+.option[aria-selected="true"]::before {
+  position: absolute;
+  inset-block: var(--a-2);
+  inset-inline-start: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--a-accent);
+  content: "";
+}
+
+html[data-theme="light"] .option[aria-selected="true"]::before {
+  background: var(--a-text);
+}
+
+.optionIcon {
+  display: grid;
+  place-items: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  flex: none;
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-sm);
+  background: var(--a-raised);
+  color: var(--a-muted);
+}
+
+.optionText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.optionLabel {
+  font-weight: 550;
+}
+
+.optionHint {
+  overflow: hidden;
+  color: var(--a-subtle);
+  font-size: var(--a-fs-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty {
+  padding: var(--a-6) var(--a-4);
+  color: var(--a-muted);
+  font-size: var(--a-fs-small);
+  text-align: center;
+}
+
+.foot {
+  display: none;
+  align-items: center;
+  gap: var(--a-4);
+  padding: 0.625rem var(--a-4);
+  border-top: 1px solid var(--a-border);
+  background: var(--a-surface);
+  color: var(--a-subtle);
+  font-size: var(--a-fs-caption);
+}
+
+.footHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.footNote {
+  margin-inline-start: auto;
+}
+
+/* حوار الاختصارات */
+.helpBody {
+  display: grid;
+  gap: var(--a-3);
+  padding: var(--a-4h);
+  overflow-y: auto;
+}
+
+.helpHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--a-3);
+}
+
+.helpTitle {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 650;
+}
+
+.helpLead {
+  margin: var(--a-1) 0 0;
+  color: var(--a-muted);
+  font-size: var(--a-fs-small);
+}
+
+.helpList {
+  display: grid;
+  margin: 0;
+}
+
+.helpRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--a-3);
+  padding-block: 0.5625rem;
+  border-top: 1px solid var(--a-border);
+  font-size: var(--a-fs-small);
+}
+
+.helpRow dd {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--a-1);
+  margin: 0;
+  color: var(--a-subtle);
+  font-size: var(--a-fs-caption);
+}
+
+.helpRow dt {
+  color: var(--a-muted);
+}
+
+@media (width >= 64rem) {
+  .foot {
+    display: flex;
+  }
+}
+
+@media (width < 40rem) {
+  .dialog {
+    width: 100vw;
+    margin: 0 0 auto;
+    border-radius: 0 0 var(--a-radius-xl) var(--a-radius-xl);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open] {
+    animation: none;
+  }
+}

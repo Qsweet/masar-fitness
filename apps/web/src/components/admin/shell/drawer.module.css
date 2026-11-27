@@ -1,0 +1,62 @@
+/* الدرج على الهاتف (ADMIN_REDESIGN §4.5): ‎<dialog>‎ أصلي بعرض 312px من جهة البداية. */
+.drawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline: 0 auto;
+  width: min(19.5rem, 86vw);
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.drawer::backdrop {
+  background: var(--a-scrim);
+}
+
+.drawer[open] {
+  animation: drawer-in var(--a-dur-3) var(--a-ease-out);
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(var(--drawer-from, 100%));
+  }
+}
+
+.drawer:dir(ltr) {
+  --drawer-from: -100%;
+}
+
+.drawerPanel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  border-inline-end: 1px solid var(--a-border);
+  background: var(--a-sidebar);
+  box-shadow: var(--a-shadow-3);
+  color: var(--a-text);
+}
+
+.drawerHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--a-2);
+  padding-inline-end: var(--a-2);
+}
+
+.drawerSearch {
+  margin: var(--a-1) var(--a-3) var(--a-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer[open] {
+    animation: none;
+  }
+}

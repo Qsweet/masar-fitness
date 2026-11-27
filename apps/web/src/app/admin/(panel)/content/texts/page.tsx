@@ -78,6 +78,7 @@ function SearchForm({
         defaultValue={query}
         maxLength={CONTENT_SEARCH_MAX_LENGTH}
         autoComplete="off"
+        data-admin-search=""
       />
       <div className={styles.searchActions}>
         <button type="submit" className={buttonClass()}>

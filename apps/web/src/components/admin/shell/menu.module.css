@@ -1,0 +1,114 @@
+/*
+ * قائمة الحساب في الشريط العلوي: ‎<details>‎ أصلي يعمل بلا JavaScript (MenuDismiss يغلقه بـEsc
+ * والضغط خارجه). الحرف الأول زرًا، ثم الاسم والبريد والدور، وحسابي، والكثافة والمظهر والاختصارات، والخروج.
+ */
+.menu {
+  position: relative;
+}
+
+.menuButton {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  list-style: none;
+  cursor: pointer;
+}
+
+.menuButton::-webkit-details-marker {
+  display: none;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--a-border-strong);
+  border-radius: 50%;
+  background: var(--a-raised);
+  color: var(--a-text);
+  font-size: var(--a-fs-small);
+  font-weight: 600;
+}
+
+.menuButton:hover .avatar,
+.menu[open] > .menuButton .avatar {
+  border-color: var(--a-field-border);
+}
+
+.menuPanel {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + var(--a-2));
+  z-index: 30;
+  display: grid;
+  gap: 2px;
+  width: 16.5rem;
+  max-width: calc(100vw - 2 * var(--a-gutter));
+  padding: var(--a-2);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-overlay);
+  box-shadow: var(--a-shadow-3);
+}
+
+.identity {
+  display: grid;
+  gap: 0.1rem;
+  padding: var(--a-2) var(--a-3) var(--a-3);
+  margin-bottom: var(--a-1);
+  border-bottom: 1px solid var(--a-border);
+}
+
+.identityName {
+  font-weight: 600;
+}
+
+.identityMeta {
+  overflow: hidden;
+  color: var(--a-muted);
+  font-size: var(--a-fs-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.separator {
+  height: 1px;
+  margin-block: var(--a-1);
+  background: var(--a-border);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  width: 100%;
+  min-height: var(--a-control);
+  padding-inline: var(--a-3);
+  border: 0;
+  border-radius: var(--a-radius);
+  background: transparent;
+  color: var(--a-text);
+  font: inherit;
+  font-size: var(--a-fs-small);
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  background: var(--a-hover);
+}
+
+.menuItem svg {
+  flex: none;
+  color: var(--a-muted);
+}
+
+@media (width >= 64rem) {
+  .menuButton {
+    width: var(--a-control);
+    height: var(--a-control);
+  }
+}

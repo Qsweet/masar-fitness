@@ -36,6 +36,7 @@ export default async function CustomersPage() {
             autoComplete="off"
             maxLength={MOBILE_MAX_LENGTH}
             required
+            data-admin-search=""
           />
         </AdminForm>
       </Card>

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, type ReactNode } from "react";
 import { cx } from "@/lib/cx";
 import { AdminIcon } from "../admin-icon";
+import drawerStyles from "./drawer.module.css";
 import styles from "./shell.module.css";
 
 interface MobileDrawerProps {
@@ -28,7 +29,7 @@ export function MobileDrawer({ labels, brand, children }: MobileDrawerProps) {
     <>
       <button
         type="button"
-        className={cx(styles.iconButton, styles.drawerButton)}
+        className={cx(styles.iconButton, styles.mobileOnly)}
         aria-label={labels.open}
         aria-haspopup="dialog"
         onClick={() => dialog.current?.showModal()}
@@ -38,7 +39,8 @@ export function MobileDrawer({ labels, brand, children }: MobileDrawerProps) {
       <dialog
         ref={dialog}
         aria-label={labels.title}
-        className={styles.drawer}
+        className={drawerStyles.drawer}
+        data-drawer=""
         onClick={(event) => {
           // الضغط على الستار يقع على عنصر الحوار نفسه
           if (event.target === event.currentTarget) {
@@ -46,8 +48,8 @@ export function MobileDrawer({ labels, brand, children }: MobileDrawerProps) {
           }
         }}
       >
-        <div className={styles.drawerPanel} data-surface="dark">
-          <div className={styles.drawerHead}>
+        <div className={drawerStyles.drawerPanel} data-surface="dark">
+          <div className={drawerStyles.drawerHead}>
             {brand}
             <button
               type="button"

@@ -2,6 +2,7 @@ import { auditAr } from "./audit-ar";
 import { backupAr } from "./backup-ar";
 import { contentAr, contentErrorsAr, contentNoticesAr } from "./content-ar";
 import { mediaAr, sliderErrorsAr, sliderNoticesAr } from "./media-ar";
+import { shellAr } from "./shell-ar";
 import { sliderAr } from "./slider-ar";
 import { overviewAr } from "./overview-ar";
 import { salesAr, salesErrorsAr, salesNoticesAr } from "./sales-ar";
@@ -34,14 +35,7 @@ export const adminAr = {
       personal: "الحساب",
     },
   },
-  shell: {
-    collapse: "اطوِ الشريط الجانبي",
-    expand: "ابسط الشريط الجانبي",
-    openMenu: "افتح قائمة الأقسام",
-    closeMenu: "أغلق القائمة",
-    drawerNav: "أقسام اللوحة (القائمة)",
-    newTab: "(يفتح في تبويب جديد)",
-  },
+  shell: shellAr,
   breadcrumbs: {
     label: "مسار التنقل",
     root: "اللوحة",

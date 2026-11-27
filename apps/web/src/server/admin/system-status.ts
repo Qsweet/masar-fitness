@@ -36,3 +36,14 @@ export function systemStatus(mfa: MfaCoverage, backup: BackupStatus): SystemStat
     backup,
   };
 }
+
+/** شارة البيئة في الشريط العلوي (ADMIN_REDESIGN §4.2): معاينة بلا دفع، أو دفع تجريبي، ولا شارة غير ذلك. */
+export type EnvironmentBadge = "preview" | "test" | null;
+
+export function environmentBadge(): EnvironmentBadge {
+  const env = getEnv();
+  if (checkoutState(env.CHECKOUT_ENABLED, env.CHECKOUT_PREVIEW) === "preview") {
+    return "preview";
+  }
+  return env.PAYMENTS.mode === "test" ? "test" : null;
+}

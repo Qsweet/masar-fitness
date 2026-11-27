@@ -38,6 +38,7 @@ export function OrdersFilters({ text, filter, today }: OrdersFiltersProps) {
         dir="ltr"
         autoComplete="off"
         maxLength={REFERENCE_MAX_LENGTH}
+        data-admin-search=""
       />
       <DateField
         id="orders-from"

@@ -8,9 +8,11 @@ import {
   ADMIN_PATH,
   ADMIN_PREFERENCE_MAX_AGE,
 } from "@/config/admin";
+import { cx } from "@/lib/cx";
 import { AdminIcon } from "../admin-icon";
-import { COLLAPSED_ATTRIBUTE, SHELL_ATTRIBUTE } from "./attributes";
-import styles from "./shell.module.css";
+import { COLLAPSE_ATTRIBUTE, COLLAPSED_ATTRIBUTE, SHELL_ATTRIBUTE } from "./attributes";
+import shellStyles from "./shell.module.css";
+import styles from "./sidebar.module.css";
 
 interface SidebarToggleProps {
   readonly initiallyCollapsed: boolean;
@@ -33,8 +35,9 @@ export function SidebarToggle({ initiallyCollapsed, labels }: SidebarToggleProps
   return (
     <button
       type="button"
-      className={styles.collapse}
+      className={styles.footButton}
       aria-expanded={!collapsed}
+      {...{ [COLLAPSE_ATTRIBUTE]: "" }}
       onClick={(event) => {
         const next = !collapsed;
         event.currentTarget
@@ -44,8 +47,11 @@ export function SidebarToggle({ initiallyCollapsed, labels }: SidebarToggleProps
         setCollapsed(next);
       }}
     >
-      <AdminIcon name="panel" />
+      <AdminIcon name="panel" className={styles.collapseIcon} />
       <span className={styles.navText}>{label}</span>
+      <kbd className={cx(shellStyles.kbd, styles.footKey)} aria-hidden="true">
+        [
+      </kbd>
     </button>
   );
 }

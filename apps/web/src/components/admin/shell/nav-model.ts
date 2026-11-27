@@ -9,6 +9,7 @@ import type { AdminIconName } from "../admin-icon";
  * صفحاتها.
  */
 export interface NavItem {
+  readonly key: NavKey;
   readonly href: string;
   readonly label: string;
   readonly icon: AdminIconName;
@@ -20,7 +21,7 @@ export interface NavGroup {
   readonly items: readonly NavItem[];
 }
 
-type NavKey =
+export type NavKey =
   | "overview"
   | "orders"
   | "customers"
@@ -119,13 +120,16 @@ const GROUPS: readonly { readonly id: GroupKey; readonly sections: readonly Sect
   },
 ];
 
+/** مجموعة «الحساب»: في الدرج على الهاتف، وفي قائمة الحساب على الشاشة الواسعة (§4.1). */
+export const PERSONAL_GROUP: GroupKey = "personal";
+
 export function navGroupsFor(role: StaffRole, dictionary: AdminDictionary): NavGroup[] {
   return GROUPS.map((group) => ({
     id: group.id,
     label: dictionary.nav.groups[group.id],
     items: group.sections
       .filter((section) => hasPermission(role, section.permission))
-      .map(({ key, href, icon }) => ({ href, icon, label: dictionary.nav[key] })),
+      .map(({ key, href, icon }) => ({ key, href, icon, label: dictionary.nav[key] })),
   })).filter((group) => group.items.length > 0);
 }
 

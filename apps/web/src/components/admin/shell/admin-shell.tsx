@@ -1,169 +1,161 @@
-import Image from "next/image";
-import Link from "next/link";
 import type { ReactNode } from "react";
-import mark from "@/app/icon.png";
-import { Logo } from "@/components/ui/logo";
-import {
-  ADMIN_ROUTES,
-  customerPath,
-  orderCancelPath,
-  orderPath,
-  orderSettlePath,
-  planPath,
-  planStatusPath,
-  promotionPath,
-  promotionStatusPath,
-  staffMemberPath,
-  contentNamespacePath,
-  releasePath,
-  releaseRollbackPath,
-  slidePath,
-  slideRemovePath,
-  mediaAssetPath,
-  type AdminTheme,
-} from "@/config/admin";
+import { ADMIN_ROUTES } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
 import { cx } from "@/lib/cx";
 import type { StaffContext } from "@/server/admin/session";
+import type { EnvironmentBadge } from "@/server/admin/system-status";
 import { AdminIcon } from "../admin-icon";
 import { ADMIN_MAIN_ID } from "../main-id";
 import { SHELL_ATTRIBUTE } from "./attributes";
 import { Breadcrumbs } from "./breadcrumbs";
+import { commandEntriesFor } from "./command-model";
+import { CommandTrigger } from "./command-trigger";
+import { crumbLabels } from "./crumb-labels";
+import drawerStyles from "./drawer.module.css";
 import { MobileDrawer } from "./mobile-drawer";
 import { AdminNav } from "./nav";
-import { navGroupsFor } from "./nav-model";
+import { navCounts } from "./nav-counts";
+import { navGroupsFor, PERSONAL_GROUP, type NavGroup } from "./nav-model";
+import { ShellCommands } from "./shell-commands";
 import styles from "./shell.module.css";
-import { SidebarToggle } from "./sidebar-toggle";
-import { UserMenu } from "./user-menu";
+import { ClubHead, HelpLink, Sidebar } from "./sidebar";
+import { chordTargets } from "./shortcuts";
+import { ThemeToggle, UserMenu, type DisplayPreferences } from "./user-menu";
 
 interface AdminShellProps {
   readonly context: StaffContext;
+  readonly clubName: string;
   readonly dictionary: AdminDictionary;
   /** حالة الشريط الجانبي من كوكي التفضيل. */
   readonly collapsed: boolean;
-  readonly theme: AdminTheme;
+  readonly preferences: DisplayPreferences;
+  readonly environment: EnvironmentBadge;
   readonly children: ReactNode;
 }
 
 /** الصفحة الأولى المتاحة للموظف: وجهة الشعار. */
-function homeOf(groups: ReturnType<typeof navGroupsFor>): string {
+function homeOf(groups: readonly NavGroup[]): string {
   return groups[0]?.items[0]?.href ?? ADMIN_ROUTES.account;
 }
 
-function Brand({
-  href,
-  dictionary,
-}: {
-  readonly href: string;
-  readonly dictionary: AdminDictionary;
-}) {
+function SearchBar({ text }: { readonly text: AdminDictionary["shell"] }) {
   return (
-    <Link href={href} prefetch={false} className={styles.brand} aria-label={dictionary.brand.name}>
-      <span className={styles.brandFull}>
-        <Logo variant="lockup" height="1.75rem" alt="" preload />
+    <CommandTrigger
+      command="palette"
+      href={ADMIN_ROUTES.search}
+      className={cx(styles.searchBar, styles.desktopOnly)}
+    >
+      <AdminIcon name="search" size={16} />
+      <span className={styles.searchText}>{text.search}</span>
+      <span className={styles.keys} aria-hidden="true">
+        <kbd className={styles.kbd}>⌘</kbd>
+        <kbd className={styles.kbd}>K</kbd>
       </span>
-      <Image src={mark} alt="" className={styles.brandMark} />
-    </Link>
+    </CommandTrigger>
   );
 }
 
-/** أسماء المسارات لمسار التنقل، من القاموس. */
-function crumbLabels(dictionary: AdminDictionary): Record<string, string> {
-  const { nav, staffNew, breadcrumbs, sales, content, slider } = dictionary;
-  const namespaces = Object.entries(content.namespaces).map(
-    ([namespace, label]): [string, string] => [contentNamespacePath(namespace), label],
-  );
-  return {
-    ...Object.fromEntries(namespaces),
-    [ADMIN_ROUTES.home]: breadcrumbs.root,
-    [ADMIN_ROUTES.staff]: nav.staff,
-    [ADMIN_ROUTES.staffNew]: staffNew.title,
-    [staffMemberPath("*")]: breadcrumbs.staffMember,
-    [ADMIN_ROUTES.audit]: nav.audit,
-    [ADMIN_ROUTES.account]: nav.account,
-    [ADMIN_ROUTES.sales]: sales.breadcrumbs.group,
-    [ADMIN_ROUTES.orders]: nav.orders,
-    [orderPath("*")]: sales.breadcrumbs.order,
-    [orderCancelPath("*")]: sales.breadcrumbs.cancel,
-    [orderSettlePath("*")]: sales.breadcrumbs.settle,
-    [ADMIN_ROUTES.customers]: nav.customers,
-    [customerPath("*")]: sales.breadcrumbs.customer,
-    [ADMIN_ROUTES.plans]: nav.plans,
-    [ADMIN_ROUTES.plansNew]: sales.breadcrumbs.planNew,
-    [planPath("*")]: sales.breadcrumbs.plan,
-    [planStatusPath("*")]: sales.breadcrumbs.planStatus,
-    [ADMIN_ROUTES.promotions]: nav.promotions,
-    [ADMIN_ROUTES.promotionsNew]: sales.breadcrumbs.promotionNew,
-    [promotionPath("*")]: sales.breadcrumbs.promotion,
-    [promotionStatusPath("*")]: sales.breadcrumbs.promotionStatus,
-    [ADMIN_ROUTES.salesSettings]: nav.salesSettings,
-    [ADMIN_ROUTES.content]: content.breadcrumbs.group,
-    [ADMIN_ROUTES.contentTexts]: nav.contentTexts,
-    [ADMIN_ROUTES.contentPublish]: content.breadcrumbs.publish,
-    [ADMIN_ROUTES.contentHistory]: content.breadcrumbs.history,
-    [ADMIN_ROUTES.contentDiscard]: content.breadcrumbs.discard,
-    [releasePath("*")]: content.breadcrumbs.release,
-    [releaseRollbackPath("*")]: content.breadcrumbs.rollback,
-    [ADMIN_ROUTES.contentSlider]: slider.breadcrumbs.slider,
-    [ADMIN_ROUTES.contentSliderNew]: slider.breadcrumbs.slideNew,
-    [slidePath("*")]: slider.breadcrumbs.slide,
-    [slideRemovePath("*")]: slider.breadcrumbs.remove,
-    [ADMIN_ROUTES.contentMedia]: slider.breadcrumbs.media,
-    [mediaAssetPath("*")]: slider.breadcrumbs.asset,
-  };
+interface TopbarProps extends Omit<AdminShellProps, "children" | "collapsed" | "clubName"> {
+  readonly drawer: ReactNode;
 }
 
-export function AdminShell({ context, dictionary, collapsed, theme, children }: AdminShellProps) {
+/** الشريط العلوي (§4.2): مسار التنقل، والبحث، وشارة البيئة، والموقع، والمظهر، وقائمة الحساب. */
+function Topbar({ context, dictionary, preferences, environment, drawer }: TopbarProps) {
   const { nav, shell, breadcrumbs } = dictionary;
-  const groups = navGroupsFor(context.staff.role, dictionary);
-  const brand = <Brand href={homeOf(groups)} dictionary={dictionary} />;
+  return (
+    <header className={styles.topbar}>
+      {drawer}
+      <Breadcrumbs
+        label={breadcrumbs.label}
+        labels={crumbLabels(dictionary)}
+        detailLabel={breadcrumbs.detail}
+      />
+      <SearchBar text={shell} />
+      <div className={styles.topActions}>
+        <CommandTrigger
+          command="palette"
+          href={ADMIN_ROUTES.search}
+          className={cx(styles.iconButton, styles.mobileOnly)}
+          label={shell.searchShort}
+        >
+          <AdminIcon name="search" />
+        </CommandTrigger>
+        {environment === null ? null : (
+          <span className={styles.envBadge}>{shell.environment[environment]}</span>
+        )}
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener"
+          className={styles.iconButton}
+          aria-label={`${nav.viewSite} ${shell.newTab}`}
+        >
+          <AdminIcon name="external" />
+        </a>
+        <ThemeToggle theme={preferences.theme} text={shell.theme} />
+        <span className={styles.divider} aria-hidden="true" />
+        <UserMenu staff={context.staff} preferences={preferences} dictionary={dictionary} />
+      </div>
+    </header>
+  );
+}
+
+/**
+ * هيكل اللوحة v2 (ADMIN_REDESIGN §4): الشريط الجانبي، والشريط العلوي، والدرج على الهاتف، وطبقة الأوامر
+ * (⌘K والاختصارات). كل ما يُعرض محسوب هنا على الخادم بصلاحيات الموظف؛ المتصفح يحسّن ولا يقرر.
+ */
+export function AdminShell(props: AdminShellProps) {
+  const { context, clubName, dictionary, collapsed, preferences, children } = props;
+  const { role, clubId } = context.staff;
+  const { nav, shell } = dictionary;
+  const groups = navGroupsFor(role, dictionary);
+  const sidebarGroups = groups.filter((group) => group.id !== PERSONAL_GROUP);
+  const counts = navCounts(role, clubId, shell.counts);
+  const head = <ClubHead home={homeOf(groups)} clubName={clubName} dictionary={dictionary} />;
+  const drawer = (
+    <MobileDrawer
+      labels={{ open: shell.openMenu, close: shell.closeMenu, title: nav.label }}
+      brand={head}
+    >
+      <div className={drawerStyles.drawerSearch}>
+        <CommandTrigger
+          command="palette"
+          href={ADMIN_ROUTES.search}
+          className={cx(styles.searchBar, styles.searchFull)}
+        >
+          <AdminIcon name="search" size={16} />
+          <span className={styles.searchText}>{shell.search}</span>
+        </CommandTrigger>
+      </div>
+      <AdminNav label={shell.drawerNav} groups={groups} counts={counts} />
+      <HelpLink text={shell} />
+    </MobileDrawer>
+  );
   return (
     <div
       className={styles.shell}
       {...{ [SHELL_ATTRIBUTE]: "" }}
       data-collapsed={collapsed ? "" : undefined}
     >
-      <aside className={styles.sidebar} data-surface="dark">
-        {brand}
-        <AdminNav label={nav.label} groups={groups} />
-        <div className={styles.sidebarFoot}>
-          <SidebarToggle
-            initiallyCollapsed={collapsed}
-            labels={{ collapse: shell.collapse, expand: shell.expand }}
-          />
-        </div>
-      </aside>
+      <Sidebar
+        head={head}
+        groups={sidebarGroups}
+        counts={counts}
+        collapsed={collapsed}
+        dictionary={dictionary}
+      />
       <div className={styles.column}>
-        <header className={styles.topbar}>
-          <MobileDrawer
-            labels={{ open: shell.openMenu, close: shell.closeMenu, title: nav.label }}
-            brand={brand}
-          >
-            <AdminNav label={shell.drawerNav} groups={groups} />
-          </MobileDrawer>
-          <Breadcrumbs
-            label={breadcrumbs.label}
-            labels={crumbLabels(dictionary)}
-            detailLabel={breadcrumbs.detail}
-          />
-          <div className={styles.topActions}>
-            <a
-              href="/"
-              target="_blank"
-              rel="noopener"
-              className={styles.topLink}
-              aria-label={`${nav.viewSite} ${shell.newTab}`}
-            >
-              <span className={styles.topLinkText}>{nav.viewSite}</span>
-              <AdminIcon name="external" size={16} />
-            </a>
-            <UserMenu staff={context.staff} theme={theme} dictionary={dictionary} />
-          </div>
-        </header>
-        <main id={ADMIN_MAIN_ID} tabIndex={-1} className={cx(styles.main)}>
+        <Topbar {...props} drawer={drawer} />
+        <main id={ADMIN_MAIN_ID} tabIndex={-1} className={styles.main}>
           {children}
         </main>
       </div>
+      <ShellCommands
+        entries={commandEntriesFor(role, dictionary)}
+        targets={chordTargets(groups.flatMap((group) => group.items))}
+        shortcutsEnabled={preferences.shortcuts}
+        text={shell}
+      />
     </div>
   );
 }

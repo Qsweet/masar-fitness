@@ -2,19 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useId } from "react";
+import { useId, type ReactNode } from "react";
 import { AdminIcon } from "../admin-icon";
-import { isCurrentSection, type NavGroup } from "./nav-model";
-import styles from "./shell.module.css";
+import { isCurrentSection, type NavGroup, type NavKey } from "./nav-model";
+import styles from "./sidebar.module.css";
 
 interface AdminNavProps {
   /** اسم التنقل لقارئ الشاشة (يختلف بين الشريط الجانبي والدرج). */
   readonly label: string;
   readonly groups: readonly NavGroup[];
+  /** عدّادات بعض الأقسام، مرسومة على الخادم؛ تصف الرابط ولا تدخل اسمه. */
+  readonly counts?: Readonly<Partial<Record<NavKey, ReactNode>>>;
 }
 
 /** أقسام اللوحة المتاحة لهذا الموظف في مجموعاتها (تُحسب على الخادم من صلاحياته). */
-export function AdminNav({ label, groups }: AdminNavProps) {
+export function AdminNav({ label, groups, counts = {} }: AdminNavProps) {
   const pathname = usePathname();
   const id = useId();
   return (
@@ -25,19 +27,25 @@ export function AdminNav({ label, groups }: AdminNavProps) {
             {group.label}
           </p>
           <ul className={styles.group} aria-labelledby={`${id}-${group.id}`}>
-            {group.items.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  prefetch={false}
-                  aria-current={isCurrentSection(pathname, item.href) ? "page" : undefined}
-                  className={styles.navLink}
-                >
-                  <AdminIcon name={item.icon} />
-                  <span className={styles.navText}>{item.label}</span>
-                </Link>
-              </li>
-            ))}
+            {group.items.map((item) => {
+              const count = counts[item.key];
+              const countId = `${id}-count-${item.key}`;
+              return (
+                <li key={item.href} className={styles.item}>
+                  <Link
+                    href={item.href}
+                    prefetch={false}
+                    aria-current={isCurrentSection(pathname, item.href) ? "page" : undefined}
+                    aria-describedby={count === undefined ? undefined : countId}
+                    className={styles.navLink}
+                  >
+                    <AdminIcon name={item.icon} />
+                    <span className={styles.navText}>{item.label}</span>
+                  </Link>
+                  {count === undefined ? null : <span id={countId}>{count}</span>}
+                </li>
+              );
+            })}
           </ul>
         </div>
       ))}

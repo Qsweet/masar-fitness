@@ -1,0 +1,66 @@
+import {
+  ADMIN_ROUTES,
+  contentNamespacePath,
+  customerPath,
+  mediaAssetPath,
+  orderCancelPath,
+  orderPath,
+  orderSettlePath,
+  planPath,
+  planStatusPath,
+  promotionPath,
+  promotionStatusPath,
+  releasePath,
+  releaseRollbackPath,
+  slidePath,
+  slideRemovePath,
+  staffMemberPath,
+} from "@/config/admin";
+import type { AdminDictionary } from "@/i18n/admin";
+
+/** أسماء المسارات لمسار التنقل، من القاموس. */
+export function crumbLabels(dictionary: AdminDictionary): Record<string, string> {
+  const { nav, staffNew, breadcrumbs, sales, content, slider } = dictionary;
+  const namespaces = Object.entries(content.namespaces).map(
+    ([namespace, label]): [string, string] => [contentNamespacePath(namespace), label],
+  );
+  return {
+    ...Object.fromEntries(namespaces),
+    [ADMIN_ROUTES.home]: breadcrumbs.root,
+    [ADMIN_ROUTES.staff]: nav.staff,
+    [ADMIN_ROUTES.staffNew]: staffNew.title,
+    [staffMemberPath("*")]: breadcrumbs.staffMember,
+    [ADMIN_ROUTES.audit]: nav.audit,
+    [ADMIN_ROUTES.account]: nav.account,
+    [ADMIN_ROUTES.search]: dictionary.shell.searchPage.title,
+    [ADMIN_ROUTES.sales]: sales.breadcrumbs.group,
+    [ADMIN_ROUTES.orders]: nav.orders,
+    [orderPath("*")]: sales.breadcrumbs.order,
+    [orderCancelPath("*")]: sales.breadcrumbs.cancel,
+    [orderSettlePath("*")]: sales.breadcrumbs.settle,
+    [ADMIN_ROUTES.customers]: nav.customers,
+    [customerPath("*")]: sales.breadcrumbs.customer,
+    [ADMIN_ROUTES.plans]: nav.plans,
+    [ADMIN_ROUTES.plansNew]: sales.breadcrumbs.planNew,
+    [planPath("*")]: sales.breadcrumbs.plan,
+    [planStatusPath("*")]: sales.breadcrumbs.planStatus,
+    [ADMIN_ROUTES.promotions]: nav.promotions,
+    [ADMIN_ROUTES.promotionsNew]: sales.breadcrumbs.promotionNew,
+    [promotionPath("*")]: sales.breadcrumbs.promotion,
+    [promotionStatusPath("*")]: sales.breadcrumbs.promotionStatus,
+    [ADMIN_ROUTES.salesSettings]: nav.salesSettings,
+    [ADMIN_ROUTES.content]: content.breadcrumbs.group,
+    [ADMIN_ROUTES.contentTexts]: nav.contentTexts,
+    [ADMIN_ROUTES.contentPublish]: content.breadcrumbs.publish,
+    [ADMIN_ROUTES.contentHistory]: content.breadcrumbs.history,
+    [ADMIN_ROUTES.contentDiscard]: content.breadcrumbs.discard,
+    [releasePath("*")]: content.breadcrumbs.release,
+    [releaseRollbackPath("*")]: content.breadcrumbs.rollback,
+    [ADMIN_ROUTES.contentSlider]: slider.breadcrumbs.slider,
+    [ADMIN_ROUTES.contentSliderNew]: slider.breadcrumbs.slideNew,
+    [slidePath("*")]: slider.breadcrumbs.slide,
+    [slideRemovePath("*")]: slider.breadcrumbs.remove,
+    [ADMIN_ROUTES.contentMedia]: slider.breadcrumbs.media,
+    [mediaAssetPath("*")]: slider.breadcrumbs.asset,
+  };
+}

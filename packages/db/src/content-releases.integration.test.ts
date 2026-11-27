@@ -43,7 +43,7 @@ async function setup() {
 }
 
 describe("content_releases", () => {
-  it("C1: الإصدار لا يُعدَّل ولا يُحذف ولو بـSQL خام", async () => {
+  it("C1: الإصدار لا يُعدَّل ولا يُحذف ولا يُفرَّغ ولو بـSQL خام", async () => {
     const { clubId, staffId } = await setup();
     const id = await insertRelease(clubId, staffId, 1);
     await expect(
@@ -51,7 +51,13 @@ describe("content_releases", () => {
     ).rejects.toThrow("content_release_immutable");
     await expect(
       db.$executeRaw`DELETE FROM content_releases WHERE id = ${id}::uuid`,
-    ).rejects.toThrow("content_release_immutable");
+    ).rejects.toThrow("content_release_immutable"); // ولا يُفرَّغ: مباشرةً ولا بالتتالي من جدول يشير إليه
+    await expect(db.$executeRaw`TRUNCATE content_releases`).rejects.toThrow(
+      "content_release_immutable",
+    );
+    await expect(db.$executeRaw`TRUNCATE staff_users CASCADE`).rejects.toThrow(
+      "content_release_immutable",
+    );
   });
 
   it("آخر إصدار بالرقم لكل نادٍ، ونادٍ آخر لا يرى إصدارات غيره", async () => {

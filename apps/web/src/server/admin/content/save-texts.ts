@@ -8,6 +8,8 @@ import {
   TEXT_LIMITS,
   textKey,
   validateTextOverride,
+  err,
+  type TextIssue,
   type ContentLocale,
   type TextEntry,
 } from "@masar/domain";
@@ -41,6 +43,11 @@ export interface TextsSubmission {
   readonly revert: string | null;
 }
 
+/** الطلب بعد قراءة زر العودة: القيم، وحقل العودة إن وُجد. */
+interface Submission extends TextsSubmission {
+  readonly revertField: string | null;
+}
+
 export type SaveOutcome =
   | { readonly ok: true; readonly saved: number }
   | { readonly ok: false; readonly failure: FormFailure };
@@ -57,62 +64,66 @@ function lintDetail(detail: string): string {
   return `${lookup(rules, rule, rule)}: «${excerpt}»`;
 }
 
+/** التحقق الكامل، والطول الخام الأقصى قبل أي معالجة. */
+function checkText(entry: TextEntry, raw: string, locale: ContentLocale) {
+  return raw.length > MAX_CONTENT_TEXT_INPUT
+    ? err({ reason: "content.too_long", detail: String(TEXT_LIMITS[entry.kind]) })
+    : validateTextOverride(entry, raw, locale);
+}
+
+function reject(plan: Planned, name: string, issue: TextIssue): void {
+  plan.fields[name] = issue.reason;
+  if (issue.detail !== undefined) {
+    plan.details[name] =
+      issue.reason === "content.copy_lint" ? lintDetail(issue.detail) : issue.detail;
+  }
+}
+
 function planLocale(
   entry: TextEntry,
   locale: ContentLocale,
   state: EntryState,
-  input: TextsSubmission,
+  input: Submission,
   plan: Planned,
 ) {
   const name = valueField(locale, entry.path);
   const raw = input.values[name];
   const current = state[locale];
+  const key = textKey(entry.path);
+  const lockToken = input.tokens[tokenField(locale, entry.path)] ?? "";
+  if (name === input.revertField && current.stored) {
+    // العودة تمحو الصف المحفوظ ولو كان يساوي الافتراضي الحالي، فلا يبقى في المسودة ما لا يُرى
+    plan.changes.push({ key, locale, value: null, lockToken });
+    return;
+  }
   if (raw === undefined || raw === current.value) {
     return;
   }
-  const lockToken = input.tokens[tokenField(locale, entry.path)] ?? "";
-  if (raw.length > MAX_CONTENT_TEXT_INPUT) {
-    plan.fields[name] = "content.too_long";
-    plan.details[name] = String(TEXT_LIMITS[entry.kind]);
-    return;
-  }
-  const result = validateTextOverride(entry, raw, locale);
+  const result = checkText(entry, raw, locale);
   if (!result.ok) {
-    plan.fields[name] = result.error.reason;
-    const detail = result.error.detail;
-    if (detail !== undefined) {
-      plan.details[name] =
-        result.error.reason === "content.copy_lint" ? lintDetail(detail) : detail;
-    }
-    return;
+    reject(plan, name, result.error);
+  } else if (result.value.kind === "override") {
+    const value = { value: result.value.value, baseHash: entry.defaultHash[locale] };
+    plan.changes.push({ key, locale, value, lockToken });
+  } else if (current.stored) {
+    plan.changes.push({ key, locale, value: null, lockToken });
   }
-  const key = textKey(entry.path);
-  if (result.value.kind === "default") {
-    if (current.overridden) {
-      plan.changes.push({ key, locale, value: null, lockToken });
-    }
-    return;
-  }
-  plan.changes.push({
-    key,
-    locale,
-    value: { value: result.value.value, baseHash: entry.defaultHash[locale] },
-    lockToken,
-  });
 }
 
 /**
  * «عودة إلى الافتراضي» حفظٌ للنموذج كله والنص المختار بقيمته الأصلية: ما كُتب في الحقول الأخرى لا يضيع.
  */
-function withRevert(entries: readonly TextEntry[], input: TextsSubmission): TextsSubmission {
+function withRevert(entries: readonly TextEntry[], input: TextsSubmission): Submission {
   const [locale = "", ...rest] = (input.revert ?? "").split(":");
   const entry = entries.find((candidate) => candidate.path === rest.join(":"));
   if (entry === undefined || !isContentLocale(locale)) {
-    return input;
+    return { ...input, revertField: null };
   }
+  const field = valueField(locale, entry.path);
   return {
     ...input,
-    values: { ...input.values, [valueField(locale, entry.path)]: entry.defaults[locale] },
+    values: { ...input.values, [field]: entry.defaults[locale] },
+    revertField: field,
   };
 }
 

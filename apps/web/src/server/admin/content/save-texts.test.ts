@@ -134,6 +134,31 @@ describe("saveNamespaceTexts", () => {
     );
   });
 
+  it("صف يساوي الافتراضي الحالي (صار أصلًا بنشر كود): العودة تمحوه، والحفظ العادي لا يتعثر به", async () => {
+    rows.push({
+      key: "text:hero.title",
+      locale: "ar",
+      value: { value: "أقوى نسخة منك", baseHash: "old" },
+      lockToken: "7",
+    });
+    await saveNamespaceTexts(
+      context("editor"),
+      {
+        namespace: "hero",
+        values: { [valueField("ar", "hero.title")]: "أقوى نسخة منك" },
+        tokens: { [tokenField("ar", "hero.title")]: "7" },
+        revert: "ar:hero.title",
+      },
+      NOW,
+    );
+    expect(saveDraftEntries).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        changes: [{ key: "text:hero.title", locale: "ar", value: null, lockToken: "7" }],
+      }),
+    );
+  });
+
   it("حقائق النادي لا يكتبها المحرر ولو أُرسلت، ويكتبها المدير", async () => {
     const values = { [valueField("ar", "club.name")]: "اسم آخر للنادي" };
     expect(await save(values, "editor", "club")).toEqual({

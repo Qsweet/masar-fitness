@@ -46,12 +46,11 @@ function firstInvalid(texts: TextOverrides, registry: TextRegistry): string | nu
   return null;
 }
 
-export function buildRelease(
-  rows: readonly DraftRow[],
+function releaseFrom(
+  texts: TextOverrides,
   previous: unknown,
   registry: TextRegistry,
 ): Result<ReleaseBuild, DomainError> {
-  const texts = draftOverrides(rows, registry).texts;
   const invalid = firstInvalid(texts, registry);
   if (invalid !== null) {
     return err(new DomainError("validation", "content.draft_invalid", { field: invalid }));
@@ -63,7 +62,36 @@ export function buildRelease(
   });
 }
 
-/** عدد التغييرات بين لقطتين (للاسترجاع). */
-export function changedBetween(from: unknown, to: unknown, registry: TextRegistry): number {
-  return diffContent(publishedTexts(from, registry), publishedTexts(to, registry), registry).length;
+export function buildRelease(
+  rows: readonly DraftRow[],
+  previous: unknown,
+  registry: TextRegistry,
+): Result<ReleaseBuild, DomainError> {
+  return releaseFrom(draftOverrides(rows, registry).texts, previous, registry);
+}
+
+/**
+ * لقطة إصدار قديم يُسترجع: تُقرأ بالسجل الحالي وتمر بالتحقق نفسه الذي يمر به النشر (قواعد التدقيق
+ * الحالية)، فلا يعود إلى الموقع نص يرفضه الحفظ اليوم.
+ */
+export function rebuildRelease(
+  target: unknown,
+  previous: unknown,
+  registry: TextRegistry,
+): Result<ReleaseBuild, DomainError> {
+  return releaseFrom(publishedTexts(target, registry), previous, registry);
+}
+
+/**
+ * تعريف واحد لـ«المسودة متغيرة» في الحالة والاسترجاع والتجاهل: فرق في النص المعروض بين المنشور والمسودة،
+ * كلاهما مقروء بالسجل الحالي. البصمة المحفوظة مع الإصدار حُسبت بسجل وقت النشر، فلا تُقارن بها مسودة
+ * اليوم بعد أن يمنع كود جديد مفتاحًا أو يحذفه.
+ */
+export function isDraftDirty(
+  rows: readonly DraftRow[],
+  published: unknown,
+  registry: TextRegistry,
+): boolean {
+  const draft = draftOverrides(rows, registry).texts;
+  return diffContent(publishedTexts(published, registry), draft, registry).length > 0;
 }

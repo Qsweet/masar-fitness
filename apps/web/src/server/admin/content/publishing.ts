@@ -6,7 +6,7 @@ import { textRegistry } from "../../content/registry";
 import { adminSecretKey } from "../flag";
 import type { StaffContext } from "../session";
 import { openPublishToken } from "./publish-token";
-import { buildRelease, changedBetween, draftDigest } from "./release";
+import { buildRelease, draftDigest, isDraftDirty, rebuildRelease } from "./release";
 
 /**
  * أفعال النشر باسم الموظف (ADMIN_A3_CONTENT §8.4–8.5): كلٌّ يعيد قراءة كل شيء تحت قفل المحتوى، ولا
@@ -45,8 +45,8 @@ export async function rollbackTo(
   const rolled = await rollbackContent(getDb(), {
     ...who(context, now),
     ...input,
-    draftDigest: (rows) => draftDigest(rows, registry),
-    changedCount: (from, to) => changedBetween(from, to, registry),
+    isDirty: (rows, published) => isDraftDirty(rows, published, registry),
+    rebuild: (target, previous) => rebuildRelease(target, previous, registry),
   });
   return rolled.ok ? ok(rolled.value.seq) : rolled;
 }
@@ -61,5 +61,6 @@ export async function discardDraftOf(
     ...who(context, now),
     expectedDraftDigest,
     draftDigest: (rows) => draftDigest(rows, registry),
+    isDirty: (rows, published) => isDraftDirty(rows, published, registry),
   });
 }

@@ -16,6 +16,7 @@ import {
 import { ADMIN_ROUTES, contentPreviewHref, PREVIEW_DRAFT, releasePath } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
+import { countText } from "@/i18n/count";
 import { formatNumber } from "@/i18n/format";
 import { draftSummary, type DraftSummary } from "@/server/admin/content/overview";
 import { clubTimezone } from "@/server/admin/content/timezone";
@@ -58,7 +59,9 @@ function DraftCard({
     <Card
       title={text.overview.draftTitle}
       description={
-        count === 0 ? undefined : fill(text.overview.draftChanges, { count: formatNumber(count) })
+        count === 0
+          ? undefined
+          : fill(text.overview.draftChanges, { count: countText(count, text.counts.changes) })
       }
       action={
         canPublish && summary.dirty ? (

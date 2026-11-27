@@ -172,9 +172,10 @@ async function replaceDraft(
 export interface RollbackInput extends ContentActor {
   readonly releaseId: string;
   readonly expectedLatestId: string;
-  /** بصمة المسودة الفعلية (بالسجل في الويب): تختلف عن آخر إصدار ⇒ المسودة متغيرة. */
-  readonly draftDigest: (rows: readonly DraftRow[]) => string;
-  readonly changedCount: (from: unknown, to: unknown) => number;
+  /** المسودة تختلف عن المنشور بالسجل الحالي (التعريف نفسه في اللوحة والتجاهل). */
+  readonly isDirty: (rows: readonly DraftRow[], published: unknown) => boolean;
+  /** لقطة الإصدار المسترجَع بالسجل الحالي بعد التحقق الكامل كالنشر، أو رفض. */
+  readonly rebuild: (target: unknown, previous: unknown) => Result<ReleaseBuild, DomainError>;
 }
 
 async function rollbackInTransaction(
@@ -194,22 +195,23 @@ async function rollbackInTransaction(
     return err(new DomainError("validation", "content.rollback_to_current"));
   }
   const rows = await listDraftEntries(tx, input.clubId);
-  if (input.draftDigest(rows) !== head.digest) {
+  const current = await previousSnapshot(tx, input.clubId, head);
+  if (input.isDirty(rows, current)) {
     return conflict("content.rollback_draft_dirty");
   }
-  const snapshot = snapshotShape(target.snapshot) ?? EMPTY_SNAPSHOT;
-  const changedCount = input.changedCount(
-    await previousSnapshot(tx, input.clubId, head),
-    target.snapshot,
-  );
+  const built = input.rebuild(target.snapshot, current);
+  if (!built.ok) {
+    return built;
+  }
+  if (built.value.changedCount === 0) {
+    return err(new DomainError("validation", "content.nothing_to_rollback"));
+  }
   const release = await insertRelease(tx, input, {
-    snapshot,
-    digest: target.digest,
-    changedCount,
+    ...built.value,
     seq: head.seq + 1,
     rolledBackFrom: target.id,
   });
-  await replaceDraft(tx, input, snapshot, rows);
+  await replaceDraft(tx, input, built.value.snapshot, rows);
   await audit(tx, input, release.id, "content_rolled_back", {
     seq: release.seq,
     fromSeq: target.seq,
@@ -228,6 +230,7 @@ export function rollbackContent(
 export interface DiscardInput extends ContentActor {
   readonly expectedDraftDigest: string;
   readonly draftDigest: (rows: readonly DraftRow[]) => string;
+  readonly isDirty: (rows: readonly DraftRow[], published: unknown) => boolean;
 }
 
 async function discardInTransaction(
@@ -240,10 +243,11 @@ async function discardInTransaction(
   if (input.draftDigest(rows) !== input.expectedDraftDigest) {
     return conflict("content.draft_changed");
   }
-  if (rows.length === 0) {
+  const published = await previousSnapshot(tx, input.clubId, head);
+  if (!input.isDirty(rows, published)) {
     return err(new DomainError("validation", "content.nothing_to_discard"));
   }
-  const snapshot = snapshotShape(await previousSnapshot(tx, input.clubId, head)) ?? EMPTY_SNAPSHOT;
+  const snapshot = snapshotShape(published) ?? EMPTY_SNAPSHOT;
   await replaceDraft(tx, input, snapshot, rows);
   await audit(tx, input, input.clubId, "content_draft_discarded", { seq: head?.seq ?? 0 });
   return ok(rows.length);

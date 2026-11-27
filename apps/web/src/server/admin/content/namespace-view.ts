@@ -20,6 +20,8 @@ export interface LocaleState {
   readonly published: string | null;
   /** للمسودة تجاوز قائم (يظهر معه «عودة إلى الافتراضي»). */
   readonly overridden: boolean;
+  /** في القاعدة صف بقيمة لهذا النص، ولو لم يعد تجاوزًا (صار يساوي الافتراضي بنشر كود). */
+  readonly stored: boolean;
   readonly lockToken: string;
   readonly status: TextStatus;
 }
@@ -49,11 +51,13 @@ export function localeState(
   const draft = state.draft.texts.get(entry.path)?.[locale];
   const published = state.published.texts.get(entry.path)?.[locale];
   const value = draft?.value ?? entry.defaults[locale];
+  const row = rows.get(`${textKey(entry.path)}|${locale}`);
   return {
     value,
     published: published?.value ?? null,
     overridden: draft !== undefined,
-    lockToken: rows.get(`${textKey(entry.path)}|${locale}`)?.lockToken ?? "",
+    stored: row !== undefined && row.value !== null,
+    lockToken: row?.lockToken ?? "",
     status: statusOf(entry, locale, draft, published),
   };
 }

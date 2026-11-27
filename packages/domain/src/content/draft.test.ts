@@ -12,6 +12,14 @@ describe("تجاوزات المسودة", () => {
     expect(pathOfKey("setting:club.contact")).toBeNull();
   });
 
+  it("صف يساوي الافتراضي الحالي لا يدخل التجاوزات ولا البصمة", () => {
+    const parsed = draftOverrides(
+      [{ key: "text:hero.title", locale: "ar", value: value("أقوى نسخة منك") }],
+      registry,
+    );
+    expect(parsed).toEqual({ texts: new Map(), dropped: [] });
+  });
+
   it("العودة إلى الافتراضي لا تجاوز، والمعطّل يُعدّ بمفتاحه ولغته", () => {
     const parsed = draftOverrides(
       [

@@ -6,7 +6,8 @@ import { structuralIssue } from "./text-override";
 /**
  * لقطة إصدار المحتوى (ADMIN_A3_CONTENT §4.3): التجاوزات وحدها لا القاموس. عند القراءة يُسقط كل ما
  * لا يطابق السجل الحالي (مفتاح حذفه المطوّر، أو مُنع، أو تغيّرت عناصر افتراضيه، أو مفتاح غير معروف
- * في اللقطة)، فنشر كود لا يكسر الموقع بلقطة قديمة، ولا يُقرأ من اللقطة شيء غير النصوص.
+ * في اللقطة)، فنشر كود لا يكسر الموقع بلقطة قديمة، ولا يُقرأ من اللقطة شيء غير النصوص. والتجاوز الذي
+ * صار يساوي الافتراضي الحالي يُهمل بصمت: ليس تجاوزًا.
  */
 export const SNAPSHOT_VERSION = 1;
 
@@ -57,6 +58,10 @@ function parseLocales(
       isContentLocale(locale) &&
       override !== null &&
       structuralIssue(entry, locale, override.value) === null;
+    if (valid && override.value === entry.defaults[locale]) {
+      // تجاوز صار يساوي الافتراضي (نشر كود جعله الأصل): لا تجاوز، فلا يدخل البصمة ولا الفرق ولا التحقق
+      continue;
+    }
     if (valid) {
       result[locale] = override;
     } else {

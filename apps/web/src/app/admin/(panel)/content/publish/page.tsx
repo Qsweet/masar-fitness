@@ -4,7 +4,7 @@ import { DiffList } from "@/components/admin/content/diff-list";
 import { Alert, Card, EmptyState, PageHeader, uiStyles } from "@/components/admin/ui/kit";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
-import { formatNumber } from "@/i18n/format";
+import { countText } from "@/i18n/count";
 import { publishContentAction } from "@/server/admin/actions/content-publish";
 import { draftSummary, type DraftSummary } from "@/server/admin/content/overview";
 import { sealPublishToken } from "@/server/admin/content/publish-token";
@@ -18,9 +18,11 @@ export function generateMetadata(): Metadata {
 function Warnings({
   summary,
   text,
+  separator,
 }: {
   readonly summary: DraftSummary;
   readonly text: AdminDictionary["content"]["publish"];
+  readonly separator: string;
 }) {
   return (
     <>
@@ -28,7 +30,7 @@ function Warnings({
         <Alert tone="warning">
           <span>
             <strong>{text.lengthTitle}.</strong> {text.lengthLead}{" "}
-            <bdi>{summary.lengthWarnings.join("، ")}</bdi>
+            <bdi>{summary.lengthWarnings.join(separator)}</bdi>
           </span>
         </Alert>
       )}
@@ -70,8 +72,8 @@ export default async function ContentPublishPage() {
   return (
     <>
       <PageHeader title={text.publish.title} description={text.publish.lead} />
-      <Warnings summary={summary} text={text.publish} />
-      <Card title={fill(text.publish.count, { count: formatNumber(count) })}>
+      <Warnings summary={summary} text={text.publish} separator={text.listSeparator} />
+      <Card title={fill(text.publish.count, { count: countText(count, text.counts.changes) })}>
         <DiffList changes={summary.changes} text={text} />
       </Card>
       <Card title={text.publish.confirmTitle} narrow accent>

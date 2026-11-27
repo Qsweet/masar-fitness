@@ -49,7 +49,7 @@ export default async function ContentRollbackPage(
           <DiffList changes={changes} text={text} />
         )}
       </Card>
-      {isCurrent || latest === null ? null : (
+      {isCurrent || latest === null || changes.length === 0 ? null : (
         <Card narrow>
           {draft.dirty ? (
             <Alert tone="warning">

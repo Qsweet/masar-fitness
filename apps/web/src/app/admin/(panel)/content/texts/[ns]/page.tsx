@@ -6,7 +6,7 @@ import { TextsForm } from "@/components/admin/content/texts-form";
 import { Card, EmptyState, Notice, noticeText, PageHeader } from "@/components/admin/ui/kit";
 import { getAdminDictionary, lookup } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
-import { formatNumber } from "@/i18n/format";
+import { countText } from "@/i18n/count";
 import { saveTextsAction } from "@/server/admin/actions/content-texts";
 import { loadContentState } from "@/server/admin/content/state";
 import { formVersion, textRows } from "@/server/admin/content/texts-rows";
@@ -44,7 +44,7 @@ export default async function ContentNamespacePage(props: PageProps<"/admin/cont
     <>
       <PageHeader
         title={lookup(text.namespaces, ns, ns)}
-        description={fill(text.namespace.lead, { count: formatNumber(total) })}
+        description={fill(text.namespace.lead, { count: countText(total, text.counts.texts) })}
       />
       <Notice text={noticeText((await props.searchParams).done, dictionary)} />
       <Card title={text.namespace.editableTitle} description={text.namespace.editableLead}>

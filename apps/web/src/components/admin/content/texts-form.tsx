@@ -91,7 +91,7 @@ function LocaleSide({ row, locale, form, text }: SideProps) {
           {text.form.publishedNow} <bdi>{state.published}</bdi>
         </p>
       ) : null}
-      {state.overridden && !row.readOnly ? (
+      {(state.overridden || state.stored) && !row.readOnly ? (
         <button
           type="submit"
           name="revert"

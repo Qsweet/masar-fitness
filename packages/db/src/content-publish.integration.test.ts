@@ -1,5 +1,13 @@
 import { createHash } from "node:crypto";
-import { buildSnapshot, ok, pathOfKey, type LocaleOverrides } from "@masar/domain";
+import {
+  buildSnapshot,
+  DomainError,
+  err,
+  ok,
+  pathOfKey,
+  snapshotShape,
+  type LocaleOverrides,
+} from "@masar/domain";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   createDb,
@@ -51,8 +59,17 @@ const digestOf = (rows: readonly DraftRow[]) =>
     .update(JSON.stringify(snapshotOf(rows)))
     .digest("hex");
 
-const countOf = (from: unknown, to: unknown) =>
-  JSON.stringify(from) === JSON.stringify(to) ? 0 : 1;
+const empty = buildSnapshot(new Map());
+const shapeOf = (snapshot: unknown) => JSON.stringify(snapshotShape(snapshot) ?? empty);
+const countOf = (from: unknown, to: unknown) => (shapeOf(from) === shapeOf(to) ? 0 : 1);
+/** «متغيرة» في الاختبار: لقطة المسودة غير لقطة المنشور (السجل الحقيقي يُختبر في الويب). */
+const isDirty = (rows: readonly DraftRow[], published: unknown) =>
+  JSON.stringify(snapshotOf(rows)) !== shapeOf(published);
+const rebuild = (target: unknown, previous: unknown) => {
+  const snapshot = snapshotShape(target) ?? empty;
+  const digest = createHash("sha256").update(JSON.stringify(snapshot)).digest("hex");
+  return ok({ snapshot, digest, changedCount: countOf(previous, snapshot) });
+};
 
 async function setup() {
   const clubId = await createTestClub(db);
@@ -139,6 +156,48 @@ describe("publishContent", () => {
   });
 });
 
+describe("رفض الاسترجاع والتجاهل بلا أثر", () => {
+  it("استرجاع لا يغيّر شيئًا، ولقطة لا تمر بالتحقق الحالي، وتجاهل مسودة نظيفة: كلها مرفوضة", async () => {
+    const { clubId, who, edit, publish } = await setup();
+    await edit("hero.title", "واحد");
+    const first = await publish();
+    await edit("hero.lead", "ثانٍ");
+    const second = await publish();
+    await edit("hero.lead", "ثالث");
+    const third = await publish();
+    if (!first.ok || !second.ok || !third.ok) {
+      throw new Error("setup");
+    }
+    // الإصدار الثاني والثالث يختلفان؛ نعيد الثالث إلى نصوص الثاني ثم نطلب الثاني ثانية: لا تغيير
+    await edit("hero.lead", "ثانٍ");
+    const fourth = await publish();
+    if (!fourth.ok) {
+      throw new Error("setup");
+    }
+    const base = { ...who, expectedLatestId: fourth.value.id, isDirty, rebuild };
+    expect(await rollbackContent(db, { ...base, releaseId: second.value.id })).toMatchObject({
+      ok: false,
+      error: { reason: "content.nothing_to_rollback" },
+    });
+    const refused = await rollbackContent(db, {
+      ...base,
+      releaseId: first.value.id,
+      rebuild: () => err(new DomainError("validation", "content.draft_invalid")),
+    });
+    expect(refused).toMatchObject({ ok: false, error: { reason: "content.draft_invalid" } });
+    const clean = digestOf(await listDraftEntries(db, clubId));
+    expect(
+      await discardDraft(db, {
+        ...who,
+        expectedDraftDigest: clean,
+        draftDigest: digestOf,
+        isDirty,
+      }),
+    ).toMatchObject({ ok: false, error: { reason: "content.nothing_to_discard" } });
+    expect(await db.contentRelease.count({ where: { clubId } })).toBe(4);
+  });
+});
+
 describe("rollbackContent و discardDraft", () => {
   it("الاسترجاع مرفوض والمسودة متغيرة، ثم إصدار جديد بلقطة القديم والمسودة تُستبدل بها", async () => {
     const { clubId, who, edit, publish } = await setup();
@@ -154,8 +213,8 @@ describe("rollbackContent و discardDraft", () => {
       ...who,
       releaseId: first.value.id,
       expectedLatestId: second.value.id,
-      draftDigest: digestOf,
-      changedCount: countOf,
+      isDirty,
+      rebuild,
     };
     expect(await rollbackContent(db, input)).toMatchObject({
       ok: false,
@@ -164,7 +223,12 @@ describe("rollbackContent و discardDraft", () => {
 
     const dirty = digestOf(await listDraftEntries(db, clubId));
     expect(
-      await discardDraft(db, { ...who, expectedDraftDigest: dirty, draftDigest: digestOf }),
+      await discardDraft(db, {
+        ...who,
+        expectedDraftDigest: dirty,
+        draftDigest: digestOf,
+        isDirty,
+      }),
     ).toMatchObject({ ok: true });
     expect((await listDraftEntries(db, clubId)).map((row) => row.value?.value)).toEqual(["الثاني"]);
 
@@ -190,6 +254,7 @@ describe("rollbackContent و discardDraft", () => {
       ...who,
       expectedDraftDigest: "x",
       draftDigest: digestOf,
+      isDirty,
     });
     expect(result).toMatchObject({ ok: false, error: { reason: "content.draft_changed" } });
   });

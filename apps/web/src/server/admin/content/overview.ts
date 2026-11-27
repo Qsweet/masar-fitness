@@ -55,12 +55,12 @@ export async function draftSummary(clubId: string): Promise<DraftSummary> {
       ).length
     );
   }, 0);
-  const publishedDigest = state.published.head?.digest ?? contentDigest(new Map(), sha256Hex);
   return {
     changes,
     digest,
     head: state.published.head,
-    dirty: digest !== publishedDigest,
+    // التعريف نفسه في الاسترجاع والتجاهل (`isDraftDirty`): فرق في النص المعروض بالسجل الحالي
+    dirty: changes.length > 0,
     dropped: state.draft.dropped,
     baseChanged,
     lengthWarnings: lengthWarnings(changes),

@@ -21,9 +21,12 @@ export async function assertTestDatabase(db: Db): Promise<void> {
  */
 export async function resetCommerceTables(db: Db): Promise<void> {
   await assertTestDatabase(db);
+  // C1 يمنع TRUNCATE على الإصدارات (ومنه التفريغ المتتالي من staff_users): قاعدة اختبار فقط
+  await db.$executeRaw`ALTER TABLE content_releases DISABLE TRIGGER content_releases_forbid_truncate`;
   await db.$executeRaw`
     TRUNCATE manual_payments, staff_recovery_codes, staff_sessions, staff_users, payment_incidents, payment_attempts, audit_logs, refunds, memberships, order_discounts, order_items, orders, assessment_requests,
       promotion_products, promotions, product_addons, customers, content_releases, content_draft_entries RESTART IDENTITY CASCADE`;
+  await db.$executeRaw`ALTER TABLE content_releases ENABLE TRIGGER content_releases_forbid_truncate`;
   const testClubs = { club: { slug: { startsWith: TEST_CLUB_SLUG_PREFIX } } };
   await db.productBenefit.deleteMany({ where: { version: { product: testClubs } } });
   await db.productVersion.deleteMany({ where: { product: testClubs } });

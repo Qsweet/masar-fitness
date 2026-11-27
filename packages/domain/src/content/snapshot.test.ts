@@ -40,6 +40,15 @@ describe("parseSnapshot", () => {
     ]);
   });
 
+  it("تجاوز يساوي الافتراضي الحالي (صار أصلًا بنشر كود) ليس تجاوزًا ولا معطّلًا", () => {
+    const parsed = parseSnapshot(
+      { v: 1, texts: { "hero.title": { ar: base("أقوى نسخة منك"), en: base("New") } } },
+      registry,
+    );
+    expect(parsed?.texts).toEqual(new Map([["hero.title", { en: base("New") }]]));
+    expect(parsed?.dropped).toEqual([]);
+  });
+
   it("إصدار مخطط مجهول أو شكل آخر ⇒ null", () => {
     expect(parseSnapshot({ v: 2, texts: {} }, registry)).toBeNull();
     expect(parseSnapshot([], registry)).toBeNull();

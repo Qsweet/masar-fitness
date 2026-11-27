@@ -1,13 +1,18 @@
 import { CONTENT_LOCALES, type ContentLocale } from "./locale";
 import type { TextRegistry } from "./registry";
 import { buildSnapshot, type Snapshot, type TextOverrides } from "./snapshot";
+import { EMPTY_SLIDER, type SliderState } from "./slider/types";
 
 /**
  * بصمة المحتوى والفرق بين مجموعتي تجاوزات (ADMIN_A3_CONTENT §8.1). البصمة على الشكل القانوني (مرتب
  * بالمسار ثم اللغة)، فالترتيب الذي كُتبت به المسودة لا يغيّرها. دالة التجزئة تُحقن (المجال بلا منصة).
  */
-export function contentDigest(texts: TextOverrides, sha256Hex: (text: string) => string): string {
-  return sha256Hex(JSON.stringify(buildSnapshot(texts)));
+export function contentDigest(
+  texts: TextOverrides,
+  sha256Hex: (text: string) => string,
+  slider: SliderState = EMPTY_SLIDER,
+): string {
+  return sha256Hex(JSON.stringify(buildSnapshot(texts, slider)));
 }
 
 /** لقطة الإصدار ← صفوف مسودة بالمفاتيح نفسها (الاسترجاع والتجاهل يعيدان المسودة إلى إصدار). */

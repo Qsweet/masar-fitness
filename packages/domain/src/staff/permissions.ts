@@ -8,7 +8,8 @@ import type { StaffRole } from "./roles";
  * فهي للمالك والمدير وحدهما؛ و`sales.settings` سياسات مختومة على كل طلب، فهي للمالك وحده.
  * صلاحيات المحتوى (ADMIN_A3_CONTENT §2): القراءة (ومعها المعاينة) والكتابة في المسودة للمحرر أيضًا؛
  * `content.facts` اسم النادي وحقائقه (خطأ فيها يدّعي أو يضلّل)، و`content.publish` ما يغيّر الموقع
- * الحي (النشر والاسترجاع وتجاهل المسودة)، فهما للمالك والمدير. `content.purge` تُضاف مع مكتبة الصور.
+ * الحي (النشر والاسترجاع وتجاهل المسودة)، فهما للمالك والمدير. `content.purge` حذف صورة من المكتبة
+ * نهائيًا (لا رجعة فيه)، فهو للمالك وحده (ADMIN_A3_SLIDER §6.3).
  */
 export const PERMISSIONS = [
   "staff.manage",
@@ -31,6 +32,7 @@ export const PERMISSIONS = [
   "content.write",
   "content.facts",
   "content.publish",
+  "content.purge",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -78,6 +80,7 @@ const ROLE_PERMISSIONS: Readonly<Record<StaffRole, readonly Permission[]>> = {
     ...SALES_MANAGEMENT,
     "sales.settings",
     ...CONTENT_MANAGEMENT,
+    "content.purge",
   ],
   manager: [
     "audit.read",

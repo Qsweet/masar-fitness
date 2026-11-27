@@ -15,7 +15,9 @@ export type AuditEntityType =
   | "promotion"
   | "club"
   | "content_release"
-  | "content_draft";
+  | "content_draft"
+  | "content_slide"
+  | "media_asset";
 export type AuditActor = "system" | "customer" | "staff" | "provider";
 /** موظف اللوحة بمعرّفه: `staff:<uuid>` (قيد `audit_logs_actor_known`). */
 export type StaffAuditActor = `staff:${string}`;

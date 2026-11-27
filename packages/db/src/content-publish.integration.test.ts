@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import {
   buildSnapshot,
   DomainError,
+  EMPTY_SLIDER,
   err,
   ok,
   pathOfKey,
@@ -68,7 +69,7 @@ const isDirty = (rows: readonly DraftRow[], published: unknown) =>
 const rebuild = (target: unknown, previous: unknown) => {
   const snapshot = snapshotShape(target) ?? empty;
   const digest = createHash("sha256").update(JSON.stringify(snapshot)).digest("hex");
-  return ok({ snapshot, digest, changedCount: countOf(previous, snapshot) });
+  return ok({ snapshot, digest, changedCount: countOf(previous, snapshot), slider: EMPTY_SLIDER });
 };
 
 async function setup() {
@@ -104,6 +105,7 @@ async function setup() {
           snapshot,
           digest: digestOf(current),
           changedCount: countOf(previous, snapshot),
+          slider: EMPTY_SLIDER,
         });
       },
     });
@@ -134,7 +136,13 @@ describe("publishContent", () => {
       ...who,
       expectedDigest: reviewed,
       expectedLatestId: null,
-      build: (rows) => ok({ snapshot: snapshotOf(rows), digest: digestOf(rows), changedCount: 1 }),
+      build: (rows) =>
+        ok({
+          snapshot: snapshotOf(rows),
+          digest: digestOf(rows),
+          changedCount: 1,
+          slider: EMPTY_SLIDER,
+        }),
     });
     expect(result).toMatchObject({ ok: false, error: { reason: "content.draft_changed" } });
     expect(await latestRelease(db, clubId)).toBeNull();

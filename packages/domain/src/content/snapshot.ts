@@ -1,6 +1,9 @@
 import { CONTENT_LOCALES, isContentLocale, type ContentLocale } from "./locale";
 import { CONTENT_PATH_SHAPE } from "./paths";
 import type { TextRegistry } from "./registry";
+import { parseSliderSnapshot, type ParsedSlider } from "./slider/parse";
+import { sliderJson, type SliderJson } from "./slider/serialize";
+import { EMPTY_SLIDER, isEmptySlider, type SliderState } from "./slider/types";
 import { structuralIssue } from "./text-override";
 
 /**
@@ -24,7 +27,12 @@ export type TextOverrides = ReadonlyMap<string, LocaleOverrides>;
 export interface Snapshot {
   readonly v: typeof SNAPSHOT_VERSION;
   readonly texts: Readonly<Record<string, LocaleOverrides>>;
+  /** الشريط تحت الواجهة (ADMIN_A3_SLIDER §7)؛ غائب في إصدار بلا شريط. */
+  readonly slider?: SliderJson;
 }
+
+/** مفاتيح اللقطة المعروفة؛ ما سواها يُسقط ولا يُقرأ. */
+const SNAPSHOT_KEYS: readonly string[] = ["v", "texts", "slider"];
 
 export interface ParsedSnapshot {
   readonly texts: TextOverrides;
@@ -77,7 +85,7 @@ export function parseSnapshot(json: unknown, registry: TextRegistry): ParsedSnap
     return null;
   }
   const dropped: string[] = Object.keys(json)
-    .filter((key) => key !== "v" && key !== "texts")
+    .filter((key) => !SNAPSHOT_KEYS.includes(key))
     .map((key) => `${key} [*]`);
   const texts = new Map<string, LocaleOverrides>();
   for (const [path, raw] of Object.entries(json.texts)) {
@@ -91,12 +99,23 @@ export function parseSnapshot(json: unknown, registry: TextRegistry): ParsedSnap
   return { texts, dropped };
 }
 
-/** الشكل القانوني للتخزين والبصمة: المسارات مرتبة، واللغات بترتيبها الثابت. */
-export function buildSnapshot(texts: TextOverrides): Snapshot {
+/** الشريط في لقطة إصدار: شريط فارغ للقطة بلا شريط أو بشكل غير معروف. */
+export function snapshotSlider(json: unknown): ParsedSlider {
+  if (!isRecord(json) || json.v !== SNAPSHOT_VERSION) {
+    return { slider: EMPTY_SLIDER, dropped: [] };
+  }
+  return parseSliderSnapshot(json.slider);
+}
+
+/**
+ * الشكل القانوني للتخزين والبصمة: المسارات مرتبة، واللغات بترتيبها الثابت، والشريط بشكله القانوني
+ * حين لا يكون فارغًا (فبصمة مسودة بلا شريط كما كانت قبله).
+ */
+export function buildSnapshot(texts: TextOverrides, slider: SliderState = EMPTY_SLIDER): Snapshot {
   const sorted = [...texts.entries()]
     .filter(([, locales]) => Object.keys(locales).length > 0)
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-  return {
+  const snapshot: Snapshot = {
     v: SNAPSHOT_VERSION,
     texts: Object.fromEntries(
       sorted.map(([path, locales]) => [
@@ -112,6 +131,7 @@ export function buildSnapshot(texts: TextOverrides): Snapshot {
       ]),
     ),
   };
+  return isEmptySlider(slider) ? snapshot : { ...snapshot, slider: sliderJson(slider) };
 }
 
 /**

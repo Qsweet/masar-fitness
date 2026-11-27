@@ -5,3 +5,4 @@ export * from "./commerce-orders";
 export * from "./payments-fixtures";
 export { assertTestDatabase, resetCommerceTables } from "./reset-database";
 export * from "./staff-fixtures";
+export * from "./media-fixtures";

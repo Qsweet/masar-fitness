@@ -24,6 +24,7 @@ const TABLE: Readonly<Record<Permission, readonly [boolean, boolean, boolean, bo
   "content.write": [true, true, true, false],
   "content.facts": [true, true, false, false],
   "content.publish": [true, true, false, false],
+  "content.purge": [true, false, false, false],
 };
 const COLUMNS: readonly StaffRole[] = ["owner", "manager", "editor", "sales"];
 
@@ -76,6 +77,7 @@ describe("خريطة الصلاحيات", () => {
       STAFF_ROLES.filter((role) => hasPermission(role, permission));
     expect(can("content.publish")).toEqual(["owner", "manager"]);
     expect(can("content.facts")).toEqual(["owner", "manager"]);
+    expect(can("content.purge")).toEqual(["owner"]);
     expect(can("content.write")).toEqual(["owner", "manager", "editor"]);
     expect(
       permissionsOf("sales").filter((permission) => permission.startsWith("content.")),

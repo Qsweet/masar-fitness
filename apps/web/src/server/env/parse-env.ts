@@ -61,6 +61,15 @@ const rawSchema = z.object({
    * اللوحة (404)، وقيمة ناقصة أو قصيرة ترفض الإقلاع (docs/ADMIN_DESIGN.md §4.1).
    */
   ADMIN_SECRET_KEY: optionalText,
+  /**
+   * مجلد الصور المرفوعة على الخادم (docs/ADMIN_A3_SLIDER.md §6.4): مسار مطلق، وحدة `media-data` في
+   * الحاوية. بلا قيمة لا رفع ولا خدمة لصور مرفوعة.
+   */
+  MEDIA_DIR: optionalText,
+  /** رفع الصور من اللوحة: "yes" حرفيًا، ويشترط MEDIA_DIR. مطفأ افتراضيًا. */
+  MEDIA_UPLOADS: optionalText,
+  /** "yes" فقط حين توجد نسخة يومية مشفرة خارج الخادم للقاعدة ولـMEDIA_DIR؛ وإلا تنبيه في اللوحة. */
+  BACKUP_CONFIGURED: optionalText,
 });
 
 type RawEnv = z.infer<typeof rawSchema>;
@@ -156,6 +165,9 @@ const envSchema = rawSchema
       CHECKOUT_PREVIEW: env.CHECKOUT_PREVIEW === EXPLICIT_YES,
       /** مفتاح اللوحة مفكوكًا، أو null واللوحة مغلقة. */
       ADMIN_SECRET_KEY: adminKey ?? null,
+      MEDIA_DIR: env.MEDIA_DIR ?? null,
+      MEDIA_UPLOADS: env.MEDIA_UPLOADS === EXPLICIT_YES,
+      BACKUP_CONFIGURED: env.BACKUP_CONFIGURED === EXPLICIT_YES,
     };
   })
   .refine((env) => env.NODE_ENV !== "production" || isSecureOrLoopback(env.SITE_URL), {
@@ -182,6 +194,14 @@ const envSchema = rawSchema
         "must stay off in production: a public sandbox preview needs PAYMENTS_PUBLIC_SANDBOX=yes, Moyasar test mode and SITE_INDEXABLE off",
     },
   )
+  .refine((env) => env.MEDIA_DIR === null || env.MEDIA_DIR.startsWith("/"), {
+    path: ["MEDIA_DIR"],
+    error: "must be an absolute path",
+  })
+  .refine((env) => !env.MEDIA_UPLOADS || env.MEDIA_DIR !== null, {
+    path: ["MEDIA_UPLOADS"],
+    error: "needs MEDIA_DIR: uploaded images are written there",
+  })
   // المعاينة لا تجتمع مع فهرسة ولا مع مزوّد دفع: إن ضُبط أحدهما يُرفض الإقلاع بدل تجاهل العلم
   .refine((env) => !env.CHECKOUT_PREVIEW || isPaymentFreePreview(env), {
     path: ["CHECKOUT_PREVIEW"],

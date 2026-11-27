@@ -11,6 +11,7 @@ import {
   MAX_PHONE_LOOKUPS_PER_STAFF,
   MAX_PHONE_REVEALS_PER_STAFF,
 } from "@/config/admin";
+import { MAX_UPLOADS_PER_STAFF } from "@/config/media-library";
 import { createRateLimiter, type RateLimiter } from "../rate-limit/fixed-window";
 
 interface AdminLimiters {
@@ -22,6 +23,7 @@ interface AdminLimiters {
   readonly phoneLookupByStaff: RateLimiter;
   readonly phoneRevealByStaff: RateLimiter;
   readonly manualSettleByStaff: RateLimiter;
+  readonly mediaUploadByStaff: RateLimiter;
 }
 
 function limiter(limit: number): RateLimiter {
@@ -45,6 +47,7 @@ function limiters(): AdminLimiters {
     phoneLookupByStaff: limiter(MAX_PHONE_LOOKUPS_PER_STAFF),
     phoneRevealByStaff: limiter(MAX_PHONE_REVEALS_PER_STAFF),
     manualSettleByStaff: limiter(MAX_MANUAL_SETTLE_ATTEMPTS_PER_STAFF),
+    mediaUploadByStaff: limiter(MAX_UPLOADS_PER_STAFF),
   };
   return globalForThrottle.masarAdminLimiters;
 }
@@ -87,4 +90,9 @@ export function allowPhoneReveal(staffId: string): boolean {
 
 export function allowManualSettle(staffId: string): boolean {
   return limiters().manualSettleByStaff.consume(staffId, Date.now());
+}
+
+/** رفع صورة إلى المكتبة (ADMIN_A3_SLIDER §6.1): إعادة الترميز ثقيلة، فحدّ لكل موظف ناجحًا أو مرفوضًا. */
+export function allowMediaUpload(staffId: string): boolean {
+  return limiters().mediaUploadByStaff.consume(staffId, Date.now());
 }

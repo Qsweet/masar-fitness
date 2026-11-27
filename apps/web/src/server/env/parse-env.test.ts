@@ -38,6 +38,9 @@ describe("parseEnv", () => {
       PAYMENTS_PUBLIC_SANDBOX: false,
       CHECKOUT_PREVIEW: false,
       ADMIN_SECRET_KEY: null,
+      MEDIA_DIR: null,
+      MEDIA_UPLOADS: false,
+      BACKUP_CONFIGURED: false,
     });
   });
 

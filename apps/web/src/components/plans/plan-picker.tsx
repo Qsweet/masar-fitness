@@ -89,6 +89,27 @@ function useHydrated(): boolean {
   );
 }
 
+const CHECKED = `#${PICKER_ID} input[name="plan"]:checked`;
+
+function subscribeChanges(onChange: () => void): () => void {
+  document.addEventListener("change", onChange);
+  return () => {
+    document.removeEventListener("change", onChange);
+  };
+}
+
+/**
+ * الاشتراك المختار مصدره الراديو نفسه في الصفحة لا حالة React: اختيار قبل اكتمال التحميل (والصفحة
+ * تعمل بلا JavaScript) يبقى بعده، ولا يعيده الترطيب إلى الاختيار الأول.
+ */
+function useCheckedPlan(initialSlug: string): string {
+  return useSyncExternalStore(
+    subscribeChanges,
+    () => document.querySelector<HTMLInputElement>(CHECKED)?.value ?? initialSlug,
+    () => initialSlug,
+  );
+}
+
 /** ما يُعلَن لقارئ الشاشة بعد تغيير المدة: الاسم والإجمالي والمدة كاملة. */
 function selectionText(plan: PlanView, labels: Dictionary["plans"]): string {
   return fill(labels.selection, {
@@ -104,25 +125,20 @@ function selectionText(plan: PlanView, labels: Dictionary["plans"]): string {
  */
 export function PlanPicker(props: PlanPickerProps) {
   const { plans, initialSlug, labels, planLabels, more } = props;
-  const [slug, setSlug] = useState(initialSlug);
+  const slug = useCheckedPlan(initialSlug);
   const [previousAmount, setPreviousAmount] = useState<string | undefined>(undefined);
   const hydrated = useHydrated();
   const selected = plans.find((plan) => plan.slug === slug) ?? plans[0];
   if (selected === undefined) {
     return null;
   }
-  const select = (next: string) => {
+  // الاختيار نفسه من الراديو (المخزن أعلاه)؛ هنا يُحفظ المبلغ المعروض قبله ليدور منه السعر
+  const select = () => {
     setPreviousAmount(selected.price.amount);
-    setSlug(next);
   };
   return (
     <div id={PICKER_ID} className={styles.picker} data-hydrated={hydrated ? "" : undefined}>
-      <DurationSwitch
-        plans={plans}
-        selectedSlug={selected.slug}
-        labels={labels}
-        onSelect={select}
-      />
+      <DurationSwitch plans={plans} initialSlug={initialSlug} labels={labels} onSelect={select} />
       <PlanCard
         plans={plans}
         activeSlug={selected.slug}

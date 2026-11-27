@@ -6,7 +6,7 @@ import { ScrollReset } from "@/components/scroll-reset";
 import { StagingNote } from "@/components/staging-note";
 import { directionOf, isLocale, LOCALES } from "@/i18n/locales";
 import { getSiteContent } from "@/server/content/site-content";
-import { alexandria } from "../fonts";
+import { fontVariables } from "../fonts";
 import "../globals.css";
 import "../patterns.css";
 
@@ -41,7 +41,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     <html
       lang={locale}
       dir={directionOf(locale)}
-      className={alexandria.variable}
+      className={fontVariables}
       data-scroll-behavior="smooth"
     >
       <body>

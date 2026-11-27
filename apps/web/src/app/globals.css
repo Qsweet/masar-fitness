@@ -61,7 +61,7 @@
   --radius-lg: 1.5rem;
   --radius-pill: 999px;
   /* خط واحد للنص والعناوين والأرقام: Alexandria مستضاف ذاتيًا؛ العناوين بأثقل أوزانه كحروف الشعار */
-  --font: var(--font-alexandria), system-ui, sans-serif;
+  --font: var(--font-alexandria-latin), var(--font-alexandria-arabic), system-ui, sans-serif;
   --weight-display: 900;
   /* ميل الأرقام الكبيرة والعناوين اللاتينية كميل كلمة MASTERS في الشعار */
   --slant: italic;

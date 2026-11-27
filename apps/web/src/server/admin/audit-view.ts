@@ -93,6 +93,7 @@ function codeMaps(
     startRuleBefore: statuses.startRule,
     startRuleAfter: statuses.startRule,
     target: dictionary.content.namespaces,
+    platform: text.platforms,
   };
 }
 

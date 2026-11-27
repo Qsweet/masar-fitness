@@ -36,7 +36,13 @@ export const ADMIN_ROUTES = {
   contentSliderNew: `${ADMIN_PATH}/content/slider/new`,
   contentMedia: `${ADMIN_PATH}/content/media`,
   contentMediaUpload: `${ADMIN_PATH}/content/media/upload`,
+  integrations: `${ADMIN_PATH}/integrations`,
 } as const;
+
+/** صفحة منصة ربط واحدة (‎/admin/integrations/meta‎). */
+export function integrationPath(provider: string): string {
+  return `${ADMIN_ROUTES.integrations}/${provider}`;
+}
 
 export function staffMemberPath(id: string): string {
   return `${ADMIN_ROUTES.staff}/${id}`;
@@ -189,6 +195,8 @@ export const MAX_PHONE_LOOKUPS_PER_STAFF = 20;
 export const MAX_PHONE_REVEALS_PER_STAFF = 30;
 /** محاولات تسجيل دفع يدوي لموظف واحد في النافذة، ناجحة أو مرفوضة. */
 export const MAX_MANUAL_SETTLE_ATTEMPTS_PER_STAFF = 10;
+/** أحداث الاختبار إلى منصات القياس لكل موظف في النافذة (ADMIN_A5_TRACKING §8): طلب خارجي حقيقي. */
+export const MAX_TRACKING_TESTS_PER_STAFF = 10;
 export const MAX_ADMIN_THROTTLE_KEYS = 5_000;
 
 /** لا يُحدَّث «آخر نشاط» للجلسة أكثر من مرة في هذه المدة: كتابة واحدة في الدقيقة تكفي لحد الخمول. */

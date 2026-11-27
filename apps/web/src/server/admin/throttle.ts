@@ -10,6 +10,7 @@ import {
   MAX_MFA_ATTEMPTS_PER_STAFF,
   MAX_PHONE_LOOKUPS_PER_STAFF,
   MAX_PHONE_REVEALS_PER_STAFF,
+  MAX_TRACKING_TESTS_PER_STAFF,
 } from "@/config/admin";
 import { MAX_UPLOADS_PER_STAFF } from "@/config/media-library";
 import { createRateLimiter, type RateLimiter } from "../rate-limit/fixed-window";
@@ -24,6 +25,7 @@ interface AdminLimiters {
   readonly phoneRevealByStaff: RateLimiter;
   readonly manualSettleByStaff: RateLimiter;
   readonly mediaUploadByStaff: RateLimiter;
+  readonly trackingTestByStaff: RateLimiter;
 }
 
 function limiter(limit: number): RateLimiter {
@@ -48,6 +50,7 @@ function limiters(): AdminLimiters {
     phoneRevealByStaff: limiter(MAX_PHONE_REVEALS_PER_STAFF),
     manualSettleByStaff: limiter(MAX_MANUAL_SETTLE_ATTEMPTS_PER_STAFF),
     mediaUploadByStaff: limiter(MAX_UPLOADS_PER_STAFF),
+    trackingTestByStaff: limiter(MAX_TRACKING_TESTS_PER_STAFF),
   };
   return globalForThrottle.masarAdminLimiters;
 }
@@ -90,6 +93,11 @@ export function allowPhoneReveal(staffId: string): boolean {
 
 export function allowManualSettle(staffId: string): boolean {
   return limiters().manualSettleByStaff.consume(staffId, Date.now());
+}
+
+/** حدث اختبار إلى منصة قياس: طلب خارجي حقيقي، فحدّ لكل موظف ناجحًا أو مرفوضًا. */
+export function allowTrackingTest(staffId: string): boolean {
+  return limiters().trackingTestByStaff.consume(staffId, Date.now());
 }
 
 /** رفع صورة إلى المكتبة (ADMIN_A3_SLIDER §6.1): إعادة الترميز ثقيلة، فحدّ لكل موظف ناجحًا أو مرفوضًا. */

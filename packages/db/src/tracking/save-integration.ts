@@ -102,8 +102,8 @@ async function saveInTransaction(
     toState: input.enabled ? "enabled" : "disabled",
     actor: input.actor,
     data: {
-      provider: input.provider,
-      fields: fields.join(","),
+      platform: input.provider,
+      ...(fields.length === 0 ? {} : { changed: fields.join(",") }),
       testEventCodeChanged: testCodeChanged,
       secretChanged,
     },

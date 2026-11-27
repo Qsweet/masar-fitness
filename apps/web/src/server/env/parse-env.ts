@@ -75,6 +75,11 @@ const rawSchema = z.object({
   BACKUP_CONFIGURED: optionalText,
   /** مجلد سجل النسخ الآلي (وحدة `backup-status` للقراءة فقط): مسار مطلق. بلا قيمة لا سجل يُقرأ. */
   BACKUP_STATUS_DIR: optionalText,
+  /**
+   * ناقل التحويلات الخادمية (ADMIN_A5_TRACKING §10): "fake" لا يرسل شيئًا لأي منصة (اختبارات المتصفح)،
+   * ولا يُقبل إلا على عنوان الجهاز. غيابه = الإرسال الحقيقي حين يفعّل المالك منصة من اللوحة.
+   */
+  TRACKING_TRANSPORT: z.enum(["live", "fake"]).default("live"),
 });
 
 type RawEnv = z.infer<typeof rawSchema>;
@@ -174,6 +179,7 @@ const envSchema = rawSchema
       MEDIA_UPLOADS: env.MEDIA_UPLOADS === EXPLICIT_YES,
       BACKUP_CONFIGURED: env.BACKUP_CONFIGURED === EXPLICIT_YES,
       BACKUP_STATUS_DIR: env.BACKUP_STATUS_DIR ?? null,
+      TRACKING_TRANSPORT: env.TRACKING_TRANSPORT,
     };
   })
   .refine((env) => env.NODE_ENV !== "production" || isSecureOrLoopback(env.SITE_URL), {
@@ -211,6 +217,10 @@ const envSchema = rawSchema
   .refine((env) => !env.MEDIA_UPLOADS || env.MEDIA_DIR !== null, {
     path: ["MEDIA_UPLOADS"],
     error: "needs MEDIA_DIR: uploaded images are written there",
+  })
+  .refine((env) => env.TRACKING_TRANSPORT === "live" || isLoopback(env.SITE_URL), {
+    path: ["TRACKING_TRANSPORT"],
+    error: "fake sends nothing and is for local tests: SITE_URL must be a loopback address",
   })
   // المعاينة لا تجتمع مع فهرسة ولا مع مزوّد دفع: إن ضُبط أحدهما يُرفض الإقلاع بدل تجاهل العلم
   .refine((env) => !env.CHECKOUT_PREVIEW || isPaymentFreePreview(env), {

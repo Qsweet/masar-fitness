@@ -3,6 +3,7 @@ import { backupAr } from "./backup-ar";
 import { contentAr, contentErrorsAr, contentNoticesAr } from "./content-ar";
 import { mediaAr, sliderErrorsAr, sliderNoticesAr } from "./media-ar";
 import { errorPageAr } from "./error-ar";
+import { integrationsAr, integrationsErrorsAr, integrationsNoticesAr } from "./integrations-ar";
 import { shellAr } from "./shell-ar";
 import { sliderAr } from "./slider-ar";
 import { overviewAr } from "./overview-ar";
@@ -24,6 +25,7 @@ export const adminAr = {
     ...sliderAr.nav,
     staff: "الموظفون",
     audit: "سجل التدقيق",
+    integrations: integrationsAr.nav,
     account: "حسابي",
     logout: "خروج",
     viewSite: "عرض الموقع",
@@ -87,6 +89,7 @@ export const adminAr = {
     ...salesErrorsAr,
     ...contentErrorsAr,
     ...sliderErrorsAr,
+    ...integrationsErrorsAr,
   },
   notices: {
     password_changed: "غُيّرت كلمة المرور، وأُلغيت جلساتك الأخرى.",
@@ -100,6 +103,7 @@ export const adminAr = {
     ...salesNoticesAr,
     ...contentNoticesAr,
     ...sliderNoticesAr,
+    ...integrationsNoticesAr,
   },
   login: {
     title: "دخول الموظفين",
@@ -212,6 +216,7 @@ export const adminAr = {
     selfNote: "هذا حسابك. غيّر كلمة مرورك وراجع جلساتك من «حسابي».",
   },
   audit: auditAr,
+  integrations: integrationsAr,
   account: {
     title: "حسابي",
     lead: "بياناتك وكلمة مرورك وجلساتك المفتوحة.",

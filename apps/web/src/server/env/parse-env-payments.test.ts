@@ -76,6 +76,7 @@ describe("parseEnv: الدفع اختياري ومغلق افتراضيًا", ()
       "PAYMENTS_PUBLIC_SANDBOX",
       "SITE_INDEXABLE",
       "SITE_URL",
+      "TRACKING_TRANSPORT",
     ]);
   });
 

@@ -1,4 +1,5 @@
 import { contentAuditActionsAr, contentAuditDetailsAr } from "./content-ar";
+import { integrationsAuditAr } from "./integrations-ar";
 import { sliderAuditActionsAr, sliderAuditDetailsAr } from "./media-ar";
 import {
   salesAr,
@@ -44,6 +45,7 @@ export const auditAr = {
     content_draft: "مسودة المحتوى",
     content_slide: "شريحة",
     media_asset: "صورة",
+    tracking_integration: "إعداد الربط",
   },
   actors: { staff: "موظف", system: "النظام", customer: "عميل", provider: "مزوّد الدفع" },
   unknownStaff: "موظف غير معروف",
@@ -67,7 +69,12 @@ export const auditAr = {
     session_revoked: "أُلغيت جلسة",
   },
   /** أحداث البيع والدفع: تُعرض في السجل والخط الزمني بالنص نفسه. */
-  salesActions: { ...salesAuditActionsAr, ...contentAuditActionsAr, ...sliderAuditActionsAr },
+  salesActions: {
+    ...salesAuditActionsAr,
+    ...contentAuditActionsAr,
+    ...sliderAuditActionsAr,
+    ...integrationsAuditAr.actions,
+  },
   details: {
     ip: "العنوان",
     reason: "السبب",
@@ -77,6 +84,7 @@ export const auditAr = {
     ...salesAuditDetailsAr,
     ...contentAuditDetailsAr,
     ...sliderAuditDetailsAr,
+    ...integrationsAuditAr.details,
   },
   reasons: {
     bad_password: "كلمة مرور خاطئة",
@@ -92,4 +100,6 @@ export const auditAr = {
     ...salesAr.statuses.manualMethod,
   },
   ...salesAuditValuesAr,
+  changedFields: { ...salesAuditValuesAr.changedFields, ...integrationsAuditAr.changedFields },
+  platforms: integrationsAuditAr.platforms,
 } as const;

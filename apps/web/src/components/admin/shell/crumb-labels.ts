@@ -14,6 +14,7 @@ import {
   releaseRollbackPath,
   slidePath,
   slideRemovePath,
+  integrationPath,
   staffMemberPath,
 } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
@@ -31,6 +32,13 @@ export function crumbLabels(dictionary: AdminDictionary): Record<string, string>
     [ADMIN_ROUTES.staffNew]: staffNew.title,
     [staffMemberPath("*")]: breadcrumbs.staffMember,
     [ADMIN_ROUTES.audit]: nav.audit,
+    [ADMIN_ROUTES.integrations]: nav.integrations,
+    ...Object.fromEntries(
+      Object.entries(dictionary.integrations.providers).map(([provider, item]) => [
+        integrationPath(provider),
+        item.name,
+      ]),
+    ),
     [ADMIN_ROUTES.account]: nav.account,
     [ADMIN_ROUTES.search]: dictionary.shell.searchPage.title,
     [ADMIN_ROUTES.sales]: sales.breadcrumbs.group,

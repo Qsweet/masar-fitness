@@ -1,0 +1,58 @@
+/* «الربط والقياس» (ADMIN_A5_TRACKING §8): بلاطات المنصات بعمودين أو ثلاثة، وعمود واحد على الهاتف. */
+.tiles {
+  display: grid;
+  gap: var(--a-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  margin: 0 0 var(--a-6);
+  padding: 0;
+  list-style: none;
+}
+
+.tile {
+  display: grid;
+  gap: var(--a-2);
+  align-content: start;
+  padding: var(--a-5);
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-surface);
+  box-shadow: var(--a-shadow-1);
+}
+
+.tileHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--a-2);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tileName {
+  margin: 0;
+  font-size: var(--a-fs-title);
+  font-weight: 700;
+}
+
+.tileLead {
+  margin: 0;
+  color: var(--a-muted);
+  font-size: var(--a-fs-small);
+  line-height: var(--a-lh-body);
+}
+
+.tileIds {
+  margin: 0;
+  color: var(--a-muted);
+  font-family: var(--a-mono);
+  font-size: var(--a-fs-caption);
+}
+
+.tileLink {
+  justify-self: start;
+  margin-top: var(--a-2);
+}
+
+.reason {
+  color: var(--a-muted);
+  font-size: var(--a-fs-caption);
+}

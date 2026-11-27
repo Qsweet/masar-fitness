@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   // الحزم الداخلية تُصدَّر كمصدر TypeScript وتُترجَم هنا
-  transpilePackages: ["@masar/db", "@masar/domain", "@masar/payments"],
+  transpilePackages: ["@masar/db", "@masar/domain", "@masar/payments", "@masar/tracking"],
   // العنوان والوصف في <head> قبل الجسم لكل زائر وزاحف (القرار 72): منذ صار الوصف يُقرأ من المحتوى
   // المنشور (استعلام صغير) كان Next سيبثّه بعد الجسم أحيانًا، فيختلف الرد بالتوقيت ويفوت الزواحف
   // ومعاينات الروابط التي لا تنفّذ JavaScript وليست في قائمته الافتراضية

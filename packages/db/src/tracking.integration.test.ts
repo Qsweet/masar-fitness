@@ -117,8 +117,8 @@ describe("إعداد المنصة", () => {
     expect(JSON.stringify(audit[0]?.data)).not.toContain(SEALED);
     expect(JSON.stringify(audit[0]?.data)).not.toContain("abcd");
     expect(audit[0]?.data).toMatchObject({
-      provider: "meta",
-      fields: "pixelId",
+      platform: "meta",
+      changed: "pixelId",
       secretChanged: true,
     });
   });

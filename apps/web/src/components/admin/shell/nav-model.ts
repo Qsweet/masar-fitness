@@ -34,6 +34,7 @@ export type NavKey =
   | "contentPublishing"
   | "staff"
   | "audit"
+  | "integrations"
   | "account";
 type GroupKey = keyof AdminDictionary["nav"]["groups"];
 
@@ -110,6 +111,12 @@ const GROUPS: readonly { readonly id: GroupKey; readonly sections: readonly Sect
     sections: [
       { key: "staff", href: ADMIN_ROUTES.staff, icon: "staff", permission: "staff.manage" },
       { key: "audit", href: ADMIN_ROUTES.audit, icon: "audit", permission: "audit.read" },
+      {
+        key: "integrations",
+        href: ADMIN_ROUTES.integrations,
+        icon: "plug",
+        permission: "integrations.manage",
+      },
     ],
   },
   {

@@ -55,6 +55,7 @@ test("المالك والمدير يريان المبيعات ويسجّلان �
     TEXT.nav.contentMedia,
     TEXT.nav.contentPublishing,
     TEXT.nav.audit,
+    TEXT.nav.integrations,
     TEXT.nav.account,
   ]);
   await page.goto(orderUrl(order));

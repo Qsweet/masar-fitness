@@ -1,13 +1,12 @@
 import { hasPermission, isServerProvider, isTrackingProvider } from "@masar/domain";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { AdminForm } from "@/components/admin/admin-form";
 import { ProviderForm } from "@/components/admin/integrations/provider-form";
+import { TestEventCard } from "@/components/admin/integrations/test-event-card";
 import { TrackingLog } from "@/components/admin/integrations/tracking-log";
-import { Badge, Card, CardLink, Notice, noticeText, PageHeader } from "@/components/admin/ui/kit";
+import { Badge, ButtonLink, Card, Notice, noticeText, PageHeader } from "@/components/admin/ui/kit";
 import { ADMIN_ROUTES, FALLBACK_TIMEZONE } from "@/config/admin";
 import { getAdminDictionary } from "@/i18n/admin";
-import { sendTestEventAction } from "@/server/admin/actions/integrations";
 import { staffClub } from "@/server/admin/club";
 import { requireStaff } from "@/server/admin/guard";
 import { loadProviderView } from "@/server/admin/integrations/view";
@@ -47,7 +46,9 @@ export default async function IntegrationPage(props: Props) {
           </Badge>
         }
       >
-        <CardLink href={ADMIN_ROUTES.integrations}>{text.backToHub}</CardLink>
+        <ButtonLink href={ADMIN_ROUTES.integrations} variant="secondary">
+          {text.backToHub}
+        </ButtonLink>
       </PageHeader>
       <Notice text={noticeText(query.done, dictionary)} />
       <Card title={text.form.title} narrow>
@@ -59,19 +60,7 @@ export default async function IntegrationPage(props: Props) {
         />
       </Card>
       {isServerProvider(provider) ? (
-        <Card
-          title={text.test.title}
-          description={`${text.test.lead} ${text.test.leadByProvider[provider]}`}
-          narrow
-        >
-          <AdminForm
-            action={sendTestEventAction}
-            labels={{ submit: text.test.submit, errors: dictionary.errors }}
-            variant="secondary"
-          >
-            <input type="hidden" name="provider" value={provider} />
-          </AdminForm>
-        </Card>
+        <TestEventCard provider={provider} dictionary={dictionary} />
       ) : null}
       <Card title={text.log.title} description={text.log.lead} flush>
         <TrackingLog

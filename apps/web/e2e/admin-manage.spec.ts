@@ -56,6 +56,7 @@ test("المالك يرى كل الأقسام، والمدير بلا «المو
       TEXT.nav.contentPublishing,
       TEXT.nav.staff,
       TEXT.nav.audit,
+      TEXT.nav.integrations,
       TEXT.nav.account,
     ],
     manager: [
@@ -69,6 +70,7 @@ test("المالك يرى كل الأقسام، والمدير بلا «المو
       TEXT.nav.contentMedia,
       TEXT.nav.contentPublishing,
       TEXT.nav.audit,
+      TEXT.nav.integrations,
       TEXT.nav.account,
     ],
     sales: [

@@ -8,11 +8,6 @@ import { TagLoader } from "./tag-loader";
 
 const GOOGLE = new Set(["gtm", "ga4", "google_ads"]);
 
-/** أسماء الجهات بلا تكرار (GTM وGA4 وAds كلها Google)، بقائمة اللغة («Google وMeta»). */
-function providerNames(locale: Locale, names: readonly string[]): string {
-  return new Intl.ListFormat(locale, { type: "conjunction" }).format([...new Set(names)]);
-}
-
 /**
  * جذر القياس في تخطيط الموقع (ADMIN_A5_TRACKING §3): بلا منصة مفعّلة لا يُرسم شيء. الشريط والمحمّل
  * مكوّنا عميل، وشيفرة Google الأساسية في HTML الخادم بالـnonce.
@@ -31,7 +26,8 @@ export async function TrackingRoot({ locale }: { readonly locale: Locale }) {
       <TagLoader providers={tracking.providers} nonce={tracking.nonce} />
       <ConsentBanner
         copy={copy}
-        providers={providerNames(locale, names)}
+        providers={[...new Set(names)]}
+        locale={locale}
         privacyHref={localizedPath(locale, ROUTES.privacy)}
         initiallyOpen={tracking.consent === null}
       />

@@ -1,19 +1,41 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { Fragment, useEffect, useId, useRef, useState } from "react";
 import { buttonClass } from "@/components/ui/button-link";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { fill } from "@/i18n/fill";
+import { fillNodes } from "@/i18n/fill";
 import { CONSENT_OPEN, readConsent, saveConsent } from "./consent-cookie";
 import styles from "./consent-banner.module.css";
 
 interface ConsentBannerProps {
   readonly copy: Dictionary["consent"];
-  /** أسماء الجهات المفعّلة منسَّقة بلغة الصفحة («Google وMeta»). */
-  readonly providers: string;
+  /** أسماء الجهات المفعّلة بلا تكرار، بترتيبها. */
+  readonly providers: readonly string[];
+  readonly locale: string;
   readonly privacyHref: string;
   /** لا موافقة صالحة على النص الحالي: يظهر عند أول زيارة. */
   readonly initiallyOpen: boolean;
+}
+
+/**
+ * الأسماء بقائمة اللغة («Google وMeta»)، وكل اسم لاتيني معزول بـ`bdi` فلا يقلب اتجاهُه ما حوله في النص
+ * العربي.
+ */
+function ProviderList({
+  names,
+  locale,
+}: {
+  readonly names: readonly string[];
+  readonly locale: string;
+}) {
+  const parts = new Intl.ListFormat(locale, { type: "conjunction" }).formatToParts(names);
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.type === "element" ? <bdi key={index}>{part.value}</bdi> : part.value,
+      )}
+    </>
+  );
 }
 
 interface Choice {
@@ -141,7 +163,13 @@ function Categories({
  * شريط الموافقة (ADMIN_A5_TRACKING §3): ثلاثة أزرار بالوزن نفسه، والرفض بنقرة كالقبول، ولا خانة مختارة
  * مسبقًا. يُفتح من رابط «إعدادات الخصوصية» في التذييل في أي وقت، باختيار الزائر الحالي.
  */
-export function ConsentBanner({ copy, providers, privacyHref, initiallyOpen }: ConsentBannerProps) {
+export function ConsentBanner({
+  copy,
+  providers,
+  locale,
+  privacyHref,
+  initiallyOpen,
+}: ConsentBannerProps) {
   const [open, setOpen] = useState(initiallyOpen);
   const [customizing, setCustomizing] = useState(false);
   const [choice, setChoice] = useState<Choice>(NONE);
@@ -175,7 +203,12 @@ export function ConsentBanner({ copy, providers, privacyHref, initiallyOpen }: C
         {copy.title}
       </h2>
       <p className={styles.lead}>
-        {fill(copy.lead, { providers })} <a href={privacyHref}>{copy.privacyLink}</a>
+        {fillNodes(copy.lead, {
+          providers: <ProviderList names={providers} locale={locale} />,
+        }).map((node, index) => (
+          <Fragment key={index}>{node}</Fragment>
+        ))}{" "}
+        <a href={privacyHref}>{copy.privacyLink}</a>
       </p>
       {customizing ? <Categories copy={copy} choice={choice} onChange={setChoice} /> : null}
       <Actions

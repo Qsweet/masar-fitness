@@ -27,9 +27,18 @@ export const integrationsAr = {
       name: "Google Ads",
       lead: "تحويل الشراء في صفحة الطلب المدفوع مع التحويلات المحسّنة (جوال مجزّأ). لا إرسال خادمي بعد.",
     },
-    meta: { name: "Meta", lead: "Meta Pixel في المتصفح، وConversions API للشراء من الخادم." },
-    snap: { name: "Snapchat", lead: "Snap Pixel في المتصفح، وConversions API للشراء من الخادم." },
-    tiktok: { name: "TikTok", lead: "TikTok Pixel في المتصفح، وEvents API للشراء من الخادم." },
+    meta: {
+      name: "Meta",
+      lead: "في المتصفح: Meta Pixel. وللشراء من الخادم: Conversions API.",
+    },
+    snap: {
+      name: "Snapchat",
+      lead: "في المتصفح: Snap Pixel. وللشراء من الخادم: Conversions API.",
+    },
+    tiktok: {
+      name: "TikTok",
+      lead: "في المتصفح: TikTok Pixel. وللشراء من الخادم: Events API.",
+    },
   },
   form: {
     title: "الإعداد",

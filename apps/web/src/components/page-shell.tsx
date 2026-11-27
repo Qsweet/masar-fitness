@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
+import { getSiteContent } from "@/server/content/site-content";
 import { localizedPath, type Locale } from "@/i18n/locales";
 import { hasVisibleBlog } from "@/server/blog";
 import { cartCount } from "@/server/cart/codec";
@@ -51,7 +52,7 @@ async function cartLink(locale: Locale): Promise<CartLinkView | null> {
     return null;
   }
   const count = cartCount(await readCart());
-  const { link } = getDictionary(locale).cart;
+  const { link } = defaultDictionary(locale).cart;
   return {
     href: localizedPath(locale, CART_PATH),
     count,
@@ -71,7 +72,7 @@ export async function PageShell({
   mobileAction,
   ownPhoneBar = false,
 }: PageShellProps) {
-  const dictionary = getDictionary(locale);
+  const { dictionary } = await getSiteContent(locale);
   const chat = { href: whatsappUrl(dictionary.location.whatsappMessage), label: dictionary.chat };
   const showTabs = mobileAction !== null;
   const phoneBar = phoneBarOf(hasPlans, mobileAction);

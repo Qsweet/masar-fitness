@@ -19,10 +19,10 @@ import { PageShell } from "@/components/page-shell";
 import { FriendsOffer } from "@/components/plans/friends-offer";
 import { toPlanViews } from "@/components/plans/plan-view";
 import { PlansSection } from "@/components/plans/plans-section";
-import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale } from "@/i18n/locales";
 import { getMembershipPlans } from "@/server/catalog";
 import { isCheckoutEnabled } from "@/server/checkout/flag";
+import { getSiteContent } from "@/server/content/site-content";
 import { pageMetadata } from "@/server/metadata";
 import { clubPhotoUrls, siteIdentity } from "@/server/site-identity";
 import { homeGraph } from "@/server/structured-data";
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PageProps<"/[locale]">): Prom
   if (!isLocale(locale)) {
     return {};
   }
-  const { meta, club } = getDictionary(locale);
+  const { meta, club } = (await getSiteContent(locale)).dictionary;
   return {
     ...pageMetadata({
       locale,
@@ -56,7 +56,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   if (!isLocale(locale)) {
     notFound();
   }
-  const dictionary = getDictionary(locale);
+  const { dictionary } = await getSiteContent(locale);
   const plans = toPlanViews(await getMembershipPlans(), locale, isCheckoutEnabled());
   const offer = offerView(plans, dictionary);
   const rating = ratingView(dictionary, locale);
@@ -85,7 +85,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <CtaBand dictionary={dictionary} offer={offer} />
       <Contact locale={locale} dictionary={dictionary} />
       <JsonLd
-        data={homeGraph(siteIdentity(locale), {
+        data={homeGraph(siteIdentity(locale, dictionary.club.name), {
           description: dictionary.meta.homeDescription,
           imageUrls: clubPhotoUrls(),
         })}

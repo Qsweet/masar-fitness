@@ -1,5 +1,5 @@
 import { CLUB_CONTACT, CLUB_POSTAL_ADDRESS } from "@/config/club";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/locales";
 import type { Block, Segment, Source } from "../types";
 
@@ -47,7 +47,7 @@ export const RECOMMENDATION: Block = { type: "recommendation", kind: "membership
  */
 export function clubFacts(locale: Locale) {
   return {
-    name: getDictionary(locale).club.name,
+    name: defaultDictionary(locale).club.name,
     city: CLUB_POSTAL_ADDRESS.locality[locale],
     address: CLUB_CONTACT.address[locale],
     phone: CLUB_CONTACT.phoneDisplay,

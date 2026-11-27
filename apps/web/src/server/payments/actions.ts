@@ -9,7 +9,7 @@ import {
   orderReturnPath,
   type PayNotice,
 } from "@/config/payments";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
 import { isLocale, localizedPath, type Locale } from "@/i18n/locales";
 import { guardCheckout } from "../checkout/failure";
@@ -61,7 +61,7 @@ export async function payOrder(formData: FormData): Promise<void> {
     notFound();
   }
   const returnUrl = `${getEnv().SITE_URL}${localizedPath(locale, orderReturnPath(token))}`;
-  const template = getDictionary(order.locale).onlinePayment.providerDescription;
+  const template = defaultDictionary(order.locale).onlinePayment.providerDescription;
   const started = await guardCheckout("payment.start_failed", () =>
     startPayment(payments.deps, {
       orderId: order.id,

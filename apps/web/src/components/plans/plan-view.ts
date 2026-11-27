@@ -9,7 +9,7 @@ import {
 import { whatsappUrl } from "@/config/club";
 import { CLUB_FACTS } from "@/config/club-facts";
 import { countText } from "@/i18n/count";
-import { getDictionary, type Dictionary } from "@/i18n/dictionaries";
+import { defaultDictionary, type Dictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
 import { formatMonths, moneyParts, type MoneyParts } from "@/i18n/format";
 import { localizedPath, type Locale } from "@/i18n/locales";
@@ -62,7 +62,7 @@ export function durationText(
   if (plan.bonusMonths === 0) {
     return total;
   }
-  return fill(getDictionary(locale).plans.durationBonus, {
+  return fill(defaultDictionary(locale).plans.durationBonus, {
     total,
     bonus: formatMonths(plan.bonusMonths, locale),
   });
@@ -70,7 +70,9 @@ export function durationText(
 
 /** المدة المدفوعة منطوقة: الشهر الواحد بالعدد مكتوبًا («شهر واحد») لا «1 شهر». */
 function termText(paidMonths: number, locale: Locale): string {
-  return paidMonths === 1 ? getDictionary(locale).plans.oneMonth : formatMonths(paidMonths, locale);
+  return paidMonths === 1
+    ? defaultDictionary(locale).plans.oneMonth
+    : formatMonths(paidMonths, locale);
 }
 
 /** التكلفة الشهرية التقريبية، للمدد الأطول من شهر فقط (للشهر الواحد هي السعر نفسه). */
@@ -79,13 +81,13 @@ function monthlyText(plan: MembershipPlan, locale: Locale): string | undefined {
     return undefined;
   }
   const { amount, unit } = moneyParts(approximateMonthlyCost(plan), locale);
-  return fill(getDictionary(locale).plans.monthly, { amount, unit });
+  return fill(defaultDictionary(locale).plans.monthly, { amount, unit });
 }
 
 /** التكلفة اليومية التقريبية على كامل المدة شاملة الأشهر المجانية. */
 function dailyText(plan: MembershipPlan, locale: Locale): string {
   const { amount, unit } = moneyParts(approximateDailyCost(plan), locale);
-  return fill(getDictionary(locale).daily, { amount, unit });
+  return fill(defaultDictionary(locale).daily, { amount, unit });
 }
 
 /** أيام التجميد المتاحة: لكل شهر مدفوع عدد ثابت، والأشهر المجانية لا تُحتسب (شروط النادي الحالية). */
@@ -93,13 +95,16 @@ export function freezeDays(paidMonths: number): number {
   return paidMonths * CLUB_FACTS.freezeDaysPerPaidMonth;
 }
 
-function freezeText(paidMonths: number, dictionary: Dictionary): string {
+/** نصوص الباقة: مساحات ممنوعة من التعديل (شروط وتجميد ورسالة واتساب)، فتُقرأ من الافتراضي. */
+type PlanLabels = Pick<Dictionary, "plans" | "plan" | "days">;
+
+function freezeText(paidMonths: number, dictionary: PlanLabels): string {
   return fill(dictionary.plans.freeze, {
     days: countText(freezeDays(paidMonths), dictionary.days),
   });
 }
 
-function planWhatsappUrl(plan: MembershipPlan, locale: Locale, dictionary: Dictionary): string {
+function planWhatsappUrl(plan: MembershipPlan, locale: Locale, dictionary: PlanLabels): string {
   return whatsappUrl(fill(dictionary.plan.whatsappMessage, { plan: plan.name[locale] }));
 }
 
@@ -107,7 +112,7 @@ function planWhatsappUrl(plan: MembershipPlan, locale: Locale, dictionary: Dicti
 export function purchaseHref(
   plan: MembershipPlan,
   locale: Locale,
-  dictionary: Dictionary,
+  dictionary: PlanLabels,
   checkoutEnabled: boolean,
 ): PurchaseLink {
   if (checkoutEnabled) {
@@ -125,7 +130,8 @@ interface ViewContext {
 
 function toPlanView(plan: MembershipPlan, context: ViewContext): PlanView {
   const { locale, bestSlug, checkoutEnabled, benefitsShared } = context;
-  const dictionary = getDictionary(locale);
+  const { plans, plan: planText, days } = defaultDictionary(locale);
+  const dictionary: PlanLabels = { plans, plan: planText, days };
   return {
     slug: plan.slug,
     name: plan.name[locale],

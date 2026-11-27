@@ -5,7 +5,7 @@ import { DemoPay } from "@/components/checkout/demo-pay";
 import { PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
 import { demoPayPath } from "@/config/payments";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { moneyParts } from "@/i18n/format";
 import { isLocale } from "@/i18n/locales";
 import { requireCheckout } from "@/server/checkout/flag";
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   requireCheckout();
   const { locale } = await params;
   return isLocale(locale)
-    ? checkoutMetadata(getDictionary(locale).onlinePayment.demo.metaTitle)
+    ? checkoutMetadata(defaultDictionary(locale).onlinePayment.demo.metaTitle)
     : {};
 }
 
@@ -38,7 +38,7 @@ export default async function DemoPayPage({ params }: Props) {
     notFound();
   }
   const { request } = session;
-  const labels = getDictionary(locale).onlinePayment.demo;
+  const labels = defaultDictionary(locale).onlinePayment.demo;
   const open = session.state === "open" && payments.deps.clock() < request.expiresAt;
   return (
     <PageShell locale={locale} path={demoPayPath(sessionId)}>

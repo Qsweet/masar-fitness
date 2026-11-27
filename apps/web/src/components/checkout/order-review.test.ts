@@ -3,7 +3,7 @@ import { money } from "@masar/domain";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { OrderReview } from "./order-review";
 import { toReviewView } from "./review-view";
 
@@ -51,7 +51,7 @@ const ORDER: OrderView = {
   ],
 };
 
-const labels = getDictionary("ar").checkout;
+const labels = defaultDictionary("ar").checkout;
 
 function render(preview: boolean): string {
   const view = toReviewView(ORDER, "ar");

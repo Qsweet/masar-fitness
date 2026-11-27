@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { CLUB_CONTACT } from "@/config/club";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { LOCALES } from "@/i18n/locales";
 import { ARTICLES } from "../articles";
 import { clubFacts, sourcesFor, type SharedSource } from "./build";
@@ -67,7 +67,7 @@ describe("حقائق النادي في المقالات من الإعداد وا
   it("clubFacts تقرأ الاسم والعنوان والهاتف من مصدرها", () => {
     for (const locale of LOCALES) {
       expect(clubFacts(locale)).toMatchObject({
-        name: getDictionary(locale).club.name,
+        name: defaultDictionary(locale).club.name,
         address: CLUB_CONTACT.address[locale],
         phone: CLUB_CONTACT.phoneDisplay,
       });
@@ -76,7 +76,7 @@ describe("حقائق النادي في المقالات من الإعداد وا
 
   it("لا اسم ولا عنوان ولا هاتف مكتوب باليد في ملفات المقالات", () => {
     const literals = [
-      ...LOCALES.map((locale) => getDictionary(locale).club.name),
+      ...LOCALES.map((locale) => defaultDictionary(locale).club.name),
       ...LOCALES.map((locale) => CLUB_CONTACT.address[locale]),
       CLUB_CONTACT.phoneDisplay,
       CLUB_CONTACT.phoneE164,

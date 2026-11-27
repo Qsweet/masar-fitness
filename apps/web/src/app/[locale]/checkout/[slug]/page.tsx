@@ -12,7 +12,7 @@ import { UnavailableNotice } from "@/components/checkout/unavailable-notice";
 import { PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
 import { whatsappUrl } from "@/config/club";
-import { type Dictionary, getDictionary } from "@/i18n/dictionaries";
+import { type Dictionary, defaultDictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
 import { isLocale, localizedPath, type Locale } from "@/i18n/locales";
 import { isCheckoutPreview, requireCheckout } from "@/server/checkout/flag";
@@ -28,7 +28,7 @@ type Props = PageProps<"/[locale]/checkout/[slug]">;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   requireCheckout();
   const { locale } = await params;
-  return isLocale(locale) ? checkoutMetadata(getDictionary(locale).checkout.meta.title) : {};
+  return isLocale(locale) ? checkoutMetadata(defaultDictionary(locale).checkout.meta.title) : {};
 }
 
 interface BodyProps {
@@ -38,7 +38,7 @@ interface BodyProps {
 }
 
 function planWhatsapp(locale: Locale, planName: string): string {
-  return whatsappUrl(fill(getDictionary(locale).plan.whatsappMessage, { plan: planName }));
+  return whatsappUrl(fill(defaultDictionary(locale).plan.whatsappMessage, { plan: planName }));
 }
 
 /** سلة لا تُسعَّر (إضافة لا تخص الباقة، عدد زائد…): السبب بصدق وبداية نظيفة، بلا نموذج. */
@@ -47,13 +47,13 @@ function QuoteProblem({
   slug,
   error,
 }: Omit<BodyProps, "options"> & { error: DomainError }) {
-  const dictionary = getDictionary(locale);
-  const { unavailable } = dictionary.checkout;
+  const { checkout } = defaultDictionary(locale);
+  const { unavailable } = checkout;
   return (
     <div className="container section">
       <UnavailableNotice
         title={unavailable.problemTitle}
-        lead={errorText(error.reason, dictionary)}
+        lead={errorText(error.reason, { checkout })}
         primary={{ href: localizedPath(locale, `/checkout/${slug}`), label: unavailable.restart }}
       />
     </div>
@@ -66,7 +66,7 @@ function Unavailable({
   slug,
   planName,
 }: Omit<BodyProps, "options"> & { planName: string }) {
-  const { checkout } = getDictionary(locale);
+  const { checkout } = defaultDictionary(locale);
   return (
     <div className="container section">
       <UnavailableNotice
@@ -88,13 +88,13 @@ function Unavailable({
 
 function CheckoutForms({ locale, slug, options, data }: BodyProps & { data: CheckoutQuote }) {
   const { quote } = data;
-  const dictionary = getDictionary(locale);
+  const { checkout } = defaultDictionary(locale);
   const coupon = couponMessage(quote, locale);
   const planName = quote.lines[0]?.name[locale] ?? slug;
   return (
     <div className={cx("container", styles.layout)}>
       <div className={styles.aside}>
-        <QuoteSummary view={toQuoteView(quote, locale)} labels={dictionary.checkout.summary} />
+        <QuoteSummary view={toQuoteView(quote, locale)} labels={checkout.summary} />
       </div>
       <div className={styles.forms}>
         <OptionsForm
@@ -102,13 +102,14 @@ function CheckoutForms({ locale, slug, options, data }: BodyProps & { data: Chec
           addons={addonChoices(data.addons, options.addonSlugs, locale)}
           coupon={options.couponInput}
           couponMessage={coupon}
-          labels={dictionary.checkout.options}
+          labels={checkout.options}
         />
         {coupon?.blocking === true ? (
-          <p className={styles.blocked}>{dictionary.checkout.options.fixCoupon}</p>
+          <p className={styles.blocked}>{checkout.options.fixCoupon}</p>
         ) : (
           <DetailsForm
             locale={locale}
+            labels={checkout}
             initialState={initialCheckoutState(quote.total, locale)}
             slug={slug}
             addonSlugs={options.addonSlugs}
@@ -142,7 +143,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
   if (!result.ok && result.error.code === "not_found") {
     notFound();
   }
-  const { checkout, steps } = getDictionary(locale);
+  const { checkout, steps } = defaultDictionary(locale);
   const back = (
     <Link href={localizedPath(locale, `/memberships/${slug}`)}>{checkout.backToPlan}</Link>
   );

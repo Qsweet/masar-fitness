@@ -2,7 +2,7 @@ import type { CatalogProductDetail } from "@masar/db";
 import type { MembershipPlan } from "@masar/domain";
 import { CLUB_FACTS } from "@/config/club-facts";
 import type { AdminDictionary } from "@/i18n/admin";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
 import { LOCALES } from "@/i18n/locales";
 import { planOf, previewView } from "@/server/admin/sales/catalog-view";
@@ -39,7 +39,7 @@ export function PlanPreviewCard({ product, published, text }: PreviewProps) {
             locale,
             label: labels.previewLocales[locale],
             view,
-            labels: getDictionary(locale).plans,
+            labels: defaultDictionary(locale).plans,
           },
         ];
   });

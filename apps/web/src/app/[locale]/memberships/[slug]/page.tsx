@@ -6,11 +6,11 @@ import { PlanHero, PlanTerms } from "@/components/plans/plan-detail";
 import { toPlanViews } from "@/components/plans/plan-view";
 import { Contact } from "@/components/home/contact";
 import { Benefits, Payment } from "@/components/plans/extras";
-import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale } from "@/i18n/locales";
 import { getMembershipPlan, getMembershipPlans } from "@/server/catalog";
 import { isCheckoutEnabled } from "@/server/checkout/flag";
 import { pageMetadata } from "@/server/metadata";
+import { getSiteContent } from "@/server/content/site-content";
 
 type Props = PageProps<"/[locale]/memberships/[slug]">;
 
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     locale,
     path: `/memberships/${plan.slug}`,
     title: plan.name[locale],
-    description: getDictionary(locale).meta.planDescription,
+    description: (await getSiteContent(locale)).dictionary.meta.planDescription,
   });
 }
 
@@ -44,7 +44,7 @@ export default async function PlanPage({ params }: Props) {
   if (plan === undefined || view === undefined) {
     notFound();
   }
-  const dictionary = getDictionary(locale);
+  const { dictionary } = await getSiteContent(locale);
   const purchaseLabel =
     view.purchase.kind === "whatsapp" ? dictionary.plan.buyWhatsapp : dictionary.plan.buyOnline;
 

@@ -1,6 +1,6 @@
 import "server-only";
 import type { Metadata } from "next";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { DEFAULT_LOCALE, LOCALES, localizedPath, type Locale } from "@/i18n/locales";
 import { getEnv } from "./env";
 import { SHARE_IMAGE } from "./share-image";
@@ -91,6 +91,6 @@ export function buildPageMetadata(
 export function pageMetadata(input: PageMetadataInput): Metadata {
   return buildPageMetadata(getEnv().SITE_URL, input, {
     ...SHARE_IMAGE,
-    alt: getDictionary(input.locale).club.logoAlt,
+    alt: defaultDictionary(input.locale).club.logoAlt,
   });
 }

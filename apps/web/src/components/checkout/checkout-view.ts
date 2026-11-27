@@ -1,6 +1,6 @@
 import type { LocalizedText, MembershipStartRule, Money } from "@masar/domain";
 import { durationText } from "@/components/plans/plan-view";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
 import { moneyParts, type MoneyParts } from "@/i18n/format";
 import type { Locale } from "@/i18n/locales";
@@ -77,7 +77,7 @@ export function toLineView(line: LineSource, locale: Locale): LineView {
 }
 
 export function toDiscountView(discount: DiscountSource, locale: Locale): DiscountView {
-  const { couponDiscount } = getDictionary(locale).checkout.summary;
+  const { couponDiscount } = defaultDictionary(locale).checkout.summary;
   return {
     key: String(discount.sequence),
     name: discount.name[locale],
@@ -93,7 +93,7 @@ export function formatVatRate(vatRateBps: number): string {
 }
 
 export function toTotalsView(totals: TotalsSource, locale: Locale): TotalsView {
-  const { vat } = getDictionary(locale).checkout.summary;
+  const { vat } = defaultDictionary(locale).checkout.summary;
   return {
     subtotal: moneyParts(totals.subtotal, locale),
     discount: totals.discount.amountMinor > 0 ? moneyParts(totals.discount, locale) : undefined,
@@ -108,5 +108,5 @@ export function startRuleText(
   rule: MembershipStartRule | null,
   locale: Locale,
 ): string | undefined {
-  return rule === null ? undefined : getDictionary(locale).checkout.summary.startRule[rule];
+  return rule === null ? undefined : defaultDictionary(locale).checkout.summary.startRule[rule];
 }

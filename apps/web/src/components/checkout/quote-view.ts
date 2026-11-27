@@ -1,6 +1,6 @@
 import type { PlanAddonOption } from "@masar/db";
 import type { Quote } from "@masar/domain";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { moneyParts, type MoneyParts } from "@/i18n/format";
 import type { Locale } from "@/i18n/locales";
 import {
@@ -40,7 +40,7 @@ export interface AddonChoice {
 }
 
 function quoteNotes(quote: Quote, locale: Locale): string[] {
-  const { couponNotCombinable, eligibilityAtConfirm } = getDictionary(locale).checkout.summary;
+  const { couponNotCombinable, eligibilityAtConfirm } = defaultDictionary(locale).checkout.summary;
   const notes: string[] = [];
   if (quote.couponOutcome.kind === "not_combinable") {
     notes.push(couponNotCombinable);
@@ -69,7 +69,7 @@ export function couponMessage(quote: Quote, locale: Locale): CouponMessage | und
     return undefined;
   }
   return {
-    text: errorText(error.reason, getDictionary(locale)),
+    text: errorText(error.reason, { checkout: defaultDictionary(locale).checkout }),
     blocking: error.reason !== UNVERIFIED,
   };
 }

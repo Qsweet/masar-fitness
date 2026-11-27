@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { orderPath } from "@/config/payments";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedPath } from "@/i18n/locales";
 import { requireCheckout } from "@/server/checkout/flag";
 import { checkoutMetadata } from "@/server/checkout/metadata";
@@ -15,7 +15,9 @@ type Props = PageProps<"/[locale]/checkout/orders/[token]/return">;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   requireCheckout();
   const { locale } = await params;
-  return isLocale(locale) ? checkoutMetadata(getDictionary(locale).checkout.meta.orderTitle) : {};
+  return isLocale(locale)
+    ? checkoutMetadata(defaultDictionary(locale).checkout.meta.orderTitle)
+    : {};
 }
 
 /**

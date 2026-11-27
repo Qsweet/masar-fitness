@@ -1,12 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { article, draft, translation } from "@/test/blog-fixtures";
 import { buildLlmsTxt } from "./llms";
+import { defaultDictionary } from "@/i18n/dictionaries";
+import type { Article } from "@/content/blog/types";
+
+const llms = (articles: readonly Article[]) =>
+  buildLlmsTxt(ORIGIN, articles, { ar: defaultDictionary("ar"), en: defaultDictionary("en") });
 
 const ORIGIN = "https://example.com";
 
 describe("buildLlmsTxt", () => {
   it("حقائق النادي وروابط الصفحات باللغتين", () => {
-    const text = buildLlmsTxt(ORIGIN, []);
+    const text = llms([]);
     expect(text.startsWith("# مسار الأبطال الرياضي\n\n> ")).toBe(true);
     expect(text).toContain("بريدة 52581");
     expect(text).toContain("+966163240111");
@@ -16,7 +21,7 @@ describe("buildLlmsTxt", () => {
   });
 
   it("المقالات المنشورة فقط بلغتها", () => {
-    const text = buildLlmsTxt(ORIGIN, [
+    const text = llms([
       article({ slug: "live", translations: { ar: translation({ title: "منشور" }) } }),
       draft({ slug: "secret" }),
     ]);

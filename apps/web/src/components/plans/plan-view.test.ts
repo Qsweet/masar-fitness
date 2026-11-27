@@ -1,6 +1,6 @@
 import { money, type MembershipPlan } from "@masar/domain";
 import { describe, expect, it } from "vitest";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { freezeDays, initialPlanSlug, purchaseHref, toPlanViews } from "./plan-view";
 
 function plan(overrides: Partial<MembershipPlan>): MembershipPlan {
@@ -93,7 +93,7 @@ describe("toPlanViews", () => {
 
 describe("purchaseHref", () => {
   it("مغلق ⇐ واتساب خارجي، مفتوح ⇐ سلة بالاشتراك ولغة الزائر", () => {
-    const en = getDictionary("en");
+    const en = defaultDictionary("en");
     const off = purchaseHref(annual, "en", en, false);
     expect(off.kind === "whatsapp" && new URL(off.href).hostname).toBe("wa.me");
     expect(purchaseHref(annual, "en", en, true)).toEqual({

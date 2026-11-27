@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef, type ReactNode } from "react";
 import { buttonClass } from "@/components/ui/button-link";
 import { Price } from "@/components/ui/price";
 import { MAX_MOBILE_INPUT_LENGTH, MAX_NAME_INPUT_LENGTH } from "@/config/checkout";
-import { getDictionary, type Dictionary } from "@/i18n/dictionaries";
+import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/locales";
 import { cx } from "@/lib/cx";
 import { submitCheckout } from "@/server/checkout/actions";
@@ -16,8 +16,12 @@ import styles from "./fields.module.css";
 
 const MOBILE_HINT_ID = "buyer-mobile-hint";
 
+/** نصوص الشراء وحدها تُمرَّر من الخادم: القاموس لا يدخل حزمة المتصفح (ADMIN_A3_CONTENT §4.2). */
+type Labels = Pick<Dictionary, "checkout">;
+
 export interface DetailsFormProps {
   readonly locale: Locale;
+  readonly labels: Dictionary["checkout"];
   readonly initialState: CheckoutFormState;
   readonly slug: string;
   readonly addonSlugs: readonly string[];
@@ -29,7 +33,7 @@ export interface DetailsFormProps {
 
 type SummaryProps = Pick<DetailsFormProps, "whatsappHref" | "plansHref"> & {
   readonly state: CheckoutFormState;
-  readonly dictionary: Dictionary;
+  readonly dictionary: Labels;
 };
 
 /** بديل لأخطاء لا يصلحها تعديل الحقول: باقة أخرى إن لم يعد المنتج متاحًا، وإلا واتساب. */
@@ -107,7 +111,7 @@ interface FieldProps {
   readonly label: string;
   readonly hint?: { readonly id: string; readonly text: string };
   readonly state: CheckoutFormState;
-  readonly dictionary: Dictionary;
+  readonly dictionary: Labels;
   readonly children: ReactNode;
 }
 
@@ -134,7 +138,7 @@ function Field({ field, label, hint, state, dictionary, children }: FieldProps) 
   );
 }
 
-function BuyerFields({ state, dictionary }: { state: CheckoutFormState; dictionary: Dictionary }) {
+function BuyerFields({ state, dictionary }: { state: CheckoutFormState; dictionary: Labels }) {
   const { form } = dictionary.checkout;
   const shared = { state, dictionary };
   return (
@@ -196,7 +200,7 @@ function HiddenFields({ props, state }: { props: DetailsFormProps; state: Checko
  */
 export function DetailsForm(props: DetailsFormProps) {
   const [state, formAction, pending] = useActionState(submitCheckout, props.initialState);
-  const dictionary = getDictionary(props.locale);
+  const dictionary = { checkout: props.labels };
   const { form } = dictionary.checkout;
   return (
     <form action={formAction} className={styles.panel} noValidate>

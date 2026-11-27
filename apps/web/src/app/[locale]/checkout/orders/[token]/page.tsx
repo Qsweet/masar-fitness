@@ -8,19 +8,22 @@ import { toReviewView } from "@/components/checkout/review-view";
 import { PageIntro } from "@/components/page-intro";
 import { PageShell } from "@/components/page-shell";
 import { PAY_NOTICE_PARAM, orderPath, parsePayNotice } from "@/config/payments";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { isLocale } from "@/i18n/locales";
 import { isCheckoutPreview, requireCheckout } from "@/server/checkout/flag";
 import { checkoutMetadata } from "@/server/checkout/metadata";
 import { getOrderView } from "@/server/checkout/order-view";
 import { getPaymentPanelState } from "@/server/payments/panel";
+import { getSiteContent } from "@/server/content/site-content";
 
 type Props = PageProps<"/[locale]/checkout/orders/[token]">;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   requireCheckout();
   const { locale } = await params;
-  return isLocale(locale) ? checkoutMetadata(getDictionary(locale).checkout.meta.orderTitle) : {};
+  return isLocale(locale)
+    ? checkoutMetadata(defaultDictionary(locale).checkout.meta.orderTitle)
+    : {};
 }
 
 /**
@@ -43,7 +46,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
   const payment = await getPaymentPanelState(order);
   const notice = parsePayNotice((await searchParams)[PAY_NOTICE_PARAM]);
   const view = payment === null ? review : withPaymentHeadline(review, payment.state, locale);
-  const dictionary = getDictionary(locale);
+  const { dictionary } = await getSiteContent(locale);
   const panel =
     payment === null ? null : toPaymentPanelView(order, { ...payment, notice }, locale, token);
   return (

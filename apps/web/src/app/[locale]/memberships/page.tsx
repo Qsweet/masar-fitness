@@ -12,13 +12,13 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { SectionHead } from "@/components/ui/section-head";
 import { PHOTOS } from "@/config/photos";
 import { ROUTES } from "@/config/routes";
-import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedPath } from "@/i18n/locales";
 import { cx } from "@/lib/cx";
 import { getMembershipPlans } from "@/server/catalog";
 import { isCheckoutEnabled } from "@/server/checkout/flag";
 import { pageMetadata } from "@/server/metadata";
 import styles from "./memberships.module.css";
+import { getSiteContent } from "@/server/content/site-content";
 
 const PATH = "/memberships";
 
@@ -29,7 +29,7 @@ export async function generateMetadata({
   if (!isLocale(locale)) {
     return {};
   }
-  const { meta } = getDictionary(locale);
+  const { meta } = (await getSiteContent(locale)).dictionary;
   return pageMetadata({
     locale,
     path: PATH,
@@ -43,7 +43,7 @@ export default async function MembershipsPage({ params }: PageProps<"/[locale]/m
   if (!isLocale(locale)) {
     notFound();
   }
-  const dictionary = getDictionary(locale);
+  const { dictionary } = await getSiteContent(locale);
   const plans = await getMembershipPlans();
   const checkoutEnabled = isCheckoutEnabled();
 

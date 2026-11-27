@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { PlansSection } from "./plans-section";
 
 /**
@@ -10,7 +10,7 @@ import { PlansSection } from "./plans-section";
  * قاعدة اختبارات المتصفح مشتركة بباقات حقيقية، فالحالة تُثبت هنا برسم القسم نفسه.
  */
 function render(locale: "ar" | "en"): string {
-  const dictionary = getDictionary(locale);
+  const dictionary = defaultDictionary(locale);
   const html = renderToStaticMarkup(
     createElement(PlansSection, {
       plans: [],
@@ -27,7 +27,7 @@ function render(locale: "ar" | "en"): string {
 describe("قسم الاشتراكات بلا باقات", () => {
   it("حالة فارغة باللغتين برابط واتساب، بلا محدِّد ولا زر شراء", () => {
     for (const locale of ["ar", "en"] as const) {
-      const { plans } = getDictionary(locale);
+      const { plans } = defaultDictionary(locale);
       const html = render(locale);
       expect(html).toContain(plans.emptyTitle);
       expect(html).toContain(plans.emptyLead);

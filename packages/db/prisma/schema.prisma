@@ -40,6 +40,7 @@ model Club {
   paymentIncidents   PaymentIncident[]
   staffUsers         StaffUser[]
   manualPayments     ManualPayment[]
+  contentReleases    ContentRelease[]
 
   @@map("clubs")
 }
@@ -648,10 +649,11 @@ model StaffUser {
   lastLoginAt        DateTime?   @map("last_login_at") @db.Timestamptz(3)
   createdAt          DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  club           Club                @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  sessions       StaffSession[]
-  recoveryCodes  StaffRecoveryCode[]
-  manualPayments ManualPayment[]
+  club            Club                @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sessions        StaffSession[]
+  recoveryCodes   StaffRecoveryCode[]
+  manualPayments  ManualPayment[]
+  contentReleases ContentRelease[]
 
   @@index([clubId, role, status])
   @@map("staff_users")
@@ -712,11 +714,40 @@ model ManualPayment {
   recordedBy        String   @map("recorded_by") @db.Uuid
   createdAt         DateTime @map("created_at") @db.Timestamptz(3)
 
-  club   Club      @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  order  Order     @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  staff  StaffUser @relation(fields: [recordedBy], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  club  Club      @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  order Order     @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  staff StaffUser @relation(fields: [recordedBy], references: [id], onDelete: Restrict, onUpdate: Restrict)
 
   /// المرجع الخارجي لا يسوّي طلبين في النادي، بأي طريقة وبأي كتابة
   @@unique([clubId, referenceKey])
   @@map("manual_payments")
+}
+
+/// إصدار محتوى منشور (ADMIN_A3_CONTENT §8): لقطة كاملة لتجاوزات النصوص لا تتغير بعد إدراجها (C1).
+/// الموقع العام يقرأ آخر إصدار لنادي المحتوى بفهرس (club_id, seq).
+model ContentRelease {
+  id             String   @id @db.Uuid
+  clubId         String   @map("club_id") @db.Uuid
+  /// رقم الإصدار في النادي: max + 1 تحت القفل الاستشاري، والفرادة سدّه الاحتياطي
+  seq            Int
+  /// التجاوزات وحدها لا القاموس: { v: 1, texts: { مسار: { لغة: { value, baseHash } } } }
+  snapshot       Json
+  schemaVersion  Int      @map("schema_version") @db.SmallInt
+  /// SHA-256 للشكل القانوني للتجاوزات: المسودة «متغيرة» حين تختلف بصمتها عن آخر إصدار
+  digest         String   @db.Char(64)
+  /// publish أو rollback (CHECK)
+  source         String
+  /// عدد التغييرات عن الإصدار السابق، يُحسب مرة عند الإدراج للسجل
+  changedCount   Int      @map("changed_count")
+  rolledBackFrom String?  @map("rolled_back_from") @db.Uuid
+  publishedBy    String   @map("published_by") @db.Uuid
+  publishedAt    DateTime @map("published_at") @db.Timestamptz(3)
+
+  club       Club             @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  rolledBack ContentRelease?  @relation("ContentRollback", fields: [rolledBackFrom], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  rollbacks  ContentRelease[] @relation("ContentRollback")
+  staff      StaffUser        @relation(fields: [publishedBy], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([clubId, seq])
+  @@map("content_releases")
 }

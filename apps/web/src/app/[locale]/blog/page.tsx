@@ -6,10 +6,11 @@ import { PageShell } from "@/components/page-shell";
 import { PHOTOS } from "@/config/photos";
 import { ROUTES } from "@/config/routes";
 import { articlesInLocale } from "@/content/blog/visibility";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { isLocale } from "@/i18n/locales";
 import { getVisibleArticles, visibleBlogLocales } from "@/server/blog";
 import { pageMetadata } from "@/server/metadata";
+import { getSiteContent } from "@/server/content/site-content";
 
 type Props = PageProps<"/[locale]/blog">;
 
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!isLocale(locale)) {
     return {};
   }
-  const { blog } = getDictionary(locale);
+  const { blog } = defaultDictionary(locale);
   return pageMetadata({
     locale,
     path: ROUTES.blog,
@@ -38,7 +39,7 @@ export default async function BlogPage({ params }: Props) {
   if (articles.length === 0) {
     notFound();
   }
-  const dictionary = getDictionary(locale);
+  const { dictionary } = await getSiteContent(locale);
   return (
     <PageShell locale={locale} path={ROUTES.blog}>
       <PageIntro

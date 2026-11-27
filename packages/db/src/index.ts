@@ -3,6 +3,7 @@ export { createDb, isDbReachable } from "./client";
 export type { Db } from "./client";
 export * from "./catalog-admin";
 export * from "./commerce";
+export * from "./content";
 export * from "./orders-admin";
 export * from "./payments";
 export * from "./promotions-admin";

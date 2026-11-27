@@ -3,3 +3,6 @@ export * from "./limits";
 export * from "./locale";
 export * from "./paths";
 export * from "./registry";
+export * from "./apply";
+export * from "./snapshot";
+export * from "./text-override";

@@ -2,7 +2,7 @@ import type { OrderView } from "@masar/db";
 import type { PaymentDisplayState } from "@masar/domain";
 import { whatsappUrl } from "@/config/club";
 import { orderReturnPath, type PayNotice } from "@/config/payments";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
 import { localizedPath, type Locale } from "@/i18n/locales";
 import type { ReviewView } from "./review-view";
@@ -47,7 +47,7 @@ interface StateTexts {
 }
 
 function stateTexts(state: PanelState, locale: Locale): StateTexts {
-  const { panel } = getDictionary(locale).onlinePayment;
+  const { panel } = defaultDictionary(locale).onlinePayment;
   const texts: Record<PanelState, StateTexts> = {
     pay: { lead: panel.payLead, payLabel: panel.pay, refreshable: false, whatsapp: false },
     resume: { lead: panel.resumeLead, payLabel: panel.resume, refreshable: true, whatsapp: false },
@@ -58,7 +58,7 @@ function stateTexts(state: PanelState, locale: Locale): StateTexts {
 }
 
 function noticeText(input: PaymentPanelInput, state: PanelState, locale: Locale): string | null {
-  const { panel } = getDictionary(locale).onlinePayment;
+  const { panel } = defaultDictionary(locale).onlinePayment;
   if (state !== "pay") {
     return null;
   }
@@ -82,7 +82,7 @@ export function toPaymentPanelView(
   if (!isPanelState(state)) {
     return null;
   }
-  const { panel } = getDictionary(locale).onlinePayment;
+  const { panel } = defaultDictionary(locale).onlinePayment;
   const texts = stateTexts(state, locale);
   const refreshHref = localizedPath(locale, orderReturnPath(token));
   const whatsappHref = whatsappUrl(fill(panel.whatsappMessage, { reference: order.reference }));
@@ -109,7 +109,7 @@ export function withPaymentHeadline(
   state: PaymentDisplayState,
   locale: Locale,
 ): ReviewView {
-  const { headline, statuses } = getDictionary(locale).onlinePayment;
+  const { headline, statuses } = defaultDictionary(locale).onlinePayment;
   if (state === "pay" || state === "resume") {
     return { ...review, lead: headline.payLead };
   }

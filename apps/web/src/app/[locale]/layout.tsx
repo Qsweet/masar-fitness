@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { MAIN_CONTENT_ID } from "@/components/page-shell";
 import { ScrollReset } from "@/components/scroll-reset";
 import { StagingNote } from "@/components/staging-note";
-import { getDictionary } from "@/i18n/dictionaries";
 import { directionOf, isLocale, LOCALES } from "@/i18n/locales";
+import { getSiteContent } from "@/server/content/site-content";
 import { alexandria } from "../fonts";
 import "../globals.css";
 import "../patterns.css";
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
   if (!isLocale(locale)) {
     return {};
   }
-  const { name } = getDictionary(locale).club;
+  const { name } = (await getSiteContent(locale)).dictionary.club;
   return { title: { default: name, template: `%s | ${name}` } };
 }
 
@@ -34,7 +34,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   if (!isLocale(locale)) {
     notFound();
   }
-  const dictionary = getDictionary(locale);
+  const { dictionary } = await getSiteContent(locale);
   return (
     // data-scroll-behavior: الانتقال بين الصفحات فوري، والتمرير الناعم للروابط داخل الصفحة فقط
     <html

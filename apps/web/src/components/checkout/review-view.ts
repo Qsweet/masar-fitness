@@ -1,7 +1,7 @@
 import type { OrderView } from "@masar/db";
 import type { OrderStatus } from "@masar/domain";
 import { whatsappUrl } from "@/config/club";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
 import { localizedPath, type Locale } from "@/i18n/locales";
 import {
@@ -70,7 +70,7 @@ export function formatDeadline(instant: Date, timeZone: string, locale: Locale):
 }
 
 function headline(state: ReviewState, locale: Locale): { title: string; lead: string } {
-  const review = getDictionary(locale).checkout.review;
+  const review = defaultDictionary(locale).checkout.review;
   const texts: Record<ReviewState, { title: string; lead: string }> = {
     pending: { title: review.pendingTitle, lead: review.pendingLead },
     paid: { title: review.paidTitle, lead: review.paidLead },
@@ -93,12 +93,12 @@ function deadlineText(order: OrderView, state: ReviewState, locale: Locale): str
     return undefined;
   }
   const time = formatDeadline(order.expiresAt, order.timeZone, locale);
-  return fill(getDictionary(locale).checkout.review.expiresAt, { time });
+  return fill(defaultDictionary(locale).checkout.review.expiresAt, { time });
 }
 
 /** صفحة مراجعة الطلب من لقطته المختومة فقط، بالحالة الفعلية (المعلّق الفائتة مهلته منتهٍ). */
 export function toReviewView(order: OrderView, locale: Locale): ReviewView {
-  const review = getDictionary(locale).checkout.review;
+  const review = defaultDictionary(locale).checkout.review;
   const state = REVIEW_STATES[order.effectiveStatus];
   const primarySlug = order.items[0]?.slug;
   return {

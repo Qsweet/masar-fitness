@@ -1,5 +1,5 @@
 import type { Money } from "@masar/domain";
-import { getDictionary } from "./dictionaries";
+import { defaultDictionary } from "./dictionaries";
 import type { Locale } from "./locales";
 
 const MINOR_PER_MAJOR = 100;
@@ -22,7 +22,7 @@ export function moneyParts(value: Money, locale: Locale): MoneyParts {
     minimumFractionDigits: hasHalalas ? HALALA_DIGITS : 0,
     maximumFractionDigits: HALALA_DIGITS,
   }).format(value.amountMinor / MINOR_PER_MAJOR);
-  return { amount, unit: getDictionary(locale).currency[value.currency] };
+  return { amount, unit: defaultDictionary(locale).currency[value.currency] };
 }
 
 export interface MonthsParts {
@@ -36,7 +36,7 @@ export interface MonthsParts {
  * العربية تفرّق بين المفرد والمثنى (بلا رقم) والجمع (3–10) وتمييز ما فوق العشرة؛ الإنجليزية مفرد وجمع.
  */
 export function monthsParts(months: number, locale: Locale): MonthsParts {
-  const words = getDictionary(locale).months;
+  const words = defaultDictionary(locale).months;
   if (months === 1) {
     return { count: locale === "ar" ? undefined : String(months), unit: words.one };
   }

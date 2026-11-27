@@ -6,10 +6,10 @@ import { PageShell } from "@/components/page-shell";
 import { CostPerVisit } from "@/components/tools/cost-per-visit";
 import { costRows } from "@/components/tools/cost-per-visit-view";
 import { ROUTES } from "@/config/routes";
-import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale } from "@/i18n/locales";
 import { getMembershipPlans } from "@/server/catalog";
 import { pageMetadata } from "@/server/metadata";
+import { getSiteContent } from "@/server/content/site-content";
 
 type Props = PageProps<"/[locale]/tools/cost-per-visit">;
 
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!isLocale(locale)) {
     return {};
   }
-  const text = getDictionary(locale).tools.costPerVisit;
+  const text = (await getSiteContent(locale)).dictionary.tools.costPerVisit;
   // الرابط المعتمد بلا ‎?visits=‎: كل النتائج صفحة واحدة لمحركات البحث
   return pageMetadata({
     locale,
@@ -34,7 +34,7 @@ export default async function CostPerVisitPage({ params, searchParams }: Props) 
     notFound();
   }
   const visits = parseVisitsPerWeek((await searchParams).visits);
-  const dictionary = getDictionary(locale);
+  const { dictionary } = await getSiteContent(locale);
   const rows = costRows(await getMembershipPlans(), visits, locale);
   return (
     <PageShell locale={locale} path={ROUTES.costPerVisit}>

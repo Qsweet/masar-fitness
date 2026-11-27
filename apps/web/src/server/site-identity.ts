@@ -1,18 +1,20 @@
 import "server-only";
 import logo from "@/assets/brand/logo.png";
 import { PHOTOS } from "@/config/photos";
-import { getDictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/locales";
 import { getEnv } from "./env";
 import type { SiteIdentity } from "./structured-data";
 
-/** هوية الموقع للبيانات المنظَّمة: الأصل من الإعداد، والاسم من القاموس، والشعار برابط مطلق. */
-export function siteIdentity(locale: Locale): SiteIdentity {
+/**
+ * هوية الموقع للبيانات المنظَّمة: الأصل من الإعداد، والاسم من المحتوى المحلول (`getSiteContent`)
+ * فيطابق ما في الصفحة، والشعار برابط مطلق.
+ */
+export function siteIdentity(locale: Locale, clubName: string): SiteIdentity {
   const origin = getEnv().SITE_URL;
   return {
     origin,
     locale,
-    clubName: getDictionary(locale).club.name,
+    clubName,
     logoUrl: `${origin}${logo.src}`,
   };
 }

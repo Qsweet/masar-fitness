@@ -11,7 +11,7 @@ import { PageShell } from "@/components/page-shell";
 import { toPlanViews } from "@/components/plans/plan-view";
 import { whatsappUrl } from "@/config/club";
 import { CART_PATH, ROUTES } from "@/config/routes";
-import { getDictionary } from "@/i18n/dictionaries";
+import { defaultDictionary } from "@/i18n/dictionaries";
 import { fill } from "@/i18n/fill";
 import { isLocale, localizedPath, type Locale } from "@/i18n/locales";
 import { readCart } from "@/server/cart/cookie";
@@ -20,13 +20,14 @@ import { getMembershipPlans } from "@/server/catalog";
 import { requireCheckout } from "@/server/checkout/flag";
 import { checkoutMetadata } from "@/server/checkout/metadata";
 import { getCheckoutQuote } from "@/server/checkout/quote";
+import { getSiteContent } from "@/server/content/site-content";
 
 type Props = PageProps<"/[locale]/cart">;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   requireCheckout();
   const { locale } = await params;
-  return isLocale(locale) ? checkoutMetadata(getDictionary(locale).cart.meta.title) : {};
+  return isLocale(locale) ? checkoutMetadata(defaultDictionary(locale).cart.meta.title) : {};
 }
 
 /**
@@ -40,7 +41,7 @@ async function CartBody({
   readonly locale: Locale;
   readonly slug: string | null;
 }) {
-  const dictionary = getDictionary(locale);
+  const { dictionary } = await getSiteContent(locale);
   const membershipsHref = localizedPath(locale, ROUTES.memberships);
   const plan =
     slug === null
@@ -80,7 +81,7 @@ async function CartBody({
 function Note({ note, locale }: { readonly note: CartNote | undefined; readonly locale: Locale }) {
   return note === undefined ? null : (
     <p role="status" className={styles.note}>
-      {getDictionary(locale).cart.notes[note]}
+      {defaultDictionary(locale).cart.notes[note]}
     </p>
   );
 }
@@ -93,7 +94,7 @@ export default async function CartPage({ params, searchParams }: Props) {
     notFound();
   }
   const [cart, query] = await Promise.all([readCart(), searchParams]);
-  const { cart: labels, steps } = getDictionary(locale);
+  const { cart: labels, steps } = defaultDictionary(locale);
   return (
     <PageShell
       locale={locale}

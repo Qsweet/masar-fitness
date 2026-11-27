@@ -52,7 +52,7 @@ export function displayReason(reason: string): CheckoutErrorReason {
 }
 
 /** نص السبب من القاموس بلغة الصفحة. */
-export function errorText(reason: string, dictionary: Dictionary): string {
+export function errorText(reason: string, dictionary: Pick<Dictionary, "checkout">): string {
   const texts: Readonly<Record<CheckoutErrorReason, string>> = dictionary.checkout.errors;
   return texts[displayReason(reason)];
 }

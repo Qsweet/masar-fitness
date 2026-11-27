@@ -6,12 +6,12 @@ import { PageShell } from "@/components/page-shell";
 import { articlePath } from "@/config/routes";
 import { articleCrumbs } from "@/content/blog/crumbs";
 import { articleLocales, relatedArticles } from "@/content/blog/visibility";
-import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, LOCALES } from "@/i18n/locales";
 import { findReviewer, getVisibleArticle, getVisibleArticles } from "@/server/blog";
 import { pageMetadata } from "@/server/metadata";
 import { siteIdentity } from "@/server/site-identity";
 import { articleGraph } from "@/server/structured-data";
+import { getSiteContent } from "@/server/content/site-content";
 
 type Props = PageProps<"/[locale]/blog/[slug]">;
 
@@ -54,9 +54,9 @@ export default async function ArticlePage({ params }: Props) {
     notFound();
   }
   const { locale, article, translation } = found;
-  const dictionary = getDictionary(locale);
+  const { dictionary } = await getSiteContent(locale);
   const reviewer = findReviewer(article.reviewerId);
-  const graph = articleGraph(siteIdentity(locale), {
+  const graph = articleGraph(siteIdentity(locale, dictionary.club.name), {
     article,
     translation,
     reviewer,

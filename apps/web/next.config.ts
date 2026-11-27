@@ -27,6 +27,10 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // الحزم الداخلية تُصدَّر كمصدر TypeScript وتُترجَم هنا
   transpilePackages: ["@masar/db", "@masar/domain", "@masar/payments"],
+  // العنوان والوصف في <head> قبل الجسم لكل زائر وزاحف (القرار 72): منذ صار الوصف يُقرأ من المحتوى
+  // المنشور (استعلام صغير) كان Next سيبثّه بعد الجسم أحيانًا، فيختلف الرد بالتوقيت ويفوت الزواحف
+  // ومعاينات الروابط التي لا تنفّذ JavaScript وليست في قائمته الافتراضية
+  htmlLimitedBots: /.*/,
   headers() {
     return Promise.resolve([{ source: "/:path*", headers: SECURITY_HEADERS }]);
   },

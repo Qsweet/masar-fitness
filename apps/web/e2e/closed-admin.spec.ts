@@ -23,10 +23,16 @@ const NONCE = /'nonce-([^']+)'/;
  * لا يُستبدل الاسم بعلامة محايدة: حمولة موجّه Next في كل صفحة تسرد أسماء مسارات الجذر الثابتة، فالاسم
  * موجود في الجسمين أصلًا.
  */
+/**
+ * حدود دفعات حمولة الموجّه (`self.__next_f.push`) تتبع توقيت البث: منذ صار المحتوى يُقرأ من القاعدة
+ * (A3) يقسم الطلبان المتماثلان الحمولة نفسها في مواضع مختلفة. تُوصل الدفعات فيُقارن المحتوى لا التقسيم.
+ */
+const FLIGHT_BOUNDARY = /"\]\)<\/script><script nonce="NONCE">self\.__next_f\.push\(\[1,"/g;
+
 async function comparable(response: APIResponse, segments: readonly string[]): Promise<string> {
   const nonce = NONCE.exec(response.headers()["content-security-policy"] ?? "")?.[1] ?? "";
   expect(nonce).not.toBe("");
-  const body = (await response.text()).replaceAll(nonce, "NONCE");
+  const body = (await response.text()).replaceAll(nonce, "NONCE").replace(FLIGHT_BOUNDARY, "");
   return segments.reduce((text, segment) => text.replaceAll(segment, "admin"), body);
 }
 

@@ -47,6 +47,8 @@ test("متصفح النصوص والتحرير والنشر والسجل وال�
   await saveText(page, "hero.title", "أقوى نسخة منك تبدأ اليوم");
   await publishDraft(page);
   await saveText(page, "hero.lead", "تجربة تدريب كاملة بإشراف مدربين معتمدين، من أول يوم.");
+  await publishDraft(page);
+  await saveText(page, "hero.slogan", "تبدأ معنا.");
   await saveText(page, "meta.homeTitle", "نادي مسار الأبطال للرجال في بريدة: حديد وحصص ومسبح");
 
   await page.goto("/admin/content/texts");

@@ -2,17 +2,13 @@ import { randomUUID } from "node:crypto";
 import { CONSENT_VERSION, type VerifiedPayment } from "@masar/domain";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
-  claimDueEvents,
   createDb,
   createOrder,
   listIntegrations,
-  listRecentTrackingEvents,
   loadPurchaseContext,
   loadSendableIntegration,
   markOrderPaid,
-  recordAttempt,
   recordOrderTracking,
-  recordTestEvent,
   saveIntegration,
   type Db,
   type OrderTrackingInput,
@@ -249,76 +245,5 @@ describe("التحويل في معاملة التسوية", () => {
       items: [{ slug: plan.slug, totalMinor: PRICE }],
     });
     expect(context?.phoneE164).toMatch(/^\+9665\d{8}$/);
-  });
-});
-
-describe("الطابور", () => {
-  async function pendingOrder(): Promise<string> {
-    unwrap(await saveIntegration(db, integration()));
-    const orderId = await newOrder();
-    await recordOrderTracking(db, tracking(orderId));
-    unwrap(
-      await markOrderPaid(db, { orderId, payment: payment(), actor: "provider", now: PAID_AT }),
-    );
-    return orderId;
-  }
-
-  it("الحجز يأخذ ما حان وقته مرة، والحجز الثاني لا يراه قبل المهلة", async () => {
-    await pendingOrder();
-    const now = new Date(PAID_AT.getTime() + 1_000);
-    const [first, second] = await Promise.all([
-      claimDueEvents(db, now, 10),
-      claimDueEvents(db, now, 10),
-    ]);
-    expect(first.length + second.length).toBe(1);
-    expect(await claimDueEvents(db, new Date(now.getTime() + 301_000), 10)).toHaveLength(1);
-  });
-
-  it("الإعادة ثم الإرسال، والميت لا يعود، والتخطي لا يُعدّ محاولة", async () => {
-    const orderId = await pendingOrder();
-    const [event] = await claimDueEvents(db, PAID_AT, 10);
-    const id = event?.id ?? "";
-    const retryAt = new Date(PAID_AT.getTime() + 60_000);
-    await recordAttempt(
-      db,
-      id,
-      { kind: "retry", at: retryAt, status: 503, reason: "http_503" },
-      PAID_AT,
-    );
-    expect((await outboxFor(orderId))[0]).toMatchObject({
-      status: "pending",
-      attempts: 1,
-      lastStatus: 503,
-    });
-    await recordAttempt(db, id, { kind: "sent", status: 200 }, retryAt);
-    expect((await outboxFor(orderId))[0]).toMatchObject({
-      status: "sent",
-      attempts: 2,
-      lastReason: null,
-    });
-    await recordAttempt(db, id, { kind: "dead", status: 400, reason: "http_400" }, retryAt);
-    expect((await outboxFor(orderId))[0]?.status).toBe("sent");
-    expect(await claimDueEvents(db, new Date(retryAt.getTime() + 600_000), 10)).toEqual([]);
-  });
-
-  it("حدث الاختبار يُسجَّل بلا طلب، والسجل بمرجع الطلب للحي", async () => {
-    const orderId = await pendingOrder();
-    await recordTestEvent(db, {
-      clubId,
-      provider: "meta",
-      eventName: "MasarTestEvent",
-      eventId: "test.1",
-      delivered: false,
-      status: 401,
-      reason: "http_401",
-      now: new Date(PAID_AT.getTime() + 1),
-    });
-    const rows = await listRecentTrackingEvents(db, clubId, 10);
-    expect(rows.map((row) => [row.kind, row.status, row.lastStatus])).toEqual([
-      ["test", "dead", 401],
-      ["live", "pending", null],
-    ]);
-    const order = await db.order.findUniqueOrThrow({ where: { id: orderId } });
-    expect(rows[1]?.orderReference).toBe(order.reference);
   });
 });

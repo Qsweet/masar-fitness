@@ -1,15 +1,14 @@
 /**
- * طابور الإرسال وسجله (ADMIN_A5_TRACKING §4.1–4.2). المرسِل يحجز دفعة بـ`SKIP LOCKED` ومهلة حجز،
- * فمرسِلان متزامنان لا يأخذان السطر نفسه، وما توقف مرسِله يعود بعد المهلة. لا جسم رد ولا حمولة هنا.
+ * طابور الإرسال وسجله (ADMIN_A5_TRACKING §4.1–4.2). المرسِل يحجز دفعة بـ`SKIP LOCKED` ومهلة حجز
+ * ورمز حجز جديد، فمرسِلان متزامنان لا يأخذان السطر نفسه، وما توقف مرسِله يعود بعد المهلة برمز آخر،
+ * والنتيجة لا تُكتب إلا بالرمز الحالي (القرار 89-2). لا جسم رد ولا حمولة هنا.
  */
+import { randomUUID } from "node:crypto";
 import { isServerProvider, isTrackingProvider, type ServerProvider } from "@masar/domain";
 import type { Db } from "../client";
 
 export const OUTBOX_STATUSES = ["pending", "sent", "dead", "skipped"] as const;
 export type OutboxStatus = (typeof OUTBOX_STATUSES)[number];
-
-/** مهلة الحجز: إن توقف المرسِل يعود السطر للطابور بعدها. */
-const CLAIM_LEASE_MS = 300_000;
 
 export interface ClaimedEvent {
   readonly id: string;
@@ -20,6 +19,8 @@ export interface ClaimedEvent {
   readonly eventId: string;
   readonly attempts: number;
   readonly eventTime: Date;
+  /** يُمرَّر إلى `recordAttempt`: بلاه لا تُكتب النتيجة. */
+  readonly claimToken: string;
 }
 
 interface ClaimRow {
@@ -31,6 +32,7 @@ interface ClaimRow {
   readonly event_id: string;
   readonly attempts: number;
   readonly event_time: Date;
+  readonly claim_token: string;
 }
 
 function claimed(row: ClaimRow): ClaimedEvent | null {
@@ -46,20 +48,31 @@ function claimed(row: ClaimRow): ClaimedEvent | null {
     eventId: row.event_id,
     attempts: row.attempts,
     eventTime: row.event_time,
+    claimToken: row.claim_token,
   };
 }
 
-/** يحجز حتى `limit` حدثًا حيًّا حان وقته، الأقدم أولًا. */
-export async function claimDueEvents(db: Db, now: Date, limit: number): Promise<ClaimedEvent[]> {
-  const lease = new Date(now.getTime() + CLAIM_LEASE_MS);
+/**
+ * يحجز حتى `limit` حدثًا حيًّا حان وقته، الأقدم أولًا، برمز جديد ومهلة `leaseMs` يختارها المرسِل أطول
+ * من أسوأ زمن لدفعته.
+ */
+export async function claimDueEvents(
+  db: Db,
+  now: Date,
+  limit: number,
+  leaseMs: number,
+): Promise<ClaimedEvent[]> {
+  const lease = new Date(now.getTime() + leaseMs);
+  const token = randomUUID();
   const rows = await db.$queryRaw<ClaimRow[]>`
-    UPDATE tracking_outbox SET next_attempt_at = ${lease}, updated_at = ${now}
+    UPDATE tracking_outbox SET next_attempt_at = ${lease}, updated_at = ${now},
+      claim_token = ${token}::uuid
     WHERE id IN (
       SELECT id FROM tracking_outbox
       WHERE status = 'pending' AND kind = 'live' AND next_attempt_at <= ${now}
       ORDER BY next_attempt_at, id LIMIT ${limit} FOR UPDATE SKIP LOCKED)
     RETURNING id::text, club_id::text, order_id::text, provider, event_name, event_id, attempts,
-      event_time`;
+      event_time, claim_token::text`;
   return rows.map(claimed).filter((event): event is ClaimedEvent => event !== null);
 }
 
@@ -74,24 +87,28 @@ export type AttemptResult =
   | { readonly kind: "dead"; readonly status: number | null; readonly reason: string }
   | { readonly kind: "skipped"; readonly reason: string };
 
-/** يسجّل نتيجة المحاولة على سطر ما زال معلّقًا. `skipped` لا يُعدّ محاولة (لم يُرسل شيء). */
+/**
+ * يسجّل نتيجة المحاولة على سطر ما زال معلّقًا ومحجوزًا بالرمز نفسه، ويفك الحجز. `skipped` لا يُعدّ
+ * محاولة (لم يُرسل شيء). false: الحجز انقضى وأخذه مرسِل آخر، فلا يُكتب شيء.
+ */
 export async function recordAttempt(
   db: Db,
-  id: string,
+  claim: { readonly id: string; readonly claimToken: string },
   result: AttemptResult,
   now: Date,
-): Promise<void> {
+): Promise<boolean> {
   const status = result.kind === "retry" ? "pending" : result.kind;
   const httpStatus = result.kind === "skipped" ? null : result.status;
   const reason = result.kind === "sent" ? null : result.reason;
   const counted = result.kind === "skipped" ? 0 : 1;
   const next = result.kind === "retry" ? result.at : now;
   const sentAt = result.kind === "sent" ? now : null;
-  await db.$executeRaw`
+  const updated = await db.$executeRaw`
     UPDATE tracking_outbox SET status = ${status}, attempts = attempts + ${counted},
       next_attempt_at = ${next}, last_status = ${httpStatus}, last_reason = ${reason},
-      sent_at = ${sentAt}, updated_at = ${now}
-    WHERE id = ${id}::uuid AND status = 'pending'`;
+      sent_at = ${sentAt}, updated_at = ${now}, claim_token = NULL
+    WHERE id = ${claim.id}::uuid AND status = 'pending' AND claim_token = ${claim.claimToken}::uuid`;
+  return updated === 1;
 }
 
 export interface TestEventRecord {

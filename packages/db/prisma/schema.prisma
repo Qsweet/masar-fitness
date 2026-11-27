@@ -340,8 +340,8 @@ model Order {
   expiredAt             DateTime?   @map("expired_at") @db.Timestamptz(3)
   cancelledAt           DateTime?   @map("cancelled_at") @db.Timestamptz(3)
 
-  club             Club              @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  customer         Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  club             Club                     @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  customer         Customer                 @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   items            OrderItem[]
   discounts        OrderDiscount[]
   memberships      Membership[]
@@ -351,6 +351,7 @@ model Order {
   manualPayment    ManualPayment?
   tracking         OrderTracking?
   trackingOutbox   TrackingOutbox[]
+  browserPurchase  TrackingBrowserPurchase?
 
   /// دفعة المزوّد تسوّي طلبًا واحدًا فقط
   @@unique([paidProvider, paidProviderPaymentId])
@@ -954,6 +955,8 @@ model TrackingOutbox {
   createdAt     DateTime  @map("created_at") @db.Timestamptz(3)
   updatedAt     DateTime  @map("updated_at") @db.Timestamptz(3)
   sentAt        DateTime? @map("sent_at") @db.Timestamptz(3)
+  /// رمز الحجز الحالي: النتيجة تُسجَّل بالرمز وحده، فمرسِل انقضت مهلته لا يكتب فوق غيره (القرار 89-2)
+  claimToken    String?   @map("claim_token") @db.Uuid
 
   club  Club   @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   order Order? @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
@@ -962,4 +965,14 @@ model TrackingOutbox {
   @@index([clubId, createdAt])
   @@index([orderId])
   @@map("tracking_outbox")
+}
+
+/// أول عرض لصفحة الطلب المدفوع حمل الجوال المجزّأ إلى المتصفح: مرة واحدة لكل طلب (القرار 89-1).
+model TrackingBrowserPurchase {
+  orderId   String   @id @map("order_id") @db.Uuid
+  createdAt DateTime @map("created_at") @db.Timestamptz(3)
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@map("tracking_browser_purchases")
 }

@@ -1,3 +1,4 @@
+export { claimBrowserPurchase } from "./browser-purchase";
 export { enqueuePurchaseConversions, PURCHASE_EVENT } from "./enqueue";
 export type { EnqueuePurchaseInput } from "./enqueue";
 export {

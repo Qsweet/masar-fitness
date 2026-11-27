@@ -6,6 +6,7 @@ import { CONSENT_CHANGED, readConsent } from "./consent-cookie";
 import { loadSinks } from "./load-sinks";
 import { addSink, hasSinks, newEventId, track } from "./track";
 import type { ClientProvider } from "./types";
+import { expireVendorCookies } from "./vendor-cookies";
 import { updateGoogleConsent } from "./vendors/google";
 
 interface TagLoaderProps {
@@ -31,12 +32,15 @@ export function TagLoader({ providers, nonce }: TagLoaderProps) {
     };
     load();
     const onChange = () => {
+      const before = consentRef.current;
       const after = readConsent();
       consentRef.current = after;
       if (after === null) {
         return;
       }
-      if (hasSinks()) {
+      // كوكيات المنصات للفئة المسحوبة تُمحى ولو لم يُحمَّل وسم في هذه الصفحة (القرار 89-8)
+      const expired = expireVendorCookies(document, window.location.hostname, before, after);
+      if (hasSinks() || expired.length > 0) {
         // السحب يصل Google قبل إعادة التحميل؛ والصفحة الجديدة تحمّل ما بقي مسموحًا وحده
         updateGoogleConsent(after);
         window.location.reload();

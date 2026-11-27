@@ -6,6 +6,13 @@ export {
 } from "./catalog/membership-plan";
 export type { LocalizedText, MembershipPlan } from "./catalog/membership-plan";
 export { approximateDailyCost } from "./catalog/daily-cost";
+export {
+  MAX_STRIP_MONTHS,
+  monthlyComparison,
+  monthStrip,
+  shortestPlan,
+} from "./catalog/plan-comparison";
+export type { MonthlyComparison, MonthStrip } from "./catalog/plan-comparison";
 export * from "./catalog/admin";
 export { DOMAIN_ERROR_CODES, DomainError } from "./errors";
 export type { DomainErrorCode, DomainErrorOptions } from "./errors";

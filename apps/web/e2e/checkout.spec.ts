@@ -334,3 +334,22 @@ for (const [locale, prefix] of [
     expect(problems).toEqual([]);
   });
 }
+
+test.describe("محدِّد الاشتراك والعلم مفتوح", () => {
+  test("زر البطاقة يضيف المدة المختارة إلى السلة، بـJavaScript ومن دونه", async ({ browser }) => {
+    for (const javaScriptEnabled of [true, false]) {
+      const context = await browser.newContext({ javaScriptEnabled, reducedMotion: "reduce" });
+      const page = await context.newPage();
+      await page.setExtraHTTPHeaders({ "x-forwarded-for": randomIp() });
+      await page.goto("/");
+      await page.locator('#plans input[name="plan"][value="three-months"]').check();
+      const card = page.locator("#plans [data-plan-card]");
+      await card.getByRole("button", { name: LABELS.ar.buy }).click();
+      await expect(page).toHaveURL(/\/cart\?note=added$/);
+      await expect(page.getByTestId("order-total"), String(javaScriptEnabled)).toContainText(
+        "699 ر.س",
+      );
+      await context.close();
+    }
+  });
+});

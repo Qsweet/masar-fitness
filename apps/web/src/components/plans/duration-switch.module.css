@@ -1,0 +1,146 @@
+/*
+ * مبدّل المدة: مسار أسود بحد رفيع، ومقاطع متساوية، ومؤشر أبيض ينزلق تحت المختار (--active من
+ * plan-picker.module.css حسب الراديو المختار، فيعمل بلا JavaScript). الأصفر للشارة وحدها هنا.
+ */
+.switch {
+  min-width: 0;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  width: min(100%, 34rem);
+}
+
+.track {
+  --pad: 0.3125rem;
+  --cell: calc((100% - 2 * var(--pad)) / 3);
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  margin-top: 1rem;
+  padding: var(--pad);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.track[data-count="2"] {
+  --cell: calc((100% - 2 * var(--pad)) / 2);
+}
+
+.track[data-count="4"] {
+  --cell: calc((100% - 2 * var(--pad)) / 4);
+}
+
+/* أكثر من أربعة مقاطع: صفوف تلتف بلا مؤشر منزلق */
+.track:not([data-thumb]) {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  border-radius: var(--radius-lg);
+}
+
+.thumb {
+  position: absolute;
+  z-index: -1;
+  inset-block: var(--pad);
+  inset-inline-start: calc(var(--pad) + var(--active, 0) * var(--cell));
+  width: var(--cell);
+  border-radius: var(--radius-pill);
+  background: var(--white);
+  box-shadow: 0 6px 18px -6px rgb(0 0 0 / 70%);
+  transition: inset-inline-start 420ms var(--ease);
+}
+
+.track:not([data-thumb]) .thumb {
+  display: none;
+}
+
+.segment {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 3.25rem;
+  padding-inline: 0.25rem;
+  border-radius: var(--radius-pill);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 240ms var(--ease);
+}
+
+.segment:hover {
+  color: var(--fg);
+}
+
+.segment:has(.input:checked) {
+  color: var(--ink);
+}
+
+.track:not([data-thumb]) .segment:has(.input:checked) {
+  background: var(--white);
+}
+
+.segment:has(.input:focus-visible) {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+/* الراديو الحقيقي يغطي المقطع شفافًا: النقر في أي مكان يختار */
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* على أضيق هاتف (360px) «12 months» تبقى في سطر داخل ثلث المسار */
+.term {
+  font-size: clamp(0.875rem, 3.4vw + 0.1rem, 1rem);
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* «الأكثر قيمة» حبة صفراء فوق حافة مقطعها */
+.badge {
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  width: max-content;
+  margin-inline: auto;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: var(--yellow);
+  color: var(--ink);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  line-height: 1.5;
+  white-space: nowrap;
+  translate: 0 -95%;
+  pointer-events: none;
+}
+
+@media (width >= 48rem) {
+  .term {
+    font-size: 1.0625rem;
+  }
+
+  .segment {
+    min-height: 3.5rem;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb,
+  .segment {
+    transition: none;
+  }
+}

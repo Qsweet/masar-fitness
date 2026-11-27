@@ -40,6 +40,7 @@ export function PlanPreviewCard({ product, published, text }: PreviewProps) {
             label: labels.previewLocales[locale],
             view,
             labels: defaultDictionary(locale).plans,
+            planLabels: defaultDictionary(locale).plan,
           },
         ];
   });

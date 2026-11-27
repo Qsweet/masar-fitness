@@ -6,7 +6,7 @@ import { Contact } from "@/components/home/contact";
 import { CtaBand } from "@/components/home/cta-band";
 import { Facilities } from "@/components/home/facilities";
 import { Goals } from "@/components/home/goals";
-import { Hero, HERO_ACTIONS_ID } from "@/components/home/hero/hero";
+import { Hero } from "@/components/home/hero/hero";
 import { Highlights } from "@/components/home/highlights";
 import { offerView, ratingView } from "@/components/home/home-view";
 import { Hours } from "@/components/home/hours";
@@ -71,13 +71,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <Goals dictionary={dictionary} />
       <Facilities dictionary={dictionary} />
       <Stats locale={locale} dictionary={dictionary} rating={rating} />
-      <PlansSection
-        plans={plans}
-        locale={locale}
-        dictionary={dictionary}
-        revealAfterId={HERO_ACTIONS_ID}
-        showCompare
-      >
+      <PlansSection plans={plans} locale={locale} dictionary={dictionary} showCompare>
         <FriendsOffer dictionary={dictionary} view={friendsView(dictionary, locale)} />
       </PlansSection>
       <About dictionary={dictionary} />

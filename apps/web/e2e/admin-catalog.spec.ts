@@ -222,12 +222,15 @@ test("النشر وتغيير السعر والإخفاء تظهر فورًا ف
   expect(await sitemap(page)).not.toContain(planPage);
 
   await confirmStatus(page, plan, "publish");
+  // في المحدِّد: مقطع للباقة، وبطاقتها باسمها واسم فئتها من القاعدة باللغتين حين تُختار
+  const picked = page.locator("#plans [data-plan-card]");
   await page.goto("/memberships");
-  await expect(page.getByText(names.nameAr).first()).toBeVisible();
-  // اسم الفئة من القاعدة، باللغتين
-  await expect(page.getByText(names.tierAr).first()).toBeVisible();
+  await page.locator(`#plans input[name="plan"][value="${plan.slug}"]`).check();
+  await expect(picked.getByText(names.nameAr, { exact: true })).toBeVisible();
+  await expect(picked.getByText(names.tierAr, { exact: true })).toBeVisible();
   await page.goto("/en/memberships");
-  await expect(page.getByText(names.tierEn).first()).toBeVisible();
+  await page.locator(`#plans input[name="plan"][value="${plan.slug}"]`).check();
+  await expect(picked.getByText(names.tierEn, { exact: true })).toBeVisible();
   expect(await sitemap(page)).toContain(planPage);
 
   // طلب بالسعر الأول عبر السلة وعرض السعر

@@ -1,0 +1,57 @@
+/*
+ * شريط الأشهر: مجموعتان بعرض يتناسب مع عدد أشهرهما (flex-grow من العدد)، وحبة لكل شهر بفراغ ثابت
+ * كخط المضمار المتقطع، والمجانية بالأصفر. تحته اسم المدفوعة في البداية والمجانية في النهاية.
+ * الحبات تُضاء متتابعة حين يظهر الاشتراك (--on من البطاقة).
+ */
+.strip {
+  display: grid;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.track,
+.group {
+  display: flex;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.group {
+  flex-basis: 0;
+}
+
+.pill {
+  flex: 1;
+  height: 0.625rem;
+  min-width: 0.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--grey-on-ink);
+  opacity: calc(0.18 + 0.82 * var(--on, 1));
+  transition: opacity 320ms var(--ease);
+}
+
+.group[data-kind="free"] .pill {
+  background: var(--yellow);
+  box-shadow: var(--glow-sm);
+}
+
+.captions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.free {
+  color: var(--yellow);
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill {
+    transition: none;
+  }
+}

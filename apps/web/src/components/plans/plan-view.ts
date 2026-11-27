@@ -2,9 +2,13 @@ import {
   approximateDailyCost,
   approximateMonthlyCost,
   bestValuePlan,
+  monthlyComparison,
+  monthStrip,
   sharedBenefits,
   totalMonths,
   type MembershipPlan,
+  type Money,
+  type MonthStrip,
 } from "@masar/domain";
 import { whatsappUrl } from "@/config/club";
 import { CLUB_FACTS } from "@/config/club-facts";
@@ -47,6 +51,13 @@ export interface PlanView {
   readonly dailyText: string;
   /** «تجميد حتى 60 يومًا»: 5 أيام لكل شهر مدفوع كما في شروط النادي الحالية (config/club-facts.ts) */
   readonly freezeText: string;
+  /** شريط الأشهر: المدفوعة ثم المجانية (`monthStrip`)؛ غائب لشهر واحد أو مدة أطول من أن تُرسم */
+  readonly strip: MonthStrip | undefined;
+  /**
+   * «تدفع شهريًا نحو 107 ر.س بدل 175 ر.س في انطلاقة الأبطال»: مقارنة بالأقصر مدة من
+   * `monthlyComparison` بالتقريب المعروض نفسه، ولا نسبة. غائب للمرجع نفسه وحين لا فرق حقيقي.
+   */
+  readonly savingsText: string | undefined;
   readonly benefits: readonly string[];
   /** كل الاشتراكات المعروضة بالمزايا نفسها: يكفي الملخصَ سطر واحد بدل القائمة المكررة */
   readonly benefitsShared: boolean;
@@ -121,7 +132,32 @@ export function purchaseHref(
   return { kind: "whatsapp", href: planWhatsappUrl(plan, locale, dictionary) };
 }
 
+/** «107 ر.س» بمسافة لا تنكسر: المبلغ ووحدته على سطر واحد داخل الجملة. */
+function unbreakable(value: Money, locale: Locale): string {
+  const { amount, unit } = moneyParts(value, locale);
+  return `${amount}\u00a0${unit}`;
+}
+
+/** سطر المقارنة الشهرية بالأقصر مدة، أو غائب. */
+function savingsText(
+  plan: MembershipPlan,
+  all: readonly MembershipPlan[],
+  locale: Locale,
+): string | undefined {
+  const comparison = monthlyComparison(plan, all);
+  if (comparison === undefined) {
+    return undefined;
+  }
+  const { reference } = comparison;
+  return fill(defaultDictionary(locale).plans.savings, {
+    monthly: unbreakable(comparison.monthly, locale),
+    reference: unbreakable(comparison.referenceMonthly, locale),
+    plan: (reference.tier ?? reference.name)[locale],
+  });
+}
+
 interface ViewContext {
+  readonly all: readonly MembershipPlan[];
   readonly locale: Locale;
   readonly bestSlug: string | undefined;
   readonly checkoutEnabled: boolean;
@@ -129,7 +165,7 @@ interface ViewContext {
 }
 
 function toPlanView(plan: MembershipPlan, context: ViewContext): PlanView {
-  const { locale, bestSlug, checkoutEnabled, benefitsShared } = context;
+  const { all, locale, bestSlug, checkoutEnabled, benefitsShared } = context;
   const { plans, plan: planText, days } = defaultDictionary(locale);
   const dictionary: PlanLabels = { plans, plan: planText, days };
   return {
@@ -149,6 +185,8 @@ function toPlanView(plan: MembershipPlan, context: ViewContext): PlanView {
     monthlyText: monthlyText(plan, locale),
     dailyText: dailyText(plan, locale),
     freezeText: freezeText(plan.paidMonths, dictionary),
+    strip: monthStrip(plan),
+    savingsText: savingsText(plan, all, locale),
     benefits: plan.benefits.map((benefit) => benefit[locale]),
     benefitsShared,
     isBestValue: plan.slug === bestSlug,
@@ -168,7 +206,7 @@ export function toPlanViews(
   const bestSlug = plans.length > 1 ? bestValuePlan(plans)?.slug : undefined;
   const benefitsShared = plans.length > 1 && sharedBenefits(plans) !== undefined;
   return plans.map((plan) =>
-    toPlanView(plan, { locale, bestSlug, checkoutEnabled, benefitsShared }),
+    toPlanView(plan, { all: plans, locale, bestSlug, checkoutEnabled, benefitsShared }),
   );
 }
 

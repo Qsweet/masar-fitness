@@ -4,7 +4,9 @@ import { useEffect, useState, type ReactNode } from "react";
 
 interface StickyRevealProps {
   /** معرّف العنصر الذي يُخفي الشريط ما دام ظاهرًا أو تحت الشاشة (فعلا الواجهة، أو رأس الصفحة). */
-  readonly afterId: string;
+  readonly afterId?: string;
+  /** معرّف قسم لا يظهر الشريط إلا وهو على الشاشة (قسم الاشتراكات). */
+  readonly withinId?: string;
   /** عنصر يكرر محتوى الشريط (ملخص الاشتراك): الشريط يختفي ما دام ظاهرًا على الشاشة. */
   readonly hideWhileId?: string;
   readonly className: string | undefined;
@@ -54,14 +56,11 @@ function useInView(id: string | undefined): boolean {
   return inView;
 }
 
-export function StickyReveal(props: StickyRevealProps) {
-  const { afterId, className, label, children } = props;
-  const [passed, setPassed] = useState(false);
-  const typing = useTyping();
-  const duplicateInView = useInView(props.hideWhileId);
-
+/** هل تجاوز الزائر العنصر (صار فوق الشاشة)؟ بلا معرّف: نعم، فلا شرط. */
+function usePassed(id: string | undefined): boolean {
+  const [passed, setPassed] = useState(id === undefined);
   useEffect(() => {
-    const target = document.getElementById(afterId);
+    const target = id === undefined ? null : document.getElementById(id);
     if (target === null) {
       return undefined;
     }
@@ -74,13 +73,23 @@ export function StickyReveal(props: StickyRevealProps) {
     return () => {
       observer.disconnect();
     };
-  }, [afterId]);
+  }, [id]);
+  return passed;
+}
+
+export function StickyReveal(props: StickyRevealProps) {
+  const { className, label, children } = props;
+  const passed = usePassed(props.afterId);
+  const typing = useTyping();
+  const duplicateInView = useInView(props.hideWhileId);
+  const within = useInView(props.withinId);
+  const outside = props.withinId !== undefined && !within;
 
   return (
     <aside
       aria-label={label}
       className={className}
-      hidden={!passed || typing || duplicateInView}
+      hidden={!passed || outside || typing || duplicateInView}
       data-sticky-bar
     >
       {children}

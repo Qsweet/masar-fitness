@@ -18,9 +18,11 @@ function durations(page: Page) {
   return page.getByRole("group", { name: "مدة الاشتراك" });
 }
 
-function summary(page: Page) {
-  return page.locator("#plans [aria-live]");
+/** البطاقة الكبيرة: نسخة كل اشتراك فيها، والظاهرة المختار وحده (النص المرئي فقط). */
+function card(page: Page) {
+  return page.locator("#plans [data-plan-card]");
 }
+const VISIBLE = { useInnerText: true };
 
 /** رأس صفحة الاشتراك الواحد: العنوان وبطاقة السعر وزر الشراء. */
 function offer(page: Page) {
@@ -28,28 +30,33 @@ function offer(page: Page) {
 }
 
 test.describe("الرئيسية", () => {
-  test("تعرض بطاقات الأسعار الثلاث من القاعدة، والأوفر شهريًا مختار مع ملخصه", async ({ page }) => {
+  test("مبدّل المدد الثلاث من القاعدة، والأوفر شهريًا مختار ببطاقته", async ({ page }) => {
     await page.goto("/");
     const options = durations(page).getByRole("radio");
     await expect(options).toHaveCount(3);
-    const annual = durations(page).locator("label").filter({ hasText: ANNUAL.nameAr });
-    await expect(annual).toContainText(ANNUAL.price);
-    await expect(annual).toContainText("14 شهرًا، منها شهران مجانًا");
-    await expect(annual).toContainText("الأكثر قيمة");
-    await expect(annual).toContainText("نحو 107 ر.س شهريًا");
-    // اليومي بالصيغة نفسها: «نحو … يوميًا» لا علامة «≈» منفصلة في طرف السطر
-    await expect(annual).toContainText(/نحو [\d.]+ ر\.س يوميًا/);
-    await expect(annual).toContainText("تجميد حتى 60 يومًا");
-    await expect(annual.getByRole("radio")).toBeChecked();
-    // شارة «الأوفر شهريًا» محسوبة: بطاقة واحدة فقط
-    await expect(durations(page).getByText("الأكثر قيمة", { exact: true })).toHaveCount(1);
-
-    // ترتيب واحد بالمدة في كل المقاسات وفي جدول المقارنة: 3 ← 6 ← 12، والأوفر بشارته وإطاره
+    // ترتيب واحد بالمدة في كل المقاسات وفي جدول المقارنة: 3 ← 6 ← 12، والأوفر بشارته
     await expect(options.nth(2)).toHaveValue(ANNUAL.slug);
+    await expect(options.nth(2)).toBeChecked();
+    await expect(durations(page).getByRole("radio", { name: /12 شهرًا/ })).toBeChecked();
+    // شارة «الأوفر شهريًا» محسوبة: على مقطع واحد فقط
+    await expect(durations(page).getByText("الأكثر قيمة", { exact: true })).toHaveCount(1);
+    await expect(durations(page).locator("label").nth(2)).toContainText("الأكثر قيمة");
 
-    await expect(summary(page)).toContainText(ANNUAL.nameAr);
-    await expect(summary(page)).toContainText(`${ANNUAL.price} ر.س`);
-    await expect(summary(page)).toContainText("14 شهرًا، منها شهران مجانًا");
+    await expect(card(page)).toContainText(ANNUAL.nameAr, VISIBLE);
+    await expect(card(page)).toContainText(`${ANNUAL.price} ر.س`, VISIBLE);
+    await expect(card(page)).toContainText("نحو 107 ر.س شهريًا", VISIBLE);
+    // اليومي بالصيغة نفسها: «نحو … يوميًا» لا علامة «≈» منفصلة في طرف السطر
+    await expect(card(page)).toContainText(/نحو [\d.]+ ر\.س يوميًا/, VISIBLE);
+    await expect(card(page)).toContainText("تجميد حتى 60 يومًا", VISIBLE);
+    await expect(card(page)).not.toContainText(QUARTER.nameAr, VISIBLE);
+    // شريط الأشهر ببديله النصي، والمقارنة بالأقصر مدة بأرقام الخادم
+    await expect(
+      card(page).getByRole("img", { name: "14 شهرًا، منها شهران مجانًا" }),
+    ).toBeVisible();
+    await expect(card(page)).toContainText(
+      "تدفع شهريًا نحو 107 ر.س بدل 175 ر.س في انطلاقة الأبطال",
+      VISIBLE,
+    );
     // سطر الضريبة مرة واحدة تحت عنوان القسم، لا تحت كل سعر (الضريبة غير مؤكدة في صفحات المنتجات)
     await expect(page.locator("#plans").getByText(/الضريبة/)).toHaveCount(1);
     await expect(page.locator("#plans .lead").first()).toContainText(
@@ -57,33 +64,21 @@ test.describe("الرئيسية", () => {
     );
   });
 
-  test("اختيار مدة يحدّث الملخص فورًا بلا انتقال", async ({ page }) => {
+  test("اختيار مدة يبدّل البطاقة فورًا بلا انتقال", async ({ page }) => {
     await page.goto("/");
-    await durations(page)
-      .locator("label")
-      .filter({ hasText: QUARTER.nameAr })
-      .getByRole("radio")
-      .check();
+    await durations(page).locator(`input[value="${QUARTER.slug}"]`).check();
     await expect(page).toHaveURL(/\/$/);
-    await expect(summary(page)).toContainText(QUARTER.nameAr);
-    await expect(summary(page)).toContainText(`${QUARTER.price} ر.س`);
-    await expect(summary(page)).toContainText("4 أشهر، منها شهر مجانًا");
-    await summary(page)
+    await expect(card(page)).toContainText(QUARTER.nameAr, VISIBLE);
+    await expect(card(page)).toContainText(`${QUARTER.price} ر.س`, VISIBLE);
+    await expect(card(page)).not.toContainText(ANNUAL.nameAr, VISIBLE);
+    await expect(card(page).getByRole("img", { name: "4 أشهر، منها شهر مجانًا" })).toBeVisible();
+    // الأقصر مدة هو المرجع: لا سطر مقارنة له
+    await expect(card(page)).not.toContainText("تدفع شهريًا", VISIBLE);
+    await card(page)
       .getByRole("link", { name: /تفاصيل الاشتراك/ })
       .click();
     await expect(page).toHaveURL(/\/memberships\/three-months$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("انطلاقة الأبطال");
-  });
-
-  test("الاختيار بلوحة المفاتيح: الأسهم تنقل بين المدد", async ({ page }) => {
-    await page.goto("/");
-    await durations(page).getByRole("radio", { checked: true }).focus();
-    await page.keyboard.press("ArrowRight");
-    await expect(durations(page).getByRole("radio", { checked: true })).toBeFocused();
-    await expect(durations(page).getByRole("radio", { checked: true })).not.toHaveValue(
-      ANNUAL.slug,
-    );
-    await expect(summary(page)).not.toContainText(ANNUAL.nameAr);
   });
 
   test("روابط الموقع الحقيقية: الخريطة والهاتف", async ({ page }) => {
@@ -221,33 +216,58 @@ test.describe("صفحة الاشتراك", () => {
   });
 });
 
+/** المبدّل قرب أعلى الشاشة وزر شراء البطاقة تحتها: الحال التي يظهر فيها شريط الجوال. */
+async function scrollToSwitch(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const top = document.getElementById("plan-picker")?.getBoundingClientRect().top ?? 0;
+    window.scrollBy(0, top - 160);
+  });
+}
+
 test.describe("شريط الشراء الثابت", () => {
-  test("على الجوال: مخفي في الواجهة، ويظهر بعدها بالاشتراك المختار", async ({ page, viewport }) => {
+  test("على الجوال: يظهر بالإجمالي ما دام المحدِّد ظاهرًا وزر بطاقته لا", async ({
+    page,
+    viewport,
+  }) => {
+    // تبدّل البطاقة فوري مع تقليل الحركة: زر واحد ظاهر بلا انتظار التلاشي
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     const bar = page.getByRole("complementary", { name: BAR });
     await expect(bar).toBeHidden();
-    await page.locator("#services").scrollIntoViewIfNeeded();
-    if ((viewport?.width ?? 0) < 1024) {
-      await expect(bar).toBeVisible();
-      await expect(bar).toContainText(ANNUAL.price);
-      await expect(bar.getByRole("link", { name: "اشترك عبر واتساب" })).toBeInViewport();
-      // الملخص بالسعر والزر نفسيهما ظاهر: الشريط يختفي فلا يتكرر
-      await summary(page).scrollIntoViewIfNeeded();
+    await scrollToSwitch(page);
+    if ((viewport?.width ?? 0) >= 1024) {
       await expect(bar).toBeHidden();
-    } else {
-      await expect(bar).toBeHidden();
+      return;
     }
+    await expect(bar).toBeVisible();
+    await expect(bar).toContainText(`${ANNUAL.price} ر.س`);
+    await expect(bar.getByRole("link", { name: "اشترك عبر واتساب" })).toBeInViewport();
+    // تغيير المدة يحدّث الشريط معها
+    await durations(page).locator(`input[value="${QUARTER.slug}"]`).check();
+    await expect(bar).toContainText(`${QUARTER.price} ر.س`);
+    // زر البطاقة ظاهر: الشريط يختفي فلا يتكرر
+    await card(page).getByRole("link", { name: "اشترك عبر واتساب" }).scrollIntoViewIfNeeded();
+    await expect(bar).toBeHidden();
+    // خارج القسم لا شريط
+    await page.locator("#services").scrollIntoViewIfNeeded();
+    await expect(bar).toBeHidden();
   });
 
-  test("يختفي أثناء الكتابة في نموذج التواصل ويعود بعدها", async ({ page, viewport }) => {
+  test("يختفي أثناء الكتابة في حقل ويعود بعدها", async ({ page, viewport }) => {
     test.skip((viewport?.width ?? 0) >= 1024, "الشريط الثابت خاص بالجوال");
     await page.goto("/");
     const bar = page.getByRole("complementary", { name: BAR });
-    await page.locator("#services").scrollIntoViewIfNeeded();
+    await scrollToSwitch(page);
     await expect(bar).toBeVisible();
-    await page.getByRole("textbox", { name: "الاسم" }).focus();
+    // تركيز بلا تمرير: المحدِّد يبقى على الشاشة، فالاختفاء من الكتابة وحدها
+    const name = page.getByRole("textbox", { name: "الاسم" });
+    await name.evaluate((field: HTMLElement) => {
+      field.focus({ preventScroll: true });
+    });
     await expect(bar).toBeHidden();
-    await page.getByRole("textbox", { name: "الاسم" }).blur();
+    await name.evaluate((field: HTMLElement) => {
+      field.blur();
+    });
     await expect(bar).toBeVisible();
   });
 });

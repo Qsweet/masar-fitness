@@ -1,6 +1,6 @@
 "use client";
 
-import { PlanOption } from "@/components/plans/plan-option";
+import { PlanCard } from "@/components/plans/plan-card";
 import type { PlanView } from "@/components/plans/plan-view";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/locales";
@@ -13,12 +13,11 @@ export interface PreviewCard {
   readonly view: PlanView;
   /** نصوص البطاقة من قاموس الموقع العام بلغتها. */
   readonly labels: Dictionary["plans"];
+  readonly planLabels: Dictionary["plan"];
 }
 
-const noop = (): void => undefined;
-
 /**
- * معاينة بطاقة الاشتراك: `PlanOption` العام نفسه بنموذج عرضه نفسه، على أرضية الموقع ورموزه. `inert`:
+ * معاينة بطاقة الاشتراك: `PlanCard` العام نفسه باشتراك واحد بنموذج عرضه نفسه، على أرضية الموقع ورموزه. `inert`:
  * البطاقة للعرض فلا تُنقر ولا تأخذ تركيزًا ولا يقرؤها قارئ الشاشة كعنصر تحكم.
  */
 export function PlanPreview({ cards }: { readonly cards: readonly PreviewCard[] }) {
@@ -33,7 +32,12 @@ export function PlanPreview({ cards }: { readonly cards: readonly PreviewCard[] 
         >
           <p className={styles.previewLocale}>{card.label}</p>
           <div inert>
-            <PlanOption plan={card.view} selected={false} labels={card.labels} onSelect={noop} />
+            <PlanCard
+              plans={[card.view]}
+              activeSlug={card.view.slug}
+              labels={card.labels}
+              planLabels={card.planLabels}
+            />
           </div>
         </div>
       ))}

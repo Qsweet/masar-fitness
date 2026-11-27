@@ -171,7 +171,7 @@
  */
 .previewStage {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
   gap: var(--a-5);
   padding: var(--a-5);
   border-radius: var(--a-radius-lg);
@@ -184,7 +184,7 @@
   align-content: start;
   gap: var(--a-3);
   min-width: 0;
-  max-width: 22rem;
+  max-width: 26rem;
 }
 
 .previewLocale {

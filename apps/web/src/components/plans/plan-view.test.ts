@@ -132,3 +132,38 @@ describe("اسم الفئة من القاعدة", () => {
     expect(toPlanViews([monthly], "ar", false)[0]?.tier).toBeUndefined();
   });
 });
+
+describe("شريط الأشهر والمقارنة الشهرية", () => {
+  const quarter = plan({
+    slug: "quarter",
+    tier: { ar: "انطلاقة الأبطال", en: "Champions' Start" },
+    price: money(69_900),
+    paidMonths: 3,
+    bonusMonths: 1,
+  });
+  const year = plan({ slug: "year", price: money(149_900), paidMonths: 12, bonusMonths: 2 });
+
+  it("المقارنة بالأقصر مدة باسم فئته وبالتقريب المعروض نفسه، ولا سطر للمرجع نفسه", () => {
+    const [short, long] = toPlanViews([quarter, year], "ar", false);
+    expect(long?.savingsText).toBe(
+      "تدفع شهريًا نحو 107\u00a0ر.س بدل 175\u00a0ر.س في انطلاقة الأبطال",
+    );
+    expect(short?.savingsText).toBeUndefined();
+    const [, en] = toPlanViews([quarter, year], "en", false);
+    expect(en?.savingsText).toBe(
+      "You pay about 107\u00a0SAR a month instead of 175\u00a0SAR on Champions' Start",
+    );
+  });
+
+  it("بلا اسم فئة يُسمّى المرجع باسمه، واشتراك وحيد بلا مقارنة", () => {
+    const [, view] = toPlanViews([monthly, annual], "ar", false);
+    expect(view?.savingsText).toBe("تدفع شهريًا نحو 200\u00a0ر.س بدل 350\u00a0ر.س في شهري");
+    expect(toPlanViews([year], "ar", false)[0]?.savingsText).toBeUndefined();
+  });
+
+  it("الشريط من الكتالوج، ولا شريط لشهر واحد", () => {
+    const [one, twelve] = toPlanViews([monthly, year], "ar", false);
+    expect(twelve?.strip).toEqual({ paid: 12, free: 2 });
+    expect(one?.strip).toBeUndefined();
+  });
+});

@@ -10,8 +10,6 @@ import styles from "./hero.module.css";
 
 /** معرّف الواجهة. */
 const HERO_ID = "top";
-/** معرّف فعلَي الواجهة: شريط الشراء الثابت يظهر بعد أن يغادرا الشاشة. */
-export const HERO_ACTIONS_ID = "hero-actions";
 /** القسم التالي الذي ينزل إليه مؤشر التمرير */
 export const HIGHLIGHTS_ID = "highlights";
 
@@ -41,7 +39,7 @@ export function Hero({ dictionary }: { readonly dictionary: Dictionary }) {
           <span>{hero.title}</span> <span className={styles.slogan}>{hero.slogan}</span>
         </h1>
         <p className={styles.lead}>{hero.lead}</p>
-        <div id={HERO_ACTIONS_ID} className={styles.actions}>
+        <div className={styles.actions}>
           <a href="#plans" className={buttonClass("primary")}>
             {hero.action}
             <Icon name="arrow" />

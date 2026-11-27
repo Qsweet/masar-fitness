@@ -24,9 +24,11 @@ function durations(page: Page) {
   return page.getByRole("group", { name: "مدة الاشتراك" });
 }
 
-function summary(page: Page) {
-  return page.locator("#plans [aria-live]");
+/** البطاقة الكبيرة: نسخة كل اشتراك فيها، والظاهرة المختار وحده (النص المرئي فقط). */
+function card(page: Page) {
+  return page.locator("#plans [data-plan-card]");
 }
+const VISIBLE = { useInnerText: true };
 
 test.describe("الواجهة", () => {
   test("العنوان من تصميم المالك بسطرين، وفوقه سطر يسمّي النادي والمدينة", async ({ page }) => {
@@ -86,11 +88,13 @@ test.describe("المرافق", () => {
     await expect(section.getByText("ضمن الاشتراك")).toHaveCount(FACILITY_CARDS.length);
   });
 
-  test("مزايا صفحة الاشتراك بأسماء المرافق نفسها، والملخص يختصرها في سطر", async ({ page }) => {
+  test("مزايا صفحة الاشتراك بأسماء المرافق نفسها، والبطاقة تختصرها في سطر", async ({ page }) => {
     await page.goto("/");
-    // المزايا متطابقة: سطر واحد في كل بطاقة، والملخص لا يكررها
-    await expect(durations(page).locator("label").first()).toContainText("يشمل جميع مرافق النادي");
-    await expect(summary(page).getByRole("listitem")).toHaveCount(0);
+    // المزايا متطابقة: قائمة واحدة بثلاثة أسطر (التجميد، كل المرافق، البدء من التفعيل) لا تتكرر
+    const features = card(page).getByRole("list");
+    await expect(features).toHaveCount(1);
+    await expect(features.getByRole("listitem")).toHaveCount(3);
+    await expect(features).toContainText("يشمل جميع مرافق النادي", VISIBLE);
     await page.goto(`/memberships/${ANNUAL.slug}`);
     const benefits = page.locator("section", {
       has: page.getByRole("heading", { name: "يشمل الاشتراك" }),
@@ -112,8 +116,8 @@ test.describe("بطاقات الأسعار", () => {
     page,
   }) => {
     for (const [path, offer] of [
-      ["/", "#plans [aria-live]"],
-      ["/memberships", "#plans [aria-live]"],
+      ["/", "#plans [data-plan-card]"],
+      ["/memberships", "#plans [data-plan-card]"],
       [`/memberships/${ANNUAL.slug}`, "#top"],
     ] as const) {
       await page.goto(path);
@@ -124,20 +128,24 @@ test.describe("بطاقات الأسعار", () => {
     }
   });
 
-  test("كل بطاقة: المدة كاملة والإجمالي والشهري والتجميد (5 أيام لكل شهر مدفوع)", async ({
+  test("كل مدة: المدة كاملة والإجمالي والتجميد (5 أيام لكل شهر مدفوع)، وسطر التجميد وحده يتغير", async ({
     page,
   }) => {
     await page.goto("/");
-    const cards = durations(page).locator("label");
-    await expect(cards).toHaveCount(3);
+    const options = durations(page).getByRole("radio");
+    await expect(options).toHaveCount(3);
     // ترتيب واحد بالمدة: 3 ← 6 ← 12 (الأوفر شهريًا آخرها بشارته)
-    await expect(cards.nth(0)).toContainText("4 أشهر، منها شهر مجانًا");
-    await expect(cards.nth(0)).toContainText("تجميد حتى 15 يومًا");
-    await expect(cards.nth(1)).toContainText("999");
-    await expect(cards.nth(1)).toContainText("تجميد حتى 30 يومًا");
-    await expect(cards.nth(2)).toContainText("تجميد حتى 60 يومًا");
-    for (const card of await cards.all()) {
-      await expect(card).toContainText("يبدأ من تاريخ التفعيل في النادي");
+    const expected = [
+      ["4 أشهر، منها شهر مجانًا", "699", "تجميد حتى 15 يومًا"],
+      ["8 أشهر، منها شهران مجانًا", "999", "تجميد حتى 30 يومًا"],
+      ["14 شهرًا، منها شهران مجانًا", "1,499", "تجميد حتى 60 يومًا"],
+    ] as const;
+    for (const [index, [duration, price, freeze]] of expected.entries()) {
+      await options.nth(index).check();
+      await expect(card(page).getByRole("img", { name: duration })).toBeVisible();
+      await expect(card(page)).toContainText(`${price} ر.س`, VISIBLE);
+      await expect(card(page)).toContainText(freeze, VISIBLE);
+      await expect(card(page)).toContainText("يبدأ من تاريخ التفعيل في النادي", VISIBLE);
     }
   });
 

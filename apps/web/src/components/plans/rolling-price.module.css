@@ -1,0 +1,83 @@
+/*
+ * السعر الدوّار: كل خانة نافذة بارتفاع سطر واحد، وفيها شريط الأرقام 0–9 مرتين (محتوى CSS لا نص في
+ * الصفحة) يقف عند رقمها في الدورة الثانية، فيدور كل رقم دورة كاملة من رقم السعر السابق في الأولى.
+ * الأرقام بعرض ثابت فلا يهتز السعر أثناء الدوران.
+ */
+.price {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.14em;
+  white-space: nowrap;
+}
+
+.amount {
+  display: inline-flex;
+}
+
+.cells {
+  display: inline-flex;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.digit,
+.glyph {
+  display: inline-block;
+  height: 1em;
+  overflow-y: clip;
+  /* الميل يخرج عن عرض الخانة قليلًا: لا يُقص أفقيًا */
+  overflow-x: visible;
+  overflow-clip-margin: 0.1em;
+}
+
+.digit::before {
+  translate: 0 calc(-5% * (var(--digit) + 10));
+  content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9";
+  display: block;
+  white-space: pre;
+  line-height: 1;
+}
+
+.glyph::before {
+  content: attr(data-glyph);
+}
+
+.digit[data-digit="0"] {
+  --digit: 0;
+}
+
+.digit[data-digit="1"] {
+  --digit: 1;
+}
+
+.digit[data-digit="2"] {
+  --digit: 2;
+}
+
+.digit[data-digit="3"] {
+  --digit: 3;
+}
+
+.digit[data-digit="4"] {
+  --digit: 4;
+}
+
+.digit[data-digit="5"] {
+  --digit: 5;
+}
+
+.digit[data-digit="6"] {
+  --digit: 6;
+}
+
+.digit[data-digit="7"] {
+  --digit: 7;
+}
+
+.digit[data-digit="8"] {
+  --digit: 8;
+}
+
+.digit[data-digit="9"] {
+  --digit: 9;
+}

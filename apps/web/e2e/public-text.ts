@@ -6,12 +6,7 @@ import type { Page } from "@playwright/test";
  * والرابط). المناطق التي يملؤها الكتالوج من القاعدة تُحذف قبل القراءة: اختبارات اللوحة المتوازية
  * تنشر باقات أندية اختبار يقرؤها الموقع العام، فتتغير بلا علاقة بالمحتوى.
  */
-const CATALOG_REGIONS = [
-  "#plans",
-  "#compare",
-  "#plan-summary",
-  '[aria-labelledby="result-title"] ul',
-];
+const CATALOG_REGIONS = ["#plans", "#compare", '[aria-labelledby="result-title"] ul'];
 const TEXT_ATTRIBUTES = ["alt", "aria-label", "title", "placeholder", "href", "content"];
 
 export interface PublicText {

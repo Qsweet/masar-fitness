@@ -54,6 +54,13 @@ export {
   staffMfaCoverage,
 } from "./dashboard";
 export type { DailyOrders, MfaCoverage, RecentOrder } from "./dashboard";
+export {
+  clubHasOrders,
+  periodDailySeries,
+  periodFunnel,
+  periodSalesByPlan,
+} from "./overview-period";
+export type { FunnelRow, PeriodDay, PeriodWindow, PlanSales } from "./overview-period";
 export { countOrdersToday, findClubSummary, listClubs } from "./overview";
 export type { ClubSummary, OrderCounts } from "./overview";
 export { AUDIT_ACTOR_KINDS, AUDIT_ENTITY_TYPES, listAuditLogs } from "./read-audit";

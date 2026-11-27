@@ -11,6 +11,7 @@ export type { ProductStatusResult, SetProductStatusInput } from "./product-statu
 export {
   countCatalogProducts,
   countOtherSellableMemberships,
+  countSellableMemberships,
   listCatalogProducts,
 } from "./read-products";
 export type { CatalogProductRow, CatalogVersionTerms } from "./read-products";

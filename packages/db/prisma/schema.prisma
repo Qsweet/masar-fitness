@@ -356,6 +356,8 @@ model Order {
   @@index([customerId, createdAt])
   /// قائمة الطلبات في اللوحة: الأحدث أولًا لكل نادٍ، ومدى زمني على الإنشاء
   @@index([clubId, createdAt])
+  /// «نظرة عامة»: الإيراد والمدفوع بيوم الدفع لكل نادٍ في فترة
+  @@index([clubId, paidAt])
   @@map("orders")
 }
 

@@ -99,6 +99,21 @@ export async function countCatalogProducts(
   >;
 }
 
+/** الاشتراكات القابلة للبيع الآن في النادي: بند «نشر الاشتراكات» في قائمة الإطلاق. */
+export async function countSellableMemberships(
+  db: Pick<Db, "product">,
+  clubId: string,
+  now: Date,
+): Promise<number> {
+  const rows = await db.product.findMany({
+    where: { clubId, kind: "membership", status: "active" },
+    select: { status: true, kind: true, versions: versionsAt(now) },
+  });
+  return rows.filter((row) =>
+    isSellable({ status: row.status, kind: row.kind, currentVersion: row.versions[0] ?? null }),
+  ).length;
+}
+
 /**
  * الاشتراكات القابلة للبيع الآن في النادي عدا منتجًا واحدًا: حارس «آخر باقة» وصفحة تأكيده. تُستدعى في
  * الكتابة تحت القفل الاستشاري للنادي.

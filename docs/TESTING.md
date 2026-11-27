@@ -106,6 +106,13 @@ CI (`.github/workflows/ci.yml`) يشغّل التسلسل نفسه على كل �
 - **المتصفح:** `admin-slider.spec.ts` (المحرر: الرفع بأسبابه والتكرار، والشريحة بتحقق الرابط، والترتيب بلا JavaScript، ولا نشر له؛ القفل المتفائل من لسانين؛ المالك والحذف؛ صورة المسودة 404 للزائر و`no-store` للموظف)، و`admin-slidershots.spec.ts` (axe في المظهرين ولقطات 390 و1440 بالمظهرين وبلا خطأ console)، ومشروع `content-slider` (`content-slider.spec.ts`، بعد `content-site`، على نادي الموقع): لا شيء قبل النشر، والمعاينة، والزائر باللغتين، والرابط، والإيقاف، ولوحة المفاتيح، والحركة المخفّضة، والتشغيل التلقائي، وبلا JavaScript، وaxe، واللقطات؛ ويزيل شرائحه في آخره. للتشغيل وحده: `--project content-slider --no-deps`.
 - **خادم اللوحة في الاختبار** يرفع إلى مجلد مؤقت لكل منفذ (`mediaEnv` في `e2e/admin-env.ts`) بلا نسخ احتياطي معلن، فيظهر التنبيه. مجلد لقطات الشريط `screens/slider` (خارج git)، ويُغيَّر بـ`SLIDER_SHOTS_DIR`.
 
+## النسخ الاحتياطي (`BACKUP.md` §11)
+
+- **وحدة:** `packages/domain/src/backup/status.test.ts` (شكل ملفات السجل) و`health.test.ts` (الحداثة 36 ساعة بالضبط وبعدها بثانية، والفشل بعد نجاح، والتالف، والفحص الفاشل، والتوافق مع `BACKUP_CONFIGURED`)، و`apps/web/src/server/backup/records.test.ts` (قراءة المجلد) و`parse-env-media.test.ts` (`BACKUP_STATUS_DIR`).
+- **تكامل حقيقي:** `packages/db/src/backup-scripts.integration.test.ts` يشغّل `deploy/backup/*.sh` ببيئة `BACKUP_RUNTIME=local` وrestic الحقيقي على مستودع في مجلد مؤقت، والمصدر قاعدة الاختبار نفسها (يفرّغ جداول البيع كغيره)، والاسترجاع إلى قاعدة جانبية `<db>_restore_*` تُحذف. يحتاج `restic` (في `PATH` أو `RESTIC_BIN`) و`psql`/`pg_dump`/`pg_restore` بإصدار الخادم؛ بلاها يُتخطى باسم يذكر السبب، إلا مع `BACKUP_TESTS_REQUIRED=yes` (CI) فيفشل. محليًا: نزّل `restic_0.20.0_linux_amd64.bz2` من إصدارات restic الرسمية وتحقق من بصمته بـ`SHA256SUMS` (وتوقيعه بمفتاح restic المنشور).
+- **متصفح:** `e2e/preview-admin-backup.spec.ts` على خادم اللوحة بمعاينة الشراء (+4)، الذي يقرأ سجلًا في مجلد مؤقت لكل منفذ (`backupStatusDir` في `e2e/admin-env.ts`): يكتب الاختبار ملفات السجل لكل حالة ويفتح «نظرة عامة». الحالات متتابعة في المشروع `admin-preview` وحده.
+- **ثابت:** `shellcheck -x deploy/*.sh deploy/backup/*.sh` (CI).
+
 ## المراجعة البصرية (من المرحلة 2)
 
 لقطات Playwright حقيقية عند: 360، 390، 430، 768، 1024، 1440، 1920. تُراجع اللقطات نفسها لا الكود، بالعربية (RTL) والإنجليزية، مع محتوى مختلط اللغة والأرقام والعملة. فحص الوصول الآلي يُضاف مع أول واجهة حقيقية.

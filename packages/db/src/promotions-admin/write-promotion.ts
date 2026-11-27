@@ -17,6 +17,7 @@ import { writeAudit, type AuditValue, type StaffAuditActor } from "../commerce/a
 import { toPromotionRule } from "../commerce/load-promotions";
 import { inTransaction, type Tx } from "../commerce/transaction";
 import type { Prisma } from "../generated/prisma/client";
+import { checkAutomaticTerms } from "./automatic-guard";
 import { promotionLockToken } from "./read-promotions";
 import { isPromotionCreateCollision } from "./sql-errors";
 
@@ -96,6 +97,10 @@ async function createInTransaction(
   const productIds = productIdsOf(draft);
   if (!(await productsAreSelectable(tx, clubId, productIds))) {
     return err(new DomainError("validation", "promotion.products_invalid", { field: "scope" }));
+  }
+  const guarded = await checkAutomaticTerms(tx, { clubId, terms: draft, now: input.now }, true);
+  if (!guarded.ok) {
+    return guarded;
   }
   await tx.promotion.create({
     data: {
@@ -227,6 +232,11 @@ async function updateInTransaction(
   const productIds = productIdsOf(draft);
   if (!(await productsAreSelectable(tx, input.clubId, productIds))) {
     return err(new DomainError("validation", "promotion.products_invalid", { field: "scope" }));
+  }
+  const terms = { clubId: input.clubId, terms: draft, now: input.now };
+  const guarded = await checkAutomaticTerms(tx, terms, true);
+  if (!guarded.ok) {
+    return guarded;
   }
   await tx.promotion.update({
     where: { id: rule.id },

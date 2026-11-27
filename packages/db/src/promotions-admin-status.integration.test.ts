@@ -4,11 +4,13 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   createDb,
   createOrder,
+  automaticZeroedNames,
   createPromotion,
   getPromotionDetail,
   quoteCart,
   setPromotionStatus,
   staffActor,
+  updatePromotion,
   type Db,
   type PromotionAdminRow,
 } from "./index";
@@ -179,6 +181,78 @@ describe("setPromotionStatus", () => {
     );
     unwrap(await setStatus(promotion, "activate"));
     expect(failure(await setStatus(promotion, "pause")).reason).toBe("promotion.stale_edit");
+  });
+});
+
+describe("حارس العرض التلقائي: لا يجعل منتجًا يُباع مجانيًا", () => {
+  const fixedOff = (amount: string) =>
+    ({ type: "automatic", discountKind: "fixed_amount", amount, percent: "" }) as const;
+
+  it("الحفظ مرفوض بجانب حقل الخصم: مبلغ يبلغ السعر أو يتجاوزه، ونسبة 100%", async () => {
+    for (const change of [
+      fixedOff("900"),
+      fixedOff("1000"),
+      { type: "automatic", percent: "100" },
+    ]) {
+      const draft = promotionDraft(change);
+      const promotionId = randomUUID();
+      const refused = failure(
+        await createPromotion(db, { promotionId, clubId, draft, actor, now: TEST_NOW }),
+      );
+      expect(refused).toMatchObject({ reason: "promotion.automatic_zeroes_sale" });
+      expect(refused.field).toBe(draft.discount.kind === "percentage" ? "percent" : "amount");
+    }
+    expect(await db.promotion.count()).toBe(0);
+    // الكوبون خارج الحارس، والمبلغ دون السعر يُحفظ
+    unwrap(
+      await createPromotion(db, {
+        promotionId: randomUUID(),
+        clubId,
+        draft: promotionDraft({ code: nextCode(), discountKind: "fixed_amount", amount: "1000" }),
+        actor,
+        now: TEST_NOW,
+      }),
+    );
+    const fine = await newPromotion(fixedOff("899.99"));
+    const raised = await updatePromotion(db, {
+      promotionId: fine.rule.id,
+      clubId,
+      lockToken: fine.lockToken,
+      draft: promotionDraft(fixedOff("950")),
+      actor,
+      now: LATER,
+    });
+    expect(failure(raised)).toMatchObject({ reason: "promotion.automatic_zeroes_sale" });
+  });
+
+  it("التفعيل مرفوض إن صار منتج يُباع أرخص من الخصم بعد الحفظ، ويسمّي الباقة", async () => {
+    const promotion = await newPromotion(fixedOff("500"));
+    const cheap = await createPlan(db, clubId, { priceMinor: 40_000, durationMonths: 1 });
+    try {
+      expect(failure(await setStatus(promotion, "activate"))).toMatchObject({
+        reason: "promotion.automatic_zeroes_sale",
+        field: undefined,
+      });
+      const names = await automaticZeroedNames(db, clubId, promotion.rule, LATER);
+      const cheapRow = await db.product.findUniqueOrThrow({ where: { id: cheap.productId } });
+      expect(names).toEqual([{ ar: cheapRow.nameAr, en: cheapRow.nameEn }]);
+      expect((await detailOf(promotion.rule.id)).rule.status).toBe("draft");
+    } finally {
+      await db.product.update({ where: { id: cheap.productId }, data: { status: "archived" } });
+    }
+    unwrap(await setStatus(await detailOf(promotion.rule.id), "activate"));
+  });
+
+  it("عرض تلقائي يصفّر السلة كُتب خارج اللوحة: لا ينطبق، والعرض والطلب بلا خصم", async () => {
+    const promotion = await activated({ type: "automatic", percent: "10" });
+    await db.$executeRaw`
+      UPDATE promotions SET discount_kind = 'fixed_amount', percent_bps = NULL,
+        amount_minor = 1000000, currency = 'SAR' WHERE id = ${promotion.rule.id}::uuid`;
+    const request = { planSlug: plan.slug, addonSlugs: [], couponCode: null };
+    const quote = unwrap(await quoteCart(db, request, LATER));
+    expect(quote.total.amountMinor).toBe(PRICE);
+    expect(quote.discounts).toEqual([]);
+    unwrap(await createOrder(db, orderInput(plan.slug, PRICE, { buyer: nextBuyer(), now: LATER })));
   });
 });
 

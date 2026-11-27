@@ -1,5 +1,7 @@
 import "server-only";
 import {
+  AUTOMATIC_ZEROES_SALE,
+  automaticZeroedNames,
   createPromotion,
   getSalesSettings,
   setPromotionStatus,
@@ -13,6 +15,7 @@ import {
   isPromotionStatusAction,
   ok,
   validatePromotionDraft,
+  type DomainError,
   type PromotionDraft,
   type Result,
 } from "@masar/domain";
@@ -28,6 +31,7 @@ import { promotionInput } from "./promotion-form";
 type Saved<T> = Promise<Result<T, FormFailure>>;
 
 const INVALID = "sales.invalid_request";
+const ZEROES_ON_ACTIVATE = "promotion.automatic_zeroes_sale_now";
 
 /** المسودة من قيم النموذج، بعملة النادي ومنطقته الزمنية. */
 async function draftOf(context: StaffContext, values: FormValues): Saved<PromotionDraft> {
@@ -41,6 +45,24 @@ async function draftOf(context: StaffContext, values: FormValues): Saved<Promoti
     timeZone: club.timezone,
   });
   return draft.ok ? ok(draft.value) : err(failureOf(draft.error));
+}
+
+/**
+ * رفض الكتابة ← ما يعرضه النموذج. العرض التلقائي الذي يجعل منتجًا مجانيًا يُسمّى فيه المنتج (بالعربية،
+ * لغة اللوحة)، ليعرف الموظف أي باقة يمسّها خصمه.
+ */
+async function writeFailure(
+  context: StaffContext,
+  draft: PromotionDraft,
+  error: DomainError,
+  now: Date,
+): Promise<FormFailure> {
+  const failure = failureOf(error);
+  if (error.reason !== AUTOMATIC_ZEROES_SALE) {
+    return failure;
+  }
+  const names = await automaticZeroedNames(getDb(), context.staff.clubId, draft, now);
+  return { ...failure, detail: names.map((name) => name.ar).join("»، «") };
 }
 
 /** ينشئ عرضًا مسودة. `promotionId` من النموذج: الإرسال الثاني إعادة لا عرض ثانٍ. */
@@ -61,7 +83,9 @@ export async function createPromotionDraft(
     actor: staffActor(context.staff.id),
     now,
   });
-  return created.ok ? ok(created.value.promotionId) : err(failureOf(created.error));
+  return created.ok
+    ? ok(created.value.promotionId)
+    : err(await writeFailure(context, draft.value, created.error, now));
 }
 
 export interface PromotionEdit {
@@ -88,7 +112,9 @@ export async function savePromotion(
     actor: staffActor(context.staff.id),
     now,
   });
-  return updated.ok ? ok(updated.value) : err(failureOf(updated.error));
+  return updated.ok
+    ? ok(updated.value)
+    : err(await writeFailure(context, draft.value, updated.error, now));
 }
 
 export interface PromotionStatusChange {
@@ -114,5 +140,10 @@ export async function changePromotionStatus(
     actor: staffActor(context.staff.id),
     now,
   });
-  return result.ok ? ok(result.value) : err(failureOf(result.error));
+  if (result.ok) {
+    return ok(result.value);
+  }
+  // صفحة التأكيد تسمّي الباقات قبل الزر؛ هذا الرفض سباق بعد رسمها، فنصّه بلا اسم
+  const zeroes = result.error.reason === AUTOMATIC_ZEROES_SALE;
+  return err(zeroes ? formFailure(ZEROES_ON_ACTIVATE) : failureOf(result.error));
 }

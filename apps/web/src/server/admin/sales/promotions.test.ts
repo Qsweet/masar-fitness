@@ -34,7 +34,15 @@ const createPromotion = vi.fn(() =>
 );
 const updatePromotion = vi.fn(() => Promise.resolve(ok({ exhausted: true })));
 const setPromotionStatus = vi.fn(() => Promise.resolve(ok({ status: "paused", replayed: false })));
+const automaticZeroedNames = vi.fn(() =>
+  Promise.resolve([
+    { ar: "3 أشهر", en: "3 months" },
+    { ar: "شهر واحد", en: "One month" },
+  ]),
+);
 vi.mock("@masar/db", () => ({
+  AUTOMATIC_ZEROES_SALE: "promotion.automatic_zeroes_sale",
+  automaticZeroedNames,
   createPromotion,
   updatePromotion,
   setPromotionStatus,
@@ -215,6 +223,30 @@ describe("createPromotionDraft و savePromotion", () => {
       value: { exhausted: true },
     });
     expect(updatePromotion).toHaveBeenCalledWith({}, expect.objectContaining({ lockToken: "42" }));
+  });
+
+  it("العرض التلقائي الذي يصفّر منتجًا: الرفض بجانب حقل الخصم ويسمّي المنتجات، والتفعيل بنصه", async () => {
+    const zeroes = new DomainError("conflict", "promotion.automatic_zeroes_sale", {
+      field: "amount",
+    });
+    createPromotion.mockResolvedValueOnce(err(zeroes) as never);
+    const refused = await createPromotionDraft(context, PROMOTION_ID, VALUES, NOW);
+    expect(refused).toEqual({
+      ok: false,
+      error: {
+        error: null,
+        fields: { amount: "promotion.automatic_zeroes_sale" },
+        detail: "3 أشهر»، «شهر واحد",
+      },
+    });
+    setPromotionStatus.mockResolvedValueOnce(
+      err(new DomainError("conflict", "promotion.automatic_zeroes_sale")) as never,
+    );
+    const change = { promotionId: PROMOTION_ID, lockToken: "42", action: "activate" };
+    expect(await changePromotionStatus(context, change, NOW)).toEqual({
+      ok: false,
+      error: { error: "promotion.automatic_zeroes_sale_now", fields: {} },
+    });
   });
 
   it("إجراء حالة مجهول يُرفض قبل أي قراءة", async () => {

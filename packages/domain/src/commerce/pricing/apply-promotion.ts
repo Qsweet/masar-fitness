@@ -116,7 +116,10 @@ export interface AutomaticSelection {
   readonly rejected: readonly RejectedPromotion[];
 }
 
-/** يختار من العروض التلقائية المؤهلة واحدًا هو الأعلى خصمًا، ويسجّل سبب رفض الباقين غير المؤهلين. */
+/**
+ * يختار من العروض التلقائية المؤهلة واحدًا هو الأعلى خصمًا، ويسجّل سبب رفض الباقين غير المؤهلين. العرض
+ * الذي يبلغ خصمه منفردًا إجمالي السلة لا ينطبق: لا يأخذه الزائر مجانًا ولا يمنع البيع.
+ */
 export function selectAutomatic(
   candidates: readonly PromotionCandidate[],
   slots: readonly PricingSlot[],
@@ -125,6 +128,7 @@ export function selectAutomatic(
 ): AutomaticSelection {
   let best: EvaluatedPromotion | null = null;
   const rejected: RejectedPromotion[] = [];
+  const cartTotal = slots.reduce((sum, slot) => sum + slot.remaining, 0);
   for (const candidate of candidates) {
     if (candidate.rule.code !== null) {
       throw new DomainError("invariant", "promotion.automatic_with_code");
@@ -132,6 +136,9 @@ export function selectAutomatic(
     const result = evaluate(candidate, slots, ctx, currency);
     if (result instanceof DomainError) {
       rejected.push({ promotionId: candidate.rule.id, reason: result.reason });
+    } else if (result.alone.amount >= cartTotal) {
+      // عرض تلقائي يُصفّر السلة يُسقط كل بيع (`cart.zero_total`): لا ينطبق، والسلة تُسعَّر بدونه
+      rejected.push({ promotionId: candidate.rule.id, reason: NOT_APPLICABLE });
     } else if (best === null || isPreferred(result, best)) {
       best = result;
     }

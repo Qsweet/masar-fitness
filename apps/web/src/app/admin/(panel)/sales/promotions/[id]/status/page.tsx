@@ -1,4 +1,9 @@
-import { getPromotionDetail, getSalesSettings, type PromotionAdminRow } from "@masar/db";
+import {
+  automaticZeroedNames,
+  getPromotionDetail,
+  getSalesSettings,
+  type PromotionAdminRow,
+} from "@masar/db";
 import {
   decidePromotionStatus,
   isPromotionStatusAction,
@@ -64,6 +69,28 @@ function ConfirmCards({ row, action, timezone, dictionary }: ConfirmProps) {
   );
 }
 
+/** الإجراء متاح: التأكيد، أو أسماء المنتجات التي يجعلها الخصم مجانية بدل الزر. */
+function Available({
+  confirm,
+  zeroed,
+}: {
+  readonly confirm: ConfirmProps;
+  readonly zeroed: readonly string[];
+}) {
+  const text = confirm.dictionary.sales.promotions.status;
+  return zeroed.length > 0 ? (
+    <Alert tone="danger">{fill(text.zeroes, { names: zeroed.join("»، «") })}</Alert>
+  ) : (
+    <ConfirmCards {...confirm} />
+  );
+}
+
+/** عرض تلقائي يجعل منتجًا يُباع مجانيًا لا يُفعَّل: أسماء المنتجات تحل محل الزر. */
+async function zeroedBy(row: PromotionAdminRow, clubId: string): Promise<string[]> {
+  const names = await automaticZeroedNames(getDb(), clubId, row.rule, new Date());
+  return names.map((name) => name.ar);
+}
+
 /**
  * تأكيد تفعيل عرض أو إيقافه أو إنهائه. التفعيل يعيد عرض الخصم والنطاق والنافذة والحدّين قبل الزر،
  * والإنهاء يقول إنه نهائي وإن الرمز لا يُعاد استعماله. صفحة من الخادم تعمل بلا JavaScript.
@@ -84,6 +111,7 @@ export default async function PromotionStatusPage(
   const decision = decidePromotionStatus(row.rule.status, action);
   const available = decision.ok && !decision.value.replay;
   const club = await getSalesSettings(db, staff.clubId);
+  const zeroed = available && action === "activate" ? await zeroedBy(row, staff.clubId) : [];
   return (
     <>
       <PageHeader
@@ -95,7 +123,7 @@ export default async function PromotionStatusPage(
         </ButtonLink>
       </PageHeader>
       {available ? (
-        <ConfirmCards row={row} action={action} timezone={club.timezone} dictionary={dictionary} />
+        <Available confirm={{ row, action, timezone: club.timezone, dictionary }} zeroed={zeroed} />
       ) : (
         <Alert tone="warning">{text.unavailable}</Alert>
       )}

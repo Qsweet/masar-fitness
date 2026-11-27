@@ -50,6 +50,10 @@ export const catalogErrorsAr = {
   "promotion.window_not_ordered": "النهاية يجب أن تكون بعد البداية.",
   "promotion.limit_invalid": "عدد صحيح من 1 إلى 1,000,000، أو اتركه فارغًا.",
   "promotion.audience_restricted": "العروض بجمهور مقيَّد غير متاحة من اللوحة.",
+  "promotion.automatic_zeroes_sale":
+    "هذا الخصم التلقائي يجعل «{name}» مجانيًا، فلا يُباع شيء في نطاقه. اخفض الخصم أو ضيّق النطاق.",
+  "promotion.automatic_zeroes_sale_now":
+    "صار خصم هذا العرض التلقائي يبلغ سعر منتج يُباع الآن، فلم يُفعَّل. حدّث الصفحة لترى المنتج.",
   "promotion.terms_frozen":
     "استُعمل هذا العرض، فشكل الخصم وقيمته ونطاقه وبدايته لا تتغير. أنهِه وأنشئ نسخة منه.",
   "promotion.archived_final": "العرض منتهٍ نهائيًا: لا يُعدَّل ولا يُفعَّل.",

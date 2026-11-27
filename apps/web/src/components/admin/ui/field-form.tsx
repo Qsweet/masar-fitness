@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
 import { lookup } from "@/i18n/admin";
+import { fill } from "@/i18n/fill";
 import { cx } from "@/lib/cx";
 import {
   initialFieldForm,
@@ -40,7 +41,8 @@ export function useFieldForm(
 ): FieldForm {
   const [state, formAction, pending] = useActionState(action, initialFieldForm(values));
   const fallback = lookup(errors, "fallback", "");
-  const text = (reason: string): string => lookup(errors, reason, fallback);
+  const text = (reason: string): string =>
+    fill(lookup(errors, reason, fallback), { name: state.detail ?? "" });
   const hasFieldErrors = Object.keys(state.fields).length > 0;
   return {
     state,

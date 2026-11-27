@@ -1,3 +1,4 @@
+export { AUTOMATIC_ZEROES_SALE, automaticZeroedNames } from "./automatic-guard";
 export { setPromotionStatus } from "./promotion-status";
 export type { PromotionStatusResult, SetPromotionStatusInput } from "./promotion-status";
 export {

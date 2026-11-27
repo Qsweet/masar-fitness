@@ -94,6 +94,25 @@ describe("priceCart — اختيار العرض التلقائي", () => {
     ]);
     expect(appliedIds(price([PLAN], { automatic, standing: "new" }))).toEqual(["new-only"]);
   });
+
+  it("عرض تلقائي يصفّر السلة لا ينطبق: السلة تُسعَّر بالعرض التالي أو بلا خصم، ولا zero_total", () => {
+    const huge = candidate(fixed("huge", 1_000_000));
+    const full = candidate(percent("full", 10_000));
+    const alone = price([PLAN, PT], { automatic: [huge, full] });
+    expect(alone.discounts).toEqual([]);
+    expect(alone.total.amountMinor).toBe(99900 + 45000);
+    expect(alone.rejectedAutomatic).toEqual([
+      { promotionId: "huge", reason: "promotion.not_applicable" },
+      { promotionId: "full", reason: "promotion.not_applicable" },
+    ]);
+    const withOther = price([PLAN], { automatic: [huge, candidate(percent("ten", 1000))] });
+    expect(appliedIds(withOther)).toEqual(["ten"]);
+    // مجانية سطر واحد لا تصفّر السلة: الإضافة مجانًا والباقة بسعرها
+    const ptFree = candidate(
+      percent("pt-free", 10_000, { scope: { kind: "listed_products", productIds: ["pt"] } }),
+    );
+    expect(appliedIds(price([PLAN, PT], { automatic: [ptFree] }))).toEqual(["pt-free"]);
+  });
 });
 
 describe("priceCart — الكوبون", () => {

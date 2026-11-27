@@ -75,6 +75,8 @@ const CATALOG_TRACK_REASONS = [
   "promotion.window_not_ordered",
   "promotion.limit_invalid",
   "promotion.audience_restricted",
+  "promotion.automatic_zeroes_sale",
+  "promotion.automatic_zeroes_sale_now",
   "promotion.terms_frozen",
   "promotion.archived_final",
   "promotion.status_not_allowed",

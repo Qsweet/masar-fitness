@@ -22,3 +22,5 @@ export {
   isPromotionStatusAction,
 } from "./transitions";
 export type { PromotionStatusAction, PromotionStatusDecision } from "./transitions";
+export { automaticZeroedProducts } from "./automatic-guard";
+export type { AutomaticTerms, SellablePrice } from "./automatic-guard";

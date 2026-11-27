@@ -14,6 +14,7 @@ import {
 import type { Db } from "../client";
 import { writeAudit, type StaffAuditActor } from "../commerce/audit";
 import { inTransaction, type Tx } from "../commerce/transaction";
+import { checkAutomaticTerms } from "./automatic-guard";
 import { lockPromotionForEdit, nextUpdatedAt, type PromotionAuditAction } from "./write-promotion";
 
 export interface SetPromotionStatusInput {
@@ -52,6 +53,13 @@ async function setInTransaction(
   const { to, replay } = decision.value;
   if (replay) {
     return ok({ status: to, replayed: true });
+  }
+  if (input.action === "activate") {
+    const check = { clubId: input.clubId, terms: rule, now: input.now };
+    const guarded = await checkAutomaticTerms(tx, check, false);
+    if (!guarded.ok) {
+      return guarded;
+    }
   }
   const endsAt = input.action === "end" ? endsAtWhenEnded(rule, input.now) : rule.endsAt;
   await tx.promotion.update({

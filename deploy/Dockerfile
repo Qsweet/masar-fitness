@@ -15,6 +15,7 @@ COPY packages/db/package.json packages/db/prisma.config.ts packages/db/
 COPY packages/db/prisma packages/db/prisma
 COPY packages/domain/package.json packages/domain/
 COPY packages/payments/package.json packages/payments/
+COPY packages/tracking/package.json packages/tracking/
 RUN pnpm install --frozen-lockfile
 
 COPY . .

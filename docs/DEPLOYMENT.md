@@ -59,6 +59,31 @@ WantedBy=timers.target
 
 ثم `systemctl enable --now masar-payments-reconcile.timer`، ومثله لـ`orders:expire` (`pnpm --filter @masar/db orders:expire`). الدورة تقفل نفسها فلا تتداخل دورتان، وتقرأ الإعداد من بيئة الحاوية نفسها. يُتحقق بعد التثبيت من `journalctl -u masar-payments-reconcile` أن السطر `Payments reconcile {…}` يظهر كل دورة.
 
+## مرسِل تحويلات القياس (A5)
+
+`ADMIN_A5_TRACKING.md` §4: الشراء المدفوع يُدرج في `tracking_outbox` داخل معاملة التسوية، والمرسِل يرسله إلى المنصات المفعّلة من اللوحة. **بلا منصة مفعّلة لها مفتاح لا شيء في الطابور**، فالمؤقت آمن قبل الإعداد. يقرأ `DATABASE_URL` و`ADMIN_SECRET_KEY` (لفك المفاتيح المشفّرة) و`SITE_URL` من بيئة الحاوية، ولا يطبع قيمة منها ولا حمولة. مثال (**غير مثبَّت**: يُنشأ عند أول تفعيل خادمي):
+
+```ini
+# /etc/systemd/system/masar-tracking-dispatch.service
+[Unit]
+Description=Masar tracking conversions dispatch
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/masar/deploy
+ExecStart=/usr/bin/docker compose exec -T app pnpm --filter @masar/tracking tracking:dispatch
+
+# /etc/systemd/system/masar-tracking-dispatch.timer
+[Unit]
+Description=Run tracking dispatch every minute
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+[Install]
+WantedBy=timers.target
+```
+
+ثم `systemctl enable --now masar-tracking-dispatch.timer`. كل دورة سطر `{"event":"tracking.dispatch","claimed":…,"sent":…,"retried":…,"dead":…,"skipped":…}` في `journalctl -u masar-tracking-dispatch`. مرسِلان معًا لا يأخذان السطر نفسه (`SKIP LOCKED` ومهلة حجز خمس دقائق). **تدوير `ADMIN_SECRET_KEY` يُبطل مفاتيح المنصات المحفوظة:** يعيد المالك إدخالها من «الربط والقياس»، وما في الطابور حتى ذلك يُسجَّل «المفتاح لا يُفك». `TRACKING_TRANSPORT=fake` لا يرسل شيئًا ولا يُقبل إلا على عنوان الجهاز (اختبارات المتصفح).
+
 ## خادم المعاينة
 
 | البند    | القيمة                                                                                                                           |

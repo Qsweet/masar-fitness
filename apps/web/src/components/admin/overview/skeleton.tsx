@@ -1,5 +1,5 @@
 import { cx } from "@/lib/cx";
-import styles from "./overview.module.css";
+import styles from "./kpis.module.css";
 
 /**
  * هيكل تحميل بطاقة بأبعادها النهائية (§6.3): لا دوّار في الوسط ولا انزياح حين تصل الأرقام، ووميض خفيف

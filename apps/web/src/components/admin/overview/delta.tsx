@@ -4,7 +4,7 @@ import { fill } from "@/i18n/fill";
 import { formatNumber } from "@/i18n/format";
 import { cx } from "@/lib/cx";
 import { AdminIcon } from "../admin-icon";
-import styles from "./overview.module.css";
+import styles from "./kpis.module.css";
 
 type KpiText = AdminDictionary["overview"]["kpis"];
 

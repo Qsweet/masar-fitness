@@ -2,6 +2,7 @@ import { auditAr } from "./audit-ar";
 import { backupAr } from "./backup-ar";
 import { contentAr, contentErrorsAr, contentNoticesAr } from "./content-ar";
 import { mediaAr, sliderErrorsAr, sliderNoticesAr } from "./media-ar";
+import { errorPageAr } from "./error-ar";
 import { shellAr } from "./shell-ar";
 import { sliderAr } from "./slider-ar";
 import { overviewAr } from "./overview-ar";
@@ -233,6 +234,8 @@ export const adminAr = {
     revokeLabel: "ألغِ الجلسة التي بدأت {started}",
     unknownDevice: "متصفح غير معروف",
   },
+  /** عطل غير متوقع في صفحة من اللوحة (error.tsx)، أو في بطاقة واحدة لا تُسقط صفحتها. */
+  errorPage: errorPageAr,
   notFound: {
     title: "الصفحة غير موجودة",
     lead: "لا صفحة بهذا الرابط في اللوحة، أو لا تملك صلاحية فتحها.",

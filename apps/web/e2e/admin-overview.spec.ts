@@ -47,6 +47,14 @@ test("قبل البيع: قائمة الإطلاق من الحالة الفعل�
     "href",
     "/admin/sales/plans/new",
   );
+  // التحية والبطاقة تقولان الجملة نفسها على البنود الثمانية
+  const sentence = (await checklist.locator("h2 + p").textContent()) ?? "";
+  expect(sentence).toContain("اكتمل 2 من 8");
+  await expect(page.locator("main header p").nth(1)).toContainText(sentence);
+  await expect(checklistItem(page, "payments")).toContainText(OVERVIEW.launch.states.later);
+  await expect(checklist).not.toContainText("A6");
+  await expect(checklist).not.toContainText("docs/");
+  await expect(page.getByTestId("kpi-completion-value")).toHaveText("—");
   await expect(page.getByTestId("kpi-revenue")).toContainText(OVERVIEW.kpis.startsWithFirstOrder);
   await expect(page.getByTestId("kpi-paid-value")).toHaveText("0");
   await expect(page.getByTestId("revenue-chart")).toHaveCount(0);
@@ -62,6 +70,37 @@ test("كل بند يتغير بحالته الحقيقية وحدها: إعدا�
     "/admin/sales/settings",
   );
   await expect(checklistItem(page, "mfa")).toHaveClass(/chip/);
+});
+
+test("المدير يرى البنود الثمانية نفسها، وما لا يفعله «بيد المالك» بلا زر", async ({ page }) => {
+  const club = await newClub(db);
+  // موظف بلا تحقق بخطوتين: البند مفتوح، وفعله (الموظفون) للمالك وحده
+  await newStaff(db, club, { role: "sales" });
+  await signIn(page, await newStaff(db, club, { role: "manager", withTotp: true }));
+  const mfa = checklistItem(page, "mfa");
+  await expect(mfa).toHaveAttribute("data-state", "todo");
+  await expect(mfa.getByRole("link")).toHaveCount(0);
+  await expect(mfa).toContainText(OVERVIEW.launch.states.ownerHand);
+  await expect(page.getByTestId("launch-checklist").locator("h2 + p")).toContainText("من 8");
+  await expect(page.getByTestId("launch-checklist").locator("h2 + p")).toContainText(
+    OVERVIEW.launch.summary.owner.replace("{steps}", OVERVIEW.steps.one),
+  );
+  await expect(checklistItem(page, "plans").getByRole("link")).toHaveCount(1);
+});
+
+test("رابط معدَّل بتاريخ قديم جدًّا لا يُسقط الصفحة: الافتراضي مع سببه", async ({ page }) => {
+  await signIn(page, await newStaff(db, await newClub(db), { withTotp: true }));
+  for (const query of ["from=0001-01-01&to=0001-01-05", "from=0000-01-01&to=0000-01-01"]) {
+    await page.goto(`/admin?${query}`);
+    await expect(
+      page.getByRole("status").filter({ hasText: OVERVIEW.range.issues.too_early }),
+    ).toBeVisible();
+    await expect(page.getByTestId("kpi-revenue")).toBeVisible();
+  }
+  await expect(page.getByLabel(OVERVIEW.range.from, { exact: true })).toHaveAttribute(
+    "min",
+    "2020-01-01",
+  );
 });
 
 async function seededClub(): Promise<Club> {

@@ -98,6 +98,7 @@
 .sparkLine {
   fill: none;
   stroke: var(--a-viz-1);
+  stroke-linecap: round;
   stroke-width: 1.6;
   vector-effect: non-scaling-stroke;
 }
@@ -226,6 +227,11 @@
 
 .stepFinal {
   fill: var(--a-viz-1);
+}
+
+.step .drop {
+  grid-column: 1 / -1;
+  margin-top: var(--a-1);
 }
 
 .drop {

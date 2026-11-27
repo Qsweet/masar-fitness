@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { RANGE_PRESETS, type DateRange, type RangePreset } from "@masar/domain";
+import { MIN_RANGE_DAY, RANGE_PRESETS, type DateRange, type RangePreset } from "@masar/domain";
 import { ADMIN_ROUTES } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
@@ -66,6 +66,7 @@ export function RangeControl({ range, text, customLabel, today }: RangeControlPr
             name="from"
             label={text.from}
             defaultValue={range.from}
+            min={MIN_RANGE_DAY}
             max={today}
             required
           />
@@ -74,6 +75,7 @@ export function RangeControl({ range, text, customLabel, today }: RangeControlPr
             name="to"
             label={text.to}
             defaultValue={range.to}
+            min={MIN_RANGE_DAY}
             max={today}
             required
           />
@@ -89,7 +91,8 @@ export function RangeControl({ range, text, customLabel, today }: RangeControlPr
 interface OverviewHeaderProps {
   readonly eyebrow: string;
   readonly title: string;
-  readonly lead: string;
+  /** ما بقي قبل البيع أو وصف الفترة؛ يصل متدفقًا فلا يؤخر الرأس. */
+  readonly lead: ReactNode;
   readonly children: ReactNode;
 }
 

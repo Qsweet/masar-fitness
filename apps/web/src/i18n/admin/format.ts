@@ -49,11 +49,19 @@ export function formatHoursAgo(hours: number, locale: AdminLocale = "ar"): strin
   );
 }
 
-/** يوم تقويمي بنصه (‎YYYY-MM-DD‎) قصيرًا لمحور الرسم: «28 أكتوبر». */
-export function formatCalendarDay(day: string, locale: AdminLocale = "ar"): string {
+/**
+ * يوم تقويمي بنصه (‎YYYY-MM-DD‎) قصيرًا: «28 أكتوبر»، وبسنته حين تُطلب («28 أكتوبر 2025») لمدى ليس
+ * من السنة الحالية.
+ */
+export function formatCalendarDay(
+  day: string,
+  withYear = false,
+  locale: AdminLocale = "ar",
+): string {
   return new Intl.DateTimeFormat(DATE_LOCALES[locale], {
     day: "numeric",
     month: "long",
+    ...(withYear ? { year: "numeric" } : {}),
     timeZone: "UTC",
   }).format(new Date(`${day}T00:00:00Z`));
 }

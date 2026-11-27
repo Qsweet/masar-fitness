@@ -32,12 +32,10 @@ function Drop({ drop, text, first }: { drop: FunnelDrop; text: FunnelText; first
       ? text.lostAfter
       : text.lostAfterReasons;
   return (
-    <li>
-      <p className={charts.drop}>
-        <AdminIcon name="down" size={12} />
-        <span>{fillNodes(template, { ...values, reasons: formatList(reasons, "ar") })}</span>
-      </p>
-    </li>
+    <p className={charts.drop}>
+      <AdminIcon name="down" size={12} />
+      <span>{fillNodes(template, { ...values, reasons: formatList(reasons, "ar") })}</span>
+    </p>
   );
 }
 
@@ -63,7 +61,7 @@ export async function FunnelCard({
       ) : (
         <ol className={charts.funnel} data-testid="order-funnel">
           {[created, attempted, paid].map((step, index) => (
-            <FunnelStep key={step.key} step={step} text={text} drop={funnel.drops[index - 1]} />
+            <FunnelStep key={step.key} step={step} text={text} drop={funnel.drops[index]} />
           ))}
         </ol>
       )}
@@ -78,29 +76,23 @@ function FunnelStep({
 }: {
   readonly step: FunnelStepView;
   readonly text: FunnelText;
+  /** الفاقد بين هذه الخطوة والتالية: نص داخل عنصرها، لا عنصر في القائمة. */
   readonly drop: FunnelDrop | undefined;
 }) {
   return (
-    <>
-      {drop === undefined ? null : (
-        <Drop drop={drop} text={text} first={step.key === "attempted"} />
-      )}
-      <li className={charts.step}>
-        <span className={charts.stepLabel}>{text.steps[step.key]}</span>
-        <span className={charts.stepValue}>
-          <bdi>{formatNumber(step.count)}</bdi>
-          {step.key === "paid" ? (
-            <>
-              {" "}
-              · <bdi>{percent(step.bps)}</bdi>
-            </>
-          ) : null}
-        </span>
-        <Meter
-          bps={step.bps}
-          fillClass={step.key === "paid" ? charts.stepFinal : charts.stepFill}
-        />
-      </li>
-    </>
+    <li className={charts.step}>
+      <span className={charts.stepLabel}>{text.steps[step.key]}</span>
+      <span className={charts.stepValue}>
+        <bdi>{formatNumber(step.count)}</bdi>
+        {step.key === "paid" ? (
+          <>
+            {" "}
+            · <bdi>{percent(step.bps)}</bdi>
+          </>
+        ) : null}
+      </span>
+      <Meter bps={step.bps} fillClass={step.key === "paid" ? charts.stepFinal : charts.stepFill} />
+      {drop === undefined ? null : <Drop drop={drop} text={text} first={step.key === "created"} />}
+    </li>
   );
 }

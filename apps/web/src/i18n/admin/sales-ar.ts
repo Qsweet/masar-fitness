@@ -1,3 +1,4 @@
+import { errorPageAr } from "./error-ar";
 import { salesOrderActionsAr } from "./sales-actions-ar";
 import { salesCustomersAr } from "./sales-customers-ar";
 import {
@@ -35,11 +36,7 @@ export const salesAr = {
     promotion: "صفحة العرض",
     promotionStatus: "تأكيد",
   },
-  errorPage: {
-    title: "تعذّر عرض هذه الصفحة",
-    lead: "حدث عطل غير متوقع وسُجّل. حاول من جديد، وإن تكرر أبلغ مدير النظام.",
-    retry: "حاول من جديد",
-  },
+  errorPage: errorPageAr,
   statuses: salesStatusesAr,
   orders: { ...salesOrdersAr, ...salesOrderActionsAr },
   customers: salesCustomersAr,

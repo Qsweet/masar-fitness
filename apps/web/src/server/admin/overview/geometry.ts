@@ -1,4 +1,4 @@
-import { barChart, niceAxisMax, sparklinePoints, type BarChart } from "../overview-view";
+import { barChart, niceAxisMax, type BarChart } from "../overview-view";
 
 /**
  * هندسة رسوم «نظرة عامة» v2 (ADMIN_REDESIGN §5.1): الفترة الحالية والسابقة على مقياس واحد، والزمن
@@ -45,26 +45,83 @@ export function revenueChart(
 }
 
 export interface Sparkline {
+  /** مسار SVG (`d`) للحالية، مقطوعًا عند الأيام بلا قيمة. */
   readonly line: string;
+  /** المساحة تحت الحالية، حين لا فجوة فيها؛ وإلا فارغ. */
   readonly area: string;
   readonly compare: string;
 }
 
-/** الخط الصغير للمؤشر وخط الفترة السابقة متقطعًا، على مقياس مشترك، ومساحة تحت الحالي. */
+const PAD = 2;
+
+type Point = readonly [number, number] | null;
+
+function points(
+  values: readonly (number | null)[],
+  width: number,
+  height: number,
+  max: number,
+): Point[] {
+  const step = values.length > 1 ? (width - 2 * PAD) / (values.length - 1) : 0;
+  return readingOrder(values).map((value, index) =>
+    value === null
+      ? null
+      : [
+          round(PAD + index * step),
+          round(height - PAD - (max === 0 ? 0 : value / max) * (height - 2 * PAD)),
+        ],
+  );
+}
+
+/**
+ * مسار يقفز فوق الفجوات: كل مقطع متصل يبدأ بـM. نقطة وحيدة بين فجوتين مقطع صفري الطول يُرى نقطةً بطرف
+ * الخط المدوّر.
+ */
+function path(line: readonly Point[]): string {
+  const segments: (readonly [number, number])[][] = [];
+  let current: (readonly [number, number])[] = [];
+  for (const point of [...line, null]) {
+    if (point === null) {
+      if (current.length > 0) {
+        segments.push(current);
+      }
+      current = [];
+    } else {
+      current.push(point);
+    }
+  }
+  return segments
+    .map((segment) => {
+      const drawn = segment.length === 1 ? [segment[0], segment[0]] : segment;
+      return drawn
+        .map((p, i) => `${i === 0 ? "M" : "L"}${String(p?.[0])},${String(p?.[1])}`)
+        .join(" ");
+    })
+    .join(" ");
+}
+
+/**
+ * الخط الصغير للمؤشر وخط الفترة السابقة متقطعًا، على مقياس مشترك يبدأ من الصفر. يوم بلا قيمة (null:
+ * نسبة إتمام بلا طلبات) فجوة لا صفر، فلا يُرسم هبوط لم يحدث.
+ */
 export function sparkline(
-  trend: readonly number[],
-  compare: readonly number[],
+  trend: readonly (number | null)[],
+  compare: readonly (number | null)[],
   width: number,
   height: number,
 ): Sparkline {
-  const scale = { min: 0, max: Math.max(0, ...trend, ...compare) };
-  const line = sparklinePoints(readingOrder(trend), width, height, scale);
-  const first = line.split(" ")[0]?.split(",")[0] ?? "0";
-  const last = line.split(" ").at(-1)?.split(",")[0] ?? "0";
+  const known = [...trend, ...compare].filter((value): value is number => value !== null);
+  const max = Math.max(0, ...known);
+  const line = points(trend, width, height, max);
+  const first = line[0];
+  const last = line.at(-1);
+  const gapless = line.length > 0 && line.every((point) => point !== null);
   return {
-    line,
-    area: line === "" ? "" : `${first},${String(height)} ${line} ${last},${String(height)}`,
-    compare:
-      compare.length === 0 ? "" : sparklinePoints(readingOrder(compare), width, height, scale),
+    line: path(line),
+    area:
+      gapless && first !== null && first !== undefined && last !== null && last !== undefined
+        ? `M${String(first[0])},${String(height)} ${path(line).replace(/^M/, "L")} L${String(last[0])},${String(height)} Z`
+        : "",
+    compare: path(points(compare, width, height, max)),
   };
 }

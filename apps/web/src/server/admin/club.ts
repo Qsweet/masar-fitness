@@ -1,6 +1,7 @@
 import "server-only";
 import { clubPasswordWords } from "@masar/domain";
 import { findClubSummary, listClubs, type ClubSummary } from "@masar/db";
+import { cache } from "react";
 import { getDb } from "../db";
 
 const globalForClub = globalThis as typeof globalThis & { masarAdminFirstClubId?: string };
@@ -20,10 +21,10 @@ export async function fallbackAuditClubId(): Promise<string | null> {
   return globalForClub.masarAdminFirstClubId;
 }
 
-/** نادي الموظف (اسمه ومنطقته الزمنية) لعناوين اللوحة وأرقامها. */
-export function staffClub(clubId: string): Promise<ClubSummary | null> {
-  return findClubSummary(getDb(), clubId);
-}
+/** نادي الموظف (اسمه ومنطقته الزمنية) لعناوين اللوحة وأرقامها؛ مرة لكل طلب (الهيكل والصفحة). */
+export const staffClub = cache(
+  (clubId: string): Promise<ClubSummary | null> => findClubSummary(getDb(), clubId),
+);
 
 /** كلمات اسم النادي الممنوعة في كلمات مرور موظفيه. */
 export async function passwordForbiddenWords(clubId: string): Promise<string[]> {

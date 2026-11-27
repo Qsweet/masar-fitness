@@ -35,12 +35,19 @@ describe("رسم الإيراد بالفترتين", () => {
 });
 
 describe("الخط الصغير بالمقارنة", () => {
-  it("مقياس مشترك، والمساحة مغلقة على القاعدة", () => {
+  it("مقياس مشترك، والأقدم يمينًا، والمساحة مغلقة على القاعدة", () => {
     const spark = sparkline([0, 10], [20, 20], 100, 20);
-    expect(spark.line).toBe("2,10 98,18");
-    expect(spark.compare).toBe("2,2 98,2");
-    expect(spark.area).toBe("2,20 2,10 98,18 98,20");
+    expect(spark.line).toBe("M2,10 L98,18");
+    expect(spark.compare).toBe("M2,2 L98,2");
+    expect(spark.area).toBe("M2,20 L2,10 L98,18 L98,20 Z");
     expect(readingOrder([1, 2, 3])).toEqual([3, 2, 1]);
+  });
+
+  it("اليوم بلا قيمة فجوة لا صفر، ولا مساحة مع الفجوة", () => {
+    const spark = sparkline([5, null, 5], [], 100, 20);
+    expect(spark.line).toBe("M2,2 L2,2 M98,2 L98,2");
+    expect(spark.area).toBe("");
+    expect(spark.compare).toBe("");
   });
 });
 

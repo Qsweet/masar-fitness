@@ -27,9 +27,11 @@ export interface PeriodSummary {
   readonly revenue: Metric<PercentDelta>;
   readonly paid: Metric<PercentDelta>;
   /** نسبة الإتمام بنقاط الأساس، أو null بلا طلبات في الفترة. */
-  readonly completion: Omit<Metric<PointsDelta>, "value" | "previous"> & {
+  readonly completion: Omit<Metric<PointsDelta>, "value" | "previous" | "trend" | "compare"> & {
     readonly value: number | null;
     readonly previous: number | null;
+    readonly trend: readonly (number | null)[];
+    readonly compare: readonly (number | null)[];
   };
   readonly created: number;
   /** أعمدة الإيراد: يومية حتى 90 يومًا، وأسبوعية بعدها. */
@@ -57,7 +59,8 @@ function metric(
   };
 }
 
-const dailyCompletion = (day: PeriodDay) => completionBps(day.created, day.createdPaid) ?? 0;
+/** نسبة الإتمام ليوم، أو null ليوم بلا طلبات (فجوة في الخط لا صفر). */
+const dailyCompletion = (day: PeriodDay) => completionBps(day.created, day.createdPaid);
 
 function bars(days: readonly PeriodDay[]): readonly number[] {
   const values = days.map((day) => day.revenueMinor);

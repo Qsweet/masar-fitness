@@ -6,12 +6,13 @@ import type { AdminDictionary } from "@/i18n/admin";
 import { fill, fillNodes } from "@/i18n/fill";
 import { formatNumber, moneyParts } from "@/i18n/format";
 import { sparkline } from "@/server/admin/overview/geometry";
-import { loadAwaiting, loadSummary } from "@/server/admin/overview/period";
-import type { Metric, PeriodSummary } from "@/server/admin/overview/summary";
+import { awaitingPaymentCount } from "@/server/admin/cached-reads";
+import { loadSummary } from "@/server/admin/overview/period";
+import type { PeriodSummary } from "@/server/admin/overview/summary";
 import { Card, CardLink } from "../ui/kit";
 import charts from "./charts.module.css";
 import { DeltaBadge, DeltaFor, formatPercentTenths, formatTenths } from "./delta";
-import styles from "./overview.module.css";
+import styles from "./kpis.module.css";
 
 type KpiText = AdminDictionary["overview"]["kpis"];
 
@@ -22,7 +23,12 @@ function amount(minor: number, currency: string): { amount: string; unit: string
   return moneyParts(money(minor, currency), "ar");
 }
 
-function Spark({ metric }: { readonly metric: Pick<Metric<unknown>, "trend" | "compare"> }) {
+interface SparkSeries {
+  readonly trend: readonly (number | null)[];
+  readonly compare: readonly (number | null)[];
+}
+
+function Spark({ metric }: { readonly metric: SparkSeries }) {
   const lines = sparkline(metric.trend, metric.compare, SPARK.width, SPARK.height);
   return (
     <svg
@@ -32,11 +38,9 @@ function Spark({ metric }: { readonly metric: Pick<Metric<unknown>, "trend" | "c
       aria-hidden="true"
       focusable="false"
     >
-      {lines.area === "" ? null : <polygon className={charts.sparkArea} points={lines.area} />}
-      {lines.compare === "" ? null : (
-        <polyline className={charts.sparkCompare} points={lines.compare} />
-      )}
-      <polyline className={charts.sparkLine} points={lines.line} />
+      {lines.area === "" ? null : <path className={charts.sparkArea} d={lines.area} />}
+      {lines.compare === "" ? null : <path className={charts.sparkCompare} d={lines.compare} />}
+      <path className={charts.sparkLine} d={lines.line} />
     </svg>
   );
 }
@@ -181,7 +185,6 @@ function AwaitingKpi({ awaiting, text }: { readonly awaiting: number; readonly t
 interface KpiCardsProps {
   readonly club: ClubSummary;
   readonly range: DateRange;
-  readonly now: Date;
   readonly text: KpiText;
 }
 
@@ -189,10 +192,10 @@ interface KpiCardsProps {
  * أربعة مؤشرات للفترة (§5.1): الإيراد بيوم الدفع، والطلبات المدفوعة، ونسبة إتمام الدفع (فرقها بالنقاط)،
  * وبانتظار الدفع الآن (لحظي بلا خط ولا فرق، القرار 64-6). الفرق يُخفى حين السابقة صفر (64-8).
  */
-export async function KpiCards({ club, range, now, text }: KpiCardsProps) {
+export async function KpiCards({ club, range, text }: KpiCardsProps) {
   const [summary, awaiting] = await Promise.all([
     loadSummary(club, range),
-    loadAwaiting(club, now),
+    awaitingPaymentCount(club.id),
   ]);
   return (
     <div className={styles.kpiGrid} aria-label={text.label} role="group">
@@ -215,7 +218,7 @@ export function KpiStrip({
   const items = [
     ["revenue", text.revenue, <Money key="v" minor={0} currency={currency} />],
     ["paid", text.paid, <bdi key="v">0</bdi>],
-    ["completion", text.completion, <bdi key="v">0</bdi>],
+    ["completion", text.completion, <bdi key="v">—</bdi>],
     ["awaiting", text.awaiting, <bdi key="v">0</bdi>],
   ] as const;
   return (

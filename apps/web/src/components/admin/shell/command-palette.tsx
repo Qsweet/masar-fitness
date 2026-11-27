@@ -238,9 +238,9 @@ function PaletteInput({ state, text, listId, activeId, onKeyDown, onClose }: Pal
         type="button"
         tabIndex={-1}
         className={shellStyles.kbd}
-        aria-label={text.close}
         onClick={onClose}
       >
+        <span className="sr-only">{text.close} </span>
         Esc
       </button>
     </div>

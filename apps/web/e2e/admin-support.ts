@@ -71,9 +71,9 @@ export async function signIn(page: Page, staff: TestStaff, stepOffset = 0): Prom
   await expect(shell(page)).toBeVisible();
 }
 
-/** زر قائمة الحساب في الشريط العلوي. */
+/** زر قائمة الحساب في الشريط العلوي (لا قائمة المدى المخصص في «نظرة عامة»). */
 export function userMenu(page: Page): Locator {
-  return page.locator("[data-admin-menu] > summary");
+  return page.locator("[data-admin-menu] > summary").filter({ hasText: TEXT.userMenu.label });
 }
 
 /** هيكل اللوحة (شريط جانبي وعلوي): يظهر لجلسة كاملة فقط. */
@@ -89,16 +89,24 @@ export async function setTheme(page: Page, theme: "dark" | "light"): Promise<voi
   await page.context().addCookies([{ name: THEME_COOKIE, value: theme, url }]);
 }
 
-/** أسماء أقسام التنقل المتاحة للموظف: من الشريط الجانبي، أو من الدرج حين يحل محله (الهاتف). */
+/**
+ * أسماء أقسام التنقل المتاحة للموظف: من الشريط الجانبي ومعها «حسابي» من قائمة الحساب (v2، §4.1)، أو
+ * من الدرج حين يحل محله (الهاتف).
+ */
 export async function navLinks(page: Page): Promise<string[]> {
   const opener = page.getByRole("button", { name: TEXT.shell.openMenu });
   if (!(await opener.isVisible())) {
     const sidebar = page.getByRole("navigation", { name: TEXT.nav.label });
-    return sidebar.getByRole("link").allTextContents();
+    const sections = await sidebar.getByRole("link").allTextContents();
+    const account = page.locator("[data-admin-menu]").getByRole("link", {
+      name: TEXT.nav.account,
+      includeHidden: true,
+    });
+    return (await account.count()) > 0 ? [...sections, TEXT.nav.account] : sections;
   }
   await opener.click();
   const drawer = page.getByRole("dialog", { name: TEXT.nav.label });
-  const links = await drawer.getByRole("link").allTextContents();
+  const links = await drawer.getByRole("navigation").getByRole("link").allTextContents();
   await page.keyboard.press("Escape");
   await expect(drawer).toBeHidden();
   return links.filter((text) => text !== "");

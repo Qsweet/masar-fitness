@@ -98,6 +98,8 @@ test("صفحات اللوحة بلا مخالفات وصول آلية", async ({
     "/admin/audit?actor=provider",
     "/admin/account",
     "/admin/account?tab=sessions",
+    "/admin/search",
+    "/admin/search?q=orders",
     "/admin/no-such-page",
   ];
   for (const theme of THEMES) {
@@ -107,8 +109,8 @@ test("صفحات اللوحة بلا مخالفات وصول آلية", async ({
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
       await expectAccessible(page, `${theme} ${path}`);
     }
-    // قائمة الحساب مفتوحة، والدرج مفتوحًا حيث يحل محل الشريط الجانبي
-    await page.goto("/admin");
+    // قائمة الحساب مفتوحة (فوق صفحة بلا محدِّد فترة تحتها)، والدرج مفتوحًا حيث يحل محل الشريط الجانبي
+    await page.goto("/admin/account");
     await userMenu(page).click();
     await expectAccessible(page, `${theme} user menu`);
     await page.keyboard.press("Escape");
@@ -124,8 +126,27 @@ test("صفحات اللوحة بلا مخالفات وصول آلية", async ({
       await expectAccessible(page, `${theme} drawer`);
       await page.keyboard.press("Escape");
     }
+    await expectDialogsAccessible(page, theme);
   }
 });
+
+/** لوحة الأوامر وحوار الاختصارات مفتوحين (بعد انتهاء حركة الظهور). */
+async function expectDialogsAccessible(page: Page, theme: string): Promise<void> {
+  const settle = (name: string) =>
+    page
+      .getByRole("dialog", { name })
+      .evaluate((node) => Promise.all(node.getAnimations().map((a) => a.finished)));
+  await page.goto("/admin");
+  await page.waitForLoadState("networkidle");
+  await page.keyboard.press("Control+KeyK");
+  await settle(TEXT.shell.palette.title);
+  await expectAccessible(page, `${theme} palette`);
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("Shift+Slash");
+  await settle(TEXT.shell.shortcuts.title);
+  await expectAccessible(page, `${theme} shortcuts`);
+  await page.keyboard.press("Escape");
+}
 
 test("لوحة المفاتيح: رابط التخطي أول عنصر في اللوحة ويصل إلى المحتوى", async ({ page }) => {
   const owner = await newStaff(db, await newClub(db), { withTotp: true });

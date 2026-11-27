@@ -178,6 +178,11 @@ html[data-theme="light"] .option[aria-selected="true"]::before {
   white-space: nowrap;
 }
 
+/* على خلفية الخيار النشط يصير الشرح أوضح درجة ليبقى AA */
+.option[aria-selected="true"] .optionHint {
+  color: var(--a-muted);
+}
+
 .empty {
   padding: var(--a-6) var(--a-4);
   color: var(--a-muted);

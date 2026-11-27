@@ -111,7 +111,7 @@ test("أول دخول: تسجيل الخطوة الثانية ثم رموز ال
   expect(await sessionCookie(page)).not.toBe(beforeEnrol);
 
   await page.getByRole("button", { name: TEXT.recoveryCodes.confirm }).click();
-  await expect(page.getByRole("heading", { level: 1, name: TEXT.overview.title })).toBeVisible();
+  await expect(page).toHaveTitle(new RegExp(`^${TEXT.overview.title} `));
   // الرموز لا تُعرض ثانية
   await page.goto("/admin/recovery-codes");
   await expect(page).toHaveURL(/\/admin$/);
@@ -177,7 +177,7 @@ test("الخطوة الثانية: رمز خاطئ يُرفض، والصحيح �
   await expect(formAlert(page)).toHaveText(MFA_FAILED);
 
   await submitTotp(page, code);
-  await expect(page.getByRole("heading", { level: 1, name: TEXT.overview.title })).toBeVisible();
+  await expect(page).toHaveTitle(new RegExp(`^${TEXT.overview.title} `));
   expect(await sessionCookie(page)).not.toBe(beforeVerify);
 
   await signOut(page);
@@ -185,7 +185,7 @@ test("الخطوة الثانية: رمز خاطئ يُرفض، والصحيح �
   await submitTotp(page, code);
   await expect(formAlert(page)).toHaveText(MFA_FAILED);
   await submitTotp(page, codeFor(staff, 1));
-  await expect(page.getByRole("heading", { level: 1, name: TEXT.overview.title })).toBeVisible();
+  await expect(page).toHaveTitle(new RegExp(`^${TEXT.overview.title} `));
 
   const actions = await auditActions(db, staff.id);
   expect(actions.filter((action) => action === "mfa_failed")).toHaveLength(2);
@@ -205,7 +205,7 @@ test("رمز الاسترجاع يدخل مرة واحدة فقط", async ({ pag
     await page.getByRole("button", { name: TEXT.verify.recoverySubmit }).click();
   };
   await useRecovery();
-  await expect(page.getByRole("heading", { level: 1, name: TEXT.overview.title })).toBeVisible();
+  await expect(page).toHaveTitle(new RegExp(`^${TEXT.overview.title} `));
   await signOut(page);
 
   await useRecovery();

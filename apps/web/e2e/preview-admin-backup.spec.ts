@@ -119,6 +119,6 @@ test("المبيعات بلا «حالة النظام» لا ترى تنبيه �
   await setRecords({});
   await signIn(page, await newStaff(db, await newClub(db), { role: "sales", withTotp: true }));
   await page.goto("/admin");
-  await expect(page.getByTestId("kpi-created")).toBeVisible();
+  await expect(page.getByTestId("kpi-revenue")).toBeVisible();
   await expect(page.getByTestId("backup-alert")).toHaveCount(0);
 });

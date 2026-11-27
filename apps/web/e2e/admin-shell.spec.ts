@@ -1,24 +1,12 @@
 import type { Db } from "@masar/db";
 import { createDigitalProgram, insertRawOrder } from "@masar/db/test-support";
 import { expect, test } from "@playwright/test";
-import {
-  newClub,
-  newStaff,
-  shell,
-  signIn,
-  TEXT,
-  THEME_COOKIE,
-  userMenu,
-  type Club,
-} from "./admin-support";
+import { newClub, newStaff, shell, signIn, TEXT, THEME_COOKIE, userMenu } from "./admin-support";
 import { testDb } from "./payments-support";
 
-/** هيكل اللوحة (الشريط الجانبي، الدرج، قائمة الحساب، المظهر) و«نظرة عامة» بأرقام حقيقية. */
+/** هيكل اللوحة (الشريط الجانبي، الدرج، قائمة الحساب، المظهر والكثافة). «نظرة عامة» في admin-overview. */
 const DESKTOP_MIN = 1024;
 const NAV_COOKIE = "masar_admin_nav";
-const PRICE_MINOR = 69_900;
-const HOUR_MS = 3_600_000;
-const DAY_MS = 86_400_000;
 
 let db: Db;
 
@@ -32,40 +20,6 @@ test.afterAll(async () => {
 
 function isDesktop(width: number | undefined): boolean {
   return (width ?? 0) >= DESKTOP_MIN;
-}
-
-/** طلبان اليوم (أحدهما مدفوع) وطلب مدفوع أمس، كلها على برنامج بسعر واحد. */
-async function seedOrders(club: Club): Promise<void> {
-  const program = await createDigitalProgram(db, club.id, { priceMinor: PRICE_MINOR });
-  const now = Date.now();
-  const rows = [
-    { age: 60_000, phone: "+966500004321", paid: false },
-    { age: 120_000, phone: "+966500008765", paid: true },
-    { age: DAY_MS + HOUR_MS, phone: "+966500001111", paid: true },
-  ];
-  for (const row of rows) {
-    const createdAt = new Date(now - row.age);
-    const order = await insertRawOrder(db, {
-      clubId: club.id,
-      lines: [{ product: program }],
-      phone: row.phone,
-      createdAt,
-      expiresAt: new Date(createdAt.getTime() + HOUR_MS),
-    });
-    if (row.paid) {
-      await db.order.update({
-        where: { id: order.orderId },
-        data: {
-          status: "paid",
-          paidAt: new Date(createdAt.getTime() + 30_000),
-          paidProvider: "fake",
-          paidProviderPaymentId: `e2e-${order.orderId}`,
-          paidAmountMinor: PRICE_MINOR,
-          paidCurrency: "SAR",
-        },
-      });
-    }
-  }
 }
 
 test("الشريط الجانبي يُطوى ويبقى مطويًّا بعد التحميل (من الخادم، بلا وميض)", async ({ page }) => {
@@ -174,58 +128,50 @@ test("مسار التنقل ورابط الموقع في الشريط العلو
   await expect(site).toHaveAttribute("rel", "noopener");
 });
 
-test("نظرة عامة بأرقام حقيقية من القاعدة، وبلا جوال كامل", async ({ page }) => {
-  const club = await newClub(db);
-  const owner = await newStaff(db, club, { withTotp: true, displayName: "ليلى المالكة" });
-  await seedOrders(club);
-  await signIn(page, owner);
-
-  await expect(page.getByTestId("kpi-created-value")).toHaveText("2");
-  await expect(page.getByTestId("kpi-awaiting-value")).toHaveText("1");
-  await expect(page.getByTestId("kpi-paid-value")).toHaveText("1");
-  await expect(page.getByTestId("kpi-revenue-value")).toHaveText("699 ر.س");
-  // أمس طلب واحد واليوم اثنان: الفرق له معنى فيُعرض
-  await expect(page.getByTestId("kpi-created")).toContainText("100%");
-
-  await expect(page.getByTestId("orders-chart")).toBeVisible();
-  const rows = page.getByTestId("recent-orders").locator("tbody tr");
-  await expect(rows).toHaveCount(3);
-  await expect(rows.first()).toContainText("4321");
-  await expect(rows.first()).toContainText(TEXT.overview.orderStatuses.pending_payment);
-  await expect(rows.nth(1)).toContainText(TEXT.overview.orderStatuses.paid);
-  expect(await page.content()).not.toContain("+9665");
-  expect(await page.content()).not.toContain("0500004321");
-
-  const feed = page.getByTestId("activity-feed");
-  await expect(feed).toContainText("دخول ليلى المالكة إلى اللوحة");
-  const system = page.getByTestId("system-status");
-  await expect(system).toContainText(TEXT.overview.system.checkoutStates.closed);
-  await expect(system).toContainText(TEXT.overview.system.paymentsOff);
-  await expect(system).toContainText("1 من 1");
-  await expect(system).toContainText("e2e");
-});
-
-test("نظرة عامة فارغة: حالات فارغة مصمَّمة لا أصفار متراكمة", async ({ page }) => {
+test("الكثافة المضغوطة تُحفظ ويرسمها الخادم على html بلا وميض", async ({ page }) => {
   const owner = await newStaff(db, await newClub(db), { withTotp: true });
   await signIn(page, owner);
-  await expect(page.getByTestId("kpi-created-value")).toHaveText("0");
-  await expect(page.getByText(TEXT.overview.chart.emptyTitle)).toBeVisible();
-  await expect(page.getByText(TEXT.overview.orders.emptyTitle)).toBeVisible();
-  await expect(page.getByTestId("orders-chart")).toHaveCount(0);
+  await page.goto("/admin/audit");
+  const html = page.locator("html");
+  await expect(html).toHaveAttribute("data-density", "comfortable");
+  await userMenu(page).click();
+  await page.getByRole("button", { name: TEXT.shell.density.compact }).click();
+  await expect(html).toHaveAttribute("data-density", "compact");
+  await expect(page).toHaveURL(/\/admin\/audit$/);
+  expect(await (await page.request.get("/admin/audit")).text()).toContain('data-density="compact"');
+  await page.reload();
+  await expect(html).toHaveAttribute("data-density", "compact");
+  await userMenu(page).click();
+  await page.getByRole("button", { name: TEXT.shell.density.comfortable }).click();
+  await expect(html).toHaveAttribute("data-density", "comfortable");
 });
 
-test("كل دور يرى في «نظرة عامة» ما تسمح به صلاحياته فقط", async ({ browser }) => {
+test("الشريط الجانبي: النادي، وعدّاد «بانتظار الدفع» من القاعدة، و«حسابي» في قائمة الحساب", async ({
+  page,
+}) => {
+  test.skip(!isDesktop(page.viewportSize()?.width), "الشريط الجانبي للشاشة الواسعة");
   const club = await newClub(db);
-  await seedOrders(club);
-  const visible = { manager: true, sales: false } as const;
-  for (const role of ["manager", "sales"] as const) {
-    const staff = await newStaff(db, club, { role, withTotp: true });
-    const page = await (await browser.newContext()).newPage();
-    await signIn(page, staff);
-    await expect(page.getByTestId("kpi-created")).toBeVisible();
-    await expect(page.getByTestId("recent-orders")).toBeVisible();
-    await expect(page.getByTestId("system-status")).toHaveCount(visible[role] ? 1 : 0);
-    await expect(page.getByTestId("activity-feed")).toHaveCount(visible[role] ? 1 : 0);
-    await page.context().close();
-  }
+  const owner = await newStaff(db, club, { withTotp: true });
+  const program = await createDigitalProgram(db, club.id, { priceMinor: 69_900 });
+  const createdAt = new Date(Date.now() - 60_000);
+  await insertRawOrder(db, {
+    clubId: club.id,
+    lines: [{ product: program }],
+    createdAt,
+    expiresAt: new Date(createdAt.getTime() + 3_600_000),
+  });
+  await signIn(page, owner);
+  const sidebar = page.getByRole("complementary");
+  await expect(sidebar).toContainText("نادي اختبار البيع");
+  const nav = sidebar.getByRole("navigation", { name: TEXT.nav.label });
+  await expect(nav.getByRole("link", { name: TEXT.nav.account })).toHaveCount(0);
+  // العدّاد يصف الرابط ولا يدخل اسمه
+  const orders = nav.getByRole("link", { name: TEXT.nav.orders, exact: true });
+  await expect(orders).toHaveAccessibleDescription(
+    TEXT.shell.counts.awaiting.replace("{count}", "1"),
+  );
+  // التعديلات المسودة صفر: لا عدّاد على «النصوص»
+  await expect(nav.getByRole("link", { name: TEXT.nav.contentTexts })).toHaveAccessibleDescription(
+    "",
+  );
 });

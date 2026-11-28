@@ -11,14 +11,15 @@ export const TRACKING_PROVIDERS = [
   "snap",
   "tiktok",
   "x",
+  "openai",
 ] as const;
 export type TrackingProvider = (typeof TRACKING_PROVIDERS)[number];
 
 /**
  * ما له واجهة تحويلات خادمية منفَّذة (§4.3): Google Ads وX في المتصفح وحده (القراران 88-5 و90-1)،
- * وGTM حاوية متصفح.
+ * وGTM حاوية متصفح. OpenAI (إعلانات ChatGPT) بالبكسل والخادم معًا (القرار 93).
  */
-export const SERVER_PROVIDERS = ["ga4", "meta", "snap", "tiktok"] as const;
+export const SERVER_PROVIDERS = ["ga4", "meta", "snap", "tiktok", "openai"] as const;
 export type ServerProvider = (typeof SERVER_PROVIDERS)[number];
 
 export const CONSENT_CATEGORIES = ["analytics", "ads"] as const;
@@ -32,6 +33,7 @@ const CATEGORIES: Readonly<Record<TrackingProvider, readonly ConsentCategory[]>>
   snap: ["ads"],
   tiktok: ["ads"],
   x: ["ads"],
+  openai: ["ads"],
 };
 
 /** فئات المنصة: كلها شرط لتحميل وسمها (`gtm` فئتان، والبقية فئة واحدة). */
@@ -49,9 +51,9 @@ export function isServerProvider(provider: TrackingProvider): provider is Server
 
 /**
  * منصات تقبل الجوال المجزّأ (ADMIN_A5_TRACKING §4.4): Google Ads وX وTikTok في المتصفح، وMeta وSnap
- * وTikTok من الخادم. لكلٍّ مفتاح «إرسال الجوال المجزّأ» في إعدادها، مفعَّل افتراضيًا (القرار 90-3).
+ * وTikTok وOpenAI من الخادم. لكلٍّ مفتاح «إرسال الجوال المجزّأ» في إعدادها، مفعَّل افتراضيًا (القرار 90-3).
  */
-export const PHONE_PROVIDERS = ["google_ads", "meta", "snap", "tiktok", "x"] as const;
+export const PHONE_PROVIDERS = ["google_ads", "meta", "snap", "tiktok", "x", "openai"] as const;
 
 export function usesHashedPhone(provider: TrackingProvider): boolean {
   return (PHONE_PROVIDERS as readonly string[]).includes(provider);

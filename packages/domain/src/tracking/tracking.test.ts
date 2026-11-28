@@ -22,20 +22,26 @@ import {
   phoneE164ForHash,
   vendorCookie,
 } from "./identifiers";
-import { isCompleteConfig, parseIntegrationConfig } from "./ids";
+import { isCompleteConfig, parseIntegrationConfig, requiresAamConfirmation } from "./ids";
 import { isServerProvider, providerCategories, TRACKING_PROVIDERS } from "./providers";
 
 describe("المنصات والفئات", () => {
   it("GTM بأي فئة، وGA4 تحليلات، والبقية إعلانات", () => {
     expect(providerCategories("gtm")).toEqual(["analytics", "ads"]);
     expect(providerCategories("ga4")).toEqual(["analytics"]);
-    for (const provider of ["google_ads", "meta", "snap", "tiktok", "x"] as const) {
+    for (const provider of ["google_ads", "meta", "snap", "tiktok", "x", "openai"] as const) {
       expect(providerCategories(provider)).toEqual(["ads"]);
     }
   });
 
-  it("الخادمية أربع: لا Google Ads ولا X ولا GTM", () => {
-    expect(TRACKING_PROVIDERS.filter(isServerProvider)).toEqual(["ga4", "meta", "snap", "tiktok"]);
+  it("الخادمية خمس: لا Google Ads ولا X ولا GTM", () => {
+    expect(TRACKING_PROVIDERS.filter(isServerProvider)).toEqual([
+      "ga4",
+      "meta",
+      "snap",
+      "tiktok",
+      "openai",
+    ]);
   });
 });
 
@@ -48,12 +54,15 @@ describe("المعرّفات العامة", () => {
     snap: { pixelId: "0b1f7c2e-1234-4abc-9def-0123456789ab" },
     tiktok: { pixelId: "C1ABCDEFGHIJ2KLMNOPQ" },
     x: { pixelId: "o8z5x", purchaseEventId: "tw-o8z5x-p1q2r" },
+    openai: { pixelId: "1345349876" },
   } as const;
 
   it.each(TRACKING_PROVIDERS)("%s: المعرّف الصحيح يُقبل ويكمل الإعداد", (provider) => {
     const parsed = parseIntegrationConfig(provider, valid[provider], true);
     expect(parsed.issues).toEqual({});
-    expect(isCompleteConfig(provider, parsed.config)).toBe(true);
+    // تأكيد إطفاء المطابقة المتقدمة الآلية خانة في النموذج لا حقل نصي (مراجعة القرار 93)
+    const flags = requiresAamConfirmation(provider) ? { aamDisabled: true } : {};
+    expect(isCompleteConfig(provider, { ...parsed.config, ...flags })).toBe(true);
   });
 
   it("ما يحمل محارف تكسر رابطًا أو CSP يُرفض ولا يُصلَح", () => {

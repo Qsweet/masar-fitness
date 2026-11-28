@@ -43,6 +43,10 @@ export const integrationsAr = {
       name: "X",
       lead: "في المتصفح: X Pixel، والشراء وإضافة السلة والاستفسار بمعرّفات أحداثك. لا إرسال خادمي بعد.",
     },
+    openai: {
+      name: "ChatGPT Ads (OpenAI)",
+      lead: "إعلانات ChatGPT. في المتصفح: Measurement Pixel. وللشراء من الخادم: Conversions API.",
+    },
   },
   form: {
     title: "الإعداد",
@@ -85,7 +89,14 @@ export const integrationsAr = {
       snap: "UUID: Ads Manager ← Events Manager ← البكسل.",
       tiktok: "رمز بحروف كبيرة وأرقام: Ads Manager ← الأدوات ← Events ← Web Events.",
       x: "خمسة محارف: ads.x.com ← الأدوات ← Events Manager ← البكسل (‏twq('config','XXXXX') في شيفرته الأساسية).",
+      openai:
+        "Pixel ID: Ads Manager ← Conversions ← Data Source ← بكسل الويب (‏pixelId في شيفرته الأساسية). حروف وأرقام و_ و- فقط.",
     },
+    aamDisabled: "أوقفتُ المطابقة المتقدمة الآلية في Ads Manager",
+    aamDisabledHint:
+      "شرط للتفعيل: بلا هذا التأكيد لا يُحمَّل البكسل على الموقع. أطفئها أولًا في Ads Manager ← Conversions ← Data Source ← إعداد البكسل، ثم أشّر هنا.",
+    sendHashedPhoneHintOpenai:
+      "من الخادم وحده، مع موافقة الزائر على الإعلانات: جوال الطلب بعد SHA-256. هذه الخانة لا تشمل بكسل المتصفح: ما يقرؤه البكسل من صفحات الموقع لا يوقفه إلا إطفاء المطابقة المتقدمة الآلية في Ads Manager.",
     sendHashedPhone: "إرسال الجوال المجزّأ",
     sendHashedPhoneHint:
       "مع موافقة الزائر على الإعلانات وحدها: جوال الطلب بعد SHA-256، لتربط المنصة الشراء بالإعلان. أطفئه لتعتمد على المعرّفات التقنية وحدها.",
@@ -98,6 +109,8 @@ export const integrationsAr = {
       meta: "رمز Conversions API: مجموعة البيانات ← الإعدادات ← Conversions API ← إنشاء رمز وصول.",
       snap: "Ads Manager ← Business Details ← Conversions API Tokens ← Generate Token.",
       tiktok: "البكسل ← الإعدادات ← Events API ← إنشاء رمز وصول.",
+      openai:
+        "مفتاح Conversions API (غير مفتاح Ads API): Ads Manager ← Conversions ← إنشاء مفتاح Conversions API، للحساب الإعلاني نفسه.",
     },
     /** {last4}: آخر أربعة محارف من المفتاح المحفوظ */
     secretSet: "مضبوط · آخره {last4}. اتركه فارغًا ليبقى كما هو.",
@@ -117,6 +130,8 @@ export const integrationsAr = {
       meta: "حدث مخصّص MasarTestEvent برمز الاختبار، يظهر في «اختبار الأحداث». ميتا لا تُسقط أحداث الاختبار من القياس.",
       snap: "إلى نقطة التحقق في سناب (لا يُحتسب).",
       tiktok: "ViewContent برمز الاختبار، يظهر في Test Events ولا يُحفظ حدثًا حيًّا.",
+      openai:
+        "page_viewed بالتحقق وحده (validate_only): تتحقق OpenAI من الطلب والمفتاح ولا تحفظ الحدث، فلا يظهر في Event Stream.",
     },
     submit: "أرسل حدث اختبار",
   },
@@ -124,6 +139,8 @@ export const integrationsAr = {
     "الوسوم غير Google داخل الحاوية (بكسلات أو سكربتات تضيفها أنت) مسؤوليتك: اضبط لكل منها «فحوص الموافقة الإضافية» في Tag Manager، وأضف مضيفها إلى CSP بقرار، وإلا تحجبه السياسة.",
   xContainerNote:
     "لا تضف وسم X الأساسي ولا أحداثه داخل حاوية GTM أيضًا: يُحمَّل البكسل مرتين ويُحسب الحدث مرتين. إعداده هنا وحده يكفي.",
+  openaiMatchingNote:
+    "المطابقة المتقدمة الآلية (Automatic advanced matching) يقرر فيها حسابك لا الموقع: حين تكون مفعّلة يقرأ البكسل بيانات العميل من صفحات الموقع (ومنها نموذج الاستفسار) ويجزّئها ويرسلها مع الأحداث، ولا يوقفها شيء هنا: لا خانة «إرسال الجوال المجزّأ» (للخادم وحده) ولا غيرها. أطفئها في Ads Manager ← Conversions ← Data Source ← إعداد البكسل، ثم أكّد ذلك بالخانة أدناه: بلا التأكيد لا يُفعَّل الربط ولا يُحمَّل البكسل. ولا تضف البكسل داخل حاوية GTM أيضًا.",
   gtmOverlap:
     "GTM مفعَّل مع Google Analytics أو Google Ads هنا: إن كان الوسم نفسه داخل الحاوية أيضًا فسيُقاس كل حدث مرتين. فعّله في مكان واحد.",
   log: {
@@ -171,6 +188,8 @@ export const integrationsErrorsAr = {
   "tracking.required_conversionLabel": "اكتب تسمية التحويل قبل التفعيل.",
   "tracking.invalid_pixelId": "معرّف البكسل بصيغة غير صحيحة لهذه المنصة.",
   "tracking.required_pixelId": "اكتب معرّف البكسل قبل التفعيل.",
+  "tracking.required_aamDisabled":
+    "أطفئ المطابقة المتقدمة الآلية في Ads Manager وأكّد ذلك بالخانة قبل التفعيل.",
   "tracking.invalid_purchaseEventId": "معرّف حدث الشراء بصيغة غير صحيحة (tw-XXXXX-XXXXX).",
   "tracking.required_purchaseEventId": "اكتب معرّف حدث الشراء قبل التفعيل.",
   "tracking.pixel_mismatch_purchaseEventId": "معرّف حدث الشراء لبكسل آخر: وسطه يطابق معرّف البكسل.",
@@ -205,6 +224,7 @@ export const integrationsAuditAr = {
     snap: integrationsAr.providers.snap.name,
     tiktok: integrationsAr.providers.tiktok.name,
     x: integrationsAr.providers.x.name,
+    openai: integrationsAr.providers.openai.name,
   },
   actions: { tracking_integration_updated: "عُدّل إعداد منصة ربط" },
   details: {
@@ -222,5 +242,6 @@ export const integrationsAuditAr = {
     addToCartEventId: "معرّف حدث إضافة السلة",
     leadEventId: "معرّف حدث الاستفسار",
     sendHashedPhone: "إرسال الجوال المجزّأ",
+    aamDisabled: "تأكيد إطفاء المطابقة المتقدمة الآلية",
   },
 } as const;

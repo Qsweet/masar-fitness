@@ -62,12 +62,18 @@ async function trackedOrder(): Promise<string> {
       at: 1,
       landing: "/memberships",
     },
-    lastTouch: { values: { twclid: "26ab3x9kq0", gclid: "Cj0KCQ" }, at: 2, landing: "/" },
+    lastTouch: {
+      values: { twclid: "26ab3x9kq0", gclid: "Cj0KCQ", oppref: "oppref_abc" },
+      at: 2,
+      landing: "/",
+    },
     gaClientId: "123.456",
     fbp: "fb.1.1700000000000.123",
     fbc: "fb.1.1700000000000.IwAR",
     scid: "a1b2c3d4-e5f6",
     ttp: "ttp-value-1234",
+    obref: "123e4567-e89b-42d3-a456-426614174000",
+    oppref: "op/pref+cookie=",
     clientIp: "203.0.113.9",
     userAgent: "Mozilla/5.0",
     pageUrl: "https://example.test/checkout?fbclid=IwAR",
@@ -102,6 +108,8 @@ describe("تفريغ معرّفات القياس", () => {
       fbc: null,
       scid: null,
       ttp: null,
+      obref: null,
+      oppref: null,
       clientIp: null,
       userAgent: null,
       pageUrl: null,
@@ -143,6 +151,19 @@ describe("تفريغ معرّفات القياس", () => {
     await expect(db.$executeRaw`
       UPDATE order_tracking SET client_ip = NULL, purged_at = now()
       WHERE order_id = ${orderId}::uuid`).rejects.toThrow("order_tracking_immutable");
+    // تفريغ يُبقي مرجع متصفح OpenAI أو كوكي oppref (القرار 93) ناقص فمرفوض
+    await expect(db.$executeRaw`
+      UPDATE order_tracking SET ga_client_id = NULL, fbp = NULL, fbc = NULL, scid = NULL, ttp = NULL,
+        oppref = NULL, client_ip = NULL, user_agent = NULL, page_url = NULL,
+        first_touch = tracking_scrub_touch(first_touch), last_touch = tracking_scrub_touch(last_touch),
+        purged_at = now()
+      WHERE order_id = ${orderId}::uuid`).rejects.toThrow("order_tracking_immutable");
+    await expect(db.$executeRaw`
+      UPDATE order_tracking SET ga_client_id = NULL, fbp = NULL, fbc = NULL, scid = NULL, ttp = NULL,
+        obref = NULL, client_ip = NULL, user_agent = NULL, page_url = NULL,
+        first_touch = tracking_scrub_touch(first_touch), last_touch = tracking_scrub_touch(last_touch),
+        purged_at = now()
+      WHERE order_id = ${orderId}::uuid`).rejects.toThrow("order_tracking_immutable");
     await purgeExpiredTracking(db, { now: AFTER_RETENTION, ...OPTIONS });
     await expect(db.$executeRaw`
       UPDATE order_tracking SET purged_at = now() WHERE order_id = ${orderId}::uuid`).rejects.toThrow(
@@ -159,6 +180,7 @@ describe("تفريغ معرّفات القياس", () => {
       ["snap", "sent", TEST_NOW, TEST_NOW, false],
       ["tiktok", "pending", TEST_NOW, lease, true], // في يد مرسِل الآن
       ["ga4", "pending", TEST_NOW, TEST_NOW, true], // حجز انقضت مهلته
+      ["openai", "pending", TEST_NOW, TEST_NOW, false], // القرار 93
     ];
     for (const [provider, status, createdAt, next, claimed] of rows) {
       await db.$executeRaw`
@@ -168,7 +190,7 @@ describe("تفريغ معرّفات القياس", () => {
           ${`purchase.${orderId}`}, 'live', ${status}, 1, ${next}, ${createdAt}, ${createdAt},
           ${createdAt}, ${claimed ? randomUUID() : null}::uuid)`;
     }
-    expect((await purgeExpiredTracking(db, { now: AFTER_RETENTION, ...OPTIONS })).outbox).toBe(2);
+    expect((await purgeExpiredTracking(db, { now: AFTER_RETENTION, ...OPTIONS })).outbox).toBe(3);
     const after = await db.trackingOutbox.findMany({
       where: { orderId },
       orderBy: { provider: "asc" },
@@ -176,6 +198,7 @@ describe("تفريغ معرّفات القياس", () => {
     expect(after.map((item) => [item.provider, item.status, item.lastReason])).toEqual([
       ["ga4", "dead", PURGE_REASON],
       ["meta", "dead", PURGE_REASON],
+      ["openai", "dead", PURGE_REASON],
       ["snap", "sent", null],
       ["tiktok", "pending", null],
     ]);

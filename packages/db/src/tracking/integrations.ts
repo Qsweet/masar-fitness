@@ -17,6 +17,8 @@ export const TRACKING_AUDIT_ENTITY = "tracking_integration";
 export const TRACKING_AUDIT_ACTION = "tracking_integration_updated";
 /** مفتاح «إرسال الجوال المجزّأ» في `config` (القرار 90-3). */
 export const PHONE_FLAG = "sendHashedPhone";
+/** تأكيد إطفاء المطابقة المتقدمة الآلية لـOpenAI في `config` (مراجعة القرار 93). */
+export const AAM_FLAG = "aamDisabled";
 
 export interface IntegrationView {
   readonly provider: TrackingProvider;
@@ -50,8 +52,17 @@ export function configOf(value: unknown): IntegrationConfig {
       config[field] = item;
     }
   }
-  const phone = Object.hasOwn(record, PHONE_FLAG) ? record[PHONE_FLAG] : undefined;
-  return typeof phone === "boolean" ? { ...config, sendHashedPhone: phone } : config;
+  const flag = (name: string) => {
+    const value = Object.hasOwn(record, name) ? record[name] : undefined;
+    return typeof value === "boolean" ? value : undefined;
+  };
+  const phone = flag(PHONE_FLAG);
+  const aam = flag(AAM_FLAG);
+  return {
+    ...config,
+    ...(phone === undefined ? {} : { sendHashedPhone: phone }),
+    ...(aam === undefined ? {} : { aamDisabled: aam }),
+  };
 }
 
 function viewOf(row: IntegrationRow): IntegrationView | null {

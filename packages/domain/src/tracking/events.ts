@@ -42,6 +42,15 @@ const PIXEL_NAMES: Readonly<Record<PixelProvider, Readonly<Record<TrackEvent, st
     generate_lead: "Contact",
     purchase: "CompletePayment",
   },
+  /** أسماء OpenAI القياسية (https://developers.openai.com/ads/supported-events). */
+  openai: {
+    page_view: "page_viewed",
+    view_item: "contents_viewed",
+    add_to_cart: "items_added",
+    begin_checkout: "checkout_started",
+    generate_lead: "lead_created",
+    purchase: "order_created",
+  },
 };
 
 /** اسم الحدث في بكسل المنصة وواجهتها الخادمية (الاسم نفسه شرط إزالة التكرار). */

@@ -3,6 +3,7 @@ import type { TransportResult } from "../transport";
 import type { Built, PurchaseInput, TestInput } from "./common";
 import { buildGa4Purchase, buildGa4Test, ga4ValidationError } from "./ga4";
 import { buildMetaPurchase, buildMetaTest } from "./meta";
+import { buildOpenaiPurchase, buildOpenaiTest } from "./openai";
 import { buildSnapPurchase, buildSnapTest, snapStatusError } from "./snap";
 import { buildTiktokPurchase, buildTiktokTest, tiktokCodeError } from "./tiktok";
 
@@ -13,6 +14,7 @@ const PURCHASE: Readonly<Record<ServerProvider, (input: PurchaseInput) => Built>
   meta: buildMetaPurchase,
   snap: buildSnapPurchase,
   tiktok: buildTiktokPurchase,
+  openai: buildOpenaiPurchase,
 };
 
 const TEST: Readonly<Record<ServerProvider, (input: TestInput) => Built>> = {
@@ -20,6 +22,7 @@ const TEST: Readonly<Record<ServerProvider, (input: TestInput) => Built>> = {
   meta: buildMetaTest,
   snap: buildSnapTest,
   tiktok: buildTiktokTest,
+  openai: buildOpenaiTest,
 };
 
 export function buildPurchase(provider: ServerProvider, input: PurchaseInput): Built {
@@ -30,7 +33,11 @@ export function buildTest(provider: ServerProvider, input: TestInput): Built {
   return TEST[provider](input);
 }
 
-/** خطأ مكتوب في جسم رد ناجح الرمز: تيك توك بـ`code`، وسناب بـ`status`، وتحقق GA4 برسائله. */
+/**
+ * خطأ مكتوب في جسم رد ناجح الرمز: تيك توك بـ`code`، وسناب بـ`status`، وتحقق GA4 برسائله. ميتا
+ * وOpenAI بالرمز وحده (وثائق OpenAI لا تصف جسم الرد: «If one event in the batch fails, the full batch
+ * fails»، فالرفض رمز HTTP).
+ */
 function bodyError(provider: ServerProvider, body: string): string | null {
   switch (provider) {
     case "ga4":
@@ -40,6 +47,7 @@ function bodyError(provider: ServerProvider, body: string): string | null {
     case "tiktok":
       return tiktokCodeError(body);
     case "meta":
+    case "openai":
       return null;
   }
 }

@@ -4,10 +4,12 @@ import type { TrackPayload } from "./types";
 
 /** حمولة اشتراك واحد (عرضه وإضافته): السعر من القاعدة بالهللة ثم ريال. */
 export function planPayload(plan: MembershipPlan, locale: Locale): Omit<TrackPayload, "eventId"> {
-  const price = majorNumber(plan.price.amountMinor);
+  const priceMinor = plan.price.amountMinor;
+  const price = majorNumber(priceMinor);
   return {
     value: price,
+    valueMinor: priceMinor,
     currency: plan.price.currency,
-    lines: [{ id: plan.slug, name: plan.name[locale], price }],
+    lines: [{ id: plan.slug, name: plan.name[locale], price, priceMinor }],
   };
 }

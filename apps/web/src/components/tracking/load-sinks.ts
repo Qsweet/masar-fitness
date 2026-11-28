@@ -2,6 +2,7 @@ import { consentAllows, type Consent, type TrackingProvider } from "@masar/domai
 import type { ClientProvider, Sink } from "./types";
 import { loadGtag, loadGtm } from "./vendors/google";
 import { loadMeta } from "./vendors/meta";
+import { loadOpenai } from "./vendors/openai";
 import { loadSnap } from "./vendors/snap";
 import { loadTiktok } from "./vendors/tiktok";
 import { loadX } from "./vendors/x";
@@ -25,6 +26,7 @@ export function loadSinks(
   const snap = config("snap");
   const tiktok = config("tiktok");
   const x = config("x");
+  const openai = config("openai");
   const sinks = [
     gtm === null ? null : loadGtm(gtm, consent, nonce),
     ga4 === null && ads === null ? null : loadGtag({ ga4, ads }, consent, nonce),
@@ -32,6 +34,7 @@ export function loadSinks(
     snap === null ? null : loadSnap(snap, nonce),
     tiktok === null ? null : loadTiktok(tiktok, nonce),
     x === null ? null : loadX(x, nonce),
+    openai === null ? null : loadOpenai(openai, nonce),
   ];
   return sinks.filter((sink): sink is Sink => sink !== null);
 }

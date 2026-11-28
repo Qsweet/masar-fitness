@@ -71,7 +71,7 @@ export function loadGtag(
   }
   return {
     send: (call) => {
-      sendGtag(gtag, call, ids, measurementId !== undefined);
+      sendGtag(window.gtag ?? gtag, call, ids, measurementId !== undefined);
     },
   };
 }

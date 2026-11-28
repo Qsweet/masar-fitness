@@ -12,7 +12,7 @@ const withoutClick: TrackPayload = {
   eventId: "purchase.0193",
   value: 1499.5,
   currency: "SAR",
-  lines: [{ id: "six-months", name: "ستة أشهر", price: 1499.5 }],
+  lines: [{ id: "six-months", name: "ستة أشهر", price: 1499.5, priceMinor: 149_950 }],
   sha256Phone: PHONE,
 };
 const purchase: TrackPayload = { ...withoutClick, twclid: "26ab3x9kq0" };

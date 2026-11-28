@@ -59,7 +59,7 @@ export const shellAr = {
     staff: "staff team users موظف فريق",
     audit: "audit log سجل تدقيق",
     integrations:
-      "integrations tracking pixel gtm ga4 google ads meta snap tiktok x twitter إكس تويتر ربط بكسل قياس إعلانات",
+      "integrations tracking pixel gtm ga4 google ads meta snap tiktok x twitter إكس تويتر openai chatgpt شات ربط بكسل قياس إعلانات",
     account: "account password sessions حساب كلمة المرور",
     newSlide: "new slide شريحة",
     newPlan: "new plan membership باقة",

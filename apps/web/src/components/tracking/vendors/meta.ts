@@ -51,7 +51,8 @@ export function loadMeta(config: IntegrationConfig, nonce: string | undefined): 
   return {
     send: (call) => {
       const options = { eventID: call.payload.eventId };
-      fbq("track", pixelEventName("meta", call.event), eventData(call), options);
+      // الدالة تُقرأ من window عند كل حدث: سكربت المنصة قد يستبدل الطابور بعد تحميله
+      (window.fbq ?? fbq)("track", pixelEventName("meta", call.event), eventData(call), options);
     },
   };
 }

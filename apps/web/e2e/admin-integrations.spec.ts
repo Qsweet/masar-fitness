@@ -64,7 +64,7 @@ test("المالك يفعّل ميتا: نمط المعرّف، والمفتاح
   const owner = await newStaff(db, club, { withTotp: true });
   await signIn(page, owner);
   await page.goto("/admin/integrations");
-  await expect(page.getByTestId("provider-tiles").getByRole("listitem")).toHaveCount(7);
+  await expect(page.getByTestId("provider-tiles").getByRole("listitem")).toHaveCount(8);
 
   await openMeta(page);
   await saveMeta(page, "12ab");
@@ -192,6 +192,57 @@ test("X: البكسل وأحداثه بأنماطها، ولا مفتاح خاد
     await expect(page.getByTestId("provider-tiles").getByText("tw-o8z5x-p1q2r")).toBeVisible();
     await page.screenshot({
       path: `${SHOTS_DIR}/integrations-hub-x-${theme}-${String(width)}.png`,
+      fullPage: true,
+    });
+  }
+  testInfo.annotations.push({ type: "shots", description: SHOTS_DIR });
+});
+
+test("إعلانات ChatGPT: Pixel ID بنمطه، ومفتاح Conversions API للكتابة فقط، وحدث التحقق في السجل", async ({
+  page,
+}, testInfo) => {
+  const club = await newClub(db);
+  await signIn(page, await newStaff(db, club, { withTotp: true }));
+  await page.goto("/admin/integrations/openai");
+  const name = TEXTS.providers.openai.name;
+  await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
+  await expect(page.getByText(TEXTS.openaiMatchingNote)).toBeVisible();
+  await expect(page.getByLabel(TEXTS.form.testEventCode)).toHaveCount(0);
+  await expect(page.getByLabel(TEXTS.form.sendHashedPhone)).toBeChecked();
+  await expect(page.getByLabel(TEXTS.form.aamDisabled)).not.toBeChecked();
+  const save = async (pixel: string, aamDisabled: boolean) => {
+    await page.getByLabel(TEXTS.form.enabled, { exact: true }).check();
+    await page.getByLabel(TEXTS.form.fields.pixelId.label).fill(pixel);
+    await page.getByLabel(TEXTS.form.aamDisabled).setChecked(aamDisabled);
+    await page.getByLabel(TEXTS.form.secret).fill(SECRET);
+    await page.getByRole("button", { name: TEXTS.form.submit }).click();
+  };
+  await save("134'534", true);
+  await expect(formAlert(page)).toHaveText(TEXT.errors["tracking.invalid_pixelId"]);
+  // بلا تأكيد إطفاء المطابقة المتقدمة الآلية لا تفعيل (مراجعة القرار 93، M1)
+  await save("1345349876", false);
+  await expect(formAlert(page)).toHaveText(TEXT.errors["tracking.required_aamDisabled"]);
+  await save("1345349876", true);
+  await expect(page.getByText(TEXT.notices.tracking_saved)).toBeVisible();
+  await expect(page.getByLabel(TEXTS.form.secret)).toHaveValue("");
+  await expect(page.getByLabel(TEXTS.form.aamDisabled)).toBeChecked();
+  expect(await page.content()).not.toContain(SECRET);
+
+  await page.getByRole("button", { name: TEXTS.test.submit }).click();
+  await expect(page.getByText(TEXT.notices.tracking_test_sent)).toBeVisible();
+  const [row] = await db.trackingOutbox.findMany({
+    where: { clubId: club.id, provider: "openai", kind: "test" },
+  });
+  expect(row).toMatchObject({ status: "sent", eventName: "page_viewed", lastStatus: 200 });
+  await expectAccessible(page, "openai");
+
+  const width = page.viewportSize()?.width ?? 0;
+  for (const theme of ["light", "dark"] as const) {
+    await setTheme(page, theme);
+    await page.goto("/admin/integrations/openai");
+    await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
+    await page.screenshot({
+      path: `${SHOTS_DIR}/integrations-openai-${theme}-${String(width)}.png`,
       fullPage: true,
     });
   }

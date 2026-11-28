@@ -8,6 +8,7 @@ import { addSink, hasSinks, newEventId, track } from "./track";
 import type { ClientProvider } from "./types";
 import { expireVendorCookies } from "./vendor-cookies";
 import { updateGoogleConsent } from "./vendors/google";
+import { withdrawOpenaiConsent } from "./vendors/openai";
 
 interface TagLoaderProps {
   readonly providers: readonly ClientProvider[];
@@ -43,6 +44,7 @@ export function TagLoader({ providers, nonce }: TagLoaderProps) {
       if (hasSinks() || expired.length > 0) {
         // السحب يصل Google قبل إعادة التحميل؛ والصفحة الجديدة تحمّل ما بقي مسموحًا وحده
         updateGoogleConsent(after);
+        withdrawOpenaiConsent(after);
         window.location.reload();
         return;
       }

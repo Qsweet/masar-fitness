@@ -927,6 +927,10 @@ model OrderTracking {
   fbc              String?
   scid             String?
   ttp              String?
+  /// مرجع متصفح OpenAI من كوكي `__obref` (القرار 93)، بموافقة الإعلانات
+  obref            String?
+  /// كوكي `__oppref` من بكسل OpenAI (مراجعة القرار 93)، بموافقة الإعلانات
+  oppref           String?
   clientIp         String?   @map("client_ip")
   userAgent        String?   @map("user_agent")
   pageUrl          String?   @map("page_url")

@@ -19,7 +19,17 @@ export type TrackingField = (typeof TRACKING_FIELDS)[number];
 export type IntegrationConfig = Partial<Readonly<Record<TrackingField, string>>> & {
   /** «إرسال الجوال المجزّأ» لمنصة تقبله (`usesHashedPhone`). الغائب مفعَّل (القرار 90-3). */
   readonly sendHashedPhone?: boolean;
+  /**
+   * OpenAI: المالك أكّد أنه أطفأ «المطابقة المتقدمة الآلية» في Ads Manager (مراجعة القرار 93). لا أمر
+   * في الـSDK لإطفائها، فبلا هذا التأكيد لا يكتمل الإعداد ولا يُحمَّل البكسل ولا تتسع CSP.
+   */
+  readonly aamDisabled?: boolean;
 };
+
+/** منصة تشترط تأكيد إطفاء المطابقة المتقدمة الآلية قبل التفعيل. */
+export function requiresAamConfirmation(provider: TrackingProvider): boolean {
+  return provider === "openai";
+}
 
 const PROVIDER_FIELDS: Readonly<Record<TrackingProvider, readonly TrackingField[]>> = {
   gtm: ["containerId"],
@@ -29,6 +39,7 @@ const PROVIDER_FIELDS: Readonly<Record<TrackingProvider, readonly TrackingField[
   snap: ["pixelId"],
   tiktok: ["pixelId"],
   x: ["pixelId", "purchaseEventId", "addToCartEventId", "leadEventId"],
+  openai: ["pixelId"],
 };
 
 /** حقول لا يشترطها التفعيل: حدث X الذي لم يُنشئه المالك في Ads Manager لا يُرسل. */
@@ -60,10 +71,18 @@ function patternOf(provider: TrackingProvider, field: TrackingField): RegExp {
   }
 }
 
+/**
+ * Pixel ID لإعلانات ChatGPT: وثائق OpenAI لا تنشر صيغته (مثالها الوحيد مقطوع «134534…» في
+ * https://developers.openai.com/ads/api-reference/conversion-setup)، فالنمط محارف آمنة بطول محدود:
+ * القيمة تدخل نص سكربت ورابط `?pid=`، فلا محرف خارج هذا المدى (القرار 93).
+ */
+const OPENAI_PIXEL = /^[A-Za-z0-9_-]{6,64}$/;
+
 const PIXEL_PATTERNS: Partial<Readonly<Record<TrackingProvider, RegExp>>> = {
   snap: UUID,
   tiktok: /^[A-Z0-9]{10,30}$/,
   x: X_PIXEL,
+  openai: OPENAI_PIXEL,
 };
 /** ميتا (ومن لا نمط بكسل له): أرقام. */
 const NUMERIC_PIXEL = /^\d{8,20}$/;
@@ -154,8 +173,14 @@ export function parseIntegrationConfig(
   return { config, issues };
 }
 
-/** إعداد محفوظ صالح للتحميل الآن: كل حقل مطلوب موجود وبنمطه، والاختياري بنمطه إن وُجد. */
+/**
+ * إعداد محفوظ صالح للتحميل الآن: كل حقل مطلوب موجود وبنمطه، والاختياري بنمطه إن وُجد، ولـOpenAI
+ * تأكيد إطفاء المطابقة المتقدمة الآلية.
+ */
 export function isCompleteConfig(provider: TrackingProvider, config: IntegrationConfig): boolean {
+  if (requiresAamConfirmation(provider) && config.aamDisabled !== true) {
+    return false;
+  }
   return fieldsOf(provider).every((field) => {
     const value = config[field];
     if (value === undefined) {

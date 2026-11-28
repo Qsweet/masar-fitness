@@ -79,11 +79,13 @@ export async function purchasePayload(
     id: item.slug,
     name: item.name[locale],
     price: majorNumber(item.total.amountMinor),
+    priceMinor: item.total.amountMinor,
   }));
   const base = {
     eventId: purchaseEventId(order.id),
     transactionId: order.reference,
     value: majorNumber(order.total.amountMinor),
+    valueMinor: order.total.amountMinor,
     currency: order.total.currency,
     lines,
   };

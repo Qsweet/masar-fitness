@@ -3,7 +3,10 @@
  * تُحدَّث مع كل وصول بحملة. قبل موافقة الإعلانات تُحفظ معاملات الحملة وصفحة الهبوط وحدهما؛ معرّفات النقر
  * الإعلانية لا تُحفظ إلا مع الموافقة. القيم من رابط يكتبه أي أحد، فلكل مفتاح حد طول ونمط، وما خالف يُسقط.
  */
-/** `twclid` معرّف نقر X (قالب X الرسمي: «the click-through URL parameter twclid»)، القرار 90-1. */
+/**
+ * `twclid` معرّف نقر X (قالب X الرسمي: «the click-through URL parameter twclid»)، القرار 90-1.
+ * `oppref` معرّف نقر إعلانات ChatGPT من رابط الهبوط (https://developers.openai.com/ads/measurement-pixel)، القرار 93.
+ */
 export const CLICK_ID_PARAMS = [
   "gclid",
   "gbraid",
@@ -12,6 +15,7 @@ export const CLICK_ID_PARAMS = [
   "ScCid",
   "ttclid",
   "twclid",
+  "oppref",
 ] as const;
 export const UTM_PARAMS = [
   "utm_source",

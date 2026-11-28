@@ -8,6 +8,7 @@ import {
   decodeAttribution,
   gaClientId,
   metaCookie,
+  opprefCookie,
   parseConsent,
   vendorCookie,
 } from "@masar/domain";
@@ -39,6 +40,10 @@ function adIdentifiers(read: Read, requestHeaders: Headers) {
     fbc: metaCookie(read("_fbc")),
     scid: vendorCookie(read("_scid")),
     ttp: vendorCookie(read("_ttp")),
+    // مرجع متصفح OpenAI من كوكي البكسل، بموافقة الإعلانات (Conversions API: «user.obref»)
+    obref: vendorCookie(read("__obref")),
+    // كوكي `oppref` الذي يكتبه البكسل نفسه: بديل حين يخالف رابط الهبوط نمط معرّفات النقر (L1)
+    oppref: opprefCookie(read("__oppref")),
     clientIp: ip === UNKNOWN_CLIENT_IP ? null : ip,
     userAgent: requestHeaders.get("user-agent")?.slice(0, MAX_USER_AGENT) ?? null,
   };
@@ -65,9 +70,16 @@ const NO_AD_IDENTIFIERS = {
   fbc: null,
   scid: null,
   ttp: null,
+  obref: null,
+  oppref: null,
   clientIp: null,
   userAgent: null,
 };
+
+/** معرّفات الإعلانات وحدها بموافقتها لحظة الطلب، وإلا كلها null. */
+export function adIdentifiersFor(ads: boolean, read: Read, requestHeaders: Headers) {
+  return ads ? adIdentifiers(read, requestHeaders) : NO_AD_IDENTIFIERS;
+}
 
 /**
  * يختم الموافقة والإسناد ومعرّفات المتصفح على الطلب بعد إنشائه (ADMIN_A5_TRACKING §5.2). المعرّفات
@@ -86,7 +98,7 @@ export async function stampOrderTracking(orderId: string, pagePath: string): Pro
       firstTouch: touchFor(attribution?.first, consent.ads),
       lastTouch: touchFor(attribution?.last, consent.ads),
       gaClientId: consent.analytics ? gaClientId(read("_ga")) : null,
-      ...(consent.ads ? adIdentifiers(read, requestHeaders) : NO_AD_IDENTIFIERS),
+      ...adIdentifiersFor(consent.ads, read, requestHeaders),
       pageUrl: new URL(pagePath, getEnv().SITE_URL).toString(),
       now: new Date(),
     });

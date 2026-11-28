@@ -29,7 +29,7 @@ describe("محو كوكيات المنصات عند السحب", () => {
 
   it("سحب الإعلانات يمحو كوكياتها وحدها على كل نطاق، ويبقي التحليلات وكوكياتنا", () => {
     const cookies = jar(
-      "_ga=1; _ga_ABC=2; _gcl_au=3; _fbp=4; _ttp=5; _scid=6; _twclid=7; _twpid=8; masar_consent=v1",
+      "_ga=1; _ga_ABC=2; _gcl_au=3; _fbp=4; _ttp=5; _scid=6; _twclid=7; _twpid=8; __oppref=9; __obref=10; masar_consent=v1",
     );
     const names = expireVendorCookies(
       cookies,
@@ -37,7 +37,16 @@ describe("محو كوكيات المنصات عند السحب", () => {
       consent(true, true),
       consent(true, false),
     );
-    expect(names).toEqual(["_gcl_au", "_fbp", "_ttp", "_scid", "_twclid", "_twpid"]);
+    expect(names).toEqual([
+      "_gcl_au",
+      "_fbp",
+      "_ttp",
+      "_scid",
+      "_twclid",
+      "_twpid",
+      "__oppref",
+      "__obref",
+    ]);
     expect(cookies.writes).toContain("_fbp=; Max-Age=0; Path=/");
     expect(cookies.writes).toContain("_fbp=; Max-Age=0; Path=/; Domain=example.com");
     expect(cookies.writes.some((write) => write.startsWith("_ga="))).toBe(false);

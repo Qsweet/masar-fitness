@@ -3,6 +3,7 @@ import {
   acceptsTestEventCode,
   fieldsOf,
   isServerProvider,
+  requiresAamConfirmation,
   usesHashedPhone,
   type TrackingField,
   type TrackingProvider,
@@ -26,7 +27,11 @@ type Text = AdminDictionary["integrations"]["form"];
 function fieldHint(provider: TrackingProvider, field: TrackingField, text: Text): string {
   if (
     field === "pixelId" &&
-    (provider === "meta" || provider === "snap" || provider === "tiktok" || provider === "x")
+    (provider === "meta" ||
+      provider === "snap" ||
+      provider === "tiktok" ||
+      provider === "x" ||
+      provider === "openai")
   ) {
     return text.pixelHints[provider];
   }
@@ -69,6 +74,33 @@ function SecretFields({ provider, view, canWriteSecret, dictionary }: ProviderFo
   );
 }
 
+/** الخانات المنطقية: تأكيد إطفاء المطابقة المتقدمة الآلية (OpenAI)، و«إرسال الجوال المجزّأ». */
+function FlagFields({ provider, view, dictionary }: ProviderFormProps) {
+  const text = dictionary.integrations.form;
+  return (
+    <>
+      {requiresAamConfirmation(provider) ? (
+        <CheckboxField
+          id="integration-aam-disabled"
+          name="aamDisabled"
+          label={text.aamDisabled}
+          hint={text.aamDisabledHint}
+          defaultChecked={view?.config.aamDisabled === true}
+        />
+      ) : null}
+      {usesHashedPhone(provider) ? (
+        <CheckboxField
+          id="integration-send-phone"
+          name="sendHashedPhone"
+          label={text.sendHashedPhone}
+          hint={provider === "openai" ? text.sendHashedPhoneHintOpenai : text.sendHashedPhoneHint}
+          defaultChecked={view?.config.sendHashedPhone !== false}
+        />
+      ) : null}
+    </>
+  );
+}
+
 /** نموذج إعداد منصة: التفعيل، والمعرّفات العامة بأنماطها، ورمز الاختبار، والمفتاح الخادمي. */
 export function ProviderForm(props: ProviderFormProps) {
   const { provider, view, dictionary } = props;
@@ -99,15 +131,7 @@ export function ProviderForm(props: ProviderFormProps) {
           dir="ltr"
         />
       ))}
-      {usesHashedPhone(provider) ? (
-        <CheckboxField
-          id="integration-send-phone"
-          name="sendHashedPhone"
-          label={text.sendHashedPhone}
-          hint={text.sendHashedPhoneHint}
-          defaultChecked={view?.config.sendHashedPhone !== false}
-        />
-      ) : null}
+      <FlagFields {...props} />
       {acceptsTestEventCode(provider) ? (
         <TextField
           id="integration-test-code"

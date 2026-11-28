@@ -9,12 +9,17 @@ export const MAX_DELIVERY_ATTEMPTS = 6;
 const BACKOFF_MINUTES: Readonly<Record<number, number>> = { 1: 1, 2: 5, 3: 30, 4: 120, 5: 720 };
 const MS_PER_MINUTE = 60_000;
 const MS_PER_HOUR = 3_600_000;
-/** أقصى عمر للحدث تقبله المنصة: ميتا 7 أيام، GA4 72 ساعة؛ سناب وتيك توك بلا حد موثَّق فنأخذ 7 أيام. */
+/**
+ * أقصى عمر للحدث تقبله المنصة: ميتا 7 أيام، GA4 72 ساعة، OpenAI 167 ساعة (حدها «within the last 7
+ * days»، https://developers.openai.com/ads/conversions-api، بهامش ساعة لزمن الإرسال والإعادة: مراجعة
+ * القرار 93)؛ سناب وتيك توك بلا حد موثَّق فنأخذ 7 أيام.
+ */
 const MAX_AGE_HOURS: Readonly<Record<ServerProvider, number>> = {
   ga4: 72,
   meta: 168,
   snap: 168,
   tiktok: 168,
+  openai: 167,
 };
 
 const HTTP_OK_MIN = 200;

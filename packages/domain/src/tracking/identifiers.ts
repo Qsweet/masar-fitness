@@ -39,3 +39,13 @@ const VENDOR_COOKIE = /^[A-Za-z0-9_.:-]{8,200}$/;
 export function vendorCookie(value: string | undefined): string | null {
   return value !== undefined && VENDOR_COOKIE.test(value) ? value : null;
 }
+
+/**
+ * كوكي `__oppref` الذي يكتبه بكسل OpenAI (مراجعة القرار 93): `oppref` «opaque» تمرّره الوثيقة «without
+ * modification»، فلا نمط محارف له؛ الحد طول 512 وبلا محارف تحكم، وما خالف لا يُحفظ.
+ */
+const OPPREF_COOKIE = /^[^\p{Cc}]{1,512}$/u;
+
+export function opprefCookie(value: string | undefined): string | null {
+  return value !== undefined && OPPREF_COOKIE.test(value) ? value : null;
+}

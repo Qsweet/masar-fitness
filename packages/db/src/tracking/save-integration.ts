@@ -1,4 +1,4 @@
-import { DomainError, err, ok, TRACKING_FIELDS, type Result } from "@masar/domain";
+import { DomainError, err, ok, TRACKING_FIELDS, usesHashedPhone, type Result } from "@masar/domain";
 import type { Db } from "../client";
 import { writeAudit } from "../commerce/audit";
 import { inTransaction, type Tx } from "../commerce/transaction";
@@ -37,7 +37,10 @@ function changedFields(before: LockedRow | undefined, input: SaveIntegrationInpu
   const fields: string[] = TRACKING_FIELDS.filter(
     (field) => (old[field] ?? null) !== (input.config[field] ?? null),
   );
-  const phoneChanged = (old.sendHashedPhone ?? null) !== (input.config.sendHashedPhone ?? null);
+  // القيمة الفعلية: الغائب مفعَّل (القرار 90-3)، فحفظ خانة مؤشَّرة فوق إعداد قديم بلا المفتاح ليس تغييرًا
+  const phoneChanged =
+    usesHashedPhone(input.provider) &&
+    (old.sendHashedPhone !== false) !== (input.config.sendHashedPhone !== false);
   return phoneChanged ? [...fields, PHONE_FLAG] : fields;
 }
 

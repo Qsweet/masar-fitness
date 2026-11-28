@@ -157,6 +157,14 @@ describe("إعداد المنصة", () => {
     expect(audit[1]?.data).toMatchObject({ platform: "x", changed: "sendHashedPhone" });
   });
 
+  it("حفظ الخانة مؤشَّرة فوق إعداد بلا المفتاح لا تغيير ولا تدقيق: الغائب مفعَّل", async () => {
+    unwrap(await saveIntegration(db, integration()));
+    const same = { pixelId: "123456789012345", sendHashedPhone: true };
+    const again = integration({ config: same, secret: { kind: "keep" } });
+    expect(unwrap(await saveIntegration(db, again))).toEqual({ changed: false });
+    expect(await db.auditLog.count({ where: { entityType: "tracking_integration" } })).toBe(1);
+  });
+
   it("القاعدة ترفض منصة مجهولة ومفتاحًا بلا شكل", async () => {
     await expect(db.$executeRaw`
       INSERT INTO tracking_integrations (club_id, provider, updated_at)

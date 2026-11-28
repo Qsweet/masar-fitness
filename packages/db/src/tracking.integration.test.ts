@@ -76,6 +76,7 @@ function tracking(
     fbc: null,
     scid: null,
     ttp: null,
+    obref: null,
     clientIp: "203.0.113.9",
     userAgent: "Mozilla/5.0",
     pageUrl: "https://example.test/checkout",
@@ -191,7 +192,7 @@ describe("ختم الطلب", () => {
 
 describe("التحويل في معاملة التسوية", () => {
   async function enableAll(): Promise<void> {
-    for (const provider of ["ga4", "meta", "snap", "tiktok", "google_ads"] as const) {
+    for (const provider of ["ga4", "meta", "snap", "tiktok", "openai", "google_ads"] as const) {
       unwrap(await saveIntegration(db, integration({ provider, config: {} })));
     }
   }
@@ -208,7 +209,7 @@ describe("التحويل في معاملة التسوية", () => {
       await markOrderPaid(db, { orderId, payment: verified, actor: "provider", now: PAID_AT }),
     );
     const rows = await outboxFor(orderId);
-    expect(rows.map((row) => row.provider)).toEqual(["ga4", "meta", "snap", "tiktok"]);
+    expect(rows.map((row) => row.provider)).toEqual(["ga4", "meta", "openai", "snap", "tiktok"]);
     expect(new Set(rows.map((row) => row.eventId))).toEqual(new Set([`purchase.${orderId}`]));
     expect(
       rows.every(

@@ -29,7 +29,7 @@ export async function enqueuePurchaseConversions(
     FROM tracking_integrations ti
     JOIN order_tracking ot ON ot.order_id = ${input.orderId}::uuid AND ot.club_id = ti.club_id
     WHERE ti.club_id = ${input.clubId}::uuid AND ti.enabled AND ti.secret_enc IS NOT NULL
-      AND ti.provider IN ('ga4', 'meta', 'snap', 'tiktok')
+      AND ti.provider IN ('ga4', 'meta', 'snap', 'tiktok', 'openai')
       AND CASE WHEN ti.provider = 'ga4' THEN ot.consent_analytics ELSE ot.consent_ads END
     ON CONFLICT (club_id, provider, event_name, event_id) WHERE kind = 'live' DO NOTHING`;
 }

@@ -8,6 +8,16 @@ type Align = "end" | "numeric";
 /** عمود باسمه، أو باسمه ومحاذاته (الأرقام في جهة النهاية رأسًا وخلايا). */
 export type Column = string | { readonly label: string; readonly align: Align };
 
+/** أعمدة من قاموس بترتيبه، والمفاتيح الرقمية محاذاة في جهة النهاية. */
+export function alignColumns(
+  columns: Readonly<Record<string, string>>,
+  numeric: readonly string[],
+): Column[] {
+  return Object.entries(columns).map(([key, label]) =>
+    numeric.includes(key) ? { label, align: "numeric" } : label,
+  );
+}
+
 function columnLabel(column: Column): string {
   return typeof column === "string" ? column : column.label;
 }

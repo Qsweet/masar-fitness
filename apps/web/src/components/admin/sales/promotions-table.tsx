@@ -1,10 +1,9 @@
 import type { PromotionAdminRow } from "@masar/db";
-import Link from "next/link";
 import { promotionPath } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import { discountText, usageText, windowText } from "@/server/admin/sales/promotions-view";
-import { Cell, DataTable } from "../ui/data-table";
+import { alignColumns, Cell, DataTable, RowLink } from "../ui/data-table";
 import { Ltr } from "../ui/kit";
 import { PromotionStateBadge } from "./catalog-parts";
 import styles from "./sales.module.css";
@@ -24,18 +23,21 @@ export function PromotionsTable({ rows, sales, timezone, caption }: PromotionsTa
   const text = sales.promotions;
   const { columns } = text;
   return (
-    <DataTable caption={caption} columns={Object.values(columns)} testId="promotions-table" compact>
+    <DataTable
+      caption={caption}
+      columns={alignColumns(columns, ["discount"])}
+      testId="promotions-table"
+      compact
+    >
       {rows.map((row) => (
         <tr key={row.rule.id}>
           <Cell label={columns.name} slot="title">
-            <Link
+            <RowLink
               href={promotionPath(row.rule.id)}
-              prefetch={false}
-              className={styles.rowLink}
-              aria-label={fill(text.open, { name: row.rule.name.ar })}
+              label={fill(text.open, { name: row.rule.name.ar })}
             >
               {row.rule.name.ar}
-            </Link>
+            </RowLink>
             <span className={styles.sub}>
               {row.rule.code === null ? text.types.automatic : text.types.coupon}
             </span>
@@ -43,7 +45,7 @@ export function PromotionsTable({ rows, sales, timezone, caption }: PromotionsTa
           <Cell label={columns.code} slot="aside" nowrap>
             {row.rule.code === null ? "—" : <Ltr>{row.rule.code}</Ltr>}
           </Cell>
-          <Cell label={columns.discount} slot="value" nowrap strong>
+          <Cell label={columns.discount} slot="value" align="numeric" strong>
             <bdi>{discountText(row.rule.discount)}</bdi>
           </Cell>
           <Cell label={columns.window} muted>

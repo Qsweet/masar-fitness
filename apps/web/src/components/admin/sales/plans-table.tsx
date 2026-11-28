@@ -1,10 +1,9 @@
 import type { CatalogProductRow } from "@masar/db";
-import Link from "next/link";
 import { planPath } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import { formatMonths, formatNumber } from "@/i18n/format";
-import { Cell, DataTable } from "../ui/data-table";
+import { alignColumns, Cell, DataTable, RowLink } from "../ui/data-table";
 import { Badge } from "../ui/kit";
 import { ProductStatusBadge } from "./catalog-parts";
 import { Amount } from "./order-parts";
@@ -36,18 +35,18 @@ export function PlansTable({ rows, sales, bestSlug, caption }: PlansTableProps) 
   const text = sales.plans;
   const { columns } = text;
   return (
-    <DataTable caption={caption} columns={Object.values(columns)} testId="plans-table" compact>
+    <DataTable
+      caption={caption}
+      columns={alignColumns(columns, ["price", "sold", "sortOrder"])}
+      testId="plans-table"
+      compact
+    >
       {rows.map((row) => (
         <tr key={row.id}>
           <Cell label={columns.name} slot="title">
-            <Link
-              href={planPath(row.id)}
-              prefetch={false}
-              className={styles.rowLink}
-              aria-label={fill(text.open, { name: row.name.ar })}
-            >
+            <RowLink href={planPath(row.id)} label={fill(text.open, { name: row.name.ar })}>
               {row.name.ar}
-            </Link>
+            </RowLink>
             {row.tier === null ? null : <span className={styles.sub}>{row.tier.ar}</span>}
             {row.slug === bestSlug ? (
               <span className={styles.inlineBadge}>
@@ -55,7 +54,7 @@ export function PlansTable({ rows, sales, bestSlug, caption }: PlansTableProps) 
               </span>
             ) : null}
           </Cell>
-          <Cell label={columns.price} slot="value" nowrap>
+          <Cell label={columns.price} slot="value" align="numeric">
             {row.currentVersion === null ? (
               text.noVersion
             ) : (

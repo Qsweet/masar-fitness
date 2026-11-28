@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { AdminForm } from "@/components/admin/admin-form";
 import { TextField } from "@/components/admin/ui/fields";
-import { Card, EmptyState, PageHeader } from "@/components/admin/ui/kit";
+import { PageHeader } from "@/components/admin/ui/kit";
+import { Disclosure, PointList, SettingsSection } from "@/components/admin/ui/section";
 import { getAdminDictionary } from "@/i18n/admin";
 import { lookupCustomerAction } from "@/server/admin/actions/sales-customers";
 import { requireStaff } from "@/server/admin/guard";
@@ -23,14 +24,18 @@ export default async function CustomersPage() {
   return (
     <>
       <PageHeader title={text.title} description={text.lead} />
-      <Card title={text.lookup.title} narrow>
-        <AdminForm action={lookupCustomerAction} labels={{ submit: text.lookup.submit, errors }}>
+      <SettingsSection title={text.lookup.title} description={text.lookup.sectionLead}>
+        <AdminForm
+          action={lookupCustomerAction}
+          labels={{ submit: text.lookup.submit, errors }}
+          inline
+        >
           <TextField
             id="customer-mobile"
             name="mobile"
             type="tel"
             label={text.lookup.mobile}
-            hint={text.lookup.mobileHint}
+            placeholder={text.lookup.mobilePlaceholder}
             inputMode="tel"
             dir="ltr"
             autoComplete="off"
@@ -39,14 +44,10 @@ export default async function CustomersPage() {
             data-admin-search=""
           />
         </AdminForm>
-      </Card>
-      <Card flush>
-        <EmptyState
-          icon="search"
-          title={text.lookup.emptyTitle}
-          description={text.lookup.emptyLead}
-        />
-      </Card>
+        <Disclosure summary={text.lookup.emptyTitle}>
+          <PointList lines={[text.lookup.emptyLead, text.lookup.mobileHint]} />
+        </Disclosure>
+      </SettingsSection>
     </>
   );
 }

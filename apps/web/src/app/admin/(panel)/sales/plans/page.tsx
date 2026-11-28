@@ -2,16 +2,11 @@ import { countCatalogProducts, listCatalogProducts, listClubMembershipPlans } fr
 import { hasPermission, isProductAdminKind, PRODUCT_KINDS, type ProductKind } from "@masar/domain";
 import type { Metadata } from "next";
 import { PlansTable } from "@/components/admin/sales/plans-table";
-import {
-  ButtonLink,
-  Card,
-  EmptyState,
-  PageHeader,
-  Tabs,
-  uiStyles,
-} from "@/components/admin/ui/kit";
+import { TableCard } from "@/components/admin/ui/data-table";
+import { ButtonLink, EmptyState, PageHeader, Tabs, uiStyles } from "@/components/admin/ui/kit";
 import { ADMIN_ROUTES } from "@/config/admin";
 import { getAdminDictionary } from "@/i18n/admin";
+import { formatNumber } from "@/i18n/format";
 import { requireStaff } from "@/server/admin/guard";
 import { bestValueSlug } from "@/server/admin/sales/catalog-view";
 import { getDb } from "@/server/db";
@@ -40,7 +35,8 @@ export default async function PlansPage(props: PageProps<"/admin/sales/plans">) 
   const query = await props.searchParams;
   const db = getDb();
   const now = new Date();
-  const kinds = visibleKinds(await countCatalogProducts(db, staff.clubId));
+  const counts = await countCatalogProducts(db, staff.clubId);
+  const kinds = visibleKinds(counts);
   const kind = kinds.find((candidate) => candidate === query.kind) ?? "membership";
   const [rows, published] = await Promise.all([
     listCatalogProducts(db, staff.clubId, kind, now),
@@ -65,9 +61,14 @@ export default async function PlansPage(props: PageProps<"/admin/sales/plans">) 
       <Tabs
         label={text.tabsLabel}
         current={kind}
-        tabs={kinds.map((id) => ({ id, label: text.tabs[id], href: kindHref(id) }))}
+        tabs={kinds.map((id) => ({
+          id,
+          label: text.tabs[id],
+          href: kindHref(id),
+          count: formatNumber(counts[id]),
+        }))}
       />
-      <Card flush>
+      <TableCard>
         {rows.length === 0 ? (
           <EmptyState icon="plans" title={empty.title} description={empty.lead}>
             {add}
@@ -80,7 +81,7 @@ export default async function PlansPage(props: PageProps<"/admin/sales/plans">) 
             caption={text.tabs[kind]}
           />
         )}
-      </Card>
+      </TableCard>
       <p className={uiStyles.note}>
         {creatable === undefined
           ? text.readOnlyKind

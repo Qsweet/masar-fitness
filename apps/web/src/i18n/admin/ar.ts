@@ -177,7 +177,6 @@ export const adminAr = {
     you: "أنت",
     /** {count}: عدد الحسابات. */
     count: "عدد الحسابات: {count}",
-    manage: "إدارة",
     /** {name}: اسم الموظف، لقارئ الشاشة. */
     manageLabel: "إدارة حساب {name}",
   },

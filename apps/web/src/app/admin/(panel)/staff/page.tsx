@@ -1,7 +1,7 @@
 import { listStaff, type StaffAccount } from "@masar/db";
 import type { Metadata } from "next";
-import { Cell, DataTable } from "@/components/admin/ui/data-table";
-import { Badge, ButtonLink, Card, Ltr, PageHeader } from "@/components/admin/ui/kit";
+import { Cell, DataTable, RowLink, TableCard } from "@/components/admin/ui/data-table";
+import { Badge, ButtonLink, Ltr, PageHeader, uiStyles } from "@/components/admin/ui/kit";
 import { ADMIN_ROUTES, FALLBACK_TIMEZONE, staffMemberPath } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { formatDateTime } from "@/i18n/admin/format";
@@ -27,8 +27,14 @@ function StaffRow({ member, isSelf, timezone, dictionary }: RowProps) {
   const { columns } = staff;
   return (
     <tr>
-      <Cell label={columns.name} strong>
-        {member.displayName} {isSelf ? <Badge tone="accent">{staff.you}</Badge> : null}
+      <Cell label={columns.name}>
+        <RowLink
+          href={staffMemberPath(member.id)}
+          label={fill(staff.manageLabel, { name: member.displayName })}
+        >
+          {member.displayName}
+        </RowLink>{" "}
+        {isSelf ? <Badge tone="accent">{staff.you}</Badge> : null}
       </Cell>
       <Cell label={columns.email} muted>
         <Ltr>{member.email}</Ltr>
@@ -46,15 +52,6 @@ function StaffRow({ member, isSelf, timezone, dictionary }: RowProps) {
       </Cell>
       <Cell label={columns.lastLogin} muted nowrap>
         {member.lastLoginAt === null ? common.never : formatDateTime(member.lastLoginAt, timezone)}
-      </Cell>
-      <Cell label="" align="end">
-        <ButtonLink
-          href={staffMemberPath(member.id)}
-          size="small"
-          label={fill(staff.manageLabel, { name: member.displayName })}
-        >
-          {staff.manage}
-        </ButtonLink>
       </Cell>
     </tr>
   );
@@ -76,12 +73,14 @@ export default async function StaffPage() {
           {staff.add}
         </ButtonLink>
       </PageHeader>
-      <Card title={fill(staff.count, { count: formatNumber(members.length) })} flush>
-        <DataTable
-          caption={staff.title}
-          columns={Object.values(staff.columns)}
-          actionsLabel={staff.manage}
-        >
+      <TableCard
+        footer={
+          <p className={uiStyles.note}>
+            {fill(staff.count, { count: formatNumber(members.length) })}
+          </p>
+        }
+      >
+        <DataTable caption={staff.title} columns={Object.values(staff.columns)}>
           {members.map((member) => (
             <StaffRow
               key={member.id}
@@ -92,7 +91,7 @@ export default async function StaffPage() {
             />
           ))}
         </DataTable>
-      </Card>
+      </TableCard>
     </>
   );
 }

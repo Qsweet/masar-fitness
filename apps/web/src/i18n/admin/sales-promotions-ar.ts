@@ -5,8 +5,6 @@ export const salesPromotionsAr = {
   add: "أنشئ عرضًا",
   tabsLabel: "حالات العروض",
   all: "الكل",
-  /** {label}: اسم التبويب. {count}: عدد العروض فيه. */
-  tabCount: "{label} ({count})",
   columns: {
     name: "الاسم",
     code: "الرمز",

@@ -2,10 +2,10 @@ import { getSalesSettings, listPromotionsWithUsage } from "@masar/db";
 import { hasPermission } from "@masar/domain";
 import type { Metadata } from "next";
 import { PromotionsTable } from "@/components/admin/sales/promotions-table";
-import { ButtonLink, Card, EmptyState, PageHeader, Tabs } from "@/components/admin/ui/kit";
+import { TableCard } from "@/components/admin/ui/data-table";
+import { ButtonLink, EmptyState, PageHeader, Tabs } from "@/components/admin/ui/kit";
 import { ADMIN_ROUTES } from "@/config/admin";
 import { getAdminDictionary } from "@/i18n/admin";
-import { fill } from "@/i18n/fill";
 import { formatNumber } from "@/i18n/format";
 import { requireStaff } from "@/server/admin/guard";
 import {
@@ -43,10 +43,8 @@ export default async function PromotionsPage(props: PageProps<"/admin/sales/prom
   const shown = rowsOfTab(rows, tab);
   const counts = countByState(rows);
   const label = (id: PromotionTab): string =>
-    fill(text.tabCount, {
-      label: id === "all" ? text.all : sales.statuses.promotionState[id],
-      count: formatNumber(id === "all" ? rows.length : counts[id]),
-    });
+    id === "all" ? text.all : sales.statuses.promotionState[id];
+  const count = (id: PromotionTab): string => formatNumber(id === "all" ? rows.length : counts[id]);
   const add = hasPermission(staff.role, "promotions.write") ? (
     <ButtonLink href={ADMIN_ROUTES.promotionsNew} variant="primary">
       {text.add}
@@ -60,9 +58,14 @@ export default async function PromotionsPage(props: PageProps<"/admin/sales/prom
       <Tabs
         label={text.tabsLabel}
         current={tab}
-        tabs={PROMOTION_TABS.map((id) => ({ id, label: label(id), href: tabHref(id) }))}
+        tabs={PROMOTION_TABS.map((id) => ({
+          id,
+          label: label(id),
+          href: tabHref(id),
+          count: count(id),
+        }))}
       />
-      <Card flush>
+      <TableCard>
         {shown.length === 0 ? (
           <EmptyState
             icon="promotions"
@@ -79,7 +82,7 @@ export default async function PromotionsPage(props: PageProps<"/admin/sales/prom
             caption={text.title}
           />
         )}
-      </Card>
+      </TableCard>
     </>
   );
 }

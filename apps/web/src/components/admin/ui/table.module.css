@@ -160,6 +160,7 @@
 
 .line {
   display: block;
+  overflow-wrap: anywhere;
 }
 
 @media (width < 40rem) {
@@ -201,6 +202,11 @@
     padding: 0.3rem 0;
     border-bottom: 0;
     text-align: end;
+  }
+
+  .table td > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .table td::before {

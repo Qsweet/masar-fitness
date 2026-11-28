@@ -8,8 +8,8 @@ import {
 } from "@masar/db";
 import type { Metadata } from "next";
 import { AuditFilters } from "@/components/admin/audit-filters";
-import { Cell, DataTable, tableStyles } from "@/components/admin/ui/data-table";
-import { Card, EmptyState, PageHeader } from "@/components/admin/ui/kit";
+import { Cell, DataTable, TableCard, tableStyles } from "@/components/admin/ui/data-table";
+import { EmptyState, PageHeader } from "@/components/admin/ui/kit";
 import { Pagination } from "@/components/admin/ui/pagination";
 import { ADMIN_ROUTES, AUDIT_PAGE_SIZE, FALLBACK_TIMEZONE } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
@@ -129,8 +129,20 @@ export default async function AuditPage(props: PageProps<"/admin/audit">) {
   return (
     <>
       <PageHeader title={audit.title} description={audit.lead} />
-      <AuditFilters text={audit} entityType={entityType} actorKind={actorKind} />
-      <Card flush>
+      <TableCard
+        toolbar={<AuditFilters text={audit} entityType={entityType} actorKind={actorKind} />}
+        footer={
+          log.total === 0 ? undefined : (
+            <AuditPagination
+              text={audit}
+              page={page}
+              shown={rows.length}
+              total={log.total}
+              filters={{ entity: entityType, actor: actorKind }}
+            />
+          )
+        }
+      >
         {rows.length === 0 ? (
           <EmptyState icon="audit" title={audit.emptyTitle} description={audit.emptyLead} />
         ) : (
@@ -142,16 +154,7 @@ export default async function AuditPage(props: PageProps<"/admin/audit">) {
             <AuditRows rows={rows} timezone={club?.timezone ?? FALLBACK_TIMEZONE} />
           </DataTable>
         )}
-      </Card>
-      {log.total === 0 ? null : (
-        <AuditPagination
-          text={audit}
-          page={page}
-          shown={rows.length}
-          total={log.total}
-          filters={{ entity: entityType, actor: actorKind }}
-        />
-      )}
+      </TableCard>
     </>
   );
 }

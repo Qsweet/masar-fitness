@@ -45,7 +45,9 @@ async function shootStates(page: Page, name: string, path: string): Promise<void
     await page.waitForLoadState("networkidle");
     await settleAnimations(page);
     // نقل التركيز عند التركيب قد يمرّر الصفحة؛ اللقطة الكاملة تبدأ من أعلاها
-    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );

@@ -28,6 +28,7 @@ const purchase: PurchaseContext = {
   clientIp: "203.0.113.9",
   userAgent: "Mozilla/5.0 Test",
   pageUrl: "https://masar.test/checkout/six-months",
+  purgedAt: null,
 };
 
 const base: Omit<PurchaseInput, "config"> = {
@@ -151,6 +152,27 @@ describe("بانيات الشراء", () => {
       properties: { order_id: "MSR-0000042", content_type: "product" },
     });
     expect(built.body).not.toContain("server-token-1234");
+  });
+
+  it("مفتاح «إرسال الجوال المجزّأ» مطفأ: لا جوال، والبقية كما هي (القرار 90-3)", () => {
+    const off = { sendHashedPhone: false } as const;
+    const meta = request(
+      buildPurchase("meta", { ...base, config: { pixelId: "1234567890", ...off } }),
+    );
+    const snap = request(
+      buildPurchase("snap", {
+        ...base,
+        config: { pixelId: "0b1f7c2e-1234-4abc-9def-0123456789ab", ...off },
+      }),
+    );
+    const tiktok = request(
+      buildPurchase("tiktok", { ...base, config: { pixelId: "C1ABCDEFGHIJ", ...off } }),
+    );
+    for (const built of [meta, snap, tiktok]) {
+      expect(built.body).not.toContain(sha256Hex("966512345678"));
+      expect(built.body).not.toContain(sha256Hex(PHONE));
+      expect(built.body).toContain(sha256Hex(purchase.customerId));
+    }
   });
 
   it("الإعداد الناقص لا يُرسل", () => {

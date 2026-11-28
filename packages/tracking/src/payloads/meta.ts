@@ -42,7 +42,7 @@ function fbcOf(input: PurchaseInput): string | null {
 
 function userData(input: PurchaseInput) {
   const { purchase } = input;
-  const phone = hashedPhoneDigits(purchase);
+  const phone = hashedPhoneDigits("meta", input);
   return compact({
     ph: phone === null ? null : [phone],
     external_id: [hashedExternalId(purchase)],

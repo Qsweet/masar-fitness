@@ -3,8 +3,10 @@ import {
   majorNumber,
   phoneDigitsForHash,
   phoneE164ForHash,
+  sendsHashedPhone,
   type AttributionParam,
   type IntegrationConfig,
+  type ServerProvider,
 } from "@masar/domain";
 import { sha256Hex } from "../hash";
 import type { TrackingRequest } from "../transport";
@@ -72,16 +74,16 @@ export function touchValue(
   return null;
 }
 
-/** جوال ميتا وسناب مجزّأً (أرقام بلا +)، أو null. */
-export function hashedPhoneDigits(purchase: PurchaseContext): string | null {
-  const digits = phoneDigitsForHash(purchase.phoneE164);
-  return digits === null ? null : sha256Hex(digits);
+/** جوال ميتا وسناب مجزّأً (أرقام بلا +)، أو null إن أطفأه المالك لهذه المنصة (القرار 90-3). */
+export function hashedPhoneDigits(provider: ServerProvider, input: PurchaseInput): string | null {
+  const digits = phoneDigitsForHash(input.purchase.phoneE164);
+  return digits === null || !sendsHashedPhone(provider, input.config) ? null : sha256Hex(digits);
 }
 
-/** جوال جوجل وتيك توك مجزّأً (E.164 بـ+)، أو null. */
-export function hashedPhoneE164(purchase: PurchaseContext): string | null {
-  const e164 = phoneE164ForHash(purchase.phoneE164);
-  return e164 === null ? null : sha256Hex(e164);
+/** جوال تيك توك مجزّأً (E.164 بـ+)، أو null إن أطفأه المالك. */
+export function hashedPhoneE164(provider: ServerProvider, input: PurchaseInput): string | null {
+  const e164 = phoneE164ForHash(input.purchase.phoneE164);
+  return e164 === null || !sendsHashedPhone(provider, input.config) ? null : sha256Hex(e164);
 }
 
 /** معرّف العميل عندنا مجزّأً: القيمة نفسها لكل المنصات، بلا جوال. */

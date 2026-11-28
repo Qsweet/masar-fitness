@@ -30,7 +30,7 @@ function headers(secret: string) {
 function user(input: PurchaseInput) {
   const { purchase } = input;
   return compact({
-    phone: hashedPhoneE164(purchase),
+    phone: hashedPhoneE164("tiktok", input),
     external_id: hashedExternalId(purchase),
     ttclid: touchValue(purchase, "ttclid")?.value ?? null,
     ttp: vendorCookie(purchase.ttp ?? undefined),

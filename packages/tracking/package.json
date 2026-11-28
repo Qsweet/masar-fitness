@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "tracking:dispatch": "tsx scripts/dispatch.ts"
+    "tracking:dispatch": "tsx scripts/dispatch.ts",
+    "tracking:purge": "tsx scripts/purge.ts"
   },
   "dependencies": {
     "@masar/db": "workspace:*",

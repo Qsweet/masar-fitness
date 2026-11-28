@@ -32,7 +32,7 @@ function endpoint(pixelId: string, secret: string, validate: boolean): string {
 
 function userData(input: PurchaseInput) {
   const { purchase } = input;
-  const phone = hashedPhoneDigits(purchase);
+  const phone = hashedPhoneDigits("snap", input);
   return compact({
     ph: phone === null ? null : [phone],
     external_id: hashedExternalId(purchase),

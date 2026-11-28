@@ -29,7 +29,7 @@ export function watchProblems(page: Page): string[] {
  * تغيير المقاس ينقل الشريط الجانبي بين الدرج والعمود الثابت بحركة؛ اللقطة قبل نهايتها تلتقطه غائبًا.
  * تُنتظر الحركات المنتهية وحدها (المتكررة بلا نهاية لا تنتهي).
  */
-async function settleAnimations(page: Page): Promise<void> {
+export async function settleAnimations(page: Page): Promise<void> {
   await page.evaluate(() =>
     Promise.all(
       document

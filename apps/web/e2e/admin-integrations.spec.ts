@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import type { Db } from "@masar/db";
 import { expect, test, type Page } from "@playwright/test";
 import { formAlert, newClub, newStaff, setTheme, signIn, TEXT } from "./admin-support";
+import { settleAnimations } from "./admin-shots-support";
 import { testDb } from "./payments-support";
 
 /**
@@ -26,6 +27,8 @@ test.afterAll(async () => {
 
 async function expectAccessible(page: Page, name: string): Promise<void> {
   await expect(page).toHaveTitle(/\S/);
+  // ما بقي من حركات الصفحة بعد الإجراء ينتهي أولًا: axe يقيس الأهداف في مواضعها المستقرة (target-size)
+  await settleAnimations(page);
   const results = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
   expect(
     results.violations.map(

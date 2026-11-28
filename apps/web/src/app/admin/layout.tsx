@@ -9,7 +9,7 @@ import {
   parseAdminTheme,
 } from "@/config/admin";
 import { ADMIN_DEFAULT_LOCALE, adminDirection, getAdminDictionary } from "@/i18n/admin";
-import { adminFontVariables } from "../fonts";
+import { adminFontVariables } from "./admin-fonts";
 import "../globals.css";
 import "../patterns.css";
 import "./admin.css";

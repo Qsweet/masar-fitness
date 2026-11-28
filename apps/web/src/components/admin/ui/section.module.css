@@ -56,6 +56,7 @@
 
 .panel {
   display: grid;
+  container-type: inline-size;
   gap: var(--a-4h);
   min-width: 0;
   max-width: 48rem;

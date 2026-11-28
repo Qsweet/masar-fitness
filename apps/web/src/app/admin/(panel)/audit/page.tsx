@@ -150,6 +150,7 @@ export default async function AuditPage(props: PageProps<"/admin/audit">) {
             caption={audit.title}
             columns={Object.values(audit.columns)}
             testId="audit-table"
+            sticky
           >
             <AuditRows rows={rows} timezone={club?.timezone ?? FALLBACK_TIMEZONE} />
           </DataTable>

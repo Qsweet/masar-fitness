@@ -1,7 +1,7 @@
 /*
  * جدول البيانات v2: خطوط شعرية بلا تظليل متناوب، وتحويم على الصف، وارتفاع صف من رمز الكثافة. لا يتجاوز
- * الجدول عرض الشاشة أبدًا: التمرير الأفقي داخل البطاقة. من 80rem يُقصّ بدل التمرير (الجداول تتسع هناك)،
- * فيلتصق الرأس تحت الشريط العلوي أثناء تمرير الصفحة. تحت 640px كل صف بطاقة بتسميات أو سطران.
+ * الجدول عرض الشاشة أبدًا: التمرير الأفقي داخل البطاقة. جدول الصفحة الكاملة (`sticky`) من 80rem يُقصّ
+ * بدل التمرير (يتسع هناك بعرض الصفحة)، فيلتصق رأسه تحت الشريط العلوي أثناء تمرير الصفحة. تحت 640px كل صف بطاقة بتسميات أو سطران.
  */
 .wrap {
   min-width: 0;
@@ -10,11 +10,11 @@
 }
 
 @media (width >= 80rem) {
-  .wrap {
+  .sticky {
     overflow-x: clip;
   }
 
-  .table th {
+  .sticky .table th {
     top: var(--a-topbar);
   }
 }
@@ -137,6 +137,15 @@
 
 .card > .wrap:first-child .table th:last-child {
   border-start-end-radius: var(--a-radius-lg);
+}
+
+.title {
+  padding: var(--a-4) var(--a-5);
+  border-bottom: 1px solid var(--a-border);
+  font-family: var(--a-font-display);
+  font-size: var(--a-fs-h2);
+  font-weight: var(--a-fw-display);
+  line-height: var(--a-lh-title);
 }
 
 .toolbar {

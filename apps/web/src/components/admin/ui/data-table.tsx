@@ -38,6 +38,8 @@ interface DataTableProps {
    * يختفي على الهاتف (يبقى في صفحة التفصيل).
    */
   readonly compact?: boolean;
+  /** جدول الصفحة كلها: رأسه يلتصق تحت الشريط العلوي على الشاشة الواسعة. */
+  readonly sticky?: boolean;
   readonly children: ReactNode;
 }
 
@@ -51,10 +53,11 @@ export function DataTable({
   actionsLabel,
   testId,
   compact,
+  sticky,
   children,
 }: DataTableProps) {
   return (
-    <div className={styles.wrap}>
+    <div className={cx(styles.wrap, sticky === true && styles.sticky)}>
       <table className={cx(styles.table, compact === true && styles.compact)} data-testid={testId}>
         <caption>{caption}</caption>
         <thead>
@@ -139,6 +142,8 @@ export function RowLink({ href, label, children }: RowLinkProps) {
 }
 
 interface TableCardProps {
+  /** عنوان البطاقة حين لا يكون الجدول محتوى الصفحة كله (طلبات العميل). */
+  readonly title?: string;
   /** شريط الأدوات فوق الجدول (بحث، تصفية). */
   readonly toolbar?: ReactNode;
   /** أسفل الجدول (الترقيم). */
@@ -147,9 +152,10 @@ interface TableCardProps {
 }
 
 /** بطاقة الجدول: شريط الأدوات ثم الجدول أو حالته الفارغة ثم الترقيم، بخطوط شعرية بينها. */
-export function TableCard({ toolbar, footer, children }: TableCardProps) {
+export function TableCard({ title, toolbar, footer, children }: TableCardProps) {
   return (
     <section className={styles.card}>
+      {title === undefined ? null : <h2 className={styles.title}>{title}</h2>}
       {toolbar === undefined ? null : <div className={styles.toolbar}>{toolbar}</div>}
       {children}
       {footer === undefined ? null : <div className={styles.footer}>{footer}</div>}

@@ -319,6 +319,7 @@
   display: grid;
   gap: var(--a-4);
   padding: var(--a-5);
+  container-type: inline-size;
 }
 
 @media (width < 40rem) {
@@ -470,7 +471,8 @@
   overflow-wrap: anywhere;
 }
 
-@media (width >= 40rem) {
+/* التسمية بجانب القيمة حين تتسع الحاوية (بطاقة كاملة أو لوحة قسم)، وفوقها في العمود الجانبي الضيق */
+@container (width >= 30rem) {
   .fact {
     grid-template-columns: 11rem minmax(0, 1fr);
     align-items: baseline;
@@ -824,4 +826,36 @@
 
 .formTop:empty:focus-visible {
   outline: none;
+}
+
+/* تخطيط التفصيل: رئيسي مرن وجانبي 22.5rem من 64rem */
+.detail {
+  display: grid;
+  gap: var(--a-5);
+  min-width: 0;
+}
+
+.detailMain,
+.detailAside {
+  display: grid;
+  align-content: start;
+  gap: var(--a-5);
+  min-width: 0;
+}
+
+@media (width >= 64rem) {
+  .detail {
+    grid-template-columns: minmax(0, 1fr) 22.5rem;
+    align-items: start;
+  }
+
+  .detailMain {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .detailAside {
+    grid-row: 1;
+    grid-column: 2;
+  }
 }

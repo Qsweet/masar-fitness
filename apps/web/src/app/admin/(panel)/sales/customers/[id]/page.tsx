@@ -10,8 +10,9 @@ import {
 import { OrdersTable } from "@/components/admin/sales/orders-table";
 import { RevealPhone } from "@/components/admin/sales/reveal-phone";
 import salesStyles from "@/components/admin/sales/sales.module.css";
-import { Card, EmptyState, Facts, Ltr, PageHeader } from "@/components/admin/ui/kit";
-import { CUSTOMER_ORDERS_SHOWN } from "@/config/admin";
+import { TableCard } from "@/components/admin/ui/data-table";
+import { Card, DetailLayout, EmptyState, Facts, Ltr, PageHeader } from "@/components/admin/ui/kit";
+import { ADMIN_ROUTES, CUSTOMER_ORDERS_SHOWN } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { formatDateTime } from "@/i18n/admin/format";
 import { isUuid } from "@/server/admin/form";
@@ -75,28 +76,39 @@ export default async function CustomerPage(props: PageProps<"/admin/sales/custom
   ) : null;
   return (
     <>
-      <PageHeader title={text.title} />
-      <Card title={text.facts}>
-        <div className={salesStyles.stack}>
-          <Facts items={customerFacts(customer, text, reveal)} />
-          <p className={salesStyles.note}>{text.nameNote}</p>
-        </div>
-      </Card>
-      <Card title={text.orders} flush>
-        {orders.rows.length === 0 ? (
-          <EmptyState icon="orders" title={text.ordersEmptyTitle} />
-        ) : (
-          <OrdersTable
-            rows={orders.rows}
-            sales={sales}
-            now={now}
-            timezone={customer.timeZone}
-            caption={text.orders}
-          />
-        )}
-      </Card>
-      <CustomerMemberships customer={customer} sales={sales} />
-      <CustomerAssessments customer={customer} sales={sales} />
+      <PageHeader
+        back={{ href: ADMIN_ROUTES.customers, label: sales.customers.title }}
+        title={text.title}
+      />
+      <DetailLayout
+        aside={
+          <Card title={text.facts}>
+            <div className={salesStyles.stack}>
+              <Facts items={customerFacts(customer, text, reveal)} />
+              <p className={salesStyles.note}>{text.nameNote}</p>
+            </div>
+          </Card>
+        }
+        main={
+          <>
+            <TableCard title={text.orders}>
+              {orders.rows.length === 0 ? (
+                <EmptyState icon="orders" title={text.ordersEmptyTitle} />
+              ) : (
+                <OrdersTable
+                  rows={orders.rows}
+                  sales={sales}
+                  now={now}
+                  timezone={customer.timeZone}
+                  caption={text.orders}
+                />
+              )}
+            </TableCard>
+            <CustomerMemberships customer={customer} sales={sales} />
+            <CustomerAssessments customer={customer} sales={sales} />
+          </>
+        }
+      />
     </>
   );
 }

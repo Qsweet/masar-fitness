@@ -148,6 +148,7 @@ export default async function OrdersPage(props: PageProps<"/admin/sales/orders">
             now={now}
             timezone={timezone}
             caption={text.title}
+            page
           />
         )}
       </TableCard>

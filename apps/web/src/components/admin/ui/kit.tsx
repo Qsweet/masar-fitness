@@ -226,6 +226,24 @@ export function Tabs({ label, current, tabs }: TabsProps) {
   );
 }
 
+interface DetailLayoutProps {
+  readonly main: ReactNode;
+  readonly aside: ReactNode;
+}
+
+/**
+ * تخطيط التفصيل (ADMIN_REDESIGN §3.4، «1 + 360px»): عمود رئيسي مرن وعمود جانبي ثابت في جهة النهاية
+ * (البيانات والخط الزمني). تحت 64rem عمود واحد: الجانبي أولًا لأنه هوية الكيان.
+ */
+export function DetailLayout({ main, aside }: DetailLayoutProps) {
+  return (
+    <div className={styles.detail}>
+      <div className={styles.detailAside}>{aside}</div>
+      <div className={styles.detailMain}>{main}</div>
+    </div>
+  );
+}
+
 /** شبكة بطاقات: عمودان على الشاشة الواسعة، فلا تتراكم بطاقات قصيرة بعرض الصفحة كله. */
 export function CardGrid({ children }: { readonly children: ReactNode }) {
   return <div className={styles.cardGrid}>{children}</div>;

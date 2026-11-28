@@ -14,16 +14,16 @@ import {
 import { OrderFacts, OrderTotals } from "@/components/admin/sales/order-summary";
 import { OrderTimeline } from "@/components/admin/sales/order-timeline";
 import { RevealPhone } from "@/components/admin/sales/reveal-phone";
-import salesStyles from "@/components/admin/sales/sales.module.css";
 import {
   Alert,
   ButtonLink,
   CardGrid,
+  DetailLayout,
   Notice,
   noticeText,
   PageHeader,
 } from "@/components/admin/ui/kit";
-import { orderCancelPath, orderSettlePath } from "@/config/admin";
+import { ADMIN_ROUTES, orderCancelPath, orderSettlePath } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import { requireStaff } from "@/server/admin/guard";
@@ -72,14 +72,22 @@ interface AsideProps {
 }
 
 /** العمود المجاور لبيانات الطلب: المجاميع، ثم الدفع، ثم الاشتراك إن وُجد. */
-function OrderAside({ detail, dictionary, names }: AsideProps) {
+/** المجاميع والدفع جنبًا إلى جنب، ثم الاشتراك الناتج. */
+function OrderMoney({ detail, dictionary, names }: AsideProps) {
   const { sales, audit } = dictionary;
   return (
-    <div className={salesStyles.stack}>
-      <OrderTotals detail={detail} sales={sales} />
-      <OrderPayment detail={detail} sales={sales} names={names} unknownStaff={audit.unknownStaff} />
+    <>
+      <CardGrid>
+        <OrderTotals detail={detail} sales={sales} />
+        <OrderPayment
+          detail={detail}
+          sales={sales}
+          names={names}
+          unknownStaff={audit.unknownStaff}
+        />
+      </CardGrid>
       <OrderMembership detail={detail} sales={sales} />
-    </div>
+    </>
   );
 }
 
@@ -111,6 +119,7 @@ export default async function OrderPage(props: PageProps<"/admin/sales/orders/[i
   return (
     <>
       <PageHeader
+        back={{ href: ADMIN_ROUTES.orders, label: sales.orders.title }}
         title={fill(text.title, { reference: order.reference })}
         badge={<OrderStatusBadge status={order.effectiveStatus} statuses={sales.statuses} />}
       >
@@ -118,27 +127,32 @@ export default async function OrderPage(props: PageProps<"/admin/sales/orders/[i
       </PageHeader>
       <Notice text={noticeText(orderNoticeCode(query.done, detail), dictionary)} />
       {waiting ? <Alert tone="info">{text.liveAttempt}</Alert> : null}
-      <CardGrid>
-        {/* حاوية: البطاقة بارتفاعها لا بارتفاع العمود المجاور */}
-        <div>
-          <OrderFacts
-            detail={detail}
-            sales={sales}
-            reveal={reveal}
-            showCustomerLink={hasPermission(staff.role, "customers.read")}
-          />
-        </div>
-        <OrderAside detail={detail} dictionary={dictionary} names={names} />
-      </CardGrid>
-      <OrderItems order={order} sales={sales} />
-      <OrderDiscounts order={order} sales={sales} />
-      <OrderAttempts detail={detail} dictionary={dictionary} />
-      <OrderIncidents detail={detail} sales={sales} />
-      <OrderRefunds detail={detail} sales={sales} />
-      <OrderTimeline
-        events={timelineEvents(detail.timeline, names, dictionary)}
-        text={sales.orders.timeline}
-        timezone={order.timeZone}
+      <DetailLayout
+        aside={
+          <>
+            <OrderFacts
+              detail={detail}
+              sales={sales}
+              reveal={reveal}
+              showCustomerLink={hasPermission(staff.role, "customers.read")}
+            />
+            <OrderTimeline
+              events={timelineEvents(detail.timeline, names, dictionary)}
+              text={sales.orders.timeline}
+              timezone={order.timeZone}
+            />
+          </>
+        }
+        main={
+          <>
+            <OrderItems order={order} sales={sales} />
+            <OrderMoney detail={detail} dictionary={dictionary} names={names} />
+            <OrderDiscounts order={order} sales={sales} />
+            <OrderAttempts detail={detail} dictionary={dictionary} />
+            <OrderIncidents detail={detail} sales={sales} />
+            <OrderRefunds detail={detail} sales={sales} />
+          </>
+        }
       />
     </>
   );

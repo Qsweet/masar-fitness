@@ -82,7 +82,7 @@ OnUnitActiveSec=1min
 WantedBy=timers.target
 ```
 
-ثم `systemctl enable --now masar-tracking-dispatch.timer`. كل دورة سطر `{"event":"tracking.dispatch","claimed":…,"sent":…,"retried":…,"dead":…,"skipped":…}` في `journalctl -u masar-tracking-dispatch`. مرسِلان معًا لا يأخذان السطر نفسه (`SKIP LOCKED` ومهلة حجز خمس دقائق). **تدوير `ADMIN_SECRET_KEY` يُبطل مفاتيح المنصات المحفوظة:** يعيد المالك إدخالها من «الربط والقياس»، وما في الطابور حتى ذلك يُسجَّل «المفتاح لا يُفك». `TRACKING_TRANSPORT=fake` لا يرسل شيئًا ولا يُقبل إلا على عنوان الجهاز (اختبارات المتصفح).
+ثم `systemctl enable --now masar-tracking-dispatch.timer`. كل دورة سطر `{"event":"tracking.dispatch","claimed":…,"sent":…,"retried":…,"dead":…,"skipped":…}` في `journalctl -u masar-tracking-dispatch`. مرسِلان معًا لا يأخذان السطر نفسه (`SKIP LOCKED` ومهلة حجز أطول من أسوأ زمن للدفعة مع رمز حجز، القرار 89-2). **تدوير `ADMIN_SECRET_KEY` يُبطل مفاتيح المنصات المحفوظة:** يعيد المالك إدخالها من «الربط والقياس»، وما في الطابور حتى ذلك يُسجَّل «المفتاح لا يُفك». `TRACKING_TRANSPORT=fake` لا يرسل شيئًا ولا يُقبل إلا على عنوان الجهاز (اختبارات المتصفح).
 
 ### تفريغ معرّفات القياس (القرار 90-6)
 

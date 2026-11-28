@@ -103,7 +103,6 @@ function LatestCard({
           <CardLink href={releasePath(latest.id)}>{text.overview.open}</CardLink>
         )
       }
-      narrow
     >
       {latest === null ? (
         <p>{text.overview.noRelease}</p>

@@ -82,7 +82,7 @@ interface CardProps {
   readonly action?: ReactNode;
   /** المحتوى يلامس حواف البطاقة (جدول). */
   readonly flush?: boolean;
-  /** محتوى بعرض نموذج. */
+  /** بطاقة بعرض نموذج (صفحات التأكيد): البطاقة نفسها تضيق، لا محتواها داخل بطاقة بعرض الصفحة. */
   readonly narrow?: boolean;
   readonly accent?: boolean;
   readonly children: ReactNode;
@@ -90,7 +90,13 @@ interface CardProps {
 
 export function Card({ title, description, action, flush, narrow, accent, children }: CardProps) {
   return (
-    <section className={cx(styles.card, accent === true && styles.accentCard)}>
+    <section
+      className={cx(
+        styles.card,
+        accent === true && styles.accentCard,
+        narrow === true && styles.narrowCard,
+      )}
+    >
       {title === undefined ? null : (
         <div className={styles.cardHead}>
           <div className={styles.cardTitleRow}>
@@ -100,9 +106,7 @@ export function Card({ title, description, action, flush, narrow, accent, childr
           {description === undefined ? null : <p className={styles.cardLead}>{description}</p>}
         </div>
       )}
-      <div className={cx(styles.cardBody, flush === true && styles.cardFlush)}>
-        {narrow === true ? <div className={styles.narrow}>{children}</div> : children}
-      </div>
+      <div className={cx(styles.cardBody, flush === true && styles.cardFlush)}>{children}</div>
     </section>
   );
 }

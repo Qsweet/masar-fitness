@@ -336,10 +336,9 @@
   padding: 0;
 }
 
-.narrow {
-  display: grid;
-  gap: var(--a-4);
-  max-width: 28rem;
+.narrowCard {
+  width: 100%;
+  max-width: 42rem;
 }
 
 .accentCard {

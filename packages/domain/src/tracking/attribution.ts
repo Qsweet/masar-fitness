@@ -3,7 +3,16 @@
  * تُحدَّث مع كل وصول بحملة. قبل موافقة الإعلانات تُحفظ معاملات الحملة وصفحة الهبوط وحدهما؛ معرّفات النقر
  * الإعلانية لا تُحفظ إلا مع الموافقة. القيم من رابط يكتبه أي أحد، فلكل مفتاح حد طول ونمط، وما خالف يُسقط.
  */
-export const CLICK_ID_PARAMS = ["gclid", "gbraid", "wbraid", "fbclid", "ScCid", "ttclid"] as const;
+/** `twclid` معرّف نقر X (قالب X الرسمي: «the click-through URL parameter twclid»)، القرار 90-1. */
+export const CLICK_ID_PARAMS = [
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "fbclid",
+  "ScCid",
+  "ttclid",
+  "twclid",
+] as const;
 export const UTM_PARAMS = [
   "utm_source",
   "utm_medium",

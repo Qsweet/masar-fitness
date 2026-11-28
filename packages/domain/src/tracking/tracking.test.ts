@@ -29,12 +29,12 @@ describe("المنصات والفئات", () => {
   it("GTM بأي فئة، وGA4 تحليلات، والبقية إعلانات", () => {
     expect(providerCategories("gtm")).toEqual(["analytics", "ads"]);
     expect(providerCategories("ga4")).toEqual(["analytics"]);
-    for (const provider of ["google_ads", "meta", "snap", "tiktok"] as const) {
+    for (const provider of ["google_ads", "meta", "snap", "tiktok", "x"] as const) {
       expect(providerCategories(provider)).toEqual(["ads"]);
     }
   });
 
-  it("الخادمية أربع: لا Google Ads ولا GTM", () => {
+  it("الخادمية أربع: لا Google Ads ولا X ولا GTM", () => {
     expect(TRACKING_PROVIDERS.filter(isServerProvider)).toEqual(["ga4", "meta", "snap", "tiktok"]);
   });
 });
@@ -47,6 +47,7 @@ describe("المعرّفات العامة", () => {
     meta: { pixelId: "123456789012345" },
     snap: { pixelId: "0b1f7c2e-1234-4abc-9def-0123456789ab" },
     tiktok: { pixelId: "C1ABCDEFGHIJ2KLMNOPQ" },
+    x: { pixelId: "o8z5x", purchaseEventId: "tw-o8z5x-p1q2r" },
   } as const;
 
   it.each(TRACKING_PROVIDERS)("%s: المعرّف الصحيح يُقبل ويكمل الإعداد", (provider) => {

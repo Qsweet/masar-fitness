@@ -1,4 +1,4 @@
-import type { TrackingProvider } from "./providers";
+import { usesHashedPhone, type TrackingProvider } from "./providers";
 
 /**
  * المعرّفات العامة لكل منصة وأنماطها (ADMIN_A5_TRACKING §8). المعرّف يدخل رابط سكربت ونص CSP، فكل
@@ -10,10 +10,16 @@ export const TRACKING_FIELDS = [
   "conversionId",
   "conversionLabel",
   "pixelId",
+  "purchaseEventId",
+  "addToCartEventId",
+  "leadEventId",
 ] as const;
 export type TrackingField = (typeof TRACKING_FIELDS)[number];
 
-export type IntegrationConfig = Partial<Readonly<Record<TrackingField, string>>>;
+export type IntegrationConfig = Partial<Readonly<Record<TrackingField, string>>> & {
+  /** «إرسال الجوال المجزّأ» لمنصة تقبله (`usesHashedPhone`). الغائب مفعَّل (القرار 90-3). */
+  readonly sendHashedPhone?: boolean;
+};
 
 const PROVIDER_FIELDS: Readonly<Record<TrackingProvider, readonly TrackingField[]>> = {
   gtm: ["containerId"],
@@ -22,11 +28,19 @@ const PROVIDER_FIELDS: Readonly<Record<TrackingProvider, readonly TrackingField[
   meta: ["pixelId"],
   snap: ["pixelId"],
   tiktok: ["pixelId"],
+  x: ["pixelId", "purchaseEventId", "addToCartEventId", "leadEventId"],
 };
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+/** حقول لا يشترطها التفعيل: حدث X الذي لم يُنشئه المالك في Ads Manager لا يُرسل. */
+const OPTIONAL_FIELDS: ReadonlySet<TrackingField> = new Set(["addToCartEventId", "leadEventId"]);
 
-/** نمط كل حقل لكل منصة: `pixelId` يختلف بين ميتا (أرقام) وسناب (UUID) وتيك توك (رمز). */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+/** معرّف X Pixel: خمسة محارف (نمط قالب X الرسمي لـGTM: github.com/twitter/google-tag-manager-base-tag). */
+const X_PIXEL = /^[A-Za-z0-9]{5}$/;
+/** معرّف حدث X: ‎tw-<البكسل>-<الحدث>‎ (قالب X الرسمي للأحداث: github.com/twitter/google-tag-manager-event-tag). */
+const X_EVENT = /^(tw|TW)-([A-Za-z0-9]{5})-[A-Za-z0-9]{5}$/;
+
+/** نمط كل حقل لكل منصة: `pixelId` يختلف بين ميتا (أرقام) وسناب (UUID) وتيك توك (رمز) وX. */
 function patternOf(provider: TrackingProvider, field: TrackingField): RegExp {
   switch (field) {
     case "containerId":
@@ -39,14 +53,29 @@ function patternOf(provider: TrackingProvider, field: TrackingField): RegExp {
       return /^[A-Za-z0-9_-]{4,40}$/;
     case "pixelId":
       return pixelPattern(provider);
+    case "purchaseEventId":
+    case "addToCartEventId":
+    case "leadEventId":
+      return X_EVENT;
   }
 }
 
+const PIXEL_PATTERNS: Partial<Readonly<Record<TrackingProvider, RegExp>>> = {
+  snap: UUID,
+  tiktok: /^[A-Z0-9]{10,30}$/,
+  x: X_PIXEL,
+};
+/** ميتا (ومن لا نمط بكسل له): أرقام. */
+const NUMERIC_PIXEL = /^\d{8,20}$/;
+
 function pixelPattern(provider: TrackingProvider): RegExp {
-  if (provider === "snap") {
-    return UUID;
-  }
-  return provider === "tiktok" ? /^[A-Z0-9]{10,30}$/ : /^\d{8,20}$/;
+  return PIXEL_PATTERNS[provider] ?? NUMERIC_PIXEL;
+}
+
+/** معرّف حدث X لبكسل آخر: البكسل يقرأ الجزء الأوسط بكسلًا للحدث (`parseEventCodeId` في uwt.js). */
+function belongsToPixel(value: string, pixelId: string | undefined): boolean {
+  const pixel = X_EVENT.exec(value)?.[2];
+  return pixelId === undefined || pixel?.toLowerCase() === pixelId.toLowerCase();
 }
 
 /** رمز أحداث الاختبار (ميتا وتيك توك): حروف وأرقام فقط، يُرسل في الجسم لا في رابط. */
@@ -54,6 +83,10 @@ const TEST_EVENT_CODE = /^[A-Za-z0-9_-]{4,40}$/;
 
 export function fieldsOf(provider: TrackingProvider): readonly TrackingField[] {
   return PROVIDER_FIELDS[provider];
+}
+
+export function isOptionalField(field: TrackingField): boolean {
+  return OPTIONAL_FIELDS.has(field);
 }
 
 /** المنصات التي تقبل رمز أحداث اختبار في الجسم (§4.3)؛ GA4 وسناب لهما نقطة تحقق منفصلة. */
@@ -65,43 +98,69 @@ export function isValidTestEventCode(value: string): boolean {
   return TEST_EVENT_CODE.test(value);
 }
 
-export type ConfigIssue = "invalid" | "required";
+/** الجوال المجزّأ يخرج لهذه المنصة: تقبله، ولم يُطفئه المالك. */
+export function sendsHashedPhone(provider: TrackingProvider, config: IntegrationConfig): boolean {
+  return usesHashedPhone(provider) && config.sendHashedPhone !== false;
+}
+
+export type ConfigIssue = "invalid" | "required" | "pixel_mismatch";
 
 export interface ParsedConfig {
   readonly config: IntegrationConfig;
   readonly issues: Readonly<Partial<Record<TrackingField, ConfigIssue>>>;
 }
 
+function issueOf(
+  provider: TrackingProvider,
+  field: TrackingField,
+  value: string,
+  pixelId: string | undefined,
+): ConfigIssue | null {
+  if (!patternOf(provider, field).test(value)) {
+    return "invalid";
+  }
+  const eventField = provider === "x" && field !== "pixelId";
+  return !eventField || belongsToPixel(value, pixelId) ? null : "pixel_mismatch";
+}
+
 /**
  * يتحقق من حقول المنصة وحدها (ما سواها يُسقط). الفارغ مسموح للحفظ بلا تفعيل؛ مع التفعيل كل حقل
- * المنصة مطلوب، فلا يُحمَّل وسم بنصف إعداد.
+ * غير اختياري مطلوب، فلا يُحمَّل وسم بنصف إعداد. معرّف حدث X لبكسل آخر مرفوض.
  */
 export function parseIntegrationConfig(
   provider: TrackingProvider,
   raw: Readonly<Record<string, string>>,
   enabled: boolean,
 ): ParsedConfig {
+  const read = (field: TrackingField) =>
+    (Object.hasOwn(raw, field) ? (raw[field] ?? "") : "").trim();
+  // معرّف حدث X يُطابَق ببكسل صالح وحده؛ البكسل الخاطئ له خطؤه
+  const pixelId = X_PIXEL.test(read("pixelId")) ? read("pixelId") : undefined;
   const config: Partial<Record<TrackingField, string>> = {};
   const issues: Partial<Record<TrackingField, ConfigIssue>> = {};
   for (const field of fieldsOf(provider)) {
-    const value = (Object.hasOwn(raw, field) ? (raw[field] ?? "") : "").trim();
+    const value = read(field);
+    const issue = value === "" ? null : issueOf(provider, field, value, pixelId);
     if (value === "") {
-      if (enabled) {
+      if (enabled && !isOptionalField(field)) {
         issues[field] = "required";
       }
-    } else if (patternOf(provider, field).test(value)) {
+    } else if (issue === null) {
       config[field] = value;
     } else {
-      issues[field] = "invalid";
+      issues[field] = issue;
     }
   }
   return { config, issues };
 }
 
-/** إعداد محفوظ صالح للتحميل الآن: كل حقل المنصة موجود وبنمطه (القاعدة لا تُؤتمن على الشكل). */
+/** إعداد محفوظ صالح للتحميل الآن: كل حقل مطلوب موجود وبنمطه، والاختياري بنمطه إن وُجد. */
 export function isCompleteConfig(provider: TrackingProvider, config: IntegrationConfig): boolean {
   return fieldsOf(provider).every((field) => {
     const value = config[field];
-    return value !== undefined && patternOf(provider, field).test(value);
+    if (value === undefined) {
+      return isOptionalField(field);
+    }
+    return issueOf(provider, field, value, config.pixelId) === null;
   });
 }

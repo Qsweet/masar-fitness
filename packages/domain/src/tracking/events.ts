@@ -14,7 +14,8 @@ export const TRACK_EVENTS = [
 ] as const;
 export type TrackEvent = (typeof TRACK_EVENTS)[number];
 
-export type PixelProvider = Exclude<TrackingProvider, "gtm" | "ga4" | "google_ads">;
+/** منصات بأسماء أحداث قياسية ثابتة. X بلا أسماء: لكل حدث معرّف يُنشأ في Ads Manager (`ids.ts`). */
+export type PixelProvider = Exclude<TrackingProvider, "gtm" | "ga4" | "google_ads" | "x">;
 
 const PIXEL_NAMES: Readonly<Record<PixelProvider, Readonly<Record<TrackEvent, string>>>> = {
   meta: {

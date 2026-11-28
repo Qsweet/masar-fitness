@@ -29,6 +29,7 @@ const PROVIDER_FIELDS: Readonly<Record<TrackingProvider, readonly TrackingField[
   snap: ["pixelId"],
   tiktok: ["pixelId"],
   x: ["pixelId", "purchaseEventId", "addToCartEventId", "leadEventId"],
+  openai: ["pixelId"],
 };
 
 /** حقول لا يشترطها التفعيل: حدث X الذي لم يُنشئه المالك في Ads Manager لا يُرسل. */
@@ -60,10 +61,18 @@ function patternOf(provider: TrackingProvider, field: TrackingField): RegExp {
   }
 }
 
+/**
+ * Pixel ID لإعلانات ChatGPT: وثائق OpenAI لا تنشر صيغته (مثالها الوحيد مقطوع «134534…» في
+ * https://developers.openai.com/ads/api-reference/conversion-setup)، فالنمط محارف آمنة بطول محدود:
+ * القيمة تدخل نص سكربت ورابط `?pid=`، فلا محرف خارج هذا المدى (القرار 91).
+ */
+const OPENAI_PIXEL = /^[A-Za-z0-9_-]{6,64}$/;
+
 const PIXEL_PATTERNS: Partial<Readonly<Record<TrackingProvider, RegExp>>> = {
   snap: UUID,
   tiktok: /^[A-Z0-9]{10,30}$/,
   x: X_PIXEL,
+  openai: OPENAI_PIXEL,
 };
 /** ميتا (ومن لا نمط بكسل له): أرقام. */
 const NUMERIC_PIXEL = /^\d{8,20}$/;

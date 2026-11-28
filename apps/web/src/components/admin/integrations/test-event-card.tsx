@@ -1,6 +1,7 @@
 import type { ServerProvider } from "@masar/domain";
 import { AdminForm } from "@/components/admin/admin-form";
-import { Card } from "@/components/admin/ui/kit";
+import { SettingsSection } from "@/components/admin/ui/section";
+import { uiStyles } from "@/components/admin/ui/kit";
 import type { AdminDictionary } from "@/i18n/admin";
 import { sendTestEventAction } from "@/server/admin/actions/integrations";
 
@@ -14,7 +15,8 @@ export function TestEventCard({
 }) {
   const text = dictionary.integrations.test;
   return (
-    <Card title={text.title} description={`${text.lead} ${text.leadByProvider[provider]}`} narrow>
+    <SettingsSection title={text.title} description={text.leadByProvider[provider]}>
+      <p className={uiStyles.note}>{text.lead}</p>
       <AdminForm
         action={sendTestEventAction}
         labels={{ submit: text.submit, errors: dictionary.errors }}
@@ -22,6 +24,6 @@ export function TestEventCard({
       >
         <input type="hidden" name="provider" value={provider} />
       </AdminForm>
-    </Card>
+    </SettingsSection>
   );
 }

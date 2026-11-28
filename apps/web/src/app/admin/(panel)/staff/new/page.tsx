@@ -2,7 +2,8 @@ import { STAFF_ROLES } from "@masar/domain";
 import type { Metadata } from "next";
 import { AdminForm } from "@/components/admin/admin-form";
 import { SelectField, TextField } from "@/components/admin/ui/fields";
-import { Card, PageHeader } from "@/components/admin/ui/kit";
+import { PageHeader } from "@/components/admin/ui/kit";
+import { SettingsSection } from "@/components/admin/ui/section";
 import { MAX_EMAIL_INPUT_LENGTH, MAX_NAME_INPUT_LENGTH } from "@/config/admin";
 import { getAdminDictionary } from "@/i18n/admin";
 import { createStaffAction } from "@/server/admin/actions/staff";
@@ -25,7 +26,7 @@ export default async function NewStaffPage() {
   return (
     <>
       <PageHeader title={staffNew.title} description={staffNew.lead} />
-      <Card title={staffMember.details} narrow>
+      <SettingsSection title={staffMember.details} description={staffNew.detailsLead}>
         <AdminForm action={createStaffAction} labels={{ submit: staffNew.submit, errors }}>
           <TextField
             id="staff-name"
@@ -55,7 +56,7 @@ export default async function NewStaffPage() {
             options={options}
           />
         </AdminForm>
-      </Card>
+      </SettingsSection>
     </>
   );
 }

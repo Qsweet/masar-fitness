@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { StaffControls } from "@/components/admin/staff-controls";
+import { SettingsSection, SettingsStack } from "@/components/admin/ui/section";
 import {
   Alert,
   Badge,
@@ -119,14 +120,15 @@ export default async function StaffMemberPage(props: PageProps<"/admin/staff/[id
       {temporary === undefined ? null : (
         <TemporaryPassword staffId={member.id} password={temporary} text={staffMember} />
       )}
-      <Card title={staffMember.details}>
-        <Facts items={memberFacts({ member, timezone, now: new Date(), dictionary })} />
-      </Card>
-      {member.id === context.staff.id ? (
-        <Alert tone="info">{staffMember.selfNote}</Alert>
-      ) : (
-        <StaffControls member={member} dictionary={dictionary} />
-      )}
+      {member.id === context.staff.id ? <Alert tone="info">{staffMember.selfNote}</Alert> : null}
+      <SettingsStack>
+        <SettingsSection title={staffMember.details} description={staffMember.detailsLead}>
+          <Facts items={memberFacts({ member, timezone, now: new Date(), dictionary })} />
+        </SettingsSection>
+        {member.id === context.staff.id ? null : (
+          <StaffControls member={member} dictionary={dictionary} />
+        )}
+      </SettingsStack>
     </>
   );
 }

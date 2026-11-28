@@ -9,7 +9,7 @@ import {
 } from "@/server/admin/actions/staff";
 import { AdminForm, type AdminFormLabels } from "./admin-form";
 import { SelectField } from "./ui/fields";
-import { Card, CardGrid } from "./ui/kit";
+import { ActionRow, SettingsSection } from "./ui/section";
 
 interface StaffControlsProps {
   readonly member: StaffAccount;
@@ -20,14 +20,14 @@ function StaffId({ id }: { readonly id: string }) {
   return <input type="hidden" name="staffId" value={id} />;
 }
 
-/** أفعال المالك على حساب موظف آخر: الدور، وإعادة ضبط الخطوة الثانية وكلمة المرور، والحالة. */
+/** أفعال المالك على حساب موظف آخر: الدور، والأمن (الخطوة الثانية وكلمة المرور)، والحالة. */
 export function StaffControls({ member, dictionary }: StaffControlsProps) {
   const { staffMember: text, roles, errors } = dictionary;
   const labels = (submit: string): AdminFormLabels => ({ submit, errors });
   const disabled = member.status === "disabled";
   return (
-    <CardGrid>
-      <Card title={text.roleTitle} description={text.roleLead}>
+    <>
+      <SettingsSection title={text.roleTitle} description={text.roleLead}>
         <AdminForm action={changeRoleAction} labels={labels(text.roleSubmit)} inline>
           <StaffId id={member.id} />
           <SelectField
@@ -38,28 +38,34 @@ export function StaffControls({ member, dictionary }: StaffControlsProps) {
             options={STAFF_ROLES.map((role) => ({ value: role, label: roles[role] }))}
           />
         </AdminForm>
-      </Card>
-      <Card title={text.mfaTitle} description={text.mfaLead}>
-        <AdminForm
-          action={resetMfaAction}
-          labels={labels(text.mfaSubmit)}
-          variant="secondary"
-          inline
-        >
-          <StaffId id={member.id} />
-        </AdminForm>
-      </Card>
-      <Card title={text.passwordTitle} description={text.passwordLead}>
-        <AdminForm
-          action={resetPasswordAction}
-          labels={labels(text.passwordSubmit)}
-          variant="secondary"
-          inline
-        >
-          <StaffId id={member.id} />
-        </AdminForm>
-      </Card>
-      <Card title={text.statusTitle} description={disabled ? text.enableLead : text.disableLead}>
+      </SettingsSection>
+      <SettingsSection title={text.securityTitle} description={text.securityLead}>
+        <ActionRow title={text.mfaTitle} lead={text.mfaLead}>
+          <AdminForm
+            action={resetMfaAction}
+            labels={labels(text.mfaSubmit)}
+            variant="secondary"
+            inline
+          >
+            <StaffId id={member.id} />
+          </AdminForm>
+        </ActionRow>
+        <ActionRow title={text.passwordTitle} lead={text.passwordLead}>
+          <AdminForm
+            action={resetPasswordAction}
+            labels={labels(text.passwordSubmit)}
+            variant="secondary"
+            inline
+          >
+            <StaffId id={member.id} />
+          </AdminForm>
+        </ActionRow>
+      </SettingsSection>
+      <SettingsSection
+        title={text.statusTitle}
+        description={disabled ? text.enableLead : text.disableLead}
+        tone={disabled ? "default" : "danger"}
+      >
         <AdminForm
           action={setStatusAction}
           labels={labels(disabled ? text.enable : text.disable)}
@@ -69,7 +75,7 @@ export function StaffControls({ member, dictionary }: StaffControlsProps) {
           <StaffId id={member.id} />
           <input type="hidden" name="status" value={disabled ? "active" : "disabled"} />
         </AdminForm>
-      </Card>
-    </CardGrid>
+      </SettingsSection>
+    </>
   );
 }

@@ -4,15 +4,8 @@ import { notFound } from "next/navigation";
 import { ProviderForm } from "@/components/admin/integrations/provider-form";
 import { TestEventCard } from "@/components/admin/integrations/test-event-card";
 import { TrackingLog } from "@/components/admin/integrations/tracking-log";
-import {
-  Alert,
-  Badge,
-  ButtonLink,
-  Card,
-  Notice,
-  noticeText,
-  PageHeader,
-} from "@/components/admin/ui/kit";
+import { Alert, Badge, Notice, noticeText, PageHeader } from "@/components/admin/ui/kit";
+import { SettingsSection, SettingsStack } from "@/components/admin/ui/section";
 import { ADMIN_ROUTES, FALLBACK_TIMEZONE } from "@/config/admin";
 import { getAdminDictionary } from "@/i18n/admin";
 import { staffClub } from "@/server/admin/club";
@@ -46,6 +39,7 @@ export default async function IntegrationPage(props: Props) {
   return (
     <>
       <PageHeader
+        back={{ href: ADMIN_ROUTES.integrations, label: text.backToHub }}
         title={text.providers[provider].name}
         description={text.providers[provider].lead}
         badge={
@@ -53,32 +47,30 @@ export default async function IntegrationPage(props: Props) {
             {text.statuses[card.status]}
           </Badge>
         }
-      >
-        <ButtonLink href={ADMIN_ROUTES.integrations} variant="secondary">
-          {text.backToHub}
-        </ButtonLink>
-      </PageHeader>
+      ></PageHeader>
       <Notice text={noticeText(query.done, dictionary)} />
       {provider === "gtm" ? <Alert tone="info">{text.gtmContainerNote}</Alert> : null}
       {provider === "x" ? <Alert tone="info">{text.xContainerNote}</Alert> : null}
-      <Card title={text.form.title} narrow>
-        <ProviderForm
-          provider={provider}
-          view={card.view}
-          canWriteSecret={hasPermission(staff.role, "integrations.secrets")}
-          dictionary={dictionary}
-        />
-      </Card>
-      {isServerProvider(provider) ? (
-        <TestEventCard provider={provider} dictionary={dictionary} />
-      ) : null}
-      <Card title={text.log.title} description={text.log.lead} flush>
-        <TrackingLog
-          events={events}
-          timezone={club?.timezone ?? FALLBACK_TIMEZONE}
-          dictionary={dictionary}
-        />
-      </Card>
+      <SettingsStack>
+        <SettingsSection title={text.form.title} description={text.form.lead}>
+          <ProviderForm
+            provider={provider}
+            view={card.view}
+            canWriteSecret={hasPermission(staff.role, "integrations.secrets")}
+            dictionary={dictionary}
+          />
+        </SettingsSection>
+        {isServerProvider(provider) ? (
+          <TestEventCard provider={provider} dictionary={dictionary} />
+        ) : null}
+        <SettingsSection title={text.log.title} description={text.log.lead} flush>
+          <TrackingLog
+            events={events}
+            timezone={club?.timezone ?? FALLBACK_TIMEZONE}
+            dictionary={dictionary}
+          />
+        </SettingsSection>
+      </SettingsStack>
     </>
   );
 }

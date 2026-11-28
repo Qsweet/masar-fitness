@@ -3,16 +3,8 @@ import type { Metadata } from "next";
 import { AdminForm } from "@/components/admin/admin-form";
 import { NewPasswordFields } from "@/components/admin/password-fields";
 import { Cell, DataTable } from "@/components/admin/ui/data-table";
-import {
-  Badge,
-  Card,
-  Facts,
-  Ltr,
-  Notice,
-  noticeText,
-  PageHeader,
-  Tabs,
-} from "@/components/admin/ui/kit";
+import { Badge, Facts, Ltr, Notice, noticeText, PageHeader, Tabs } from "@/components/admin/ui/kit";
+import { SettingsSection, SettingsStack } from "@/components/admin/ui/section";
 import { SubmitButton } from "@/components/admin/ui/submit-button";
 import { ADMIN_ROUTES, FALLBACK_TIMEZONE } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
@@ -84,7 +76,7 @@ async function SessionsCard({ context }: { readonly context: StaffContext }) {
     staffClub(context.staff.clubId),
   ]);
   return (
-    <Card title={account.sessionsTitle} description={account.sessionsLead} flush>
+    <SettingsSection title={account.sessionsTitle} description={account.sessionsLead} flush>
       <DataTable
         caption={account.sessionsTitle}
         columns={Object.values(account.columns)}
@@ -101,7 +93,7 @@ async function SessionsCard({ context }: { readonly context: StaffContext }) {
           />
         ))}
       </DataTable>
-    </Card>
+    </SettingsSection>
   );
 }
 
@@ -109,7 +101,7 @@ function PasswordCard({ context }: { readonly context: StaffContext }) {
   const dictionary = getAdminDictionary();
   const { account, errors } = dictionary;
   return (
-    <Card title={account.passwordTitle} description={account.passwordLead} narrow>
+    <SettingsSection title={account.passwordTitle} description={account.passwordLead}>
       <AdminForm action={changePasswordAction} labels={{ submit: account.passwordSubmit, errors }}>
         <NewPasswordFields
           idPrefix="account"
@@ -118,7 +110,7 @@ function PasswordCard({ context }: { readonly context: StaffContext }) {
           withCurrent
         />
       </AdminForm>
-    </Card>
+    </SettingsSection>
   );
 }
 
@@ -134,15 +126,17 @@ export default async function AccountPage(props: PageProps<"/admin/account">) {
     <>
       <PageHeader title={account.title} description={account.lead} />
       <Notice text={noticeText(query.done, dictionary)} />
-      <Card title={account.profile}>
-        <Facts
-          items={[
-            [account.name, staff.displayName],
-            [account.email, <Ltr key="email">{staff.email}</Ltr>],
-            [account.role, roles[staff.role]],
-          ]}
-        />
-      </Card>
+      <SettingsStack>
+        <SettingsSection title={account.profile} description={account.profileLead}>
+          <Facts
+            items={[
+              [account.name, staff.displayName],
+              [account.email, <Ltr key="email">{staff.email}</Ltr>],
+              [account.role, roles[staff.role]],
+            ]}
+          />
+        </SettingsSection>
+      </SettingsStack>
       <Tabs
         label={account.tabsLabel}
         current={tab}
@@ -152,7 +146,13 @@ export default async function AccountPage(props: PageProps<"/admin/account">) {
           href: `${ADMIN_ROUTES.account}?tab=${id}`,
         }))}
       />
-      {tab === "sessions" ? <SessionsCard context={context} /> : <PasswordCard context={context} />}
+      <SettingsStack>
+        {tab === "sessions" ? (
+          <SessionsCard context={context} />
+        ) : (
+          <PasswordCard context={context} />
+        )}
+      </SettingsStack>
     </>
   );
 }

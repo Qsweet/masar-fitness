@@ -47,7 +47,7 @@ export default async function IntegrationPage(props: Props) {
             {text.statuses[card.status]}
           </Badge>
         }
-      ></PageHeader>
+      />
       <Notice text={noticeText(query.done, dictionary)} />
       {provider === "gtm" ? <Alert tone="info">{text.gtmContainerNote}</Alert> : null}
       {provider === "x" ? <Alert tone="info">{text.xContainerNote}</Alert> : null}

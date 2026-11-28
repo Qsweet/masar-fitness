@@ -35,6 +35,7 @@ export function OrdersFilters({ text, filter, today }: OrdersFiltersProps) {
         label={text.reference}
         defaultValue={filter.reference?.raw ?? ""}
         placeholder={text.referencePlaceholder}
+        dir="ltr"
         autoComplete="off"
         maxLength={REFERENCE_MAX_LENGTH}
         data-admin-search=""

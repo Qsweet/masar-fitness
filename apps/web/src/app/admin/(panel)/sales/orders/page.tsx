@@ -1,4 +1,9 @@
-import { countOrdersByTab, listOrders, type OrderListPage } from "@masar/db";
+import {
+  listOrders,
+  listOrdersWithCounts,
+  type OrderListPage,
+  type OrderTabCounts,
+} from "@masar/db";
 import { formatPlainDate, plainDateInZone } from "@masar/domain";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -59,29 +64,33 @@ function OrdersEmpty({
   );
 }
 
-/** عدّادات التبويبات في المدى نفسه؛ مدى غير صحيح بلا عدّادات. */
-function loadCounts(clubId: string, filter: OrdersFilter, now: Date) {
-  return filter.invalidRange
-    ? Promise.resolve(null)
-    : countOrdersByTab(getDb(), { clubId, from: filter.from, to: filter.to, now });
-}
-
 const NOTHING: OrderListPage = { rows: [], total: 0 };
 
-/** ما يُقرأ من القاعدة بحسب التصفية. البحث بالمرجع مطابقة تامة يتجاوز التبويب والمدى. */
-function loadOrders(clubId: string, filter: OrdersFilter, now: Date): Promise<OrderListPage> {
+interface Loaded {
+  readonly page: OrderListPage;
+  /** null حين لا معنى للعدّادات: بحث بالمرجع (يتجاوز التبويب والمدى) أو مدى غير صحيح. */
+  readonly counts: OrderTabCounts | null;
+}
+
+/**
+ * ما يُقرأ من القاعدة بحسب التصفية. البحث بالمرجع مطابقة تامة يتجاوز التبويب والمدى، فلا عدّادات معه.
+ * وإلا القائمة وعدّادات تبويباتها بحدّي مدى محسوبين مرة.
+ */
+async function loadOrders(clubId: string, filter: OrdersFilter, now: Date): Promise<Loaded> {
   const base = { clubId, pageSize: ORDERS_PAGE_SIZE, now };
   if (filter.reference !== null) {
     const reference = filter.reference.normalized;
-    return reference === null
-      ? Promise.resolve(NOTHING)
-      : listOrders(getDb(), { ...base, tab: "all", page: 1, reference });
+    const page =
+      reference === null
+        ? NOTHING
+        : await listOrders(getDb(), { ...base, tab: "all", page: 1, reference });
+    return { page, counts: null };
   }
   if (filter.invalidRange) {
-    return Promise.resolve(NOTHING);
+    return { page: NOTHING, counts: null };
   }
   const { tab, from, to, page } = filter;
-  return listOrders(getDb(), { ...base, tab, from, to, page });
+  return listOrdersWithCounts(getDb(), { ...base, tab, from, to, page });
 }
 
 interface PagerProps {
@@ -119,10 +128,7 @@ export default async function OrdersPage(props: PageProps<"/admin/sales/orders">
   const now = new Date();
   const today = plainDateInZone(now, timezone);
   const filter = parseOrdersQuery(query, today);
-  const [page, counts] = await Promise.all([
-    loadOrders(staff.clubId, filter, now),
-    loadCounts(staff.clubId, filter, now),
-  ]);
+  const { page, counts } = await loadOrders(staff.clubId, filter, now);
   const [only] = page.rows;
   if (filter.reference !== null && page.total === 1 && only !== undefined) {
     redirect(orderPath(only.id));

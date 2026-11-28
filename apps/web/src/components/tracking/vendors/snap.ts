@@ -45,7 +45,8 @@ export function loadSnap(config: IntegrationConfig, nonce: string | undefined): 
   snaptr("init", pixelId, {});
   return {
     send: (call) => {
-      snaptr("track", pixelEventName("snap", call.event), eventData(call));
+      // الدالة تُقرأ من window عند كل حدث: سكربت المنصة قد يستبدل الطابور بعد تحميله
+      (window.snaptr ?? snaptr)("track", pixelEventName("snap", call.event), eventData(call));
     },
   };
 }

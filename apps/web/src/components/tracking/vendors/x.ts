@@ -97,16 +97,18 @@ export function loadX(config: IntegrationConfig, nonce: string | undefined): Sin
   let firstPage = true;
   return {
     send: (call) => {
+      // الدالة تُقرأ من window عند كل حدث: سكربت المنصة قد يستبدل الطابور بعد تحميله
+      const current = window.twq ?? twq;
       if (call.event === "page_view") {
         if (!firstPage) {
-          twq("config", pixelId);
+          current("config", pixelId);
         }
         firstPage = false;
         return;
       }
       const event = eventOf(call, config);
       if (event.id !== undefined) {
-        twq("event", event.id, event.data);
+        current("event", event.id, event.data);
       }
     },
   };

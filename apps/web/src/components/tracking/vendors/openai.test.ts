@@ -87,6 +87,17 @@ describe("OpenAI Measurement Pixel (القرار 91)", () => {
     ]);
   });
 
+  it("السكربت يستبدل oaiq ويفرّغ الطابور مرة: ما بعده يصل الدالة الجديدة لا الطابور الميت", () => {
+    const sink = loadOpenai({ pixelId: "1345349876" }, undefined);
+    const sdk: unknown[][] = [];
+    window.oaiq = (...args: unknown[]) => {
+      sdk.push(args);
+    };
+    sink?.send(purchase);
+    expect(sdk.map((args) => args[1])).toEqual(["order_created"]);
+    expect(queue).toHaveLength(2);
+  });
+
   it("سحب الإعلانات: consent false (يمحو كوكيات البكسل)، والتحليلات وحدها لا تمسّه", () => {
     withdrawOpenaiConsent({ analytics: false, ads: true, version: 1, at: 1 });
     expect(queue).toEqual([]);

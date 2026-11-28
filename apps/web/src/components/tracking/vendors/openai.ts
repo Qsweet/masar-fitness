@@ -60,8 +60,10 @@ export function loadOpenai(config: IntegrationConfig, nonce: string | undefined)
   oaiq("init", { pixelId });
   return {
     send: (call) => {
+      // `oaiq.min.js` يستبدل `window.oaiq` بدالته ويفرّغ طابور الشيفرة مرة واحدة: كل حدث بعد التحميل
+      // يُرسل إلى الدالة الحالية لا إلى الطابور الذي أُنشئت به هذه الوجهة
       const options = { event_id: call.payload.eventId };
-      oaiq("measure", pixelEventName("openai", call.event), eventData(call), options);
+      oaiqOf()?.("measure", pixelEventName("openai", call.event), eventData(call), options);
     },
   };
 }

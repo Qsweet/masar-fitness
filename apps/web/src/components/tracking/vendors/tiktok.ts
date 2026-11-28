@@ -74,9 +74,11 @@ export function loadTiktok(config: IntegrationConfig, nonce: string | undefined)
     window.ttq = createStub(nonce);
     window.ttq.load(pixelId);
   }
-  const ttq = window.ttq;
+  const loaded = window.ttq;
   return {
     send: (call) => {
+      // الدالة تُقرأ من window عند كل حدث: سكربت المنصة قد يستبدل الطابور بعد تحميله
+      const ttq = window.ttq ?? loaded;
       if (call.event === "page_view") {
         ttq.page();
         return;

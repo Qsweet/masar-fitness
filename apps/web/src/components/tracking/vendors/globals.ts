@@ -43,6 +43,8 @@ declare global {
     snaptr?: SnapStub;
     ttq?: TiktokStub;
     twq?: XStub;
+    /** طابور OpenAI من `OpenaiStub` (شيفرته الرسمية). */
+    oaiq?: (...args: unknown[]) => void;
     TiktokAnalyticsObject?: string;
   }
 }

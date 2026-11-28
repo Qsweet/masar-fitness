@@ -4,7 +4,9 @@ import type { TrackingProvider } from "@masar/domain";
  * مضيفات كل منصة في CSP (ADMIN_A5_TRACKING §6)، من جدول Google الرسمي
  * (https://developers.google.com/tag-platform/security/guides/csp) وقوالب Snap وTikTok الرسمية، وX من
  * سكربته الرسمي `static.ads-twitter.com/uwt.js` نفسه (يرسل إلى `t.co` و`analytics.twitter.com` بـ
- * sendBeacon وXHR وصورة؛ `analytics.x.com` لمواقع x.com وحدها، فلا يلزمنا).
+ * sendBeacon وXHR وصورة؛ `analytics.x.com` لمواقع x.com وحدها، فلا يلزمنا). OpenAI من جدول CSP في وثيقته
+ * الرسمية (https://developers.openai.com/ads/measurement-pixel): `bzr.openai.com` للأحداث (fetch
+ * وsendBeacon وصورة احتياطية) و`bzrcdn.openai.com` لإعداد البكسل؛ السكربت نفسه بالـnonce.
  * السكربتات لا تحتاج مضيفًا: `'strict-dynamic'` يثق بما يحمّله سكربتنا ذو الـnonce. تُضاف لمنصة مفعّلة
  * فقط، ولصفحات الموقع لا اللوحة.
  */
@@ -21,6 +23,8 @@ const GOOGLE = "https://www.google.com";
 const GOOGLE_SA = "https://www.google.com.sa";
 const X_TCO = "https://t.co";
 const X_ANALYTICS = "https://analytics.twitter.com";
+const OPENAI_EVENTS = "https://bzr.openai.com";
+const OPENAI_CDN = "https://bzrcdn.openai.com";
 
 const HOSTS: Readonly<Record<TrackingProvider, CspExtension>> = {
   gtm: { connect: [GTM, GOOGLE], img: [GTM], frame: [GTM] },
@@ -65,6 +69,7 @@ const HOSTS: Readonly<Record<TrackingProvider, CspExtension>> = {
     img: [X_TCO, X_ANALYTICS],
     frame: [],
   },
+  openai: { connect: [OPENAI_EVENTS, OPENAI_CDN], img: [OPENAI_EVENTS], frame: [] },
 };
 
 function union(lists: readonly (readonly string[])[]): string[] {

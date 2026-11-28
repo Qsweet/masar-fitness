@@ -87,6 +87,13 @@ describe("منصات القياس في CSP", () => {
       img: ["https://analytics.twitter.com", "https://t.co"],
       frame: [],
     });
+    // جدول CSP في وثيقة OpenAI الرسمية (القرار 91)
+    expect(trackingCsp(["openai"])).toEqual({
+      connect: ["https://bzr.openai.com", "https://bzrcdn.openai.com"],
+      img: ["https://bzr.openai.com"],
+      frame: [],
+    });
+    expect(buildCsp("n", false, [], trackingCsp(["meta"]))).not.toContain("openai");
   });
 
   it("لا تكرار بين منصات تشترك في مضيف", () => {

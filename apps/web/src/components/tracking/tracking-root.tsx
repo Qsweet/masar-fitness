@@ -4,6 +4,7 @@ import { localizedPath, type Locale } from "@/i18n/locales";
 import { pageTracking } from "@/server/tracking/page-tracking";
 import { ConsentBanner } from "./consent-banner";
 import { GoogleStub } from "./google-stub";
+import { OpenaiStub } from "./openai-stub";
 import { TagLoader } from "./tag-loader";
 
 const GOOGLE = new Set(["gtm", "ga4", "google_ads"]);
@@ -20,9 +21,11 @@ export async function TrackingRoot({ locale }: { readonly locale: Locale }) {
   const copy = defaultDictionary(locale).consent;
   const names = tracking.providers.map((item) => copy.providerNames[item.provider]);
   const hasGoogle = tracking.providers.some((item) => GOOGLE.has(item.provider));
+  const hasOpenai = tracking.providers.some((item) => item.provider === "openai");
   return (
     <>
       {hasGoogle ? <GoogleStub nonce={tracking.nonce} /> : null}
+      {hasOpenai ? <OpenaiStub nonce={tracking.nonce} /> : null}
       <TagLoader providers={tracking.providers} nonce={tracking.nonce} />
       <ConsentBanner
         copy={copy}

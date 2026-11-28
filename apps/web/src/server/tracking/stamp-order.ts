@@ -39,6 +39,8 @@ function adIdentifiers(read: Read, requestHeaders: Headers) {
     fbc: metaCookie(read("_fbc")),
     scid: vendorCookie(read("_scid")),
     ttp: vendorCookie(read("_ttp")),
+    // مرجع متصفح OpenAI من كوكي البكسل، بموافقة الإعلانات (Conversions API: «user.obref»)
+    obref: vendorCookie(read("__obref")),
     clientIp: ip === UNKNOWN_CLIENT_IP ? null : ip,
     userAgent: requestHeaders.get("user-agent")?.slice(0, MAX_USER_AGENT) ?? null,
   };
@@ -65,6 +67,7 @@ const NO_AD_IDENTIFIERS = {
   fbc: null,
   scid: null,
   ttp: null,
+  obref: null,
   clientIp: null,
   userAgent: null,
 };

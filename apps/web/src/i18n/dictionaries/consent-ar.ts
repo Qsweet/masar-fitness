@@ -37,5 +37,6 @@ export const consentAr = {
     snap: "Snapchat",
     tiktok: "TikTok",
     x: "X",
+    openai: "OpenAI",
   },
 } as const;

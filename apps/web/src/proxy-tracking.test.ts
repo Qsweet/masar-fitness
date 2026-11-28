@@ -81,6 +81,11 @@ describe("كوكي الإسناد", () => {
     };
     expect(parsed.first.values).toEqual({ fbclid: "IwAR2F4" });
     expect(parsed.last.values).toEqual({ ttclid: "E.C.P.abc" });
+    // oppref لإعلانات ChatGPT (القرار 91) معرّف نقر كغيره: بالموافقة وحدها
+    const openai = await consented("https://example.com/?oppref=oppref_abc");
+    expect(attr(openai)).toContain('"oppref":"oppref_abc"');
+    const denied = await proxy(new NextRequest("https://example.com/?oppref=oppref_abc"));
+    expect(denied.cookies.get("masar_attr")).toBeUndefined();
   });
 
   it("اللوحة لا تكتبه", async () => {

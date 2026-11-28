@@ -138,11 +138,13 @@ function introLead(intro: Dictionary["checkout"]["intro"]): string {
 function quotePayload(quote: Quote, locale: Locale): Omit<TrackPayload, "eventId"> {
   return {
     value: majorNumber(quote.total.amountMinor),
+    valueMinor: quote.total.amountMinor,
     currency: quote.total.currency,
     lines: quote.lines.map((line) => ({
       id: line.slug,
       name: line.name[locale],
       price: majorNumber(line.total.amountMinor),
+      priceMinor: line.total.amountMinor,
     })),
   };
 }

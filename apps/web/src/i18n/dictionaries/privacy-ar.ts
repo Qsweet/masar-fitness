@@ -11,7 +11,7 @@ export const privacyAr = {
   title: "سياسة الخصوصية",
   lead: "ما يجمعه هذا الموقع ولماذا، وكيف تتحكم فيه.",
   /** الجهات المذكورة في القسم الثالث بمكان {providers}، كلٌّ معزول الاتجاه */
-  providers: ["Google", "Meta", "Snapchat", "TikTok", "X"],
+  providers: ["Google", "Meta", "Snapchat", "TikTok", "X", "OpenAI"],
   sections: [
     {
       heading: "ما نجمعه عند الشراء",

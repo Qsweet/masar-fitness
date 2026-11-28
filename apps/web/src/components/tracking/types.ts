@@ -11,12 +11,16 @@ export interface TrackLine {
   readonly name: string;
   /** بالريال، يكتبها الخادم من الهللة (`majorNumber`). */
   readonly price: number;
+  /** بالهللة عددًا صحيحًا: OpenAI يطلب المبلغ بالوحدة الصغرى (القرار 91). */
+  readonly priceMinor: number;
 }
 
 /** حمولة الحدث في المتصفح. القيم كلها يكتبها الخادم في الصفحة، لا يحسبها المتصفح. */
 export interface TrackPayload {
   readonly eventId: string;
   readonly value?: number;
+  /** القيمة بالهللة عددًا صحيحًا، يكتبها الخادم مع `value`. */
+  readonly valueMinor?: number;
   readonly currency?: string;
   readonly lines?: readonly TrackLine[];
   /** مرجع الطلب للشراء: `transaction_id` عند Google وSnap. */

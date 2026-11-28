@@ -25,6 +25,7 @@ const purchase: PurchaseContext = {
   fbc: null,
   scid: "a1b2c3d4-e5f6-7788",
   ttp: "ttp-cookie-value-1",
+  obref: null,
   clientIp: "203.0.113.9",
   userAgent: "Mozilla/5.0 Test",
   pageUrl: "https://masar.test/checkout/six-months",

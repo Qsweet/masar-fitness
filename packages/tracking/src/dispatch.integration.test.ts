@@ -61,9 +61,10 @@ afterAll(async () => {
 const CONFIG = {
   meta: { pixelId: "123456789012345" },
   ga4: { measurementId: "G-ABC1234" },
+  openai: { pixelId: "1345349876" },
 } as const;
 
-async function enable(provider: "meta" | "ga4", options: { testCode?: string } = {}) {
+async function enable(provider: keyof typeof CONFIG, options: { testCode?: string } = {}) {
   const sealed = sealTrackingSecret(KEY, clubId, provider, `${provider}-server-token`);
   unwrap(
     await saveIntegration(db, {
@@ -96,6 +97,7 @@ async function paidOrder(
     fbc: null,
     scid: null,
     ttp: null,
+    obref: null,
     clientIp: "203.0.113.9",
     userAgent: "Mozilla/5.0",
     pageUrl: null,
@@ -137,6 +139,20 @@ describe("المرسِل", () => {
     expect((await rows("meta"))[0]).toMatchObject({ status: "sent", attempts: 1, lastStatus: 200 });
     expect(await dispatch()).toMatchObject({ claimed: 0 });
     expect(fake.requests).toHaveLength(1);
+  });
+
+  it("OpenAI (القرار 91): order_created بالمعرّف نفسه والمفتاح في الترويسة وحدها", async () => {
+    await enable("openai");
+    const orderId = await paidOrder();
+    expect(await dispatch()).toMatchObject({ claimed: 1, sent: 1 });
+    const request = fake.requests[0];
+    expect(request?.url).toBe("https://bzr.openai.com/v1/events?pid=1345349876");
+    expect(request?.headers.Authorization).toBe("Bearer openai-server-token");
+    expect(JSON.parse(request?.body ?? "{}")).toMatchObject({
+      validate_only: false,
+      events: [{ id: `purchase.${orderId}`, type: "order_created", data: { amount: PRICE } }],
+    });
+    expect((await rows("openai"))[0]).toMatchObject({ status: "sent", eventName: "purchase" });
   });
 
   it("503 يُعاد بعد دقيقة، و400 يموت، والميت لا يُرسل ثانية", async () => {
@@ -267,5 +283,8 @@ describe("حدث الاختبار", () => {
       reason: "validation_failed",
     });
     expect(fake.requests[0]?.url).toContain("/debug/mp/collect?");
+    await enable("openai");
+    expect(await sendTestEvent(deps(), clubId, "openai")).toEqual({ kind: "sent", status: 200 });
+    expect(JSON.parse(fake.requests[1]?.body ?? "{}")).toMatchObject({ validate_only: true });
   });
 });

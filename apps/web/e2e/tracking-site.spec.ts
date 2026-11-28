@@ -14,6 +14,8 @@ const GA4_ID = "G-E2ETEST01";
 const META_PIXEL = "100000000000042";
 const X_PIXEL = "e2ex1";
 const X_PURCHASE = "tw-e2ex1-buy01";
+const OPENAI_PIXEL = "e2e1345349876";
+const OPENAI_SDK = "https://bzrcdn.openai.com/sdk/oaiq.min.js";
 const SHOTS_DIR = "screens/tracking";
 const SIZES = [
   { width: 390, height: 844 },
@@ -190,6 +192,48 @@ test("X بعد موافقة الإعلانات وحدها: مضيفاته في C
       (feature) => ["set", feature, "false", X_PIXEL],
     ),
   );
+  await context.close();
+});
+
+test("إعلانات ChatGPT بعد موافقة الإعلانات وحدها: مضيفاتها في CSP، وoaiq.min.js بالـnonce، والموافقة قبل init", async ({
+  browser,
+}) => {
+  const adminContext = await browser.newContext();
+  const admin = await adminContext.newPage();
+  await signIn(admin, await newStaff(db, { id: siteClub }, { withTotp: true }));
+  await admin.goto("/admin/integrations/openai");
+  await admin.getByLabel(TEXT.integrations.form.enabled, { exact: true }).check();
+  await admin.getByLabel(TEXT.integrations.form.fields.pixelId.label).fill(OPENAI_PIXEL);
+  await admin.getByRole("button", { name: TEXT.integrations.form.submit }).click();
+  await expect(admin.getByText(TEXT.notices.tracking_saved)).toBeVisible();
+  await adminContext.close();
+
+  const context = await browser.newContext();
+  const requests = await recordThirdParty(context);
+  const page = await context.newPage();
+  const csp = (await page.goto("/"))?.headers()["content-security-policy"] ?? "";
+  expect(csp).toContain("https://bzr.openai.com");
+  expect(csp).toContain("https://bzrcdn.openai.com");
+  await expect(banner(page).locator("bdi", { hasText: /^OpenAI$/ })).toHaveCount(1);
+  await banner(page).getByRole("button", { name: consentAr.rejectAll }).click();
+  await page.reload();
+  expect(requests.some((url) => url.includes("openai.com"))).toBe(false);
+
+  await page.getByRole("button", { name: consentAr.settingsLink }).click();
+  await banner(page).getByRole("button", { name: consentAr.acceptAll }).click();
+  await expect.poll(() => requests.includes(OPENAI_SDK)).toBe(true);
+  const script = page.locator(`script[src="${OPENAI_SDK}"]`);
+  expect(await script.evaluate((node: HTMLScriptElement) => node.nonce)).not.toBe("");
+  // السكربت مردود فارغًا، فالطابور باقٍ كما ملأته الشيفرة الأساسية وأوامرنا
+  const queue = await page.evaluate(() => {
+    const stub = window.oaiq as unknown as { q?: ArrayLike<unknown>[] } | undefined;
+    return (stub?.q ?? []).map((entry) => Array.from(entry));
+  });
+  expect(queue.slice(0, 2)).toEqual([
+    ["consent", true],
+    ["init", { pixelId: OPENAI_PIXEL }],
+  ]);
+  expect(queue.some((entry) => entry[0] === "measure" && entry[1] === "page_viewed")).toBe(true);
   await context.close();
 });
 

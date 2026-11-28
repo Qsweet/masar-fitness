@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { cx } from "@/lib/cx";
+import cardStyles from "./table-card.module.css";
 import styles from "./table.module.css";
 
 type Align = "end" | "numeric";
@@ -154,11 +155,11 @@ interface TableCardProps {
 /** بطاقة الجدول: شريط الأدوات ثم الجدول أو حالته الفارغة ثم الترقيم، بخطوط شعرية بينها. */
 export function TableCard({ title, toolbar, footer, children }: TableCardProps) {
   return (
-    <section className={styles.card}>
-      {title === undefined ? null : <h2 className={styles.title}>{title}</h2>}
-      {toolbar === undefined ? null : <div className={styles.toolbar}>{toolbar}</div>}
+    <section className={cardStyles.card}>
+      {title === undefined ? null : <h2 className={cardStyles.title}>{title}</h2>}
+      {toolbar === undefined ? null : <div className={cardStyles.toolbar}>{toolbar}</div>}
       {children}
-      {footer === undefined ? null : <div className={styles.footer}>{footer}</div>}
+      {footer === undefined ? null : <div className={cardStyles.footer}>{footer}</div>}
     </section>
   );
 }

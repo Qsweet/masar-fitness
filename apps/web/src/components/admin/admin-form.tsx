@@ -6,7 +6,7 @@ import { cx } from "@/lib/cx";
 import { EMPTY_FORM_STATE, type AdminFormState } from "@/server/admin/form";
 import { buttonClass, type ButtonVariant } from "./ui/kit";
 import { SaveBar } from "./ui/save-bar";
-import styles from "./ui/ui.module.css";
+import { uiStyles as styles } from "./ui/ui-styles";
 
 export type AdminAction = (previous: AdminFormState, formData: FormData) => Promise<AdminFormState>;
 

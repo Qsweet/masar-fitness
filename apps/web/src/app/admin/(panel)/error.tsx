@@ -1,6 +1,6 @@
 "use client";
 
-import ui from "@/components/admin/ui/ui.module.css";
+import { uiStyles as ui } from "@/components/admin/ui/ui-styles";
 import { errorPageAr } from "@/i18n/admin/error-ar";
 import { cx } from "@/lib/cx";
 

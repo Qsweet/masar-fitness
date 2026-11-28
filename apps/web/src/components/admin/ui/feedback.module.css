@@ -1,0 +1,130 @@
+/*
+ * التنبيهات والشارات والحالة الفارغة.
+ * كل لون من رموز ‎--a-*‎ (app/admin/admin.css). يجمعها `uiStyles` في ui-styles.ts.
+ */
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--a-2);
+  padding: var(--a-3) var(--a-4);
+  border: 1px solid var(--a-border);
+  border-inline-start-width: 3px;
+  border-radius: var(--a-radius);
+  background: var(--a-raised);
+  font-size: var(--a-text-body);
+  line-height: 1.6;
+}
+
+.alert:focus-visible {
+  outline: 2px solid var(--a-focus);
+  outline-offset: 2px;
+}
+
+.alertDanger {
+  border-color: var(--a-danger);
+  background: var(--a-danger-soft);
+}
+
+.alertSuccess {
+  border-color: var(--a-success);
+  background: var(--a-success-soft);
+}
+
+.alertInfo {
+  border-color: var(--a-info);
+  background: var(--a-info-soft);
+}
+
+.alertWarning {
+  border-color: var(--a-warning);
+  background: var(--a-warning-soft);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.05rem 0.5rem;
+  border-radius: var(--a-radius-pill);
+  background: var(--a-neutral-soft);
+  color: var(--a-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.badge::before {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: var(--a-radius-pill);
+  background: currentColor;
+  content: "";
+}
+
+.badgeSuccess {
+  background: var(--a-success-soft);
+  color: var(--a-success);
+}
+
+.badgeWarning {
+  background: var(--a-warning-soft);
+  color: var(--a-warning);
+}
+
+.badgeDanger {
+  background: var(--a-danger-soft);
+  color: var(--a-danger);
+}
+
+.badgeInfo {
+  background: var(--a-info-soft);
+  color: var(--a-info);
+}
+
+.badgeAccent {
+  background: var(--a-accent);
+  color: var(--a-on-accent);
+}
+
+.badgeAccent::before {
+  content: none;
+}
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--a-2);
+  padding: var(--a-6) var(--a-5);
+  text-align: center;
+}
+
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px dashed var(--a-border-strong);
+  border-radius: var(--a-radius-pill);
+  color: var(--a-subtle);
+}
+
+.emptyTitle {
+  margin-top: var(--a-1);
+  font-size: var(--a-fs-body);
+  font-weight: var(--a-fw-strong);
+}
+
+.emptyLead {
+  max-width: 28rem;
+  color: var(--a-muted);
+  font-size: var(--a-fs-help);
+  line-height: var(--a-lh-help);
+}
+
+@media (forced-colors: active) {
+  .badge,
+  .alert {
+    border: 1px solid CanvasText;
+  }
+}

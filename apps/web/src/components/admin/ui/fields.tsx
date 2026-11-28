@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import { cx } from "@/lib/cx";
-import styles from "./ui.module.css";
+import { uiStyles as styles } from "./ui-styles";
 
 interface FieldText {
   readonly id: string;

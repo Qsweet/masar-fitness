@@ -12,7 +12,7 @@ import {
 } from "@/server/admin/field-form";
 import { buttonClass, Facts, type ButtonVariant } from "./kit";
 import { SaveBar } from "./save-bar";
-import styles from "./ui.module.css";
+import { uiStyles as styles } from "./ui-styles";
 
 export type FieldFormAction = (
   previous: FieldFormState,

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cx } from "@/lib/cx";
 import { buttonClass } from "./kit";
-import styles from "./ui.module.css";
+import { uiStyles as styles } from "./ui-styles";
 
 interface PaginationProps {
   readonly label: string;

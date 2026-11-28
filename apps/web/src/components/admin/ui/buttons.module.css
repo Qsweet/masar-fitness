@@ -1,0 +1,112 @@
+/*
+ * أزرار اللوحة: الأساسي (الأصفر مرة في كل عرض)، والثانوي، والخفي، والخطر، والانتظار.
+ * كل لون من رموز ‎--a-*‎ (app/admin/admin.css). يجمعها `uiStyles` في ui-styles.ts.
+ */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--a-2);
+  min-height: var(--a-control);
+  padding: 0 var(--a-4);
+  border: 1px solid transparent;
+  border-radius: var(--a-radius);
+  font-family: var(--font);
+  font-size: var(--a-fs-small);
+  font-weight: 550;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--a-fast) var(--a-ease),
+    border-color var(--a-fast) var(--a-ease),
+    color var(--a-fast) var(--a-ease);
+}
+
+.primary {
+  background: var(--a-accent);
+  color: var(--a-on-accent);
+}
+
+.primary:hover {
+  background: var(--a-accent-hover);
+}
+
+.secondary {
+  border-color: var(--a-border-strong);
+  background: var(--a-raised);
+  color: var(--a-text);
+}
+
+.secondary:hover {
+  border-color: var(--a-text);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--a-muted);
+}
+
+.ghost:hover {
+  background: var(--a-hover);
+  color: var(--a-text);
+}
+
+.danger {
+  border-color: var(--a-border-strong);
+  background: var(--a-raised);
+  color: var(--a-danger);
+}
+
+.danger:hover {
+  border-color: var(--a-danger);
+  background: var(--a-danger-soft);
+}
+
+.small {
+  min-height: 1.875rem;
+  padding: 0 var(--a-3);
+  font-size: var(--a-text-caption);
+}
+
+.large {
+  min-height: 2.75rem;
+}
+
+.block {
+  width: 100%;
+}
+
+.button:disabled,
+.button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* الانتظار: الزر يحتفظ بعرضه ونصه، ويظهر مؤشر دوّار صغير (بلا إزاحة تخطيط) */
+.button[data-pending="true"] {
+  cursor: progress;
+}
+
+.button[data-pending="true"]::before {
+  width: 0.85em;
+  height: 0.85em;
+  border: 2px solid currentColor;
+  border-inline-start-color: transparent;
+  border-radius: var(--a-radius-pill);
+  animation: spin 700ms linear infinite;
+  content: "";
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button[data-pending="true"]::before {
+    animation: none;
+  }
+}

@@ -13,5 +13,4 @@ export const kitAr = {
     stay: "ابقَ هنا",
     leave: "غادر بلا حفظ",
   },
-  consequences: "ما الذي يترتب؟",
 } as const;

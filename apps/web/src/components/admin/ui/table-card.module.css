@@ -1,0 +1,36 @@
+/*
+ * بطاقة الجدول v2 (القرار 92): عنوان اختياري، وشريط أدوات، والجدول، وترقيم، بخطوط شعرية بينها.
+ */
+.card {
+  min-width: 0;
+  /* زوايا رأس الجدول تتبع البطاقة؛ clip لا يصنع حاوية تمرير فيبقى الرأس اللاصق */
+  overflow: clip;
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-surface);
+  box-shadow: var(--a-shadow-1);
+}
+
+.title {
+  padding: var(--a-4) var(--a-5);
+  border-bottom: 1px solid var(--a-border);
+  font-family: var(--a-font-display);
+  font-size: var(--a-fs-h2);
+  font-weight: var(--a-fw-display);
+  line-height: var(--a-lh-title);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-2) var(--a-3);
+  min-width: 0;
+  padding: var(--a-3) var(--a-4);
+  border-bottom: 1px solid var(--a-border);
+}
+
+.footer {
+  padding: var(--a-3) var(--a-5);
+  border-top: 1px solid var(--a-border);
+}

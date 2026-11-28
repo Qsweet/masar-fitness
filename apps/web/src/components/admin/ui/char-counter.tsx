@@ -3,7 +3,7 @@
 import { textLength } from "@masar/domain";
 import { useState } from "react";
 import { cx } from "@/lib/cx";
-import styles from "./ui.module.css";
+import { uiStyles as styles } from "./ui-styles";
 
 interface CountedFieldProps {
   readonly id: string;

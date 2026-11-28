@@ -122,47 +122,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* بطاقة الجدول: شريط أدوات وجدول وترقيم */
-.card {
-  min-width: 0;
-  border: 1px solid var(--a-border);
-  border-radius: var(--a-radius-lg);
-  background: var(--a-surface);
-  box-shadow: var(--a-shadow-1);
-}
-
-.card > .wrap:first-child .table th:first-child {
-  border-start-start-radius: var(--a-radius-lg);
-}
-
-.card > .wrap:first-child .table th:last-child {
-  border-start-end-radius: var(--a-radius-lg);
-}
-
-.title {
-  padding: var(--a-4) var(--a-5);
-  border-bottom: 1px solid var(--a-border);
-  font-family: var(--a-font-display);
-  font-size: var(--a-fs-h2);
-  font-weight: var(--a-fw-display);
-  line-height: var(--a-lh-title);
-}
-
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--a-2) var(--a-3);
-  min-width: 0;
-  padding: var(--a-3) var(--a-4);
-  border-bottom: 1px solid var(--a-border);
-}
-
-.footer {
-  padding: var(--a-3) var(--a-5);
-  border-top: 1px solid var(--a-border);
-}
-
 .nowrap {
   white-space: nowrap;
 }

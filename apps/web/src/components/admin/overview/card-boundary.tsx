@@ -2,7 +2,7 @@
 
 import { Component, type ReactNode } from "react";
 import { cx } from "@/lib/cx";
-import ui from "../ui/ui.module.css";
+import { uiStyles as ui } from "../ui/ui-styles";
 
 interface CardBoundaryProps {
   readonly message: string;

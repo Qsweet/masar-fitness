@@ -1,0 +1,245 @@
+/*
+ * النماذج: الحقول والتسميات والتلميحات والأخطاء والخانات والصفوف المتكررة وأعلى النموذج.
+ * كل لون من رموز ‎--a-*‎ (app/admin/admin.css). يجمعها `uiStyles` في ui-styles.ts.
+ */
+.form {
+  display: grid;
+  gap: var(--a-4);
+  min-width: 0;
+}
+
+.inlineForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--a-3);
+  min-width: 0;
+}
+
+.inlineForm > .field {
+  flex: 1 1 12rem;
+  max-width: 20rem;
+}
+
+.field {
+  display: grid;
+  gap: var(--a-2);
+  min-width: 0;
+}
+
+/* التسمية فوق الحقل دائمًا، بلون النص لا الخافت: هي ما يُمسح بالعين أولًا */
+.label {
+  color: var(--a-text);
+  font-size: var(--a-fs-label);
+  font-weight: var(--a-fw-label);
+  line-height: var(--a-lh-tight);
+}
+
+/* التلميح سطر واحد عادةً، بطول سطر يُقرأ؛ الشرح الطويل في «ما الذي يترتب؟» */
+.hint {
+  max-width: var(--a-measure-help);
+  margin-top: calc(-1 * var(--a-1));
+  color: var(--a-muted);
+  font-size: var(--a-fs-help);
+  line-height: var(--a-lh-help);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--a-control);
+  padding: 0 var(--a-3);
+  border: 1px solid var(--a-field-border);
+  border-radius: var(--a-radius);
+  background: var(--a-sunken);
+  color: var(--a-text);
+  font: inherit;
+  font-size: var(--a-text-body);
+}
+
+.input:hover {
+  border-color: var(--a-text);
+}
+
+.input:focus-visible {
+  border-color: var(--a-focus);
+  outline: 2px solid var(--a-focus);
+  outline-offset: 0;
+}
+
+.code {
+  min-height: 3rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  text-align: center;
+}
+
+/* حقل التاريخ: قيمته لاتينية (‎YYYY-MM-DD‎ بعرض المتصفح)، فتُعزل من اتجاه الصفحة. */
+.dateInput {
+  direction: ltr;
+  text-align: end;
+}
+
+.textarea {
+  min-height: 5.5rem;
+  padding-block: var(--a-2);
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--a-3);
+  min-height: var(--a-control);
+  font-size: var(--a-text-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.checkbox input {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--a-accent);
+}
+
+.checkbox input:focus-visible {
+  outline: 2px solid var(--a-focus);
+  outline-offset: 2px;
+}
+
+/* خطأ الحقل: تحت التلميح، بلون الخطر وبوزن يُقرأ. الحقل نفسه بحد الخطر. */
+.fieldError {
+  color: var(--a-danger);
+  font-size: var(--a-text-caption);
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--a-danger);
+}
+
+/* حقلان متجاوران حين يتسع المكان، وعمود واحد على الهاتف. */
+.fieldRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  align-items: start;
+  gap: var(--a-4);
+  min-width: 0;
+}
+
+.fieldGroup {
+  display: grid;
+  gap: var(--a-2);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.fieldGroup > legend {
+  padding: 0;
+  margin-bottom: var(--a-1);
+}
+
+/* نموذج من عدة بطاقات: البطاقات بإيقاع الصفحة، وشريط الأفعال بعدها. */
+.formStack {
+  display: grid;
+  gap: var(--a-5);
+  min-width: 0;
+}
+
+.formFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-3);
+}
+
+/* صفوف متكررة (المزايا): عربي، إنجليزي، ترتيب قصير. على الهاتف كل صف مجموعة بخط شعري. */
+.rows {
+  display: grid;
+  gap: var(--a-3);
+  min-width: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 5.5rem;
+  align-items: start;
+  gap: var(--a-3);
+  min-width: 0;
+}
+
+@media (width < 40rem) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) 5.5rem;
+    padding-bottom: var(--a-3);
+    border-bottom: 1px solid var(--a-border);
+  }
+
+  .row > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* قائمة خانات اختيار: عمودان حين يتسع المكان. */
+.checkList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 0 var(--a-4);
+  min-width: 0;
+}
+
+.checkList .checkbox {
+  font-weight: 500;
+}
+
+/* عواقب الإجراء: قائمة قصيرة بنقاط خافتة. */
+.consequences {
+  display: grid;
+  gap: var(--a-2);
+  padding-inline-start: var(--a-5);
+  line-height: 1.6;
+  list-style: disc;
+}
+
+.consequences li::marker {
+  color: var(--a-subtle);
+}
+
+/* سطر شرح خافت تحت محتوى بطاقة. */
+.note {
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  line-height: 1.6;
+}
+
+/* خطوة النموذج الحالية («راجع قبل الحفظ»). */
+.stepTitle {
+  font-size: var(--a-text-section);
+  font-weight: 600;
+}
+
+/* عدّاد المحارف تحت حقل النص: خافت، وبلون الخطر حين يتجاوز الحد. */
+.counter {
+  color: var(--a-muted);
+  font-size: var(--a-text-caption);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.counterOver {
+  color: var(--a-danger);
+  font-weight: 600;
+}
+
+/* أعلى النموذج فارغًا (لا خطأ): خارج تدفق الشبكة فلا يأخذ مسافة، ويبقى هدفًا للتركيز بعد الرد */
+.formTop:empty {
+  position: absolute;
+}
+
+.formTop:empty:focus-visible {
+  outline: none;
+}

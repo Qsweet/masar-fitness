@@ -18,6 +18,11 @@ export interface SnapStub extends QueueStub {
   handleRequest?: (...args: unknown[]) => void;
 }
 
+export interface XStub extends QueueStub {
+  exe?: (...args: unknown[]) => void;
+  version: string;
+}
+
 export interface TiktokStub extends Array<unknown> {
   methods: readonly string[];
   load: (pixelId: string) => void;
@@ -37,6 +42,7 @@ declare global {
     _fbq?: MetaStub;
     snaptr?: SnapStub;
     ttq?: TiktokStub;
+    twq?: XStub;
     TiktokAnalyticsObject?: string;
   }
 }

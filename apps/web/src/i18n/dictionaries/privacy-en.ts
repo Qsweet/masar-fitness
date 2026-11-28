@@ -8,7 +8,7 @@ export const privacyEn: Dictionary["privacy"] = {
   },
   title: "Privacy policy",
   lead: "What this website collects and why, and how you control it.",
-  providers: ["Google", "Meta", "Snapchat", "TikTok"],
+  providers: ["Google", "Meta", "Snapchat", "TikTok", "X"],
   sections: [
     {
       heading: "What we collect when you buy",

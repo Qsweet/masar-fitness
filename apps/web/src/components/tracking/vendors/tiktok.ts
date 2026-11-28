@@ -3,7 +3,7 @@
  * الإعداد، ADMIN_A5_TRACKING §1)، و`event_id` في الوسيط الثالث لـ`ttq.track` كما في قالب TikTok الرسمي
  * (github.com/tiktok/gtm-template-pixel).
  */
-import { pixelEventName, type IntegrationConfig } from "@masar/domain";
+import { pixelEventName, sendsHashedPhone, type IntegrationConfig } from "@masar/domain";
 import type { Sink, TrackCall } from "../types";
 import { injectScript, type TiktokStub } from "./globals";
 
@@ -81,7 +81,7 @@ export function loadTiktok(config: IntegrationConfig, nonce: string | undefined)
         ttq.page();
         return;
       }
-      if (call.payload.sha256Phone !== undefined) {
+      if (call.payload.sha256Phone !== undefined && sendsHashedPhone("tiktok", config)) {
         ttq.identify({ sha256_phone_number: call.payload.sha256Phone });
       }
       ttq.track(pixelEventName("tiktok", call.event), eventData(call), {

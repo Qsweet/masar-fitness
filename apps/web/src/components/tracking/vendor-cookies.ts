@@ -3,7 +3,7 @@ import type { Consent, ConsentCategory } from "@masar/domain";
 /**
  * كوكيات المنصات على نطاقنا (طرف أول) تُمحى عند سحب فئتها (القرار 89-8)، قبل إعادة التحميل: Google
  * (`_ga`، `_ga_*`، `_gid`، `_gat*`، `_gcl_*`)، Meta (`_fbp`، `_fbc`)، TikTok (`_ttp`، `_tt_*`،
- * `ttcsid*`)، Snap (`_scid*`، `_sctr`). المحو على النطاق نفسه وعلى كل نطاق أب عدا المستوى الأعلى، لأن
+ * `ttcsid*`)، Snap (`_scid*`، `_sctr`)، X (`_twclid`، `_twpid`، `_twsid`، أسماؤها في uwt.js الرسمي). المحو على النطاق نفسه وعلى كل نطاق أب عدا المستوى الأعلى، لأن
  * الوسوم تكتبها على النطاق الأب.
  */
 const PATTERNS: readonly (readonly [RegExp, ConsentCategory])[] = [
@@ -17,6 +17,7 @@ const PATTERNS: readonly (readonly [RegExp, ConsentCategory])[] = [
   [/^ttcsid/, "ads"],
   [/^_scid/, "ads"],
   [/^_sctr$/, "ads"],
+  [/^_tw(clid|pid|sid)$/, "ads"],
 ];
 
 export interface CookieJar {

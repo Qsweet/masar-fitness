@@ -6,6 +6,7 @@
 import {
   GOOGLE_CONSENT_DEFAULT,
   googleConsentState,
+  sendsHashedPhone,
   type Consent,
   type IntegrationConfig,
 } from "@masar/domain";
@@ -100,9 +101,10 @@ function sendGtag(
       interest: payload.interest,
     });
   }
-  const { conversionId, conversionLabel } = ids.ads ?? {};
+  const ads = ids.ads ?? {};
+  const { conversionId, conversionLabel } = ads;
   if (call.event === "purchase" && conversionId !== undefined && conversionLabel !== undefined) {
-    if (payload.sha256Phone !== undefined) {
+    if (payload.sha256Phone !== undefined && sendsHashedPhone("google_ads", ads)) {
       gtag("set", "user_data", { sha256_phone_number: payload.sha256Phone });
     }
     gtag("event", "conversion", {

@@ -30,5 +30,6 @@ export const consentEn: Dictionary["consent"] = {
     meta: "Meta",
     snap: "Snapchat",
     tiktok: "TikTok",
+    x: "X",
   },
 };

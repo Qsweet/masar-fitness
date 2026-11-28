@@ -2,7 +2,9 @@ import type { TrackingProvider } from "@masar/domain";
 
 /**
  * مضيفات كل منصة في CSP (ADMIN_A5_TRACKING §6)، من جدول Google الرسمي
- * (https://developers.google.com/tag-platform/security/guides/csp) وقوالب Snap وTikTok الرسمية.
+ * (https://developers.google.com/tag-platform/security/guides/csp) وقوالب Snap وTikTok الرسمية، وX من
+ * سكربته الرسمي `static.ads-twitter.com/uwt.js` نفسه (يرسل إلى `t.co` و`analytics.twitter.com` بـ
+ * sendBeacon وXHR وصورة؛ `analytics.x.com` لمواقع x.com وحدها، فلا يلزمنا).
  * السكربتات لا تحتاج مضيفًا: `'strict-dynamic'` يثق بما يحمّله سكربتنا ذو الـnonce. تُضاف لمنصة مفعّلة
  * فقط، ولصفحات الموقع لا اللوحة.
  */
@@ -17,6 +19,8 @@ export const EMPTY_CSP_EXTENSION: CspExtension = { connect: [], img: [], frame: 
 const GTM = "https://www.googletagmanager.com";
 const GOOGLE = "https://www.google.com";
 const GOOGLE_SA = "https://www.google.com.sa";
+const X_TCO = "https://t.co";
+const X_ANALYTICS = "https://analytics.twitter.com";
 
 const HOSTS: Readonly<Record<TrackingProvider, CspExtension>> = {
   gtm: { connect: [GTM, GOOGLE], img: [GTM], frame: [GTM] },
@@ -54,6 +58,11 @@ const HOSTS: Readonly<Record<TrackingProvider, CspExtension>> = {
   tiktok: {
     connect: ["https://analytics.tiktok.com"],
     img: ["https://analytics.tiktok.com"],
+    frame: [],
+  },
+  x: {
+    connect: [X_TCO, X_ANALYTICS],
+    img: [X_TCO, X_ANALYTICS],
     frame: [],
   },
 };

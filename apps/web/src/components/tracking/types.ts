@@ -25,6 +25,8 @@ export interface TrackPayload {
   readonly interest?: string;
   /** الجوال E.164 مجزّأً على الخادم، للشراء مع موافقة الإعلانات فقط. */
   readonly sha256Phone?: string;
+  /** معرّف نقر X المختوم مع الطلب، للشراء مع موافقة الإعلانات فقط (القرار 90-1). */
+  readonly twclid?: string;
 }
 
 export interface TrackCall {

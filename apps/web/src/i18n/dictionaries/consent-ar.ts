@@ -36,5 +36,6 @@ export const consentAr = {
     meta: "Meta",
     snap: "Snapchat",
     tiktok: "TikTok",
+    x: "X",
   },
 } as const;

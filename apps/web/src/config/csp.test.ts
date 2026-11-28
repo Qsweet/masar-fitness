@@ -82,6 +82,11 @@ describe("منصات القياس في CSP", () => {
     expect(ads).toContain("https://www.google.com.sa");
     expect(trackingCsp(["snap"]).connect).toEqual(["https://tr.snapchat.com"]);
     expect(trackingCsp(["tiktok"]).img).toEqual(["https://analytics.tiktok.com"]);
+    expect(trackingCsp(["x"])).toEqual({
+      connect: ["https://analytics.twitter.com", "https://t.co"],
+      img: ["https://analytics.twitter.com", "https://t.co"],
+      frame: [],
+    });
   });
 
   it("لا تكرار بين منصات تشترك في مضيف", () => {

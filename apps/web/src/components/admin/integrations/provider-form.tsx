@@ -26,7 +26,11 @@ type Text = AdminDictionary["integrations"]["form"];
 function fieldHint(provider: TrackingProvider, field: TrackingField, text: Text): string {
   if (
     field === "pixelId" &&
-    (provider === "meta" || provider === "snap" || provider === "tiktok" || provider === "x")
+    (provider === "meta" ||
+      provider === "snap" ||
+      provider === "tiktok" ||
+      provider === "x" ||
+      provider === "openai")
   ) {
     return text.pixelHints[provider];
   }

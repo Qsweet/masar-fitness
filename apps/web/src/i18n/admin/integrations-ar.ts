@@ -43,6 +43,10 @@ export const integrationsAr = {
       name: "X",
       lead: "في المتصفح: X Pixel، والشراء وإضافة السلة والاستفسار بمعرّفات أحداثك. لا إرسال خادمي بعد.",
     },
+    openai: {
+      name: "ChatGPT Ads (OpenAI)",
+      lead: "إعلانات ChatGPT. في المتصفح: Measurement Pixel. وللشراء من الخادم: Conversions API.",
+    },
   },
   form: {
     title: "الإعداد",
@@ -84,6 +88,8 @@ export const integrationsAr = {
       snap: "UUID: Ads Manager ← Events Manager ← البكسل.",
       tiktok: "رمز بحروف كبيرة وأرقام: Ads Manager ← الأدوات ← Events ← Web Events.",
       x: "خمسة محارف: ads.x.com ← الأدوات ← Events Manager ← البكسل (‏twq('config','XXXXX') في شيفرته الأساسية).",
+      openai:
+        "Pixel ID: Ads Manager ← Conversions ← Data Source ← بكسل الويب (‏pixelId في شيفرته الأساسية). حروف وأرقام و_ و- فقط.",
     },
     sendHashedPhone: "إرسال الجوال المجزّأ",
     sendHashedPhoneHint:
@@ -97,6 +103,8 @@ export const integrationsAr = {
       meta: "رمز Conversions API: مجموعة البيانات ← الإعدادات ← Conversions API ← إنشاء رمز وصول.",
       snap: "Ads Manager ← Business Details ← Conversions API Tokens ← Generate Token.",
       tiktok: "البكسل ← الإعدادات ← Events API ← إنشاء رمز وصول.",
+      openai:
+        "مفتاح Conversions API (غير مفتاح Ads API): Ads Manager ← Conversions ← إنشاء مفتاح Conversions API، للحساب الإعلاني نفسه.",
     },
     /** {last4}: آخر أربعة محارف من المفتاح المحفوظ */
     secretSet: "مضبوط · آخره {last4}. اتركه فارغًا ليبقى كما هو.",
@@ -116,6 +124,8 @@ export const integrationsAr = {
       meta: "حدث مخصّص MasarTestEvent برمز الاختبار، يظهر في «اختبار الأحداث». ميتا لا تُسقط أحداث الاختبار من القياس.",
       snap: "إلى نقطة التحقق في سناب (لا يُحتسب).",
       tiktok: "ViewContent برمز الاختبار، يظهر في Test Events ولا يُحفظ حدثًا حيًّا.",
+      openai:
+        "page_viewed بالتحقق وحده (validate_only): تتحقق OpenAI من الطلب والمفتاح ولا تحفظ الحدث، فلا يظهر في Event Stream.",
     },
     submit: "أرسل حدث اختبار",
   },
@@ -123,6 +133,8 @@ export const integrationsAr = {
     "الوسوم غير Google داخل الحاوية (بكسلات أو سكربتات تضيفها أنت) مسؤوليتك: اضبط لكل منها «فحوص الموافقة الإضافية» في Tag Manager، وأضف مضيفها إلى CSP بقرار، وإلا تحجبه السياسة.",
   xContainerNote:
     "لا تضف وسم X الأساسي ولا أحداثه داخل حاوية GTM أيضًا: يُحمَّل البكسل مرتين ويُحسب الحدث مرتين. إعداده هنا وحده يكفي.",
+  openaiMatchingNote:
+    "المطابقة المتقدمة الآلية (Automatic advanced matching) يقرر فيها حسابك لا الموقع: حين تكون مفعّلة يقرأ البكسل بيانات العميل من صفحات الموقع (ومنها نموذج الاستفسار) ويجزّئها ويرسلها مع الأحداث. أطفئها في Ads Manager ← Conversions ← Data Source ← إعداد البكسل قبل التفعيل هنا؛ الجوال المجزّأ يصل OpenAI من الخادم بموافقة الزائر. ولا تضف البكسل داخل حاوية GTM أيضًا.",
   gtmOverlap:
     "GTM مفعَّل مع Google Analytics أو Google Ads هنا: إن كان الوسم نفسه داخل الحاوية أيضًا فسيُقاس كل حدث مرتين. فعّله في مكان واحد.",
   log: {
@@ -204,6 +216,7 @@ export const integrationsAuditAr = {
     snap: integrationsAr.providers.snap.name,
     tiktok: integrationsAr.providers.tiktok.name,
     x: integrationsAr.providers.x.name,
+    openai: integrationsAr.providers.openai.name,
   },
   actions: { tracking_integration_updated: "عُدّل إعداد منصة ربط" },
   details: {

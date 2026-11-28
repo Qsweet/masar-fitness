@@ -153,14 +153,17 @@ test("X: البكسل وأحداثه بأنماطها، ولا مفتاح خاد
   await expect(page.getByLabel(TEXTS.form.sendHashedPhone)).toBeChecked();
 
   const fields = TEXTS.form.fields;
-  await page.getByLabel(TEXTS.form.enabled, { exact: true }).check();
-  await page.getByLabel(fields.pixelId.label).fill("o8z5x");
-  await page.getByLabel(fields.purchaseEventId.label).fill("tw-zzzzz-p1q2r");
-  await page.getByRole("button", { name: TEXTS.form.submit }).click();
+  // النموذج يعود إلى المحفوظ بعد كل إرسال، فكل محاولة تملأ حقولها كلها
+  const saveX = async (purchaseEventId: string) => {
+    await page.getByLabel(TEXTS.form.enabled, { exact: true }).check();
+    await page.getByLabel(fields.pixelId.label).fill("o8z5x");
+    await page.getByLabel(fields.purchaseEventId.label).fill(purchaseEventId);
+    await page.getByLabel(TEXTS.form.sendHashedPhone).uncheck();
+    await page.getByRole("button", { name: TEXTS.form.submit }).click();
+  };
+  await saveX("tw-zzzzz-p1q2r");
   await expect(formAlert(page)).toHaveText(TEXT.errors["tracking.pixel_mismatch_purchaseEventId"]);
-  await page.getByLabel(fields.purchaseEventId.label).fill("tw-o8z5x-p1q2r");
-  await page.getByLabel(TEXTS.form.sendHashedPhone).uncheck();
-  await page.getByRole("button", { name: TEXTS.form.submit }).click();
+  await saveX("tw-o8z5x-p1q2r");
   await expect(page.getByText(TEXT.notices.tracking_saved)).toBeVisible();
   await expect(page.getByLabel(TEXTS.form.sendHashedPhone)).not.toBeChecked();
   const saved = await db.trackingIntegration.findUniqueOrThrow({

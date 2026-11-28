@@ -5,7 +5,7 @@ import { PlansTable } from "@/components/admin/sales/plans-table";
 import { TableCard } from "@/components/admin/ui/data-table";
 import { ButtonLink, EmptyState, PageHeader, Tabs, uiStyles } from "@/components/admin/ui/kit";
 import { ADMIN_ROUTES } from "@/config/admin";
-import { getAdminDictionary } from "@/i18n/admin";
+import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { formatNumber } from "@/i18n/format";
 import { requireStaff } from "@/server/admin/guard";
 import { bestValueSlug } from "@/server/admin/sales/catalog-view";
@@ -30,6 +30,29 @@ function kindHref(kind: ProductKind): string {
  * قائمة الكتالوج بكل حالاته (المسودة والمنشور والمؤرشف): السعر الساري، وهل يُباع الآن بالقاعدة نفسها
  * التي تطبقها السلة، وأي باقة تحمل «الأكثر قيمة» في الموقع (محسوبة، للقراءة).
  */
+interface KindTabsProps {
+  readonly kinds: readonly ProductKind[];
+  readonly current: ProductKind;
+  readonly counts: Readonly<Record<ProductKind, number>>;
+  readonly text: AdminDictionary["sales"]["plans"];
+}
+
+/** تبويب لكل نوع ظاهر بعدد منتجاته. */
+function KindTabs({ kinds, current, counts, text }: KindTabsProps) {
+  return (
+    <Tabs
+      label={text.tabsLabel}
+      current={current}
+      tabs={kinds.map((id) => ({
+        id,
+        label: text.tabs[id],
+        href: kindHref(id),
+        count: formatNumber(counts[id]),
+      }))}
+    />
+  );
+}
+
 export default async function PlansPage(props: PageProps<"/admin/sales/plans">) {
   const { staff } = await requireStaff("catalog.read");
   const query = await props.searchParams;
@@ -58,16 +81,7 @@ export default async function PlansPage(props: PageProps<"/admin/sales/plans">) 
       <PageHeader title={text.title} description={text.lead}>
         {add}
       </PageHeader>
-      <Tabs
-        label={text.tabsLabel}
-        current={kind}
-        tabs={kinds.map((id) => ({
-          id,
-          label: text.tabs[id],
-          href: kindHref(id),
-          count: formatNumber(counts[id]),
-        }))}
-      />
+      <KindTabs kinds={kinds} current={kind} counts={counts} text={text} />
       <TableCard>
         {rows.length === 0 ? (
           <EmptyState icon="plans" title={empty.title} description={empty.lead}>

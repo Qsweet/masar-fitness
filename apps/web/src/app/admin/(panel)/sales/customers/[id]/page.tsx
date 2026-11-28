@@ -1,4 +1,4 @@
-import { getCustomerDetail, listOrders, type CustomerDetail } from "@masar/db";
+import { getCustomerDetail, listOrders, type CustomerDetail, type OrderListPage } from "@masar/db";
 import { hasPermission } from "@masar/domain";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -48,6 +48,33 @@ function customerFacts(
  * صفحة عميل للقراءة فقط: جواله مقنَّعًا وكشفه المدقَّق، وطلباته واشتراكاته وطلبات تقييمه. بلا اسم
  * (الأسماء لقطات على الطلبات) وبلا تعديل: نظام العملاء هو الـCRM.
  */
+interface CustomerOrdersProps {
+  readonly orders: OrderListPage;
+  readonly sales: AdminDictionary["sales"];
+  readonly now: Date;
+  readonly timezone: string;
+}
+
+/** آخر طلبات العميل جدولًا داخل العمود الرئيسي، بلا عمودي العميل والجوال. */
+function CustomerOrders({ orders, sales, now, timezone }: CustomerOrdersProps) {
+  const text = sales.customers.detail;
+  return (
+    <TableCard title={text.orders}>
+      {orders.rows.length === 0 ? (
+        <EmptyState icon="orders" title={text.ordersEmptyTitle} />
+      ) : (
+        <OrdersTable
+          rows={orders.rows}
+          sales={sales}
+          now={now}
+          timezone={timezone}
+          caption={text.orders}
+        />
+      )}
+    </TableCard>
+  );
+}
+
 export default async function CustomerPage(props: PageProps<"/admin/sales/customers/[id]">) {
   const { staff } = await requireStaff("customers.read");
   const { id } = await props.params;
@@ -91,19 +118,7 @@ export default async function CustomerPage(props: PageProps<"/admin/sales/custom
         }
         main={
           <>
-            <TableCard title={text.orders}>
-              {orders.rows.length === 0 ? (
-                <EmptyState icon="orders" title={text.ordersEmptyTitle} />
-              ) : (
-                <OrdersTable
-                  rows={orders.rows}
-                  sales={sales}
-                  now={now}
-                  timezone={customer.timeZone}
-                  caption={text.orders}
-                />
-              )}
-            </TableCard>
+            <CustomerOrders orders={orders} sales={sales} now={now} timezone={customer.timeZone} />
             <CustomerMemberships customer={customer} sales={sales} />
             <CustomerAssessments customer={customer} sales={sales} />
           </>

@@ -39,6 +39,33 @@ function emptyText(filter: OrdersFilter, text: OrdersText["empty"]) {
   };
 }
 
+/** الفارغ بسببه: الفلتر يقول ذلك ويعطي «امسح». */
+function OrdersEmpty({
+  filter,
+  text,
+}: {
+  readonly filter: OrdersFilter;
+  readonly text: OrdersText;
+}) {
+  const empty = emptyText(filter, text.empty);
+  return (
+    <EmptyState icon="orders" title={empty.title} description={empty.lead}>
+      {filter.customRange || filter.reference !== null ? (
+        <ButtonLink href={ADMIN_ROUTES.orders} size="small">
+          {text.filters.clear}
+        </ButtonLink>
+      ) : null}
+    </EmptyState>
+  );
+}
+
+/** عدّادات التبويبات في المدى نفسه؛ مدى غير صحيح بلا عدّادات. */
+function loadCounts(clubId: string, filter: OrdersFilter, now: Date) {
+  return filter.invalidRange
+    ? Promise.resolve(null)
+    : countOrdersByTab(getDb(), { clubId, from: filter.from, to: filter.to, now });
+}
+
 const NOTHING: OrderListPage = { rows: [], total: 0 };
 
 /** ما يُقرأ من القاعدة بحسب التصفية. البحث بالمرجع مطابقة تامة يتجاوز التبويب والمدى. */
@@ -60,11 +87,11 @@ function loadOrders(clubId: string, filter: OrdersFilter, now: Date): Promise<Or
 interface PagerProps {
   readonly text: OrdersText;
   readonly filter: OrdersFilter;
-  readonly shown: number;
-  readonly total: number;
+  readonly page: OrderListPage;
 }
 
-function OrdersPagination({ text, filter, shown, total }: PagerProps) {
+function OrdersPagination({ text, filter, page: { rows, total } }: PagerProps) {
+  const shown = rows.length;
   const first = (filter.page - 1) * ORDERS_PAGE_SIZE + 1;
   const range = fill(text.range, {
     from: formatNumber(shown === 0 ? 0 : first),
@@ -94,9 +121,7 @@ export default async function OrdersPage(props: PageProps<"/admin/sales/orders">
   const filter = parseOrdersQuery(query, today);
   const [page, counts] = await Promise.all([
     loadOrders(staff.clubId, filter, now),
-    filter.invalidRange
-      ? null
-      : countOrdersByTab(getDb(), { clubId: staff.clubId, from: filter.from, to: filter.to, now }),
+    loadCounts(staff.clubId, filter, now),
   ]);
   const [only] = page.rows;
   if (filter.reference !== null && page.total === 1 && only !== undefined) {
@@ -104,7 +129,6 @@ export default async function OrdersPage(props: PageProps<"/admin/sales/orders">
   }
   const { sales } = getAdminDictionary();
   const text = sales.orders;
-  const empty = emptyText(filter, text.empty);
   return (
     <>
       <PageHeader title={text.title} description={text.lead} />
@@ -124,23 +148,12 @@ export default async function OrdersPage(props: PageProps<"/admin/sales/orders">
         }
         footer={
           page.total === 0 ? undefined : (
-            <OrdersPagination
-              text={text}
-              filter={filter}
-              shown={page.rows.length}
-              total={page.total}
-            />
+            <OrdersPagination text={text} filter={filter} page={page} />
           )
         }
       >
         {page.rows.length === 0 ? (
-          <EmptyState icon="orders" title={empty.title} description={empty.lead}>
-            {filter.customRange || filter.reference !== null ? (
-              <ButtonLink href={ADMIN_ROUTES.orders} size="small">
-                {text.filters.clear}
-              </ButtonLink>
-            ) : null}
-          </EmptyState>
+          <OrdersEmpty filter={filter} text={text} />
         ) : (
           <OrdersTable
             rows={page.rows}

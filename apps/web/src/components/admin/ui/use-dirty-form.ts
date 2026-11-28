@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type RefObject } from "react";
+import { useEffect, useState, type RefObject } from "react";
 
 type Control = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
@@ -34,32 +34,36 @@ export function isFormDirty(form: HTMLFormElement): boolean {
   );
 }
 
+function formOf(anchor: RefObject<HTMLElement | null>): HTMLFormElement | null {
+  return anchor.current?.closest("form") ?? null;
+}
+
 /**
- * هل في النموذج المحيط بالعنصر تعديل لم يُحفظ؟ يُعاد الحساب مع كل إدخال وتغيير وإعادة ضبط، وبعد كل رسم
- * (رد الخادم يعيد رسم الحقول بقيمها الجديدة فيصير النموذج نظيفًا).
+ * هل في النموذج المحيط بالعنصر تعديل لم يُحفظ؟ يُعاد الحساب مع كل إدخال وتغيير وإعادة ضبط، ومع كل تغيّر
+ * في عناصر النموذج (رد الخادم يعيد رسم الحقول بقيمها الجديدة فيصير النموذج نظيفًا).
  */
 export function useDirtyForm(anchor: RefObject<HTMLElement | null>) {
   const [dirty, setDirty] = useState(false);
-  const formOf = useCallback(() => anchor.current?.closest("form") ?? null, [anchor]);
-  const update = useCallback(() => {
-    const form = formOf();
-    setDirty(form === null ? false : isFormDirty(form));
-  }, [formOf]);
   useEffect(() => {
-    const form = formOf();
+    const form = formOf(anchor);
     if (form === null) {
       return undefined;
     }
+    const update = () => {
+      setDirty(isFormDirty(form));
+    };
     const later = () => requestAnimationFrame(update);
+    const observer = new MutationObserver(update);
+    observer.observe(form, { childList: true, subtree: true });
     form.addEventListener("input", update);
     form.addEventListener("change", update);
     form.addEventListener("reset", later);
     return () => {
+      observer.disconnect();
       form.removeEventListener("input", update);
       form.removeEventListener("change", update);
       form.removeEventListener("reset", later);
     };
-  }, [formOf, update]);
-  useEffect(update);
-  return { dirty, formOf };
+  }, [anchor]);
+  return { dirty, formOf: () => formOf(anchor) };
 }

@@ -98,7 +98,6 @@ export default async function PromotionPage(props: PageProps<"/admin/sales/promo
   const text = sales.promotions;
   const canWrite = hasPermission(staff.role, "promotions.write");
   const policy = policyOf(row);
-  const editable = canWrite && policy.editable;
   const note = canWrite ? editNote(row, text.detail) : undefined;
   return (
     <>
@@ -116,7 +115,7 @@ export default async function PromotionPage(props: PageProps<"/admin/sales/promo
         <PromotionUsageCard row={row} dictionary={dictionary} />
       </SettingsStack>
       {note === undefined ? null : <Alert tone="info">{note}</Alert>}
-      {editable ? (
+      {canWrite && policy.editable ? (
         <PromotionForm
           action={savePromotionAction}
           promotionId={row.rule.id}

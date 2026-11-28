@@ -2,25 +2,31 @@
 
 import { useEffect, useState } from "react";
 
-/** رابط داخلي يُتبَع في الصفحة نفسها بنقرة عادية (لا نافذة جديدة ولا تنزيل ولا مفتاح تعديل). */
-function internalHref(event: MouseEvent): string | null {
-  if (event.defaultPrevented || event.button !== 0) {
-    return null;
-  }
-  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-    return null;
-  }
+/** نقرة عادية: الزر الأيسر بلا مفتاح تعديل، ولم يعالجها غيرنا. */
+function plainClick(event: MouseEvent): boolean {
+  const modified = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+  return !event.defaultPrevented && event.button === 0 && !modified;
+}
+
+/** رابط يفتح في الصفحة نفسها (لا نافذة جديدة ولا تنزيل). */
+function sameTabLink(event: MouseEvent): HTMLAnchorElement | null {
   const target = event.target instanceof Element ? event.target.closest("a[href]") : null;
   if (!(target instanceof HTMLAnchorElement) || target.target === "_blank" || target.download) {
     return null;
   }
-  const url = new URL(target.href, window.location.href);
-  if (url.origin !== window.location.origin) {
+  return target;
+}
+
+/** رابط داخلي إلى صفحة أخرى يُتبَع بنقرة عادية؛ وإلا null. */
+function internalHref(event: MouseEvent): string | null {
+  const link = plainClick(event) ? sameTabLink(event) : null;
+  if (link === null) {
     return null;
   }
-  const samePage =
-    url.pathname === window.location.pathname && url.search === window.location.search;
-  return samePage ? null : `${url.pathname}${url.search}${url.hash}`;
+  const url = new URL(link.href, window.location.href);
+  const here = window.location;
+  const samePage = url.pathname === here.pathname && url.search === here.search;
+  return url.origin !== here.origin || samePage ? null : `${url.pathname}${url.search}${url.hash}`;
 }
 
 /**
@@ -51,7 +57,12 @@ export function useLeaveGuard(active: boolean) {
       document.removeEventListener("click", onClick, true);
     };
   }, [active]);
-  return { pending, clear: () => setPending(null) };
+  return {
+    pending,
+    clear: () => {
+      setPending(null);
+    },
+  };
 }
 
 /** ⌘S / Ctrl+S يرسل النموذج بزره الأساسي ما دام فيه تعديل. */
@@ -67,6 +78,8 @@ export function useSaveShortcut(active: boolean, submit: () => void) {
       }
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+    };
   }, [active, submit]);
 }

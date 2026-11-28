@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { cx } from "@/lib/cx";
 import { useKitText } from "./form-kit";
 import { buttonClass } from "./kit";
@@ -45,7 +45,9 @@ function LeaveDialog({ href, onStay }: LeaveDialogProps) {
         <button
           type="button"
           className={buttonClass({ variant: "danger" })}
-          onClick={() => router.push(href)}
+          onClick={() => {
+            router.push(href);
+          }}
         >
           {text.leave.leave}
         </button>
@@ -53,7 +55,9 @@ function LeaveDialog({ href, onStay }: LeaveDialogProps) {
         <button
           type="button"
           className={buttonClass()}
-          onClick={() => dialog.current?.close()}
+          onClick={() => {
+            dialog.current?.close();
+          }}
           autoFocus
         >
           {text.leave.stay}
@@ -76,10 +80,10 @@ export function SaveBar({ children }: { readonly children: ReactNode }) {
   const shown = dirty ? text : null;
   const guarded = shown !== null;
   const leave = useLeaveGuard(guarded);
-  const submit = useCallback(() => {
+  const submit = () => {
     const button = bar.current?.querySelector<HTMLButtonElement>("button[type=submit]");
     formOf()?.requestSubmit(button ?? null);
-  }, [formOf]);
+  };
   useSaveShortcut(guarded, submit);
   return (
     <div ref={bar} className={cx(styles.bar, guarded && styles.dirty)} data-dirty={guarded}>
@@ -97,7 +101,9 @@ export function SaveBar({ children }: { readonly children: ReactNode }) {
           <button
             type="button"
             className={buttonClass({ variant: "ghost" })}
-            onClick={() => formOf()?.reset()}
+            onClick={() => {
+              formOf()?.reset();
+            }}
           >
             {shown.saveBar.discard}
           </button>

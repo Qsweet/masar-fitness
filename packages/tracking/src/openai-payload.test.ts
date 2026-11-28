@@ -24,6 +24,7 @@ const purchase: PurchaseContext = {
   scid: null,
   ttp: null,
   obref: "123e4567-e89b-42d3-a456-426614174000",
+  opprefCookie: "op/pref+cookie=",
   clientIp: "203.0.113.9",
   userAgent: "Mozilla/5.0 Test",
   pageUrl: "https://masar.test/checkout/six-months",
@@ -99,12 +100,29 @@ describe("OpenAI Conversions API (القرار 91)", () => {
     expect(built.body).not.toContain("openai-capi-key");
   });
 
+  it("بلا oppref في الرابط المختوم: كوكي __oppref كما هو (مراجعة القرار 91، L1)", () => {
+    const built = request(
+      buildPurchase("openai", {
+        ...input,
+        purchase: { ...purchase, lastTouch: null, firstTouch: null },
+      }),
+    );
+    const [event] = built.json.events as Record<string, unknown>[];
+    expect(event?.oppref).toBe("op/pref+cookie=");
+  });
+
   it("الجوال المطفأ لا يُرسل، ولا oppref ولا obref بلا قيمة صالحة", () => {
     const built = request(
       buildPurchase("openai", {
         ...input,
         config: { pixelId: "1345349876", sendHashedPhone: false },
-        purchase: { ...purchase, firstTouch: null, lastTouch: null, obref: "bad value" },
+        purchase: {
+          ...purchase,
+          firstTouch: null,
+          lastTouch: null,
+          obref: "bad value",
+          opprefCookie: null,
+        },
       }),
     );
     const [event] = built.json.events as Record<string, Record<string, unknown>>[];

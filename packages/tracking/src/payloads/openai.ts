@@ -68,7 +68,8 @@ export function buildOpenaiPurchase(input: PurchaseInput): Built {
     id: eventId,
     type: OPENAI_PURCHASE_EVENT,
     timestamp_ms: purchase.paidAt.getTime(),
-    oppref: touchValue(purchase, "oppref")?.value ?? null,
+    // من الرابط المختوم، وإلا كوكي البكسل `__oppref` (مراجعة القرار 91): القيمة كما هي بلا تعديل
+    oppref: touchValue(purchase, "oppref")?.value ?? purchase.opprefCookie,
     source_url: sourceUrl(purchase, input.siteUrl),
     action_source: "web",
     user: user(input),

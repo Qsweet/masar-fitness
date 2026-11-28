@@ -163,7 +163,6 @@ export const contentAr = {
     range: "{from} إلى {to} من {total}",
     newer: "الأحدث",
     older: "الأقدم",
-    open: "افتح",
     /** {seq}: رقم الإصدار، لقارئ الشاشة. */
     openLabel: "افتح الإصدار {seq}",
   },

@@ -1,4 +1,5 @@
 import type { DraftSlider } from "@masar/db";
+import { SettingsSection, SettingsStack } from "@/components/admin/ui/section";
 import { hasPermission, MAX_SLIDES } from "@masar/domain";
 import type { Metadata } from "next";
 import { MediaBanner } from "@/components/admin/media/media-banner";
@@ -65,18 +66,20 @@ function SettingsCard({
 }) {
   const text = dictionary.slider.settings;
   return (
-    <Card title={text.title} description={text.lead} narrow>
-      <SliderSettingsForm
-        action={saveSliderSettingsAction}
-        values={{
-          autoplay: draft.settings.autoplay ? "on" : "",
-          interval: String(draft.settings.intervalMs / MS_PER_SECOND),
-        }}
-        lockToken={draft.settingsToken}
-        dictionary={dictionary}
-        canWrite={canWrite}
-      />
-    </Card>
+    <SettingsStack>
+      <SettingsSection title={text.title} description={text.lead}>
+        <SliderSettingsForm
+          action={saveSliderSettingsAction}
+          values={{
+            autoplay: draft.settings.autoplay ? "on" : "",
+            interval: String(draft.settings.intervalMs / MS_PER_SECOND),
+          }}
+          lockToken={draft.settingsToken}
+          dictionary={dictionary}
+          canWrite={canWrite}
+        />
+      </SettingsSection>
+    </SettingsStack>
   );
 }
 

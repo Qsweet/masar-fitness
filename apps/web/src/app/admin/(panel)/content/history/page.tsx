@@ -1,8 +1,7 @@
 import { listReleases, type ReleaseListItem } from "@masar/db";
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Cell, DataTable } from "@/components/admin/ui/data-table";
-import { Badge, Card, EmptyState, Notice, noticeText, PageHeader } from "@/components/admin/ui/kit";
+import { Cell, DataTable, RowLink, TableCard } from "@/components/admin/ui/data-table";
+import { Badge, EmptyState, Notice, noticeText, PageHeader } from "@/components/admin/ui/kit";
 import { Pagination } from "@/components/admin/ui/pagination";
 import { ADMIN_ROUTES, CONTENT_HISTORY_PAGE_SIZE, releasePath } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
@@ -45,15 +44,25 @@ function Rows({
   return (
     <DataTable
       caption={text.title}
-      columns={[columns.seq, columns.source, columns.by, columns.at, columns.changes]}
-      actionsLabel={text.open}
+      columns={[
+        columns.seq,
+        columns.source,
+        columns.by,
+        columns.at,
+        { label: columns.changes, align: "numeric" },
+      ]}
       testId="content-history"
       compact
     >
       {items.map((item) => (
         <tr key={item.id}>
-          <Cell label={columns.seq} slot="title" strong>
-            {formatNumber(item.seq)}
+          <Cell label={columns.seq} slot="title">
+            <RowLink
+              href={releasePath(item.id)}
+              label={fill(text.openLabel, { seq: formatNumber(item.seq) })}
+            >
+              {formatNumber(item.seq)}
+            </RowLink>
           </Cell>
           <Cell label={columns.source} slot="badge">
             <Badge tone={item.source === "rollback" ? "warning" : "success"}>
@@ -70,15 +79,6 @@ function Rows({
           </Cell>
           <Cell label={columns.changes} align="numeric">
             {formatNumber(item.changedCount)}
-          </Cell>
-          <Cell label="" align="end" slot="aside">
-            <Link
-              href={releasePath(item.id)}
-              prefetch={false}
-              aria-label={fill(text.openLabel, { seq: formatNumber(item.seq) })}
-            >
-              {text.open}
-            </Link>
           </Cell>
         </tr>
       ))}
@@ -100,33 +100,49 @@ export default async function ContentHistoryPage(props: PageProps<"/admin/conten
     }),
     clubTimezone(staff.clubId),
   ]);
-  const from = (page - 1) * CONTENT_HISTORY_PAGE_SIZE + 1;
   return (
     <>
       <PageHeader title={text.title} description={text.lead} />
       <Notice text={noticeText(query.done, dictionary)} />
-      <Card flush={items.length > 0}>
+      <TableCard
+        footer={
+          total <= CONTENT_HISTORY_PAGE_SIZE ? undefined : (
+            <HistoryPagination page={page} total={total} shown={items.length} text={text} />
+          )
+        }
+      >
         {items.length === 0 ? (
           <EmptyState icon="publish" title={text.emptyTitle} description={text.emptyLead} />
         ) : (
           <Rows items={items} timezone={timezone} text={text} />
         )}
-      </Card>
-      {total <= CONTENT_HISTORY_PAGE_SIZE ? null : (
-        <Pagination
-          label={text.pagination}
-          range={fill(text.range, {
-            from: formatNumber(from),
-            to: formatNumber(from + items.length - 1),
-            total: formatNumber(total),
-          })}
-          previous={{ label: text.newer, href: page > 1 ? pageHref(page - 1) : null }}
-          next={{
-            label: text.older,
-            href: page * CONTENT_HISTORY_PAGE_SIZE < total ? pageHref(page + 1) : null,
-          }}
-        />
-      )}
+      </TableCard>
     </>
+  );
+}
+
+interface HistoryPaginationProps {
+  readonly page: number;
+  readonly total: number;
+  readonly shown: number;
+  readonly text: Text;
+}
+
+function HistoryPagination({ page, total, shown, text }: HistoryPaginationProps) {
+  const from = (page - 1) * CONTENT_HISTORY_PAGE_SIZE + 1;
+  return (
+    <Pagination
+      label={text.pagination}
+      range={fill(text.range, {
+        from: formatNumber(from),
+        to: formatNumber(from + shown - 1),
+        total: formatNumber(total),
+      })}
+      previous={{ label: text.newer, href: page > 1 ? pageHref(page - 1) : null }}
+      next={{
+        label: text.older,
+        href: page * CONTENT_HISTORY_PAGE_SIZE < total ? pageHref(page + 1) : null,
+      }}
+    />
   );
 }

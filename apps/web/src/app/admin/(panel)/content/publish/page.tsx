@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { PointList, SettingsSection } from "@/components/admin/ui/section";
 import { AdminForm } from "@/components/admin/admin-form";
 import { ContentDiff } from "@/components/admin/content/content-diff";
-import { Alert, Card, EmptyState, PageHeader, uiStyles } from "@/components/admin/ui/kit";
+import { Alert, Card, EmptyState, PageHeader } from "@/components/admin/ui/kit";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import { countText } from "@/i18n/count";
@@ -80,19 +81,15 @@ export default async function ContentPublishPage() {
           dictionary={dictionary}
         />
       </Card>
-      <Card title={text.publish.confirmTitle} narrow accent>
-        <ul className={uiStyles.consequences}>
-          {text.publish.consequences.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
+      <SettingsSection title={text.publish.confirmTitle} tone="accent">
+        <PointList lines={text.publish.consequences} />
         <AdminForm
           action={publishContentAction}
           labels={{ submit: text.publish.submit, errors: dictionary.errors }}
         >
           <input type="hidden" name="token" value={token} />
         </AdminForm>
-      </Card>
+      </SettingsSection>
     </>
   );
 }

@@ -1,3 +1,4 @@
+import { SettingsSection, SettingsStack } from "@/components/admin/ui/section";
 import { listMediaAssets } from "@masar/db";
 import { hasPermission } from "@masar/domain";
 import type { Metadata } from "next";
@@ -81,9 +82,11 @@ export default async function MediaPage(props: PageProps<"/admin/content/media">
       <QueryError error={query.error} dictionary={dictionary} />
       <MediaBanner status={status} text={text} backupText={dictionary.backup} />
       {status.uploads && hasPermission(staff.role, "content.write") ? (
-        <Card title={text.uploadTitle} narrow>
-          <UploadForm text={text} />
-        </Card>
+        <SettingsStack>
+          <SettingsSection title={text.uploadTitle} description={text.uploadSectionLead}>
+            <UploadForm text={text} />
+          </SettingsSection>
+        </SettingsStack>
       ) : null}
       <Card
         title={text.gridTitle}

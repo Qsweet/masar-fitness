@@ -8,7 +8,9 @@ import {
   isTrackingProvider,
   isValidTestEventCode,
   parseIntegrationConfig,
+  requiresAamConfirmation,
   usesHashedPhone,
+  type IntegrationConfig,
   type TrackingProvider,
 } from "@masar/domain";
 import { isPlausibleSecret, MAX_SECRET_LENGTH, sealTrackingSecret } from "@masar/tracking";
@@ -62,6 +64,23 @@ function testCodeOf(provider: TrackingProvider, formData: FormData): string | nu
   return isValidTestEventCode(value) ? value : undefined;
 }
 
+/**
+ * الخانات المنطقية: «إرسال الجوال المجزّأ» لمن يقبله (القرار 90-3)، وتأكيد إطفاء المطابقة المتقدمة
+ * الآلية لـOpenAI (مراجعة القرار 91). غير المؤشَّرة مطفأة صراحةً.
+ */
+function flagsOf(
+  provider: TrackingProvider,
+  config: IntegrationConfig,
+  formData: FormData,
+): IntegrationConfig {
+  const checked = (name: string) => formData.get(name) === "on";
+  return {
+    ...config,
+    ...(usesHashedPhone(provider) ? { sendHashedPhone: checked("sendHashedPhone") } : {}),
+    ...(requiresAamConfirmation(provider) ? { aamDisabled: checked("aamDisabled") } : {}),
+  };
+}
+
 /** يقرأ نموذج المنصة ويتحقق منه كله على الخادم، ثم يحفظ بسطر تدقيق ويفرّغ ذاكرة الموقع. */
 export async function saveIntegrationForm(
   context: StaffContext,
@@ -80,10 +99,10 @@ export async function saveIntegrationForm(
   if (issue !== undefined) {
     return reject(`tracking.${issue[1]}_${issue[0]}`);
   }
-  // خانة «إرسال الجوال المجزّأ» لمن يقبله وحده (القرار 90-3): غير المؤشَّرة مطفأة صراحةً
-  const config = usesHashedPhone(provider)
-    ? { ...parsed.config, sendHashedPhone: formData.get("sendHashedPhone") === "on" }
-    : parsed.config;
+  const config = flagsOf(provider, parsed.config, formData);
+  if (enabled && requiresAamConfirmation(provider) && config.aamDisabled !== true) {
+    return reject("tracking.required_aamDisabled");
+  }
   const testEventCode = testCodeOf(provider, formData);
   if (testEventCode === undefined) {
     return reject("tracking.invalid_test_code");

@@ -3,6 +3,7 @@ import {
   acceptsTestEventCode,
   fieldsOf,
   isServerProvider,
+  requiresAamConfirmation,
   usesHashedPhone,
   type TrackingField,
   type TrackingProvider,
@@ -103,12 +104,21 @@ export function ProviderForm(props: ProviderFormProps) {
           dir="ltr"
         />
       ))}
+      {requiresAamConfirmation(provider) ? (
+        <CheckboxField
+          id="integration-aam-disabled"
+          name="aamDisabled"
+          label={text.aamDisabled}
+          hint={text.aamDisabledHint}
+          defaultChecked={view?.config.aamDisabled === true}
+        />
+      ) : null}
       {usesHashedPhone(provider) ? (
         <CheckboxField
           id="integration-send-phone"
           name="sendHashedPhone"
           label={text.sendHashedPhone}
-          hint={text.sendHashedPhoneHint}
+          hint={provider === "openai" ? text.sendHashedPhoneHintOpenai : text.sendHashedPhoneHint}
           defaultChecked={view?.config.sendHashedPhone !== false}
         />
       ) : null}

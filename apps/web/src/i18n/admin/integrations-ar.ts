@@ -91,6 +91,11 @@ export const integrationsAr = {
       openai:
         "Pixel ID: Ads Manager ← Conversions ← Data Source ← بكسل الويب (‏pixelId في شيفرته الأساسية). حروف وأرقام و_ و- فقط.",
     },
+    aamDisabled: "أوقفتُ المطابقة المتقدمة الآلية في Ads Manager",
+    aamDisabledHint:
+      "شرط للتفعيل: بلا هذا التأكيد لا يُحمَّل البكسل على الموقع. أطفئها أولًا في Ads Manager ← Conversions ← Data Source ← إعداد البكسل، ثم أشّر هنا.",
+    sendHashedPhoneHintOpenai:
+      "من الخادم وحده، مع موافقة الزائر على الإعلانات: جوال الطلب بعد SHA-256. هذه الخانة لا تشمل بكسل المتصفح: ما يقرؤه البكسل من صفحات الموقع لا يوقفه إلا إطفاء المطابقة المتقدمة الآلية في Ads Manager.",
     sendHashedPhone: "إرسال الجوال المجزّأ",
     sendHashedPhoneHint:
       "مع موافقة الزائر على الإعلانات وحدها: جوال الطلب بعد SHA-256، لتربط المنصة الشراء بالإعلان. أطفئه لتعتمد على المعرّفات التقنية وحدها.",
@@ -134,7 +139,7 @@ export const integrationsAr = {
   xContainerNote:
     "لا تضف وسم X الأساسي ولا أحداثه داخل حاوية GTM أيضًا: يُحمَّل البكسل مرتين ويُحسب الحدث مرتين. إعداده هنا وحده يكفي.",
   openaiMatchingNote:
-    "المطابقة المتقدمة الآلية (Automatic advanced matching) يقرر فيها حسابك لا الموقع: حين تكون مفعّلة يقرأ البكسل بيانات العميل من صفحات الموقع (ومنها نموذج الاستفسار) ويجزّئها ويرسلها مع الأحداث. أطفئها في Ads Manager ← Conversions ← Data Source ← إعداد البكسل قبل التفعيل هنا؛ الجوال المجزّأ يصل OpenAI من الخادم بموافقة الزائر. ولا تضف البكسل داخل حاوية GTM أيضًا.",
+    "المطابقة المتقدمة الآلية (Automatic advanced matching) يقرر فيها حسابك لا الموقع: حين تكون مفعّلة يقرأ البكسل بيانات العميل من صفحات الموقع (ومنها نموذج الاستفسار) ويجزّئها ويرسلها مع الأحداث، ولا يوقفها شيء هنا: لا خانة «إرسال الجوال المجزّأ» (للخادم وحده) ولا غيرها. أطفئها في Ads Manager ← Conversions ← Data Source ← إعداد البكسل، ثم أكّد ذلك بالخانة أدناه: بلا التأكيد لا يُفعَّل الربط ولا يُحمَّل البكسل. ولا تضف البكسل داخل حاوية GTM أيضًا.",
   gtmOverlap:
     "GTM مفعَّل مع Google Analytics أو Google Ads هنا: إن كان الوسم نفسه داخل الحاوية أيضًا فسيُقاس كل حدث مرتين. فعّله في مكان واحد.",
   log: {
@@ -182,6 +187,8 @@ export const integrationsErrorsAr = {
   "tracking.required_conversionLabel": "اكتب تسمية التحويل قبل التفعيل.",
   "tracking.invalid_pixelId": "معرّف البكسل بصيغة غير صحيحة لهذه المنصة.",
   "tracking.required_pixelId": "اكتب معرّف البكسل قبل التفعيل.",
+  "tracking.required_aamDisabled":
+    "أطفئ المطابقة المتقدمة الآلية في Ads Manager وأكّد ذلك بالخانة قبل التفعيل.",
   "tracking.invalid_purchaseEventId": "معرّف حدث الشراء بصيغة غير صحيحة (tw-XXXXX-XXXXX).",
   "tracking.required_purchaseEventId": "اكتب معرّف حدث الشراء قبل التفعيل.",
   "tracking.pixel_mismatch_purchaseEventId": "معرّف حدث الشراء لبكسل آخر: وسطه يطابق معرّف البكسل.",
@@ -234,5 +241,6 @@ export const integrationsAuditAr = {
     addToCartEventId: "معرّف حدث إضافة السلة",
     leadEventId: "معرّف حدث الاستفسار",
     sendHashedPhone: "إرسال الجوال المجزّأ",
+    aamDisabled: "تأكيد إطفاء المطابقة المتقدمة الآلية",
   },
 } as const;

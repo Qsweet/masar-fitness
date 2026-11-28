@@ -104,7 +104,10 @@ function clampDay(day: PlainDate): PlainDate {
  * حدّا المدى لحظتين: بداية اليوم الأول ونهاية اليوم الأخير في منطقة النادي (القاعدة تحسبهما). اليوم
  * خارج المدى المعقول يُقصّ إليه: سنة 1 أو 9999 تُخرج لحظة لا يمثّلها Date فتُسقط الاستعلام.
  */
-async function dayBounds(db: Db, query: OrderListQuery): Promise<Bounds> {
+async function dayBounds(
+  db: Db,
+  query: Pick<OrderListQuery, "clubId" | "from" | "to">,
+): Promise<Bounds> {
   if (query.from === undefined && query.to === undefined) {
     return { starts: null, ends: null };
   }
@@ -152,6 +155,22 @@ function toRow(row: ListRow, now: Date): OrderListRow {
     paidProvider: row.paidProvider,
     manualMethod: row.manualPayment?.method ?? null,
   };
+}
+
+/** عدد طلبات كل تبويب في المدى نفسه: عدّادات العروض المحفوظة فوق الجدول (ADMIN_REDESIGN §6.1). */
+export type OrderTabCounts = Readonly<Record<OrderListTab, number>>;
+
+export type OrderCountQuery = Pick<OrderListQuery, "clubId" | "from" | "to" | "now">;
+
+export async function countOrdersByTab(db: Db, query: OrderCountQuery): Promise<OrderTabCounts> {
+  const range = rangeFilter(await dayBounds(db, query));
+  const counts = await Promise.all(
+    ORDER_LIST_TABS.map((tab) =>
+      db.order.count({ where: { clubId: query.clubId, ...tabFilter(tab, query.now), ...range } }),
+    ),
+  );
+  const entries = ORDER_LIST_TABS.map((tab, index) => [tab, counts[index] ?? 0] as const);
+  return Object.fromEntries(entries) as Record<OrderListTab, number>;
 }
 
 export async function listOrders(db: Db, query: OrderListQuery): Promise<OrderListPage> {

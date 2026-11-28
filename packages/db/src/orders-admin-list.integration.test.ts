@@ -4,6 +4,7 @@ import {
   createDb,
   createOrder,
   getOrderDetail,
+  countOrdersByTab,
   listOrders,
   type Db,
   type OrderListQuery,
@@ -128,6 +129,29 @@ describe("listOrders: التبويب بالحالة الفعلية", () => {
     });
     expect(row?.total.amountMinor).toBe(PLAN_PRICE);
     expect(row?.reference).toMatch(/^MSR-\d{7}$/);
+  });
+});
+
+describe("countOrdersByTab: عدّادات العروض", () => {
+  it("كل تبويب بعدد قائمته في المدى نفسه، والمعلّق بعد مهلته في «منتهية»", async () => {
+    await rawOrder();
+    await rawOrder(new Date(TEST_NOW.getTime() - HOUR_MS));
+    const paid = await rawOrder();
+    await markRawPaid(db, paid.orderId, { paidAt: TEST_NOW });
+    await rawOrder(TEST_NOW, otherClubId, otherPlan);
+    const counts = await countOrdersByTab(db, { clubId, now: TEST_NOW });
+    expect(counts).toEqual({ all: 3, awaiting: 1, paid: 1, expired: 1, cancelled: 0 });
+    for (const tab of ["all", "awaiting", "paid", "expired", "cancelled"] as const) {
+      expect((await list({ tab })).total).toBe(counts[tab]);
+    }
+    const farFuture = plainDate(2100, 1, 1);
+    expect(await countOrdersByTab(db, { clubId, now: TEST_NOW, from: farFuture })).toEqual({
+      all: 0,
+      awaiting: 0,
+      paid: 0,
+      expired: 0,
+      cancelled: 0,
+    });
   });
 });
 

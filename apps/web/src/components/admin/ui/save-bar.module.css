@@ -26,9 +26,9 @@
   animation: rise var(--a-dur-2) var(--a-ease-out);
 }
 
+/* حركة بالإزاحة وحدها: الشفافية أثناء الظهور تُسقط التباين لحظةً (ويقيسها فحص الوصول) */
 @keyframes rise {
   from {
-    opacity: 0;
     transform: translateY(0.5rem);
   }
 }
@@ -54,7 +54,7 @@
 }
 
 .hint {
-  color: var(--a-subtle);
+  color: var(--a-muted);
   font-weight: 450;
 }
 

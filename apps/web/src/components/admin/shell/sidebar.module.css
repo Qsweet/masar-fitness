@@ -63,7 +63,7 @@
 .groupLabel {
   padding: 0 0.625rem 0.375rem;
   color: var(--a-subtle);
-  font-size: var(--a-fs-label);
+  font-size: var(--a-fs-overline);
   font-weight: 500;
 }
 

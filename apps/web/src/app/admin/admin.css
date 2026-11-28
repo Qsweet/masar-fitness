@@ -140,17 +140,41 @@ html[data-admin] {
   --a-5: 1.5rem;
   --a-6: 2rem;
   --a-7: 3rem;
-  /* الحروف: Alexandria وحده، والمراجع والمسارات بخط النظام الثابت بلا تحميل */
+  /*
+   * الحروف (القرار 91): خطان بدورين. Alexandria للعناوين والأرقام الكبيرة (الهوية)، وIBM Plex Sans Arabic
+   * لكل نص الواجهة (التسميات والجداول والتلميحات). اللاتيني والأرقام بوجه Alexandria اللاتيني في الحالين.
+   * `--font` يُعاد تعريفه في اللوحة فكل مكوّن يرث خط النص، والعناوين تطلب `--a-font-display` صراحةً.
+   */
+  --a-font-display:
+    var(--font-alexandria-latin), var(--font-alexandria-arabic), system-ui, sans-serif;
+  --a-font-ui:
+    var(--font-alexandria-latin), var(--font-plex-arabic), var(--font-alexandria-arabic), system-ui,
+    sans-serif;
+  --font: var(--a-font-ui);
   --a-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+  /* السلّم: لكل دور حجم وسطر ووزن، ولا حجم خارجه */
   --a-fs-display: 1.75rem;
-  --a-fs-title: 1.375rem;
+  --a-fs-title: 1.5rem;
+  --a-fs-title-compact: 1.3125rem;
+  --a-fs-section: 1.0625rem;
   --a-fs-h2: 0.9375rem;
   --a-fs-body: 0.875rem;
   --a-fs-small: 0.8125rem;
+  --a-fs-label: 0.8125rem;
+  --a-fs-help: 0.8125rem;
+  --a-fs-table: 0.875rem;
   --a-fs-caption: 0.75rem;
-  --a-fs-label: 0.71875rem;
+  --a-fs-overline: 0.71875rem;
   --a-lh-tight: 1.3;
+  --a-lh-title: 1.35;
   --a-lh-body: 1.7;
+  --a-lh-help: 1.6;
+  --a-fw-display: 600;
+  --a-fw-label: 600;
+  --a-fw-strong: 600;
+  /* أقصى طول سطر: الوصف والتلميح يُقرآن لا يُمسحان */
+  --a-measure: 38rem;
+  --a-measure-help: 34rem;
   /* أسماء v1 القائمة للحروف */
   --a-text-title: var(--a-fs-title);
   --a-text-section: var(--a-fs-h2);
@@ -206,6 +230,7 @@ html[data-admin][data-density="compact"] {
 
 html[data-admin] body {
   background: var(--a-page);
+  font-family: var(--a-font-ui);
   color: var(--a-text);
   font-size: var(--a-fs-body);
   line-height: var(--a-lh-body);

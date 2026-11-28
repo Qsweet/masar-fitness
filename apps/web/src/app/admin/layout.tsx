@@ -9,7 +9,7 @@ import {
   parseAdminTheme,
 } from "@/config/admin";
 import { ADMIN_DEFAULT_LOCALE, adminDirection, getAdminDictionary } from "@/i18n/admin";
-import { fontVariables } from "../fonts";
+import { adminFontVariables } from "../fonts";
 import "../globals.css";
 import "../patterns.css";
 import "./admin.css";
@@ -42,7 +42,7 @@ export default async function AdminRootLayout({ children }: { readonly children:
     <html
       lang={ADMIN_DEFAULT_LOCALE}
       dir={adminDirection()}
-      className={fontVariables}
+      className={adminFontVariables}
       data-admin=""
       data-theme={theme}
       data-density={density}

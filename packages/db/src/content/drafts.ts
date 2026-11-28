@@ -1,9 +1,17 @@
 /**
- * مسودة المحتوى (ADMIN_A3_CONTENT §8.2): صف لكل مفتاح ولغة بقفل متفائل (`updated_at`). الحفظ تحت قفل
+ * مسودة المحتوى (ADMIN_A3_CONTENT §8.2): صف لكل مفتاح ولغة بقفل متفائل (`updated_at`)، والإعداد
+ * المنظَّم (§5) صف واحد بمفتاح `setting:<معرّف>` ولغة `*`. الحفظ تحت قفل
  * محتوى النادي: رمز قديم لمفتاح ⇒ يُرفض ذلك المفتاح وحده ولا يُكتب شيء من الطلب، بلا دمج صامت.
  * «عودة إلى الافتراضي» تكتب NULL (لا حذف أثناء التحرير)، فيظهر في الفرق «إزالة تجاوز».
  */
-import { err, ok, type DraftEntry, type Result, type TextOverride } from "@masar/domain";
+import {
+  err,
+  ok,
+  type DraftEntry,
+  type Result,
+  type SettingObject,
+  type TextOverride,
+} from "@masar/domain";
 import type { Db } from "../client";
 import { writeAudit, type StaffAuditActor } from "../commerce/audit";
 import { inTransaction, type Tx } from "../commerce/transaction";
@@ -14,6 +22,8 @@ export const CONTENT_DRAFT_SAVED = "content_draft_saved";
 
 export interface DraftRow extends DraftEntry {
   readonly value: TextOverride | null;
+  /** القيمة كما في القاعدة: صف الإعداد المنظَّم (`setting:<معرّف>`) يحمل كائنه هنا. */
+  readonly raw: unknown;
   /** رمز القفل المتفائل. */
   readonly lockToken: string;
   readonly updatedBy: string;
@@ -46,6 +56,7 @@ function rowOf(row: RawRow): DraftRow {
     key: row.entry_key,
     locale: row.locale,
     value: overrideOf(row.value),
+    raw: row.value,
     lockToken: String(row.updated_at.getTime()),
     updatedBy: row.updated_by,
     updatedAt: row.updated_at,
@@ -62,8 +73,8 @@ export async function listDraftEntries(db: Db | Tx, clubId: string): Promise<Dra
 export interface DraftChange {
   readonly key: string;
   readonly locale: string;
-  /** null = عودة إلى الافتراضي. */
-  readonly value: TextOverride | null;
+  /** تجاوز نص، أو كائن إعداد منظَّم (المفتاح `setting:` واللغة `*`)؛ null = عودة إلى الافتراضي. */
+  readonly value: TextOverride | SettingObject | null;
   readonly lockToken: string;
 }
 

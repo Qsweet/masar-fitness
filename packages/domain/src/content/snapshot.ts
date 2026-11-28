@@ -3,6 +3,14 @@ import { CONTENT_PATH_SHAPE } from "./paths";
 import type { TextRegistry } from "./registry";
 import { parseSliderSnapshot, type ParsedSlider } from "./slider/parse";
 import { sliderJson, type SliderJson } from "./slider/serialize";
+import type { SettingObject } from "./settings/spec";
+import {
+  NO_SETTINGS,
+  parseSettings,
+  settingsJson,
+  type ParsedSettings,
+  type SettingOverrides,
+} from "./settings/state";
 import { EMPTY_SLIDER, isEmptySlider, type SliderState } from "./slider/types";
 import { structuralIssue } from "./text-override";
 
@@ -29,10 +37,12 @@ export interface Snapshot {
   readonly texts: Readonly<Record<string, LocaleOverrides>>;
   /** الشريط تحت الواجهة (ADMIN_A3_SLIDER §7)؛ غائب في إصدار بلا شريط. */
   readonly slider?: SliderJson;
+  /** الإعدادات المنظَّمة (§5): تجاوزاتها وحدها؛ غائب في إصدار بلا تجاوز. */
+  readonly settings?: Readonly<Record<string, SettingObject>>;
 }
 
 /** مفاتيح اللقطة المعروفة؛ ما سواها يُسقط ولا يُقرأ. */
-const SNAPSHOT_KEYS: readonly string[] = ["v", "texts", "slider"];
+const SNAPSHOT_KEYS: readonly string[] = ["v", "texts", "slider", "settings"];
 
 export interface ParsedSnapshot {
   readonly texts: TextOverrides;
@@ -107,11 +117,23 @@ export function snapshotSlider(json: unknown): ParsedSlider {
   return parseSliderSnapshot(json.slider);
 }
 
+/** إعدادات لقطة إصدار: لا تجاوزات للقطة بلا إعدادات أو بشكل غير معروف. */
+export function snapshotSettings(json: unknown): ParsedSettings {
+  if (!isRecord(json) || json.v !== SNAPSHOT_VERSION) {
+    return { settings: NO_SETTINGS, dropped: [] };
+  }
+  return parseSettings(json.settings);
+}
+
 /**
- * الشكل القانوني للتخزين والبصمة: المسارات مرتبة، واللغات بترتيبها الثابت، والشريط بشكله القانوني
- * حين لا يكون فارغًا (فبصمة مسودة بلا شريط كما كانت قبله).
+ * الشكل القانوني للتخزين والبصمة: المسارات مرتبة، واللغات بترتيبها الثابت، والشريط والإعدادات بشكلهما
+ * القانوني حين لا يكونان فارغين (فبصمة مسودة بلا شريط ولا إعدادات كما كانت قبلهما).
  */
-export function buildSnapshot(texts: TextOverrides, slider: SliderState = EMPTY_SLIDER): Snapshot {
+export function buildSnapshot(
+  texts: TextOverrides,
+  slider: SliderState = EMPTY_SLIDER,
+  settings: SettingOverrides = NO_SETTINGS,
+): Snapshot {
   const sorted = [...texts.entries()]
     .filter(([, locales]) => Object.keys(locales).length > 0)
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
@@ -131,11 +153,13 @@ export function buildSnapshot(texts: TextOverrides, slider: SliderState = EMPTY_
       ]),
     ),
   };
-  return isEmptySlider(slider) ? snapshot : { ...snapshot, slider: sliderJson(slider) };
+  const withSlider = isEmptySlider(slider) ? snapshot : { ...snapshot, slider: sliderJson(slider) };
+  return settings.size === 0 ? withSlider : { ...withSlider, settings: settingsJson(settings) };
 }
 
 /**
- * شكل اللقطة وحده بلا سجل (القاعدة تعيد لقطة إصدار إلى المسودة كما هي): نصوص وتجاوزات بقيمة وبصمة.
+ * شكل اللقطة وحده بلا سجل (القاعدة تعيد لقطة إصدار إلى المسودة كما هي): نصوص وتجاوزات بقيمة وبصمة،
+ * والإعدادات المنظَّمة بشكلها الحالي (الشريط يُعاد من جدوله).
  * null لغير ذلك. التحقق بالسجل الحالي يجري عند القراءة والنشر.
  */
 export function snapshotShape(json: unknown): Snapshot | null {
@@ -153,5 +177,5 @@ export function snapshotShape(json: unknown): Snapshot | null {
     }
     texts.set(path, locales);
   }
-  return buildSnapshot(texts);
+  return buildSnapshot(texts, EMPTY_SLIDER, parseSettings(json.settings).settings);
 }

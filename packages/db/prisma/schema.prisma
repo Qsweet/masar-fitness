@@ -774,9 +774,9 @@ model ContentRelease {
 /// value = { value, baseHash } لتجاوز، أو NULL «عودة إلى الافتراضي». نسخة عمل لا سجل: النشر يلتقطها.
 model ContentDraftEntry {
   clubId    String   @map("club_id") @db.Uuid
-  /// text:<مسار> (CHECK)
+  /// text:<مسار> أو setting:<معرّف إعداد> (CHECK)
   entryKey  String   @map("entry_key")
-  /// ar أو en (CHECK)
+  /// ar أو en للنص، و* لصف الإعداد (CHECK)
   locale    String
   value     Json?
   updatedBy String   @map("updated_by") @db.Uuid

@@ -24,6 +24,7 @@ function row(path: string, value: string, locale = "ar"): DraftRow {
     key: `text:${path}`,
     locale,
     value: { value, baseHash: HASH },
+    raw: { value, baseHash: HASH },
     lockToken: "1",
     updatedBy: "s",
     updatedAt: at,

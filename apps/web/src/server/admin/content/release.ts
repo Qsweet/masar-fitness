@@ -5,27 +5,33 @@ import {
   CONTENT_LOCALES,
   contentDigest,
   diffContent,
+  diffSettings,
   diffSlider,
   DomainError,
   draftOverrides,
+  draftSettings,
   err,
   ok,
   parseSnapshot,
+  SETTINGS,
+  snapshotSettings,
   snapshotSlider,
   unpublishableSlides,
   validateTextOverride,
   type Result,
+  type SettingOverrides,
   type SliderState,
   type TextOverrides,
   type TextRegistry,
 } from "@masar/domain";
+import { SITE_SETTING_DEFAULTS } from "@/config/site-settings";
 import { sha256Hex } from "../../content/registry";
 
 /**
  * بناء إصدار من المسودة تحت قفل النشر (ADMIN_A3_CONTENT §8.4): كل تجاوز يمر بالتحقق كاملًا (ومنه تدقيق
  * النصوص بقواعد الكود الحالي)، وأي مخالفة ترفض النشر كله. التجاوز المعطّل (لا يطابق السجل) لا يُنشر.
- * الشريط (ADMIN_A3_SLIDER §7) في اللقطة نفسها: يدخل البصمة والفرق وعدّ التغييرات، وكل شريحة تمر بقراءة
- * اللقطة وبقائمة الروابط الداخلية الحالية.
+ * الشريط (ADMIN_A3_SLIDER §7) والإعدادات المنظَّمة (§5) في اللقطة نفسها: تدخل البصمة والفرق وعدّ
+ * التغييرات، وكل شريحة وكل إعداد يمر بتحقق الحفظ نفسه وبقائمة الروابط الداخلية الحالية.
  */
 export interface ReleaseContext {
   readonly registry: TextRegistry;
@@ -33,20 +39,43 @@ export interface ReleaseContext {
   readonly knownPaths: ReadonlySet<string>;
 }
 
+/** محتوى كامل: النصوص والشريط والإعدادات. */
+export interface ContentSet {
+  readonly texts: TextOverrides;
+  readonly slider: SliderState;
+  readonly settings: SettingOverrides;
+}
+
+export function draftContent(
+  rows: readonly DraftRow[],
+  registry: TextRegistry,
+  slider: SliderState,
+): ContentSet {
+  return {
+    texts: draftOverrides(rows, registry).texts,
+    slider,
+    settings: draftSettings(rows).settings,
+  };
+}
+
+export function publishedContent(snapshot: unknown, registry: TextRegistry): ContentSet {
+  return {
+    texts: parseSnapshot(snapshot, registry)?.texts ?? new Map(),
+    slider: snapshotSlider(snapshot).slider,
+    settings: snapshotSettings(snapshot).settings,
+  };
+}
+
+export function digestOf(content: ContentSet): string {
+  return contentDigest(content.texts, sha256Hex, content.slider, content.settings);
+}
+
 export function draftDigest(
   rows: readonly DraftRow[],
   registry: TextRegistry,
   slider: SliderState,
 ): string {
-  return contentDigest(draftOverrides(rows, registry).texts, sha256Hex, slider);
-}
-
-export function publishedSlider(snapshot: unknown): SliderState {
-  return snapshotSlider(snapshot).slider;
-}
-
-export function publishedTexts(snapshot: unknown, registry: TextRegistry): TextOverrides {
-  return parseSnapshot(snapshot, registry)?.texts ?? new Map();
+  return digestOf(draftContent(rows, registry, slider));
 }
 
 function firstInvalid(texts: TextOverrides, registry: TextRegistry): string | null {
@@ -66,20 +95,27 @@ function firstInvalid(texts: TextOverrides, registry: TextRegistry): string | nu
   return null;
 }
 
-/** عدد التغييرات المعروضة بين محتويين: النصوص والشريط معًا. */
-export function changeCount(
-  before: { readonly texts: TextOverrides; readonly slider: SliderState },
-  after: { readonly texts: TextOverrides; readonly slider: SliderState },
-  registry: TextRegistry,
-): number {
+/** أول إعداد لا يمر بتحقق الحفظ اليوم (قاعدة تدقيق جديدة، رابط داخلي لم يعد معروفًا)، أو null. */
+function invalidSetting(settings: SettingOverrides, context: ReleaseContext): string | null {
+  for (const [id, value] of settings) {
+    if (!SETTINGS[id].validate(value, { knownPaths: context.knownPaths }).ok) {
+      return id;
+    }
+  }
+  return null;
+}
+
+/** عدد التغييرات المعروضة بين محتويين: النصوص والشريط والإعدادات معًا. */
+export function changeCount(before: ContentSet, after: ContentSet, registry: TextRegistry): number {
   return (
     diffContent(before.texts, after.texts, registry).length +
-    diffSlider(before.slider, after.slider).length
+    diffSlider(before.slider, after.slider).length +
+    diffSettings(before.settings, after.settings, SITE_SETTING_DEFAULTS).length
   );
 }
 
 function releaseFrom(
-  draft: { readonly texts: TextOverrides; readonly slider: SliderState },
+  draft: ContentSet,
   previous: unknown,
   context: ReleaseContext,
 ): Result<ReleaseBuild, DomainError> {
@@ -91,11 +127,14 @@ function releaseFrom(
   if (unpublishableSlides(draft.slider, context.knownPaths).length > 0) {
     return err(new DomainError("validation", "content.slider_invalid"));
   }
-  const before = { texts: publishedTexts(previous, registry), slider: publishedSlider(previous) };
+  const setting = invalidSetting(draft.settings, context);
+  if (setting !== null) {
+    return err(new DomainError("validation", "content.setting_invalid", { field: setting }));
+  }
   return ok({
-    snapshot: buildSnapshot(draft.texts, draft.slider),
-    digest: contentDigest(draft.texts, sha256Hex, draft.slider),
-    changedCount: changeCount(before, draft, registry),
+    snapshot: buildSnapshot(draft.texts, draft.slider, draft.settings),
+    digest: digestOf(draft),
+    changedCount: changeCount(publishedContent(previous, registry), draft, registry),
     slider: draft.slider,
   });
 }
@@ -106,8 +145,7 @@ export function buildRelease(
   slider: SliderState,
   context: ReleaseContext,
 ): Result<ReleaseBuild, DomainError> {
-  const texts = draftOverrides(rows, context.registry).texts;
-  return releaseFrom({ texts, slider }, previous, context);
+  return releaseFrom(draftContent(rows, context.registry, slider), previous, context);
 }
 
 /**
@@ -119,17 +157,13 @@ export function rebuildRelease(
   previous: unknown,
   context: ReleaseContext,
 ): Result<ReleaseBuild, DomainError> {
-  const draft = {
-    texts: publishedTexts(target, context.registry),
-    slider: publishedSlider(target),
-  };
-  return releaseFrom(draft, previous, context);
+  return releaseFrom(publishedContent(target, context.registry), previous, context);
 }
 
 /**
- * تعريف واحد لـ«المسودة متغيرة» في الحالة والاسترجاع والتجاهل: فرق في النص المعروض بين المنشور والمسودة،
- * كلاهما مقروء بالسجل الحالي. البصمة المحفوظة مع الإصدار حُسبت بسجل وقت النشر، فلا تُقارن بها مسودة
- * اليوم بعد أن يمنع كود جديد مفتاحًا أو يحذفه.
+ * تعريف واحد لـ«المسودة متغيرة» في الحالة والاسترجاع والتجاهل: فرق في المعروض بين المنشور والمسودة
+ * (نصًّا أو شريحة أو إعدادًا)، كلاهما مقروء بالسجل الحالي. البصمة المحفوظة مع الإصدار حُسبت بسجل وقت
+ * النشر، فلا تُقارن بها مسودة اليوم بعد أن يمنع كود جديد مفتاحًا أو يحذفه.
  */
 export function isDraftDirty(
   rows: readonly DraftRow[],
@@ -137,7 +171,6 @@ export function isDraftDirty(
   slider: SliderState,
   registry: TextRegistry,
 ): boolean {
-  const draft = { texts: draftOverrides(rows, registry).texts, slider };
-  const before = { texts: publishedTexts(published, registry), slider: publishedSlider(published) };
-  return changeCount(before, draft, registry) > 0;
+  const before = publishedContent(published, registry);
+  return changeCount(before, draftContent(rows, registry, slider), registry) > 0;
 }

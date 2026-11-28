@@ -9,4 +9,5 @@ export * from "./text-override";
 export * from "./draft";
 export * from "./diff";
 export * from "./slider";
+export * from "./settings";
 export * from "./media/image-sniff";

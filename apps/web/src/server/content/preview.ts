@@ -2,9 +2,12 @@ import "server-only";
 import { draftSliderState, findRelease, listDraftEntries, loadDraftSlider } from "@masar/db";
 import {
   draftOverrides,
+  draftSettings,
   hasPermission,
   parseSnapshot,
+  snapshotSettings,
   snapshotSlider,
+  type SettingOverrides,
   type SliderState,
   type TextOverrides,
 } from "@masar/domain";
@@ -33,6 +36,8 @@ export interface PreviewTexts {
   readonly overrides: TextOverrides;
   /** شريط المسودة أو الإصدار المعاين (ADMIN_A3_SLIDER §7). */
   readonly slider: SliderState;
+  /** إعدادات المسودة أو الإصدار المعاين (§5). */
+  readonly settings: SettingOverrides;
 }
 
 async function textsFor(clubId: string, target: string): Promise<PreviewTexts | null> {
@@ -47,6 +52,7 @@ async function textsFor(clubId: string, target: string): Promise<PreviewTexts | 
       releaseId: null,
       overrides: draftOverrides(rows, registry).texts,
       slider: draftSliderState(slider),
+      settings: draftSettings(rows).settings,
     };
   }
   const release = await findRelease(getDb(), clubId, target);
@@ -58,6 +64,7 @@ async function textsFor(clubId: string, target: string): Promise<PreviewTexts | 
     releaseId: release.id,
     overrides: parseSnapshot(release.snapshot, registry)?.texts ?? new Map(),
     slider: snapshotSlider(release.snapshot).slider,
+    settings: snapshotSettings(release.snapshot).settings,
   };
 }
 

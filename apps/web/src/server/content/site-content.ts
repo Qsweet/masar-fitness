@@ -1,5 +1,10 @@
 import "server-only";
-import { applyTextOverrides, type SliderState, type TextOverrides } from "@masar/domain";
+import {
+  applyTextOverrides,
+  type SettingValues,
+  type SliderState,
+  type TextOverrides,
+} from "@masar/domain";
 import { findRelease, latestRelease, oldestClubId } from "@masar/db";
 import { cache } from "react";
 import { defaultDictionary, type Dictionary } from "@/i18n/dictionaries";
@@ -9,6 +14,7 @@ import { logger } from "../logger";
 import { textRegistry } from "./registry";
 import { previewTexts, type PreviewTarget } from "./preview";
 import { createPublishedReader } from "./resolver";
+import { siteSettings } from "./settings";
 
 /**
  * مُحلِّل المحتوى العام الوحيد (ADMIN_A3_CONTENT §4): القاموس الافتراضي وفوقه تجاوزات الإصدار المنشور.
@@ -19,6 +25,8 @@ export interface SiteContent {
   readonly dictionary: Dictionary;
   /** الشريط تحت الواجهة (ADMIN_A3_SLIDER §9) من اللقطة نفسها؛ ما يسري منه يُحسب عند العرض. */
   readonly slider: SliderState;
+  /** الإعدادات المنظَّمة (§5): التواصل والأوقات والأسئلة وأقسام الرئيسية وما معها، بقيمها الفعلية. */
+  readonly settings: SettingValues;
   readonly releaseId: string | null;
   readonly mode: "published" | "preview" | "defaults";
   /** ما يُعاين (لشريط المعاينة)، أو null للمنشور. */
@@ -71,6 +79,7 @@ export const getPublishedContent = cache(async (locale: Locale): Promise<SiteCon
   return {
     dictionary: dictionaryWith(published.overrides, locale),
     slider: published.slider,
+    settings: siteSettings(published.settings),
     releaseId: published.releaseId,
     mode: published.mode,
     preview: null,
@@ -86,6 +95,7 @@ export const getSiteContent = cache(async (locale: Locale): Promise<SiteContent>
   return {
     dictionary: dictionaryWith(preview.overrides, locale),
     slider: preview.slider,
+    settings: siteSettings(preview.settings),
     releaseId: preview.releaseId,
     mode: "preview",
     preview: preview.target,

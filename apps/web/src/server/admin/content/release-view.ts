@@ -6,35 +6,44 @@ import {
   type ReleaseDetail,
   type ReleaseHead,
 } from "@masar/db";
-import { diffContent, diffSlider, type ContentChange, type SliderChange } from "@masar/domain";
+import {
+  diffContent,
+  diffSettings,
+  diffSlider,
+  type ContentChange,
+  type SettingChange,
+  type SliderChange,
+} from "@masar/domain";
+import { SITE_SETTING_DEFAULTS } from "@/config/site-settings";
 import { getDb } from "../../db";
 import { textRegistry } from "../../content/registry";
 import { isUuid } from "../form";
-import { publishedSlider, publishedTexts } from "./release";
+import { publishedContent } from "./release";
 
 /** إصدار للوحة: تفصيله، وفرقه عن سابقه، وآخر إصدار (هل هو المنشور الآن، ولرمز الاسترجاع). */
 export interface ReleaseView {
   readonly release: ReleaseDetail;
   readonly changes: readonly ContentChange[];
   readonly sliderChanges: readonly SliderChange[];
+  readonly settingChanges: readonly SettingChange[];
   readonly latest: ReleaseHead | null;
 }
 
-/** ما تغيّر بين لقطتين: النصوص والشريط. */
+/** ما تغيّر بين لقطتين: النصوص والشريط والإعدادات. */
 export interface ReleaseDiff {
   readonly changes: ContentChange[];
   readonly sliderChanges: SliderChange[];
+  readonly settingChanges: SettingChange[];
 }
 
 function diffSnapshots(before: unknown, after: unknown): ReleaseDiff {
   const registry = textRegistry();
+  const old = publishedContent(before, registry);
+  const next = publishedContent(after, registry);
   return {
-    changes: diffContent(
-      publishedTexts(before, registry),
-      publishedTexts(after, registry),
-      registry,
-    ),
-    sliderChanges: diffSlider(publishedSlider(before), publishedSlider(after)),
+    changes: diffContent(old.texts, next.texts, registry),
+    sliderChanges: diffSlider(old.slider, next.slider),
+    settingChanges: diffSettings(old.settings, next.settings, SITE_SETTING_DEFAULTS),
   };
 }
 

@@ -18,6 +18,8 @@ export interface DraftEntry {
   readonly key: string;
   readonly locale: string;
   readonly value: TextOverride | null;
+  /** القيمة كما في القاعدة: صف إعداد منظَّم (`setting:<معرّف>`) يحمل كائنه هنا. */
+  readonly raw?: unknown;
 }
 
 export function textKey(path: string): string {

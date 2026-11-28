@@ -2,15 +2,18 @@ import "server-only";
 import { draftSliderState, type ReleaseHead } from "@masar/db";
 import {
   CONTENT_LOCALES,
-  contentDigest,
   diffContent,
+  diffSettings,
   diffSlider,
   TEXT_ADVISORY,
   textLength,
   type ContentChange,
+  type SettingChange,
   type SliderChange,
 } from "@masar/domain";
-import { sha256Hex, textRegistry } from "../../content/registry";
+import { SITE_SETTING_DEFAULTS } from "@/config/site-settings";
+import { textRegistry } from "../../content/registry";
+import { digestOf } from "./release";
 import { loadContentState } from "./state";
 
 /**
@@ -21,6 +24,8 @@ export interface DraftSummary {
   readonly changes: readonly ContentChange[];
   /** تغييرات الشريط (ADMIN_A3_SLIDER §7)، تُعدّ مع النصوص. */
   readonly sliderChanges: readonly SliderChange[];
+  /** تغييرات الإعدادات المنظَّمة (§5)، ورقة ورقة، تُعدّ مع النصوص. */
+  readonly settingChanges: readonly SettingChange[];
   readonly digest: string;
   readonly head: ReleaseHead | null;
   readonly dirty: boolean;
@@ -48,7 +53,9 @@ export async function draftSummary(clubId: string): Promise<DraftSummary> {
   const changes = diffContent(state.published.texts, state.draft.texts, registry);
   const slider = draftSliderState(state.slider);
   const sliderChanges = diffSlider(state.published.slider, slider);
-  const digest = contentDigest(state.draft.texts, sha256Hex, slider);
+  const { settings } = state.settings;
+  const settingChanges = diffSettings(state.published.settings, settings, SITE_SETTING_DEFAULTS);
+  const digest = digestOf({ texts: state.draft.texts, slider, settings });
   const baseChanged = [...state.draft.texts].reduce((count, [path, locales]) => {
     const entry = registry.editable.get(path);
     return (
@@ -64,11 +71,12 @@ export async function draftSummary(clubId: string): Promise<DraftSummary> {
   return {
     changes,
     sliderChanges,
+    settingChanges,
     digest,
     head: state.published.head,
     // التعريف نفسه في الاسترجاع والتجاهل (`isDraftDirty`): فرق في المعروض بالسجل الحالي
-    dirty: changes.length + sliderChanges.length > 0,
-    dropped: state.draft.dropped,
+    dirty: changes.length + sliderChanges.length + settingChanges.length > 0,
+    dropped: [...state.draft.dropped, ...state.settings.dropped],
     baseChanged,
     lengthWarnings: lengthWarnings(changes),
   };

@@ -8,8 +8,11 @@ import {
   DomainError,
   err,
   ok,
+  SETTING_KEY_PREFIX,
+  SETTING_LOCALE,
   sliderAssetIds,
   snapshotEntries,
+  snapshotSettingEntries,
   snapshotShape,
   snapshotSlider,
   SNAPSHOT_VERSION,
@@ -171,7 +174,8 @@ export function publishContent(
 }
 
 /**
- * يستبدل المسودة بلقطة: يحذف صفوف نصوصها ويكتب صفوف اللقطة برموز قفل أحدث من كل ما سبق، ثم شريطها.
+ * يستبدل المسودة بلقطة: يحذف صفوفها ويكتب نصوص اللقطة وإعداداتها برموز قفل أحدث من كل ما سبق، ثم
+ * شريطها.
  */
 async function replaceDraft(
   tx: Tx,
@@ -188,6 +192,12 @@ async function replaceDraft(
       INSERT INTO content_draft_entries (club_id, entry_key, locale, value, updated_by, updated_at)
       VALUES (${input.clubId}::uuid, ${textKey(entry.path)}, ${entry.locale},
         ${JSON.stringify(entry.value)}::jsonb, ${input.staffId}::uuid, ${at})`;
+  }
+  for (const setting of snapshotSettingEntries(snapshot)) {
+    await tx.$executeRaw`
+      INSERT INTO content_draft_entries (club_id, entry_key, locale, value, updated_by, updated_at)
+      VALUES (${input.clubId}::uuid, ${`${SETTING_KEY_PREFIX}${setting.id}`}, ${SETTING_LOCALE},
+        ${JSON.stringify(setting.value)}::jsonb, ${input.staffId}::uuid, ${at})`;
   }
   await replaceDraftSlider(tx, input, slider);
 }

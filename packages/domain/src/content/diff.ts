@@ -2,6 +2,7 @@ import { CONTENT_LOCALES, type ContentLocale } from "./locale";
 import type { TextRegistry } from "./registry";
 import { buildSnapshot, type Snapshot, type TextOverrides } from "./snapshot";
 import { EMPTY_SLIDER, type SliderState } from "./slider/types";
+import { NO_SETTINGS, type SettingOverrides } from "./settings/state";
 
 /**
  * بصمة المحتوى والفرق بين مجموعتي تجاوزات (ADMIN_A3_CONTENT §8.1). البصمة على الشكل القانوني (مرتب
@@ -11,8 +12,14 @@ export function contentDigest(
   texts: TextOverrides,
   sha256Hex: (text: string) => string,
   slider: SliderState = EMPTY_SLIDER,
+  settings: SettingOverrides = NO_SETTINGS,
 ): string {
-  return sha256Hex(JSON.stringify(buildSnapshot(texts, slider)));
+  return sha256Hex(JSON.stringify(buildSnapshot(texts, slider, settings)));
+}
+
+/** إعدادات لقطة ← صفوف مسودة (`setting:<معرّف>`) للاسترجاع والتجاهل. */
+export function snapshotSettingEntries(snapshot: Snapshot) {
+  return Object.entries(snapshot.settings ?? {}).map(([id, value]) => ({ id, value }));
 }
 
 /** لقطة الإصدار ← صفوف مسودة بالمفاتيح نفسها (الاسترجاع والتجاهل يعيدان المسودة إلى إصدار). */

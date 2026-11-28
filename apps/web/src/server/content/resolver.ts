@@ -1,7 +1,10 @@
 import {
   EMPTY_SLIDER,
+  NO_SETTINGS,
   parseSnapshot,
+  snapshotSettings,
   snapshotSlider,
+  type SettingOverrides,
   type SliderState,
   type TextOverrides,
   type TextRegistry,
@@ -25,10 +28,11 @@ export interface ContentLog {
   readonly warn: (event: string, fields: Readonly<Record<string, unknown>>) => void;
 }
 
-/** ما يُقرأ من لقطة: التجاوزات والشريط. */
+/** ما يُقرأ من لقطة: التجاوزات والشريط والإعدادات المنظَّمة. */
 export interface PublishedContent {
   readonly overrides: TextOverrides;
   readonly slider: SliderState;
+  readonly settings: SettingOverrides;
 }
 
 export interface PublishedTexts extends PublishedContent {
@@ -40,7 +44,11 @@ export interface PublishedTexts extends PublishedContent {
 }
 
 export const NO_OVERRIDES: TextOverrides = new Map();
-const NOTHING: PublishedContent = { overrides: NO_OVERRIDES, slider: EMPTY_SLIDER };
+const NOTHING: PublishedContent = {
+  overrides: NO_OVERRIDES,
+  slider: EMPTY_SLIDER,
+  settings: NO_SETTINGS,
+};
 const DEFAULTS: PublishedTexts = { clubId: null, releaseId: null, ...NOTHING, mode: "defaults" };
 /** أربع لقطات تكفي: المنشور الحالي وما قبله أثناء التبديل. */
 const SNAPSHOT_CACHE_SIZE = 4;
@@ -72,6 +80,19 @@ export function sliderOf(snapshot: unknown, log: ContentLog, releaseId: string):
   return parsed.slider;
 }
 
+/** إعدادات اللقطة، وما سقط منها في السجل لا في الصفحة (يعود افتراضيه). */
+export function settingsOf(
+  snapshot: unknown,
+  log: ContentLog,
+  releaseId: string,
+): SettingOverrides {
+  const parsed = snapshotSettings(snapshot);
+  if (parsed.dropped.length > 0) {
+    log.warn("content.setting_dropped", { releaseId, dropped: parsed.dropped });
+  }
+  return parsed.settings;
+}
+
 export function createPublishedReader(
   source: ContentSource,
   registry: () => TextRegistry,
@@ -90,6 +111,7 @@ export function createPublishedReader(
     const overrides = {
       overrides: overridesOf(snapshot, registry(), log, releaseId),
       slider: sliderOf(snapshot, log, releaseId),
+      settings: settingsOf(snapshot, log, releaseId),
     };
     snapshots.set(releaseId, overrides);
     const oldest = snapshots.keys().next();

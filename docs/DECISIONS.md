@@ -923,3 +923,27 @@ pnpm لا يشغّل سكربتات التثبيت إلا للمسموح به ص
 2. مفتاح الجوال يُقارن بقيمته الفعلية (الغائب مفعَّل) ولمن يقبله وحده: حفظ الخانة مؤشَّرة فوق إعداد قديم بلا المفتاح «لا تغيير» بلا سطر تدقيق.
 3. X داخل GTM: صفحة X والمواصفة تنبّهان ألا يُضبط وسمه في الحاوية أيضًا. إن وُجد `twq` قبل شيفرتنا تُطبَّق أوامرنا عليه، ويُنبَّه المطوّر في وحدة التحكم في التطوير وحده (`dev-warning.ts`، مستثنى من `no-console` في إعداد lint كالسجل المنظَّم).
 4. اختبارات: وحدة لـX، وحارسا الجوال في Google Ads وTikTok، وترتيب أوامر الإطفاء الأربعة قبل `config` في المتصفح، ورفض الـtrigger لتفريغ يبقي معرّف نقر ولتعديل `page_url` وحده.
+
+## 91. A5: إعلانات ChatGPT (OpenAI) منصة سادسة للإعلانات، بالبكسل والخادم معًا
+
+> الرقم «91 (أو الرقم الحر التالي)»: قرارات أخرى تُكتب بالتوازي، ويُعاد الترقيم عند الدمج.
+
+**المصدر:** طلب المالك «ايضا الربط مع اعلان ChatGPT». إعلانات ChatGPT ذاتية الخدمة في السعودية (MENA منذ 2026-08-31). الفرع `a5-chatgpt-ads` من `7ad2d60`، بلا نشر.
+
+**الوثائق الرسمية المقروءة نصًّا كاملًا (2026-11-28، نسخ `.md`):** https://developers.openai.com/ads/measurement-pixel ، https://developers.openai.com/ads/conversions-api ، https://developers.openai.com/ads/conversion-tracking ، https://developers.openai.com/ads/supported-events ، https://developers.openai.com/ads/api-reference/conversion-setup ، https://developers.openai.com/ads/multiple-pixels ، https://developers.openai.com/ads/troubleshooting . صفحة المدونة https://ads.openai.com/blog/more-ways-to-measure غير متاحة من بيئة العمل (المضيف خارج الشبكة المسموحة)، فلم يُبنَ عليها شيء.
+
+1. **المتصفح:** الشيفرة الأساسية الرسمية كما هي: الطابور `oaiq` (‏`q.q.push(arguments)`، كائن `arguments` نفسه كـgtag في 88-12) في `<script nonce>` ثابت من الخادم حين تُفعَّل OpenAI وحدها، وتحميل `https://bzrcdn.openai.com/sdk/oaiq.min.js` بالـnonce بعد موافقة الإعلانات وحدها. `oaiq("consent", true)` ثم `oaiq("init", {pixelId})` («Set consent before initializing the Pixel»)، بلا كائن `user`: الجوال يصل من الخادم. السحب يرسل `oaiq("consent", false)`، والوثيقة تقول إنه «removes both cookies»، ومحمّلنا يمحو `__oppref` و`__obref` على النطاق وآبائه (89-8) ثم يعيد التحميل.
+2. **الأحداث بأسمائها القياسية الموثَّقة:** `page_viewed`، و`contents_viewed`، و`items_added`، و`checkout_started` بشكل `contents`؛ و`lead_created` بشكل `customer_action` بلا شيء من النموذج؛ و`order_created` للشراء. الوثيقة تشترط المبالغ «integers» بالوحدة الصغرى، فالصفحة تحمل `valueMinor` و`priceMinor` بالهللة يكتبهما الخادم، ولا قسمة ولا ضرب في المتصفح. `event_id` في كل حدث، والشراء ‎purchase.<order_id>‎: «Duplicate-event matching uses your Pixel ID, the event name, and `event_id`… OpenAI uses the first event it receives».
+3. **CSP لـOpenAI وحدها حين تُفعَّل:** من جدول الوثيقة: `connect-src` ‏`bzr.openai.com` و`bzrcdn.openai.com`، و`img-src` ‏`bzr.openai.com`. `script-src` لا يتغيّر: `'strict-dynamic'` يثق بالسكربت المُدرج بالـnonce، والوثيقة تجيز الـnonce بدل المضيف وتنهى عن `'unsafe-inline'`.
+4. **الخادم يُبنى** لأن الوثيقة تعطي كل شيء: العنوان `POST https://bzr.openai.com/v1/events?pid=<PIXEL-ID>`، والمصادقة `Authorization: Bearer <API-KEY>` بمفتاح Conversions API من تبويب Conversions في Ads Manager (غير مفتاح Ads API)، والحمولة (`id`، `type`، `timestamp_ms`، `oppref`، `source_url`، `action_source: "web"`، `user`، `data`)، والتجزئة (الجوال: مفتاح الدولة بلا `+` ولا أصفار بادئة، 8–15 رقمًا، ثم SHA-256 ست عشري صغير؛ مثالها الرسمي `14155552671` ← `758fbf68…` في اختبار وحدة)، ونمط الاختبار `validate_only: true` («Validates events without saving them»). `obref` من كوكي `__obref` يُختم مع الطلب بموافقة الإعلانات ويُرسل في `user.obref` كما تطلب الوثيقة للتكامل الهجين؛ `oppref` من اللمسة المختومة. الحد «within the last 7 days» ⇒ `isTooOld` بـ168 ساعة. لا `integration_source` (للشركاء الذين يرسلون عن معلنين).
+5. **المفتاح** مشفّر للكتابة فقط وللمالك وحده (`integrations.secrets`، 88-4 و88-10)، وفي الترويسة لا في الرابط. خانة «إرسال الجوال المجزّأ» تُحترم (90-3)، والطابور بموافقة الإعلانات المختومة (88-8)، والتفريغ بعد 90 يومًا يشمل `obref` و`oppref` (90-6؛ الـtrigger يرفض تفريغًا يبقي `obref`).
+6. **الرد:** الوثيقة لا تصف جسم رد `/v1/events` («If one event in the batch fails, the full batch fails»)، فالحكم برمز HTTP وحده كميتا: 2xx أُرسل، و408/429/5xx تُعاد، والبقية تموت.
+7. **`oppref` معرّف نقر** بموافقة الإعلانات وحدها (89-4)، بنمط معرّفات النقر القائم `^[A-Za-z0-9_.-]{1,512}$`. الوثيقة تصفه «opaque» ولا تذكر محارفه: قيمة خارج النمط تُسقط (لا يُرسل مُعدَّلًا، «Pass the original string without modification»)، ويبقى للبكسل نفسه كوكيه.
+8. **Pixel ID** بنمط `^[A-Za-z0-9_-]{6,64}$` مثبَّت الطرفين: الوثائق لا تنشر صيغته (مثالها الوحيد مقطوع «134534…»)، والقيمة تدخل نص سكربت ورابط `?pid=`، فالنمط محارف آمنة بطول محدود لا تخمين لصيغة.
+
+**لم يُنفَّذ (بسبب):**
+
+- **إطفاء المطابقة المتقدمة الآلية من الكود:** الوثيقة تقول إن البكسل حين تُفعَّل «automatically detects supported customer information from your website» ويجزّئها ويرسلها، وإن بكسلات الويب الجديدة بها افتراضيًا، ولا تذكر أمرًا في الـSDK لإطفائها. هي إعداد في حساب المالك (مصادر غير رسمية تذكر مكانه في Data Source ← إعداد البكسل). خطرها: تقرأ نموذج الاستفسار فتكذّب نصه «لا نحفظ ما تكتبه هنا: ينتقل إلى واتساب فقط». صفحة OpenAI في اللوحة تطلب إطفاءها قبل التفعيل. **قرار المالك:** يطفئها في Ads Manager قبل التفعيل، أو يقبلها ويُعدَّل نص النموذج والخصوصية.
+- **`integration_source`** و`user` في المتصفح والاسم والبريد: لا حاجة ولا بيانات (لا بريد في الطلب).
+
+**ترحيل:** `20261205090000_tracking_openai` (القيدان يقبلان `openai`، وعمود `obref` بحد طوله، و`order_tracking_guard_update` يصفّره).

@@ -29,6 +29,11 @@ describe("خط اللوحة معزول عن الموقع العام", () => {
     expect(importers).toEqual([join("app", "admin", "layout.tsx")]);
   });
 
+  it("خط اللوحة بلا تحميل مسبق: CSS الخطوط يُدمج في قطعة يحمّلها الموقع العام أيضًا", () => {
+    const admin = readFileSync(join(SRC, "app", "admin", "admin-fonts.ts"), "utf8");
+    expect(admin).toMatch(/preload:\s*false/);
+  });
+
   it("fonts.ts المشترك (يستورده الموقع العام) بلا ملف IBM Plex", () => {
     const shared = readFileSync(join(SRC, "app", "fonts.ts"), "utf8");
     expect(shared).not.toMatch(/plex/i);

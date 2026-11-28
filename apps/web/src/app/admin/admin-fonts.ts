@@ -19,6 +19,10 @@ export const plexArabic = localFont({
   ],
   variable: "--font-plex-arabic",
   display: "swap",
+  // لا تحميل مسبق: Turbopack يدمج CSS الخطوط في قطعة مشتركة بين الموقع واللوحة (cssChunking)، وبيان
+  // التحميل المسبق يُشتق من القطعة، فكان Plex يُحمَّل مسبقًا في كل صفحة عامة. بلا تحميل مسبق لا يُنزَّل إلا
+  // حيث يُستعمل (اللوحة)، والبديل المقيس يمنع الانزياح عند التبديل.
+  preload: false,
   declarations: [
     {
       prop: "unicode-range",

@@ -911,7 +911,8 @@ model TrackingIntegration {
   @@map("tracking_integrations")
 }
 
-/// موافقة الزائر وإسناده ومعرّفات متصفحه لحظة إنشاء الطلب. للإدراج فقط: ما خُتم لا يتغير.
+/// موافقة الزائر وإسناده ومعرّفات متصفحه لحظة إنشاء الطلب. للإدراج فقط: ما خُتم لا يتغير، إلا التفريغ
+/// بعد 90 يومًا (القرار 90-6): المعرّفات تُصفَّر واللمستان تبقيان بمعاملات الحملة وصفحة الهبوط.
 model OrderTracking {
   orderId          String    @id @map("order_id") @db.Uuid
   clubId           String    @map("club_id") @db.Uuid
@@ -930,6 +931,8 @@ model OrderTracking {
   userAgent        String?   @map("user_agent")
   pageUrl          String?   @map("page_url")
   createdAt        DateTime  @map("created_at") @db.Timestamptz(3)
+  /// وقت تفريغ المعرّفات (`tracking:purge`)؛ null ما لم يُفرَّغ
+  purgedAt         DateTime? @map("purged_at") @db.Timestamptz(3)
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   club  Club  @relation(fields: [clubId], references: [id], onDelete: Restrict, onUpdate: Restrict)

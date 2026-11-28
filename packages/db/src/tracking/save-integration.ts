@@ -4,6 +4,7 @@ import { writeAudit } from "../commerce/audit";
 import { inTransaction, type Tx } from "../commerce/transaction";
 import {
   configOf,
+  PHONE_FLAG,
   TRACKING_AUDIT_ACTION,
   TRACKING_AUDIT_ENTITY,
   type SaveIntegrationInput,
@@ -33,7 +34,11 @@ async function lockRow(tx: Tx, input: SaveIntegrationInput): Promise<LockedRow |
 /** أسماء الحقول التي تغيّرت، لا قيمها (المعرّفات عامة، لكن السجل لا يحتاجها). */
 function changedFields(before: LockedRow | undefined, input: SaveIntegrationInput): string[] {
   const old = configOf(before?.config);
-  return TRACKING_FIELDS.filter((field) => (old[field] ?? null) !== (input.config[field] ?? null));
+  const fields: string[] = TRACKING_FIELDS.filter(
+    (field) => (old[field] ?? null) !== (input.config[field] ?? null),
+  );
+  const phoneChanged = (old.sendHashedPhone ?? null) !== (input.config.sendHashedPhone ?? null);
+  return phoneChanged ? [...fields, PHONE_FLAG] : fields;
 }
 
 function secretAfter(before: LockedRow | undefined, input: SaveIntegrationInput) {

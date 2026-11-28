@@ -23,5 +23,7 @@ export { loadPurchaseContext } from "./purchase-context";
 export type { PurchaseContext, PurchaseItem } from "./purchase-context";
 export { listRecentTrackingEvents } from "./read-events";
 export type { TrackingEventRow } from "./read-events";
+export { purgeExpiredTracking, PURGE_REASON } from "./retention";
+export type { PurgeOptions, PurgeSummary } from "./retention";
 export { saveIntegration } from "./save-integration";
 export type { SavedIntegration } from "./save-integration";

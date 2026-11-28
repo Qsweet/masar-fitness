@@ -35,6 +35,8 @@ export interface PurchaseContext {
   readonly clientIp: string | null;
   readonly userAgent: string | null;
   readonly pageUrl: string | null;
+  /** وقت تفريغ المعرّفات بعد مدة الاحتفاظ (القرار 90-6)، أو null. */
+  readonly purgedAt: Date | null;
 }
 
 interface Row {
@@ -58,6 +60,7 @@ interface Row {
   readonly client_ip: string | null;
   readonly user_agent: string | null;
   readonly page_url: string | null;
+  readonly purged_at: Date | null;
 }
 
 async function loadItems(db: Db, orderId: string): Promise<PurchaseItem[]> {
@@ -95,7 +98,8 @@ export async function loadPurchaseContext(
   const rows = await db.$queryRaw<Row[]>`
     SELECT o.id::text, o.reference, o.customer_id::text, o.customer_phone_e164, o.locale,
       o.total_minor, o.currency, o.paid_at, t.consent_analytics, t.consent_ads, t.first_touch,
-      t.last_touch, t.ga_client_id, t.fbp, t.fbc, t.scid, t.ttp, t.client_ip, t.user_agent, t.page_url
+      t.last_touch, t.ga_client_id, t.fbp, t.fbc, t.scid, t.ttp, t.client_ip, t.user_agent, t.page_url,
+      t.purged_at
     FROM orders o LEFT JOIN order_tracking t ON t.order_id = o.id
     WHERE o.id = ${orderId}::uuid`;
   const row = rows[0];
@@ -124,5 +128,6 @@ export async function loadPurchaseContext(
     clientIp: row.client_ip,
     userAgent: row.user_agent,
     pageUrl: row.page_url,
+    purgedAt: row.purged_at,
   };
 }

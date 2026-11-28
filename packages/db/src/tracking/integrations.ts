@@ -15,6 +15,8 @@ import type { Tx } from "../commerce/transaction";
 
 export const TRACKING_AUDIT_ENTITY = "tracking_integration";
 export const TRACKING_AUDIT_ACTION = "tracking_integration_updated";
+/** مفتاح «إرسال الجوال المجزّأ» في `config` (القرار 90-3). */
+export const PHONE_FLAG = "sendHashedPhone";
 
 export interface IntegrationView {
   readonly provider: TrackingProvider;
@@ -35,7 +37,7 @@ interface IntegrationRow {
   readonly updated_at: Date;
 }
 
-/** `config` JSONB كائن (CHECK)؛ تؤخذ منه الحقول المعروفة النصية وحدها. */
+/** `config` JSONB كائن (CHECK)؛ تؤخذ منه الحقول المعروفة النصية، ومفتاح الجوال إن كان منطقيًّا. */
 export function configOf(value: unknown): IntegrationConfig {
   if (typeof value !== "object" || value === null) {
     return {};
@@ -48,7 +50,8 @@ export function configOf(value: unknown): IntegrationConfig {
       config[field] = item;
     }
   }
-  return config;
+  const phone = Object.hasOwn(record, PHONE_FLAG) ? record[PHONE_FLAG] : undefined;
+  return typeof phone === "boolean" ? { ...config, sendHashedPhone: phone } : config;
 }
 
 function viewOf(row: IntegrationRow): IntegrationView | null {

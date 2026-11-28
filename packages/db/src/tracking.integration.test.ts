@@ -134,6 +134,29 @@ describe("إعداد المنصة", () => {
     expect(await db.auditLog.count({ where: { entityType: "tracking_integration" } })).toBe(3);
   });
 
+  it("X تُحفظ بلا مفتاح، ومفتاح الجوال يُقرأ كما حُفظ ويظهر اسمه في التدقيق (القرار 90)", async () => {
+    const x = { pixelId: "o8z5x", purchaseEventId: "tw-o8z5x-p1q2r", sendHashedPhone: true };
+    unwrap(
+      await saveIntegration(
+        db,
+        integration({ provider: "x", config: x, secret: { kind: "keep" } }),
+      ),
+    );
+    const off = { ...x, sendHashedPhone: false };
+    unwrap(
+      await saveIntegration(
+        db,
+        integration({ provider: "x", config: off, secret: { kind: "keep" } }),
+      ),
+    );
+    expect((await listIntegrations(db, clubId))[0]).toMatchObject({ provider: "x", config: off });
+    const audit = await db.auditLog.findMany({
+      where: { entityType: "tracking_integration" },
+      orderBy: { createdAt: "asc" },
+    });
+    expect(audit[1]?.data).toMatchObject({ platform: "x", changed: "sendHashedPhone" });
+  });
+
   it("القاعدة ترفض منصة مجهولة ومفتاحًا بلا شكل", async () => {
     await expect(db.$executeRaw`
       INSERT INTO tracking_integrations (club_id, provider, updated_at)

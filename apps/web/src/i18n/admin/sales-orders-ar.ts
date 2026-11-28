@@ -13,21 +13,22 @@ export const salesOrdersAr = {
   filters: {
     legend: "البحث في الطلبات",
     reference: "مرجع الطلب",
-    referenceHint: "المرجع كاملًا أو أرقامه: MSR-0001234 أو 1234.",
-    from: "من يوم",
-    to: "إلى يوم",
+    referencePlaceholder: "مرجع الطلب: MSR-0001234 أو 1234",
+    from: "من",
+    to: "إلى",
     apply: "اعرض",
     clear: "امسح",
   },
+  /** بترتيب أعمدة الجدول: الهوية ثم الحالة ثم المبلغ (رقم في جهة النهاية) ثم الوقت. */
   columns: {
     reference: "المرجع",
-    created: "أُنشئ",
     customer: "العميل",
     phone: "الجوال",
     item: "الباقة",
-    total: "الإجمالي",
     status: "الحالة",
     payment: "طريقة الدفع",
+    total: "الإجمالي",
+    created: "أُنشئ",
   },
   /** {count}: عدد السطور الأخرى في الطلب. */
   moreItems: "و{count} غيرها",

@@ -1,9 +1,8 @@
 import type { OrderListRow } from "@masar/db";
-import Link from "next/link";
 import { orderPath } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
-import { Cell, DataTable } from "../ui/data-table";
+import { Cell, DataTable, RowLink } from "../ui/data-table";
 import { Ltr } from "../ui/kit";
 import { Amount, OrderStatusBadge, PaymentMethod, When } from "./order-parts";
 import styles from "./sales.module.css";
@@ -22,22 +21,17 @@ interface OrdersTableProps {
  */
 export function OrdersTable({ rows, sales, now, timezone, caption }: OrdersTableProps) {
   const { columns, moreItems, open } = sales.orders;
+  const headers = Object.entries(columns).map(([key, label]) =>
+    key === "total" ? { label, align: "numeric" as const } : label,
+  );
   return (
-    <DataTable caption={caption} columns={Object.values(columns)} testId="orders-table" compact>
+    <DataTable caption={caption} columns={headers} testId="orders-table" compact>
       {rows.map((row) => (
         <tr key={row.id}>
           <Cell label={columns.reference} slot="title" nowrap>
-            <Link
-              href={orderPath(row.id)}
-              prefetch={false}
-              className={styles.rowLink}
-              aria-label={fill(open, { reference: row.reference })}
-            >
+            <RowLink href={orderPath(row.id)} label={fill(open, { reference: row.reference })}>
               <Ltr>{row.reference}</Ltr>
-            </Link>
-          </Cell>
-          <Cell label={columns.created} slot="meta" muted nowrap>
-            <When at={row.createdAt} now={now} timezone={timezone} />
+            </RowLink>
           </Cell>
           <Cell label={columns.customer} slot="aside">
             {row.customerName}
@@ -53,9 +47,6 @@ export function OrdersTable({ rows, sales, now, timezone, caption }: OrdersTable
               </span>
             ) : null}
           </Cell>
-          <Cell label={columns.total} slot="value" nowrap>
-            <Amount value={row.total} />
-          </Cell>
           <Cell label={columns.status} slot="badge">
             <OrderStatusBadge status={row.status} statuses={sales.statuses} />
           </Cell>
@@ -65,6 +56,12 @@ export function OrdersTable({ rows, sales, now, timezone, caption }: OrdersTable
               manualMethod={row.manualMethod}
               statuses={sales.statuses}
             />
+          </Cell>
+          <Cell label={columns.total} slot="value" align="numeric">
+            <Amount value={row.total} />
+          </Cell>
+          <Cell label={columns.created} slot="meta" muted nowrap>
+            <When at={row.createdAt} now={now} timezone={timezone} />
           </Cell>
         </tr>
       ))}

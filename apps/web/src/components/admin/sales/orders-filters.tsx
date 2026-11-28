@@ -1,10 +1,10 @@
 import { formatPlainDate } from "@masar/domain";
 import { ADMIN_ROUTES } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
+import { cx } from "@/lib/cx";
 import type { OrdersFilter } from "@/server/admin/sales/orders-query";
-import { DateField, TextField } from "../ui/fields";
 import { ButtonLink, buttonClass } from "../ui/kit";
-import styles from "./sales.module.css";
+import { ToolbarField, ToolbarSearch, toolbarStyles } from "../ui/toolbar";
 
 const REFERENCE_MAX_LENGTH = 24;
 
@@ -16,7 +16,7 @@ interface OrdersFiltersProps {
 }
 
 /**
- * تصفية القائمة: نموذج GET عادي، فالمدى والتبويب في الرابط يُشاركان ويُحفظان ويعمل الرجوع وبلا
+ * شريط أدوات الطلبات: نموذج GET عادي، فالمدى والتبويب في الرابط يُشاركان ويُحفظان ويعمل الرجوع وبلا
  * JavaScript. المرجع ليس بيانًا شخصيًا؛ البحث بالجوال في «العملاء» وهو POST.
  */
 export function OrdersFilters({ text, filter, today }: OrdersFiltersProps) {
@@ -25,44 +25,49 @@ export function OrdersFilters({ text, filter, today }: OrdersFiltersProps) {
     <form
       method="get"
       action={ADMIN_ROUTES.orders}
-      className={styles.filters}
+      className={toolbarStyles.form}
       aria-label={text.legend}
     >
       {filter.tab === "all" ? null : <input type="hidden" name="tab" value={filter.tab} />}
-      <TextField
+      <ToolbarSearch
         id="orders-reference"
         name="reference"
         label={text.reference}
         defaultValue={filter.reference?.raw ?? ""}
-        placeholder="MSR-0001234"
-        dir="ltr"
+        placeholder={text.referencePlaceholder}
         autoComplete="off"
         maxLength={REFERENCE_MAX_LENGTH}
         data-admin-search=""
       />
-      <DateField
-        id="orders-from"
-        name="from"
-        label={text.from}
-        defaultValue={filter.invalidRange ? "" : formatPlainDate(filter.from)}
-        max={today}
-      />
-      <DateField
-        id="orders-to"
-        name="to"
-        label={text.to}
-        defaultValue={filter.invalidRange ? "" : formatPlainDate(filter.to)}
-        max={today}
-      />
-      <div className={styles.filterActions}>
-        <button type="submit" className={buttonClass()}>
-          {text.apply}
-        </button>
+      <ToolbarField id="orders-from" label={text.from}>
+        <input
+          id="orders-from"
+          name="from"
+          type="date"
+          className={toolbarStyles.control}
+          defaultValue={filter.invalidRange ? "" : formatPlainDate(filter.from)}
+          max={today}
+        />
+      </ToolbarField>
+      <ToolbarField id="orders-to" label={text.to}>
+        <input
+          id="orders-to"
+          name="to"
+          type="date"
+          className={toolbarStyles.control}
+          defaultValue={filter.invalidRange ? "" : formatPlainDate(filter.to)}
+          max={today}
+        />
+      </ToolbarField>
+      <div className={cx(toolbarStyles.actions, toolbarStyles.end)}>
         {filtered ? (
-          <ButtonLink href={ADMIN_ROUTES.orders} variant="ghost">
+          <ButtonLink href={ADMIN_ROUTES.orders} variant="ghost" size="small">
             {text.clear}
           </ButtonLink>
         ) : null}
+        <button type="submit" className={buttonClass({ size: "small" })}>
+          {text.apply}
+        </button>
       </div>
     </form>
   );

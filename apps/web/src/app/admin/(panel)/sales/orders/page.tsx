@@ -1,12 +1,13 @@
-import { listOrders, type OrderListPage } from "@masar/db";
+import { countOrdersByTab, listOrders, type OrderListPage } from "@masar/db";
 import { formatPlainDate, plainDateInZone } from "@masar/domain";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { OrdersFilters } from "@/components/admin/sales/orders-filters";
 import { OrdersTable } from "@/components/admin/sales/orders-table";
-import { Card, EmptyState, PageHeader, Tabs } from "@/components/admin/ui/kit";
+import { TableCard } from "@/components/admin/ui/data-table";
+import { ButtonLink, EmptyState, PageHeader, Tabs } from "@/components/admin/ui/kit";
 import { Pagination } from "@/components/admin/ui/pagination";
-import { FALLBACK_TIMEZONE, orderPath, ORDERS_PAGE_SIZE } from "@/config/admin";
+import { ADMIN_ROUTES, FALLBACK_TIMEZONE, orderPath, ORDERS_PAGE_SIZE } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { fill } from "@/i18n/fill";
 import { formatNumber } from "@/i18n/format";
@@ -91,7 +92,12 @@ export default async function OrdersPage(props: PageProps<"/admin/sales/orders">
   const now = new Date();
   const today = plainDateInZone(now, timezone);
   const filter = parseOrdersQuery(query, today);
-  const page = await loadOrders(staff.clubId, filter, now);
+  const [page, counts] = await Promise.all([
+    loadOrders(staff.clubId, filter, now),
+    filter.invalidRange
+      ? null
+      : countOrdersByTab(getDb(), { clubId: staff.clubId, from: filter.from, to: filter.to, now }),
+  ]);
   const [only] = page.rows;
   if (filter.reference !== null && page.total === 1 && only !== undefined) {
     redirect(orderPath(only.id));
@@ -102,7 +108,6 @@ export default async function OrdersPage(props: PageProps<"/admin/sales/orders">
   return (
     <>
       <PageHeader title={text.title} description={text.lead} />
-      <OrdersFilters text={text.filters} filter={filter} today={formatPlainDate(today)} />
       <Tabs
         label={text.tabsLabel}
         current={filter.tab}
@@ -110,11 +115,32 @@ export default async function OrdersPage(props: PageProps<"/admin/sales/orders">
           id: tab,
           label: text.tabs[tab],
           href: ordersHref(filter, { tab }),
+          count: counts === null ? undefined : formatNumber(counts[tab]),
         }))}
       />
-      <Card flush>
+      <TableCard
+        toolbar={
+          <OrdersFilters text={text.filters} filter={filter} today={formatPlainDate(today)} />
+        }
+        footer={
+          page.total === 0 ? undefined : (
+            <OrdersPagination
+              text={text}
+              filter={filter}
+              shown={page.rows.length}
+              total={page.total}
+            />
+          )
+        }
+      >
         {page.rows.length === 0 ? (
-          <EmptyState icon="orders" title={empty.title} description={empty.lead} />
+          <EmptyState icon="orders" title={empty.title} description={empty.lead}>
+            {filter.customRange || filter.reference !== null ? (
+              <ButtonLink href={ADMIN_ROUTES.orders} size="small">
+                {text.filters.clear}
+              </ButtonLink>
+            ) : null}
+          </EmptyState>
         ) : (
           <OrdersTable
             rows={page.rows}
@@ -124,10 +150,7 @@ export default async function OrdersPage(props: PageProps<"/admin/sales/orders">
             caption={text.title}
           />
         )}
-      </Card>
-      {page.total === 0 ? null : (
-        <OrdersPagination text={text} filter={filter} shown={page.rows.length} total={page.total} />
-      )}
+      </TableCard>
     </>
   );
 }

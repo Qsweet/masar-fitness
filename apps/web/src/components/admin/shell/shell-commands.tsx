@@ -21,6 +21,7 @@ import {
   shortcutFor,
   type ShortcutAction,
 } from "./shortcuts";
+import { requestLeave } from "../ui/leave-request";
 
 /**
  * اللوحة والحوار يُحمَّلان عند أول فتح لا مع كل صفحة (ADMIN_REDESIGN §8): ما يحمّله الهيكل دائمًا
@@ -120,6 +121,12 @@ export function ShellCommands({ entries, targets, shortcutsEnabled, text }: Shel
   const [open, setOpen] = useState<ShellCommand | null>(null);
   useRememberRecent(entries);
   useCommandEvents(setOpen);
+  /** «G ثم حرف»: عبر حارس المغادرة، فلا يضيع تعديل غير محفوظ. */
+  const go = (href: string | undefined) => {
+    if (href !== undefined && requestLeave(href)) {
+      router.push(href);
+    }
+  };
   const run = (action: ShortcutAction) => {
     if (action.kind === "palette" || action.kind === "help") {
       setOpen(action.kind);
@@ -132,8 +139,8 @@ export function ShellCommands({ entries, targets, shortcutsEnabled, text }: Shel
       }
     } else if (action.kind === "sidebar") {
       document.querySelector<HTMLElement>(`[${COLLAPSE_ATTRIBUTE}]`)?.click();
-    } else if (action.kind === "go" && targets[action.target] !== undefined) {
-      router.push(targets[action.target] ?? "");
+    } else if (action.kind === "go") {
+      go(targets[action.target]);
     }
   };
   useShortcuts(shortcutsEnabled, run);

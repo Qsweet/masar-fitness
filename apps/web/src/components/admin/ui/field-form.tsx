@@ -110,9 +110,20 @@ export function FormButton({ form, intent, variant, skipValidation, children }: 
   );
 }
 
-/** تذييل النموذج: شريط الحفظ v2 (يلتصق حين يتغير حقل، ويحرس المغادرة). */
-export function FormFooter({ children }: { readonly children: ReactNode }) {
-  return <SaveBar>{children}</SaveBar>;
+/** ما أُرسل ولم يُحفظ: خطوة «راجع»، أو رفض الخادم للنموذج أو لحقل منه. */
+export function hasUnsaved(state: FieldFormState): boolean {
+  return state.step === "confirm" || state.error !== null || Object.keys(state.fields).length > 0;
+}
+
+/** تذييل النموذج: شريط الحفظ v2 (يلتصق حين يتغير حقل أو لم يُحفظ المرسَل، ويحرس المغادرة). */
+export function FormFooter({
+  form,
+  children,
+}: {
+  readonly form: FieldForm;
+  readonly children: ReactNode;
+}) {
+  return <SaveBar unsaved={hasUnsaved(form.state)}>{children}</SaveBar>;
 }
 
 export interface ReviewLabels {
@@ -148,7 +159,7 @@ export function ReviewStep({ form, labels, variant }: ReviewStepProps) {
       {Object.entries(state.values).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
-      <FormFooter>
+      <FormFooter form={form}>
         <FormButton form={form} intent="confirm" variant={variant ?? "primary"}>
           {labels.confirm}
         </FormButton>

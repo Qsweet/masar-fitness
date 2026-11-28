@@ -66,7 +66,7 @@ export function PromotionForm(props: PromotionFormProps) {
         <ScopeCard {...section} scopeEditable={termsEditable} />
         <WindowCard {...section} startEditable={termsEditable} />
       </div>
-      <FormFooter>
+      <FormFooter form={form}>
         <FormButton form={form} intent="save">
           {props.submit}
         </FormButton>

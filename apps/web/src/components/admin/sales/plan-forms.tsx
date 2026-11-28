@@ -72,7 +72,7 @@ export function PlanCreateForm({ productId, kind, values, labels, text, errors }
           <BenefitRows form={form} labels={labels} bare />
         </SettingsSection>
       </div>
-      <FormFooter>
+      <FormFooter form={form}>
         <FormButton form={form} intent="save">
           {text.submit}
         </FormButton>
@@ -111,7 +111,7 @@ export function PlanIdentityForm({
       <div key={form.state.stamp} className={formStyles.form}>
         <IdentityFields form={form} labels={labels} kind={kind} />
       </div>
-      <FormFooter>
+      <FormFooter form={form}>
         <FormButton form={form} intent="save">
           {labels.saveIdentity}
         </FormButton>
@@ -148,7 +148,7 @@ export function PlanTermsForm(props: TermsProps) {
             <TermsFields form={form} labels={labels} kind={kind} />
             <BenefitRows form={form} labels={labels} />
           </div>
-          <FormFooter>
+          <FormFooter form={form}>
             <FormButton form={form} intent="save">
               {labels.saveTerms}
             </FormButton>

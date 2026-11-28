@@ -150,7 +150,7 @@ export function TextsForm({ action, namespace, rows, text, errors, canWrite }: T
         ))}
       </ul>
       {canWrite ? (
-        <FormFooter>
+        <FormFooter form={form}>
           <FormButton form={form} intent="save">
             {text.form.save}
           </FormButton>

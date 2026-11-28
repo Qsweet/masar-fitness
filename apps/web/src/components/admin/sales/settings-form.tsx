@@ -108,7 +108,7 @@ export function SettingsForm(props: SettingsFormProps) {
       ) : (
         <>
           <SettingsFields {...props} form={form} />
-          <FormFooter>
+          <FormFooter form={form}>
             <FormButton form={form} intent="save">
               {text.review}
             </FormButton>

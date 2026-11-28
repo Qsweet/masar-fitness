@@ -82,7 +82,7 @@ export function AdminForm({
             label={labels.submit}
           />
         ) : (
-          <SaveBar>
+          <SaveBar unsaved={state.error !== null}>
             <SubmitAction pending={pending} variant={variant} block={false} label={labels.submit} />
           </SaveBar>
         )}

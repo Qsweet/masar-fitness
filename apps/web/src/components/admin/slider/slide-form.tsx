@@ -113,7 +113,7 @@ export function SlideForm(props: SlideFormProps) {
             kind={enhanced ? (current[SLIDE_FIELDS.linkKind] ?? "none") : null}
           />
           <DisplaySection form={form} text={text} timeZone={props.timeZone} />
-          <FormFooter>
+          <FormFooter form={form}>
             <FormButton form={form} intent="save">
               {props.id === "" ? text.form.create : text.form.save}
             </FormButton>

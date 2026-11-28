@@ -16,6 +16,7 @@ import {
 import { useModalOnMount } from "./use-modal";
 import { readRecent } from "./recent-store";
 import { isComposingKey } from "./shortcuts";
+import { requestLeave } from "../ui/leave-request";
 
 interface CommandPaletteProps {
   readonly onClose: () => void;
@@ -103,8 +104,9 @@ export function CommandPalette(props: CommandPaletteProps) {
   const pick = (entry: CommandEntry) => {
     onClose();
     if (entry.fullLoad) {
+      // تحميل كامل: حارس المغادرة يسأل عبر تحذير المتصفح نفسه
       window.location.assign(entry.href);
-    } else {
+    } else if (requestLeave(entry.href)) {
       router.push(entry.href);
     }
   };

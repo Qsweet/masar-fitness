@@ -61,7 +61,7 @@ export function SliderSettingsForm({
         />
       </div>
       {canWrite ? (
-        <FormFooter>
+        <FormFooter form={form}>
           <FormButton form={form} intent="save" variant="secondary">
             {text.save}
           </FormButton>

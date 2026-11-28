@@ -104,6 +104,17 @@ select.control {
     flex: 1;
     width: 100%;
   }
+
+  /* القوائم سطرًا لكلٍّ: أسماء خياراتها أطول من نصف الشاشة */
+  .field:has(select) {
+    flex-basis: 100%;
+  }
+
+  select.control {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
 }
 
 /* نموذج شريط الأدوات نفسه: صف يلتف بعرض البطاقة */

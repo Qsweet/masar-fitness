@@ -26,7 +26,7 @@ export default async function LoginPage() {
   const { login, errors } = dictionary;
   return (
     <Gate dictionary={dictionary} title={login.title} lead={login.lead}>
-      <AdminForm action={loginAction} labels={{ submit: login.submit, errors }}>
+      <AdminForm action={loginAction} labels={{ submit: login.submit, errors }} block>
         <TextField
           id="login-email"
           name="email"

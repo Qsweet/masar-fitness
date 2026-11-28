@@ -11,6 +11,7 @@ import {
   type FormValues,
 } from "@/server/admin/field-form";
 import { buttonClass, Facts, type ButtonVariant } from "./kit";
+import { SaveBar } from "./save-bar";
 import styles from "./ui.module.css";
 
 export type FieldFormAction = (
@@ -102,15 +103,16 @@ export function FormButton({ form, intent, variant, skipValidation, children }: 
       formNoValidate={skipValidation}
       disabled={form.pending}
       data-pending={form.pending}
-      className={buttonClass({ variant: variant ?? "primary", size: "large" })}
+      className={buttonClass({ variant: variant ?? "primary" })}
     >
       {children}
     </button>
   );
 }
 
+/** تذييل النموذج: شريط الحفظ v2 (يلتصق حين يتغير حقل، ويحرس المغادرة). */
 export function FormFooter({ children }: { readonly children: ReactNode }) {
-  return <div className={styles.formFooter}>{children}</div>;
+  return <SaveBar>{children}</SaveBar>;
 }
 
 export interface ReviewLabels {

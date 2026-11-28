@@ -1,0 +1,115 @@
+/*
+ * شريط الحفظ (ADMIN_REDESIGN §6.2): بلا تعديل تذييل عادي بالأفعال في جهة النهاية؛ ومع تعديل يلتصق بأسفل
+ * الشاشة داخل نموذجه، طافيًا بظل وحد، وفيه حالة التعديل و«تجاهل».
+ */
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--a-2) var(--a-4);
+  min-width: 0;
+  padding-top: var(--a-4);
+  border-top: 1px solid var(--a-border);
+}
+
+.dirty {
+  position: sticky;
+  z-index: 5;
+  bottom: var(--a-3);
+  padding: var(--a-2) var(--a-3) var(--a-2) var(--a-2);
+  padding-inline-start: var(--a-4);
+  border: 1px solid var(--a-border-strong);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-overlay);
+  box-shadow: var(--a-shadow-2);
+  animation: rise var(--a-dur-2) var(--a-ease-out);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--a-2);
+  min-width: 0;
+  font-size: var(--a-fs-small);
+  font-weight: 600;
+}
+
+.status:empty {
+  display: none;
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--a-radius-pill);
+  background: var(--a-warning);
+}
+
+.hint {
+  color: var(--a-subtle);
+  font-weight: 450;
+}
+
+@media (width < 40rem) {
+  .hint {
+    display: none;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-2);
+  margin-inline-start: auto;
+}
+
+.dialog {
+  width: min(26rem, calc(100vw - 2rem));
+  padding: var(--a-5);
+  border: 1px solid var(--a-border-strong);
+  border-radius: var(--a-radius-xl);
+  margin: auto;
+  background: var(--a-overlay);
+  box-shadow: var(--a-shadow-3);
+  color: var(--a-text);
+}
+
+.dialog::backdrop {
+  background: var(--a-scrim);
+}
+
+.dialogTitle {
+  font-family: var(--a-font-display);
+  font-size: var(--a-fs-section);
+  font-weight: var(--a-fw-display);
+}
+
+.dialogLead {
+  margin-top: var(--a-2);
+  color: var(--a-muted);
+  font-size: var(--a-fs-body);
+  line-height: var(--a-lh-help);
+}
+
+.dialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--a-2);
+  margin-top: var(--a-5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dirty {
+    animation: none;
+  }
+}

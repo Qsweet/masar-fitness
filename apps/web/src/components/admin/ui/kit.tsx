@@ -44,15 +44,26 @@ interface PageHeaderProps {
   readonly description?: string | undefined;
   /** شارة بجانب العنوان (حالة الحساب مثلًا). */
   readonly badge?: ReactNode;
+  /** رابط رجوع فوق العنوان (صفحات التفصيل). */
+  readonly back?: { readonly href: string; readonly label: string } | undefined;
   /** أفعال الصفحة. */
   readonly children?: ReactNode;
 }
 
-/** رأس الصفحة: عنوان بحجم منتج (1.5rem) ووصف وأفعال. مسار التنقل في الشريط العلوي. */
-export function PageHeader({ title, description, badge, children }: PageHeaderProps) {
+/**
+ * رأس الصفحة: عنوان Alexandria بحجم منتج (1.5rem)، ووصف بطول سطر يُقرأ، وأفعال في جهة النهاية، ورابط
+ * رجوع اختياري. مسار التنقل في الشريط العلوي، والتبويبات تحته بـ`Tabs`.
+ */
+export function PageHeader({ title, description, badge, back, children }: PageHeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.heading}>
+        {back === undefined ? null : (
+          <Link href={back.href} prefetch={false} className={styles.back}>
+            <AdminIcon name="fwd" />
+            {back.label}
+          </Link>
+        )}
         <div className={styles.titleRow}>
           <h1 className={styles.title}>{title}</h1>
           {badge}
@@ -186,7 +197,13 @@ export function EmptyState({ icon, title, description, children }: EmptyStatePro
 interface TabsProps {
   readonly label: string;
   readonly current: string;
-  readonly tabs: readonly { readonly id: string; readonly label: string; readonly href: string }[];
+  readonly tabs: readonly {
+    readonly id: string;
+    readonly label: string;
+    readonly href: string;
+    /** عدّاد مكتوب (رقم منسَّق)، يُعلَن مع اسم التبويب. */
+    readonly count?: string | undefined;
+  }[];
 }
 
 /** تبويبات بروابط: كل تبويب رابط حقيقي يعمل بلا JavaScript ويُشارَك ويُحفظ. */
@@ -202,6 +219,7 @@ export function Tabs({ label, current, tabs }: TabsProps) {
           className={styles.tab}
         >
           {tab.label}
+          {tab.count === undefined ? null : <span className={styles.tabCount}>{tab.count}</span>}
         </Link>
       ))}
     </nav>

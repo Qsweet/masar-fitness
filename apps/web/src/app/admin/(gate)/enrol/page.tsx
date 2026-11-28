@@ -39,7 +39,7 @@ export default async function EnrolPage() {
         <span className={gateStyles.stepNumber}>2</span>
         {enrol.stepConfirm}
       </h2>
-      <AdminForm action={confirmEnrolAction} labels={{ submit: enrol.submit, errors }}>
+      <AdminForm action={confirmEnrolAction} labels={{ submit: enrol.submit, errors }} block>
         <TextField
           id="enrol-code"
           name="code"

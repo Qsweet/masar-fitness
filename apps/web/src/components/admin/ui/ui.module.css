@@ -126,19 +126,25 @@
 
 .field {
   display: grid;
-  gap: 0.3rem;
+  gap: var(--a-2);
   min-width: 0;
 }
 
+/* التسمية فوق الحقل دائمًا، بلون النص لا الخافت: هي ما يُمسح بالعين أولًا */
 .label {
-  font-size: var(--a-text-caption);
-  font-weight: 600;
+  color: var(--a-text);
+  font-size: var(--a-fs-label);
+  font-weight: var(--a-fw-label);
+  line-height: var(--a-lh-tight);
 }
 
+/* التلميح سطر واحد عادةً، بطول سطر يُقرأ؛ الشرح الطويل في «ما الذي يترتب؟» */
 .hint {
+  max-width: var(--a-measure-help);
+  margin-top: calc(-1 * var(--a-1));
   color: var(--a-muted);
-  font-size: var(--a-text-caption);
-  line-height: 1.55;
+  font-size: var(--a-fs-help);
+  line-height: var(--a-lh-help);
 }
 
 .input {
@@ -271,7 +277,7 @@
 .cardHead {
   display: grid;
   gap: var(--a-1);
-  padding: var(--a-4) var(--a-4h);
+  padding: var(--a-4) var(--a-5);
   border-bottom: 1px solid var(--a-border);
 }
 
@@ -296,21 +302,33 @@
 }
 
 .cardTitle {
-  font-size: var(--a-text-section);
-  font-weight: 600;
-  line-height: 1.4;
+  font-family: var(--a-font-display);
+  font-size: var(--a-fs-h2);
+  font-weight: var(--a-fw-display);
+  line-height: var(--a-lh-title);
 }
 
 .cardLead {
-  max-width: 44rem;
+  max-width: var(--a-measure);
   color: var(--a-muted);
-  font-size: var(--a-text-caption);
+  font-size: var(--a-fs-help);
+  line-height: var(--a-lh-help);
 }
 
 .cardBody {
   display: grid;
   gap: var(--a-4);
-  padding: var(--a-4h);
+  padding: var(--a-5);
+}
+
+@media (width < 40rem) {
+  .cardHead {
+    padding: var(--a-3) var(--a-4);
+  }
+
+  .cardBody {
+    padding: var(--a-4);
+  }
 }
 
 .cardFlush {
@@ -331,7 +349,7 @@
   display: grid;
   justify-items: center;
   gap: var(--a-2);
-  padding: var(--a-7) var(--a-5);
+  padding: var(--a-6) var(--a-5);
   text-align: center;
 }
 
@@ -346,13 +364,16 @@
 }
 
 .emptyTitle {
-  font-weight: 600;
+  margin-top: var(--a-1);
+  font-size: var(--a-fs-body);
+  font-weight: var(--a-fw-strong);
 }
 
 .emptyLead {
-  max-width: 26rem;
+  max-width: 28rem;
   color: var(--a-muted);
-  font-size: var(--a-text-caption);
+  font-size: var(--a-fs-help);
+  line-height: var(--a-lh-help);
 }
 
 .tabs {
@@ -363,13 +384,35 @@
 }
 
 .tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--a-2);
   flex: none;
   padding: var(--a-2) 0 var(--a-3);
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   color: var(--a-muted);
-  font-weight: 600;
+  font-size: var(--a-fs-body);
+  font-weight: 500;
   text-decoration: none;
+}
+
+/* عدّاد التبويب: رقم جدولي بخلفية محايدة، وأقوى في التبويب الحالي */
+.tabCount {
+  min-width: 1.5rem;
+  padding: 0 0.375rem;
+  border-radius: var(--a-radius-pill);
+  background: var(--a-neutral-soft);
+  color: var(--a-muted);
+  font-size: var(--a-fs-caption);
+  font-weight: 600;
+  line-height: 1.25rem;
+  text-align: center;
+}
+
+.tab[aria-current="page"] .tabCount {
+  background: var(--a-active);
+  color: var(--a-text);
 }
 
 .tab:hover {
@@ -379,6 +422,7 @@
 .tab[aria-current="page"] {
   border-bottom-color: var(--a-accent);
   color: var(--a-text);
+  font-weight: 600;
 }
 
 .pagination {
@@ -436,15 +480,39 @@
 .header {
   display: flex;
   flex-wrap: wrap;
-  align-items: end;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: var(--a-3) var(--a-4);
+  gap: var(--a-3) var(--a-5);
+  padding-bottom: var(--a-2);
 }
 
 .heading {
   display: grid;
-  gap: 0.2rem;
+  gap: var(--a-2);
   min-width: 0;
+  flex: 1 1 24rem;
+}
+
+/* رابط الرجوع فوق العنوان: خافت صغير بسهم ينعكس مع الاتجاه */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--a-1);
+  width: fit-content;
+  color: var(--a-muted);
+  font-size: var(--a-fs-small);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--a-text);
+}
+
+.back svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  transform: scaleX(-1);
 }
 
 .titleRow {
@@ -455,14 +523,23 @@
 }
 
 .title {
+  font-family: var(--a-font-display);
   font-size: var(--a-fs-title);
-  font-weight: 650;
+  font-weight: var(--a-fw-display);
   line-height: var(--a-lh-tight);
 }
 
 .description {
-  max-width: 44rem;
+  max-width: var(--a-measure);
   color: var(--a-muted);
+  font-size: var(--a-fs-body);
+  line-height: var(--a-lh-help);
+}
+
+@media (width < 40rem) {
+  .title {
+    font-size: var(--a-fs-title-compact);
+  }
 }
 
 .actions {

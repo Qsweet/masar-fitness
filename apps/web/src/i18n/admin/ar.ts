@@ -3,6 +3,7 @@ import { backupAr } from "./backup-ar";
 import { contentAr, contentErrorsAr, contentNoticesAr } from "./content-ar";
 import { mediaAr, sliderErrorsAr, sliderNoticesAr } from "./media-ar";
 import { errorPageAr } from "./error-ar";
+import { kitAr } from "./kit-ar";
 import { integrationsAr, integrationsErrorsAr, integrationsNoticesAr } from "./integrations-ar";
 import { shellAr } from "./shell-ar";
 import { sliderAr } from "./slider-ar";
@@ -58,6 +59,7 @@ export const adminAr = {
     sales: "الطلبات والعملاء، وقراءة الكتالوج والعروض.",
   },
   statuses: { active: "نشط", disabled: "معطَّل" },
+  kit: kitAr,
   common: {
     yes: "نعم",
     no: "لا",

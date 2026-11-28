@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { AdminShell } from "@/components/admin/shell/admin-shell";
+import { FormKitProvider } from "@/components/admin/ui/form-kit";
 import {
   ADMIN_DENSITY_COOKIE,
   ADMIN_NAV_COLLAPSED,
@@ -38,7 +39,7 @@ export default async function PanelLayout({ children }: { readonly children: Rea
       }}
       environment={environmentBadge()}
     >
-      {children}
+      <FormKitProvider text={dictionary.kit}>{children}</FormKitProvider>
     </AdminShell>
   );
 }

@@ -197,6 +197,12 @@ const PATHS = {
   ),
   /** «للأمام» في قراءة عربية: يشير يسارًا (اللوحة عربية فقط اليوم). */
   fwd: <path d="m14 6-6 6 6 6" />,
+  info: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 11v5.2M12 7.8h.01" />
+    </>
+  ),
 } satisfies Record<string, ReactNode>;
 
 export type AdminIconName = keyof typeof PATHS;

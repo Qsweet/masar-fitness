@@ -20,6 +20,7 @@ export default async function ForcedPasswordPage() {
       <AdminForm
         action={changeForcedPasswordAction}
         labels={{ submit: forcedPassword.submit, errors }}
+        block
       >
         <NewPasswordFields idPrefix="forced" email={staff.email} text={dictionary.passwordFields} />
       </AdminForm>

@@ -5,6 +5,7 @@ import { lookup } from "@/i18n/admin";
 import { cx } from "@/lib/cx";
 import { EMPTY_FORM_STATE, type AdminFormState } from "@/server/admin/form";
 import { buttonClass, type ButtonVariant } from "./ui/kit";
+import { SaveBar } from "./ui/save-bar";
 import styles from "./ui/ui.module.css";
 
 export type AdminAction = (previous: AdminFormState, formData: FormData) => Promise<AdminFormState>;
@@ -19,9 +20,31 @@ interface AdminFormProps {
   readonly action: AdminAction;
   readonly labels: AdminFormLabels;
   readonly variant?: ButtonVariant;
-  /** الحقول والزر في صف واحد (نماذج الإدارة القصيرة)؛ وإلا زر بعرض النموذج. */
+  /** الحقول والزر في صف واحد (نماذج الإدارة القصيرة). */
   readonly inline?: boolean;
+  /** زر بعرض النموذج (بطاقة صفحات البوابة)؛ وإلا تذييل بشريط الحفظ. */
+  readonly block?: boolean;
   readonly children?: ReactNode;
+}
+
+interface SubmitActionProps {
+  readonly pending: boolean;
+  readonly variant: ButtonVariant;
+  readonly block: boolean;
+  readonly label: string;
+}
+
+function SubmitAction({ pending, variant, block, label }: SubmitActionProps) {
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      data-pending={pending}
+      className={buttonClass({ variant, block, size: block ? "large" : "medium" })}
+    >
+      {label}
+    </button>
+  );
 }
 
 /**
@@ -33,6 +56,7 @@ export function AdminForm({
   labels,
   variant = "primary",
   inline,
+  block,
   children,
 }: AdminFormProps) {
   const [state, formAction, pending] = useActionState(action, EMPTY_FORM_STATE);
@@ -50,18 +74,18 @@ export function AdminForm({
       )}
       <div className={inline === true ? styles.inlineForm : styles.form}>
         {children}
-        <button
-          type="submit"
-          disabled={pending}
-          data-pending={pending}
-          className={buttonClass({
-            variant,
-            block: inline !== true,
-            size: inline === true ? "medium" : "large",
-          })}
-        >
-          {labels.submit}
-        </button>
+        {inline === true || block === true ? (
+          <SubmitAction
+            pending={pending}
+            variant={variant}
+            block={block === true}
+            label={labels.submit}
+          />
+        ) : (
+          <SaveBar>
+            <SubmitAction pending={pending} variant={variant} block={false} label={labels.submit} />
+          </SaveBar>
+        )}
       </div>
     </form>
   );

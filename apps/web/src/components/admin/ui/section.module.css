@@ -1,0 +1,181 @@
+/*
+ * أقسام الإعدادات (R3 «النماذج v2»): عمود عنوان قصير ولوحة حقول بحد. الإيقاع 32px بين الأقسام بخط
+ * شعري، و24px حشوة اللوحة، و20px بين الحقول. لا لون خام: رموز --a-* وحدها.
+ */
+.stack {
+  display: grid;
+  min-width: 0;
+}
+
+.stack > .section + .section {
+  padding-top: var(--a-6);
+  margin-top: var(--a-6);
+  border-top: 1px solid var(--a-border);
+}
+
+.section {
+  display: grid;
+  gap: var(--a-3) var(--a-7);
+  min-width: 0;
+  scroll-margin-top: calc(var(--a-topbar) + var(--a-4));
+}
+
+@media (width >= 64rem) {
+  .section {
+    grid-template-columns: minmax(12rem, 16.5rem) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .intro {
+    position: sticky;
+    top: calc(var(--a-topbar) + var(--a-5));
+    padding-top: var(--a-1);
+  }
+}
+
+.intro {
+  display: grid;
+  gap: var(--a-2);
+  align-content: start;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--a-font-display);
+  font-size: var(--a-fs-section);
+  font-weight: var(--a-fw-display);
+  line-height: var(--a-lh-title);
+}
+
+.description {
+  max-width: 30rem;
+  color: var(--a-muted);
+  font-size: var(--a-fs-help);
+  line-height: var(--a-lh-help);
+}
+
+.panel {
+  display: grid;
+  gap: var(--a-4h);
+  min-width: 0;
+  max-width: 48rem;
+  padding: var(--a-5);
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-surface);
+  box-shadow: var(--a-shadow-1);
+}
+
+.danger .panel {
+  border-color: var(--a-danger-soft);
+  box-shadow: inset 0 0 0 1px var(--a-danger-soft);
+}
+
+.danger .title {
+  color: var(--a-danger);
+}
+
+.accent .panel {
+  border-color: var(--a-accent-line);
+}
+
+@media (width < 40rem) {
+  .panel {
+    padding: var(--a-4);
+  }
+}
+
+/* أسفل اللوحة: الأفعال في جهة النهاية على سطح غائر بخط شعري */
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--a-2) var(--a-3);
+  padding: var(--a-3) var(--a-5);
+  margin: var(--a-1) calc(-1 * var(--a-5)) calc(-1 * var(--a-5));
+  border-top: 1px solid var(--a-border);
+  border-radius: 0 0 var(--a-radius-lg) var(--a-radius-lg);
+  background: var(--a-sunken);
+}
+
+@media (width < 40rem) {
+  .footer {
+    padding: var(--a-3) var(--a-4);
+    margin: var(--a-1) calc(-1 * var(--a-4)) calc(-1 * var(--a-4));
+  }
+}
+
+/* «ما الذي يترتب؟»: ملخص خافت بأيقونة، والمحتوى صندوق غائر بقائمة قصيرة */
+.disclosure {
+  min-width: 0;
+}
+
+.summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--a-2);
+  min-height: 1.75rem;
+  color: var(--a-muted);
+  font-size: var(--a-fs-help);
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--a-radius-sm);
+  transition: color var(--a-dur-1) var(--a-ease-out);
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+}
+
+.summary::after {
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-inline-start: var(--a-1);
+  border-block-end: 1.5px solid currentColor;
+  border-inline-end: 1.5px solid currentColor;
+  content: "";
+  transform: translateY(-0.1rem) rotate(45deg);
+  transition: transform var(--a-dur-2) var(--a-ease-out);
+}
+
+.disclosure[open] > .summary::after {
+  transform: translateY(0.1rem) rotate(-135deg);
+}
+
+.summary:hover,
+.disclosure[open] > .summary {
+  color: var(--a-text);
+}
+
+.disclosureBody {
+  display: grid;
+  gap: var(--a-2);
+  max-width: var(--a-measure);
+  padding: var(--a-3) var(--a-4);
+  margin-top: var(--a-2);
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius);
+  background: var(--a-sunken);
+  color: var(--a-muted);
+  font-size: var(--a-fs-help);
+  line-height: var(--a-lh-help);
+}
+
+.points {
+  display: grid;
+  gap: var(--a-2);
+  padding-inline-start: var(--a-4);
+  list-style: disc;
+}
+
+.points li::marker {
+  color: var(--a-subtle);
+}

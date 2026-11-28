@@ -1,0 +1,83 @@
+/* هياكل التحميل: أشرطة محايدة بوميض خفيف يتوقف مع تقليل الحركة. */
+.page {
+  display: grid;
+  gap: var(--a-5);
+  min-width: 0;
+}
+
+.head {
+  display: grid;
+  gap: var(--a-3);
+}
+
+.card {
+  display: grid;
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-surface);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--a-5);
+  min-height: var(--a-row);
+  padding-inline: var(--a-5);
+  border-bottom: 1px solid var(--a-border);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.bone {
+  display: block;
+  height: 0.75rem;
+  border-radius: var(--a-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--a-neutral-soft) 0%,
+    var(--a-active) 50%,
+    var(--a-neutral-soft) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.title {
+  width: 12rem;
+  height: 1.5rem;
+}
+
+.line {
+  width: 100%;
+}
+
+.short {
+  width: 8rem;
+}
+
+.row .short {
+  flex: none;
+}
+
+.row:nth-child(odd) .bone:first-child {
+  width: 60%;
+}
+
+.row:nth-child(even) .bone:first-child {
+  width: 45%;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bone {
+    animation: none;
+  }
+}

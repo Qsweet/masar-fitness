@@ -18,7 +18,7 @@ export default async function VerifyPage() {
   const { verify, errors } = dictionary;
   return (
     <Gate dictionary={dictionary} title={verify.title} lead={verify.lead} signedIn>
-      <AdminForm action={verifyTotpAction} labels={{ submit: verify.submit, errors }}>
+      <AdminForm action={verifyTotpAction} labels={{ submit: verify.submit, errors }} block>
         <TextField
           id="verify-code"
           name="code"
@@ -41,6 +41,7 @@ export default async function VerifyPage() {
             action={verifyRecoveryAction}
             variant="secondary"
             labels={{ submit: verify.recoverySubmit, errors }}
+            block
           >
             <TextField
               id="verify-recovery"

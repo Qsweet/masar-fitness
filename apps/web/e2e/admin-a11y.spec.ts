@@ -77,6 +77,8 @@ async function preAuthJourney(page: Page): Promise<void> {
 }
 
 test("صفحات اللوحة بلا مخالفات وصول آلية", async ({ page }) => {
+  // أربع وعشرون صفحة بالمظهرين وaxe لكلٍّ: كان يأخذ 25–28 ثانية من حد الثلاثين قبل عدّة R3
+  test.slow();
   const club = await newClub(db);
   const owner = await newStaff(db, club, { withTotp: true });
   const member = await newStaff(db, club, { role: "sales" });

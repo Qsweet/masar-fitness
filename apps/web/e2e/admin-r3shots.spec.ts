@@ -13,9 +13,10 @@ import { testDb } from "./payments-support";
 /**
  * لقطات الصفحات الداخلية للمراجعة البصرية (ADMIN_REDESIGN R3/R4): كل صفحة داخلية بنادٍ فيه طلبات
  * وباقات وعروض وصور وشريحة ونص منشور، بثلاث حالات (1440 داكن وفاتح، و390 داكن)، كاملة الطول. المجلد
- * والبادئة من البيئة (`R3_SHOTS_DIR` و`R3_SHOTS_PREFIX`) لمقارنة «قبل» و«بعد»؛ الافتراضي screens/admin.
+ * والبادئة من البيئة (`R3_SHOTS_DIR` و`R3_SHOTS_PREFIX`) لمقارنة «قبل» و«بعد». أداة مراجعة تُشغَّل بطلب: بلا
+ * `R3_SHOTS_DIR` تُتخطى، فلا تثقل السلسلة الكاملة بسبعين لقطة.
  */
-const DIR = process.env.R3_SHOTS_DIR ?? "screens/admin";
+const DIR = process.env.R3_SHOTS_DIR;
 const PREFIX = process.env.R3_SHOTS_PREFIX ?? "r3";
 /** صفحات بعينها (أسماء مفصولة بفواصل) للمراجعة السريعة؛ الافتراضي كلها. */
 const ONLY = process.env.R3_SHOTS_ONLY?.split(",") ?? null;
@@ -28,9 +29,13 @@ const STATES = [
 
 let db: Db;
 
+test.skip(DIR === undefined, "لقطات المراجعة بطلب: R3_SHOTS_DIR");
+
 test.beforeAll(() => {
   db = testDb();
-  mkdirSync(DIR, { recursive: true });
+  if (DIR !== undefined) {
+    mkdirSync(DIR, { recursive: true });
+  }
 });
 
 test.afterAll(async () => {
@@ -54,7 +59,7 @@ async function shootStates(page: Page, name: string, path: string): Promise<void
     // «قبل» تُسجَّل فيها المخالفة ولا توقف اللقطات؛ «بعد» تفشل بها
     expect.soft(overflow, `تمرير أفقي في ${name} عند ${String(width)}`).toBeLessThanOrEqual(0);
     await page.screenshot({
-      path: `${DIR}/${PREFIX}-${name}-${theme}-${String(width)}.png`,
+      path: `${DIR ?? ""}/${PREFIX}-${name}-${theme}-${String(width)}.png`,
       fullPage: true,
     });
   }

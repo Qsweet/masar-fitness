@@ -1,6 +1,7 @@
 /*
- * جدول البيانات: رأس ثابت أثناء التمرير داخل البطاقة، خطوط شعرية بلا تظليل متناوب، وتحويم على الصف.
- * لا يتجاوز الجدول عرض الشاشة أبدًا: التمرير الأفقي داخل البطاقة. تحت 640px كل صف بطاقة بتسميات.
+ * جدول البيانات v2: خطوط شعرية بلا تظليل متناوب، وتحويم على الصف، وارتفاع صف من رمز الكثافة. لا يتجاوز
+ * الجدول عرض الشاشة أبدًا: التمرير الأفقي داخل البطاقة. من 80rem يُقصّ بدل التمرير (الجداول تتسع هناك)،
+ * فيلتصق الرأس تحت الشريط العلوي أثناء تمرير الصفحة. تحت 640px كل صف بطاقة بتسميات أو سطران.
  */
 .wrap {
   min-width: 0;
@@ -8,10 +9,21 @@
   overflow-x: auto;
 }
 
+@media (width >= 80rem) {
+  .wrap {
+    overflow-x: clip;
+  }
+
+  .table th {
+    top: var(--a-topbar);
+  }
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--a-text-body);
+  font-size: var(--a-fs-table);
+  font-variant-numeric: tabular-nums;
 }
 
 .table caption {
@@ -26,21 +38,60 @@
 .table th {
   position: sticky;
   top: 0;
-  z-index: 1;
-  padding: var(--a-2) var(--a-4);
+  z-index: 2;
+  height: 2.5rem;
+  padding: 0 var(--a-4);
   border-bottom: 1px solid var(--a-border);
   background: var(--a-surface);
   color: var(--a-muted);
-  font-size: var(--a-text-caption);
-  font-weight: 600;
+  font-size: var(--a-fs-caption);
+  font-weight: 500;
   text-align: start;
   white-space: nowrap;
 }
 
 .table td {
-  padding: var(--a-3) var(--a-4);
+  height: var(--a-row);
+  padding: var(--a-2) var(--a-4);
   border-bottom: 1px solid var(--a-border);
   vertical-align: middle;
+}
+
+/* الصف رابط: طبقة النقر تغطي الصف، وما في الصف من أزرار وروابط أخرى فوقها */
+.table tbody tr {
+  position: relative;
+}
+
+.rowLink {
+  color: var(--a-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.rowLink::after {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  content: "";
+}
+
+.rowLink:focus-visible {
+  outline: none;
+}
+
+.rowLink:focus-visible::after {
+  border-radius: var(--a-radius-sm);
+  outline: 2px solid var(--a-focus);
+  outline-offset: -2px;
+}
+
+.table tbody tr:has(.rowLink) {
+  cursor: pointer;
+}
+
+.table td :is(a, button, form, details):not(.rowLink) {
+  position: relative;
+  z-index: 1;
 }
 
 .table th:first-child,
@@ -68,6 +119,39 @@
 .numeric {
   text-align: end;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* بطاقة الجدول: شريط أدوات وجدول وترقيم */
+.card {
+  min-width: 0;
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-surface);
+  box-shadow: var(--a-shadow-1);
+}
+
+.card > .wrap:first-child .table th:first-child {
+  border-start-start-radius: var(--a-radius-lg);
+}
+
+.card > .wrap:first-child .table th:last-child {
+  border-start-end-radius: var(--a-radius-lg);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-2) var(--a-3);
+  min-width: 0;
+  padding: var(--a-3) var(--a-4);
+  border-bottom: 1px solid var(--a-border);
+}
+
+.footer {
+  padding: var(--a-3) var(--a-5);
+  border-top: 1px solid var(--a-border);
 }
 
 .nowrap {

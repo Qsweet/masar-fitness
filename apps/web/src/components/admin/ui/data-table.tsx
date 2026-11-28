@@ -1,11 +1,25 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { cx } from "@/lib/cx";
 import styles from "./table.module.css";
 
+type Align = "end" | "numeric";
+
+/** عمود باسمه، أو باسمه ومحاذاته (الأرقام في جهة النهاية رأسًا وخلايا). */
+export type Column = string | { readonly label: string; readonly align: Align };
+
+function columnLabel(column: Column): string {
+  return typeof column === "string" ? column : column.label;
+}
+
+function columnAlign(column: Column): Align | undefined {
+  return typeof column === "string" ? undefined : column.align;
+}
+
 interface DataTableProps {
   /** اسم الجدول لقارئ الشاشة. */
   readonly caption: string;
-  readonly columns: readonly string[];
+  readonly columns: readonly Column[];
   /** عمود أخير لأفعال الصف، برأس مخفي بصريًا. */
   readonly actionsLabel?: string;
   readonly testId?: string;
@@ -17,7 +31,10 @@ interface DataTableProps {
   readonly children: ReactNode;
 }
 
-/** جدول بيانات: الصفوف تُمرَّر أبناءً من `Row` و`Cell`. */
+/**
+ * جدول بيانات v2 (ADMIN_REDESIGN §6.1): رأس لاصق تحت الشريط العلوي على الشاشة الواسعة، وخطوط شعرية،
+ * وارتفاع صف من رمز الكثافة، والأرقام جدولية في جهة النهاية، والصف كله رابط حين فيه `RowLink`.
+ */
 export function DataTable({
   caption,
   columns,
@@ -32,11 +49,18 @@ export function DataTable({
         <caption>{caption}</caption>
         <thead>
           <tr>
-            {columns.map((column) => (
-              <th key={column} scope="col">
-                {column}
-              </th>
-            ))}
+            {columns.map((column) => {
+              const align = columnAlign(column);
+              return (
+                <th
+                  key={columnLabel(column)}
+                  scope="col"
+                  className={align === undefined ? undefined : styles[align]}
+                >
+                  {columnLabel(column)}
+                </th>
+              );
+            })}
             {actionsLabel === undefined ? null : (
               <th scope="col">
                 <span className="sr-only">{actionsLabel}</span>
@@ -82,6 +106,44 @@ export function Cell({ label, align, nowrap, muted, strong, slot, children }: Ce
       {/* عنصر واحد: على الهاتف الخلية صف «تسمية ← قيمة»، والقيمة لا تتفرق أجزاؤها */}
       <span>{children}</span>
     </td>
+  );
+}
+
+interface RowLinkProps {
+  readonly href: string;
+  /** اسم الرابط لقارئ الشاشة («افتح الطلب MSR-…»). */
+  readonly label: string;
+  readonly children: ReactNode;
+}
+
+/**
+ * رابط الصف: نصه في خليته الأولى، ومساحة نقره تمتد على الصف كله (طبقة شفافة فوق الصف). بقية الأزرار
+ * والروابط في الصف فوقها، فتبقى تعمل. بلا JavaScript.
+ */
+export function RowLink({ href, label, children }: RowLinkProps) {
+  return (
+    <Link href={href} prefetch={false} className={styles.rowLink} aria-label={label}>
+      {children}
+    </Link>
+  );
+}
+
+interface TableCardProps {
+  /** شريط الأدوات فوق الجدول (بحث، تصفية). */
+  readonly toolbar?: ReactNode;
+  /** أسفل الجدول (الترقيم). */
+  readonly footer?: ReactNode;
+  readonly children: ReactNode;
+}
+
+/** بطاقة الجدول: شريط الأدوات ثم الجدول أو حالته الفارغة ثم الترقيم، بخطوط شعرية بينها. */
+export function TableCard({ toolbar, footer, children }: TableCardProps) {
+  return (
+    <section className={styles.card}>
+      {toolbar === undefined ? null : <div className={styles.toolbar}>{toolbar}</div>}
+      {children}
+      {footer === undefined ? null : <div className={styles.footer}>{footer}</div>}
+    </section>
   );
 }
 

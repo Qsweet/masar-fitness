@@ -1,0 +1,117 @@
+/*
+ * شريط أدوات الجدول (ADMIN_REDESIGN §6.1): بحث بأيقونة، وحقول قصيرة بتسمية في سطرها، وأفعال صغيرة.
+ * يلتف على الشاشات الضيقة، والبحث يأخذ السطر الأول على الهاتف.
+ */
+.search {
+  position: relative;
+  flex: 1 1 14rem;
+  max-width: 20rem;
+  min-width: 0;
+}
+
+.searchIcon {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: var(--a-3);
+  color: var(--a-subtle);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.searchInput,
+.control {
+  width: 100%;
+  min-height: var(--a-control-sm);
+  border: 1px solid var(--a-border-strong);
+  border-radius: var(--a-radius);
+  background: var(--a-sunken);
+  color: var(--a-text);
+  font: inherit;
+  font-size: var(--a-fs-small);
+}
+
+.searchInput {
+  padding-inline: calc(var(--a-3) + 1.5rem) var(--a-3);
+}
+
+.searchInput::placeholder {
+  color: var(--a-subtle);
+}
+
+.searchInput:hover,
+.control:hover {
+  border-color: var(--a-field-border);
+}
+
+.searchInput:focus-visible,
+.control:focus-visible {
+  border-color: var(--a-focus);
+  outline: 2px solid var(--a-focus);
+  outline-offset: 0;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: var(--a-2);
+  min-width: 0;
+}
+
+.prefix {
+  flex: none;
+  color: var(--a-muted);
+  font-size: var(--a-fs-small);
+  white-space: nowrap;
+}
+
+.control {
+  padding-inline: var(--a-3);
+}
+
+.control[type="date"] {
+  width: auto;
+  direction: ltr;
+  text-align: end;
+}
+
+select.control {
+  width: auto;
+  max-width: 14rem;
+  padding-inline-end: var(--a-6);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--a-2);
+}
+
+.end {
+  margin-inline-start: auto;
+}
+
+@media (width < 40rem) {
+  .search {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .field {
+    flex: 1 1 9rem;
+  }
+
+  .control[type="date"] {
+    flex: 1;
+    width: 100%;
+  }
+}
+
+/* نموذج شريط الأدوات نفسه: صف يلتف بعرض البطاقة */
+.form {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--a-2) var(--a-4);
+  min-width: 0;
+}

@@ -1,0 +1,10 @@
+[Unit]
+Description=Masar tracking data retention purge (decision 90-6)
+Documentation=file:///opt/masar/docs/DEPLOYMENT.md
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker compose -f /opt/masar/deploy/compose.yml --env-file /opt/masar/deploy/.env exec -T app pnpm --filter @masar/tracking tracking:purge
+TimeoutStartSec=30min

@@ -44,8 +44,7 @@
 Description=Masar payments reconcile
 [Service]
 Type=oneshot
-WorkingDirectory=/opt/masar/deploy
-ExecStart=/usr/bin/docker compose exec -T app pnpm --filter @masar/payments payments:reconcile
+ExecStart=/usr/bin/docker compose -f /opt/masar/deploy/compose.yml --env-file /opt/masar/deploy/.env exec -T app pnpm --filter @masar/payments payments:reconcile
 
 # /etc/systemd/system/masar-payments-reconcile.timer
 [Unit]
@@ -61,7 +60,7 @@ WantedBy=timers.target
 
 ## مرسِل تحويلات القياس (A5)
 
-`ADMIN_A5_TRACKING.md` §4: الشراء المدفوع يُدرج في `tracking_outbox` داخل معاملة التسوية، والمرسِل يرسله إلى المنصات المفعّلة من اللوحة. **بلا منصة مفعّلة لها مفتاح لا شيء في الطابور**، فالمؤقت آمن قبل الإعداد. يقرأ `DATABASE_URL` و`ADMIN_SECRET_KEY` (لفك المفاتيح المشفّرة) و`SITE_URL` من بيئة الحاوية، ولا يطبع قيمة منها ولا حمولة. مثال (**غير مثبَّت**: يُنشأ عند أول تفعيل خادمي):
+`ADMIN_A5_TRACKING.md` §4: الشراء المدفوع يُدرج في `tracking_outbox` داخل معاملة التسوية، والمرسِل يرسله إلى المنصات المفعّلة من اللوحة. **بلا منصة مفعّلة لها مفتاح لا شيء في الطابور**، فالمؤقت آمن قبل الإعداد. يقرأ `DATABASE_URL` و`ADMIN_SECRET_KEY` (لفك المفاتيح المشفّرة) و`SITE_URL` من بيئة الحاوية، ولا يطبع قيمة منها ولا حمولة. الوحدة (في `deploy/tracking/systemd/`، يثبّتها `deploy/tracking/install.sh` أدناه):
 
 ```ini
 # /etc/systemd/system/masar-tracking-dispatch.service
@@ -69,8 +68,7 @@ WantedBy=timers.target
 Description=Masar tracking conversions dispatch
 [Service]
 Type=oneshot
-WorkingDirectory=/opt/masar/deploy
-ExecStart=/usr/bin/docker compose exec -T app pnpm --filter @masar/tracking tracking:dispatch
+ExecStart=/usr/bin/docker compose -f /opt/masar/deploy/compose.yml --env-file /opt/masar/deploy/.env exec -T app pnpm --filter @masar/tracking tracking:dispatch
 
 # /etc/systemd/system/masar-tracking-dispatch.timer
 [Unit]
@@ -94,8 +92,7 @@ WantedBy=timers.target
 Description=Masar tracking data retention purge
 [Service]
 Type=oneshot
-WorkingDirectory=/opt/masar/deploy
-ExecStart=/usr/bin/docker compose exec -T app pnpm --filter @masar/tracking tracking:purge
+ExecStart=/usr/bin/docker compose -f /opt/masar/deploy/compose.yml --env-file /opt/masar/deploy/.env exec -T app pnpm --filter @masar/tracking tracking:purge
 
 # /etc/systemd/system/masar-tracking-purge.timer
 [Unit]
@@ -107,13 +104,10 @@ Persistent=true
 WantedBy=timers.target
 ```
 
-التثبيت (المرسِل والتفريغ معًا، بعد نسخ الملفات الأربعة أعلاه إلى `/etc/systemd/system/`):
+التثبيت (المرسِل والتفريغ معًا): الوحدات الأربع في `deploy/tracking/systemd/` (الأمثلة أعلاه للشرح)، والمثبّت ينسخها ويفعّل المؤقتين ويجرّب التفريغ مرة. تكراره آمن:
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now masar-tracking-dispatch.timer masar-tracking-purge.timer
-systemctl list-timers 'masar-tracking-*'
-sudo systemctl start masar-tracking-purge.service && journalctl -u masar-tracking-purge -n 5
+sudo bash /opt/masar/deploy/tracking/install.sh
 ```
 
 كل تشغيل سطر `{"event":"tracking.purge","orders":…,"outbox":…}` في `journalctl -u masar-tracking-purge`.

@@ -68,7 +68,7 @@ jobs:
         run: pnpm test
 
       - name: Backup scripts (shellcheck)
-        run: shellcheck -x deploy/*.sh deploy/backup/*.sh
+        run: shellcheck -x deploy/*.sh deploy/backup/*.sh deploy/tracking/*.sh
 
       # restic الرسمي بالإصدار نفسه المثبّت في deploy/compose.yml وببصمته من SHA256SUMS الموقَّع (القرار 80)،
       # لاختبار النسخ ثم الاسترجاع الحقيقي في test:integration

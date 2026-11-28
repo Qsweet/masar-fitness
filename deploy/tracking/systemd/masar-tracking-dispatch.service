@@ -1,0 +1,10 @@
+[Unit]
+Description=Masar tracking conversions dispatch
+Documentation=file:///opt/masar/docs/DEPLOYMENT.md
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker compose -f /opt/masar/deploy/compose.yml --env-file /opt/masar/deploy/.env exec -T app pnpm --filter @masar/tracking tracking:dispatch
+TimeoutStartSec=30min

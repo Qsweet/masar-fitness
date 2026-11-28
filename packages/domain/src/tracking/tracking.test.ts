@@ -22,7 +22,7 @@ import {
   phoneE164ForHash,
   vendorCookie,
 } from "./identifiers";
-import { isCompleteConfig, parseIntegrationConfig } from "./ids";
+import { isCompleteConfig, parseIntegrationConfig, requiresAamConfirmation } from "./ids";
 import { isServerProvider, providerCategories, TRACKING_PROVIDERS } from "./providers";
 
 describe("المنصات والفئات", () => {
@@ -60,7 +60,9 @@ describe("المعرّفات العامة", () => {
   it.each(TRACKING_PROVIDERS)("%s: المعرّف الصحيح يُقبل ويكمل الإعداد", (provider) => {
     const parsed = parseIntegrationConfig(provider, valid[provider], true);
     expect(parsed.issues).toEqual({});
-    expect(isCompleteConfig(provider, parsed.config)).toBe(true);
+    // تأكيد إطفاء المطابقة المتقدمة الآلية خانة في النموذج لا حقل نصي (مراجعة القرار 91)
+    const flags = requiresAamConfirmation(provider) ? { aamDisabled: true } : {};
+    expect(isCompleteConfig(provider, { ...parsed.config, ...flags })).toBe(true);
   });
 
   it("ما يحمل محارف تكسر رابطًا أو CSP يُرفض ولا يُصلَح", () => {

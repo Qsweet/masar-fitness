@@ -19,7 +19,17 @@ export type TrackingField = (typeof TRACKING_FIELDS)[number];
 export type IntegrationConfig = Partial<Readonly<Record<TrackingField, string>>> & {
   /** «إرسال الجوال المجزّأ» لمنصة تقبله (`usesHashedPhone`). الغائب مفعَّل (القرار 90-3). */
   readonly sendHashedPhone?: boolean;
+  /**
+   * OpenAI: المالك أكّد أنه أطفأ «المطابقة المتقدمة الآلية» في Ads Manager (مراجعة القرار 91). لا أمر
+   * في الـSDK لإطفائها، فبلا هذا التأكيد لا يكتمل الإعداد ولا يُحمَّل البكسل ولا تتسع CSP.
+   */
+  readonly aamDisabled?: boolean;
 };
+
+/** منصة تشترط تأكيد إطفاء المطابقة المتقدمة الآلية قبل التفعيل. */
+export function requiresAamConfirmation(provider: TrackingProvider): boolean {
+  return provider === "openai";
+}
 
 const PROVIDER_FIELDS: Readonly<Record<TrackingProvider, readonly TrackingField[]>> = {
   gtm: ["containerId"],
@@ -163,8 +173,14 @@ export function parseIntegrationConfig(
   return { config, issues };
 }
 
-/** إعداد محفوظ صالح للتحميل الآن: كل حقل مطلوب موجود وبنمطه، والاختياري بنمطه إن وُجد. */
+/**
+ * إعداد محفوظ صالح للتحميل الآن: كل حقل مطلوب موجود وبنمطه، والاختياري بنمطه إن وُجد، ولـOpenAI
+ * تأكيد إطفاء المطابقة المتقدمة الآلية.
+ */
 export function isCompleteConfig(provider: TrackingProvider, config: IntegrationConfig): boolean {
+  if (requiresAamConfirmation(provider) && config.aamDisabled !== true) {
+    return false;
+  }
   return fieldsOf(provider).every((field) => {
     const value = config[field];
     if (value === undefined) {

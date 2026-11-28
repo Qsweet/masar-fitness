@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { touchFromQuery } from "./attribution";
 import { isTooOld } from "./delivery";
+import { opprefCookie } from "./identifiers";
 import { pixelEventName } from "./events";
-import { isCompleteConfig, parseIntegrationConfig, sendsHashedPhone } from "./ids";
+import {
+  isCompleteConfig,
+  parseIntegrationConfig,
+  requiresAamConfirmation,
+  sendsHashedPhone,
+} from "./ids";
 import { isServerProvider, providerCategories } from "./providers";
 
 describe("إعلانات ChatGPT (OpenAI، القرار 91)", () => {
@@ -29,8 +35,8 @@ describe("إعلانات ChatGPT (OpenAI، القرار 91)", () => {
       });
     }
     expect(parseIntegrationConfig("openai", {}, true).issues).toEqual({ pixelId: "required" });
-    expect(isCompleteConfig("openai", { pixelId: "1345349876" })).toBe(true);
-    expect(isCompleteConfig("openai", { pixelId: "x" })).toBe(false);
+    expect(isCompleteConfig("openai", { pixelId: "1345349876", aamDisabled: true })).toBe(true);
+    expect(isCompleteConfig("openai", { pixelId: "x", aamDisabled: true })).toBe(false);
   });
 
   it("oppref معرّف نقر: مع موافقة الإعلانات وحدها", () => {
@@ -42,9 +48,25 @@ describe("إعلانات ChatGPT (OpenAI، القرار 91)", () => {
     });
   });
 
-  it("الحدث أقدم من 7 أيام لا يُرسل", () => {
+  it("الحدث أقدم من 167 ساعة لا يُرسل: هامش ساعة تحت حد OpenAI (7 أيام)", () => {
     const now = new Date("2026-11-28T00:00:00Z");
     expect(isTooOld("openai", new Date("2026-11-21T01:00:00Z"), now)).toBe(false);
-    expect(isTooOld("openai", new Date("2026-11-20T23:00:00Z"), now)).toBe(true);
+    expect(isTooOld("openai", new Date("2026-11-21T00:59:00Z"), now)).toBe(true);
+  });
+
+  it("كوكي __oppref: أي محارف ظاهرة حتى 512، بلا محارف تحكم", () => {
+    expect(opprefCookie("op/pref+abc=~é")).toBe("op/pref+abc=~é");
+    expect(opprefCookie(undefined)).toBeNull();
+    expect(opprefCookie("")).toBeNull();
+    expect(opprefCookie("a\u0000b")).toBeNull();
+    expect(opprefCookie("a\nb")).toBeNull();
+    expect(opprefCookie("x".repeat(513))).toBeNull();
+    expect(opprefCookie("x".repeat(512))).toHaveLength(512);
+  });
+
+  it("بلا تأكيد إطفاء المطابقة المتقدمة الآلية لا يكتمل الإعداد", () => {
+    expect(isCompleteConfig("openai", { pixelId: "1345349876", aamDisabled: false })).toBe(false);
+    expect(requiresAamConfirmation("openai")).toBe(true);
+    expect(requiresAamConfirmation("meta")).toBe(false);
   });
 });

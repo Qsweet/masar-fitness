@@ -139,6 +139,7 @@ test("لقطات الصفحات الداخلية للمراجعة", async ({ pag
     ["audit", "/admin/audit"],
     ["integrations", "/admin/integrations"],
     ["integration", "/admin/integrations/meta"],
+    ["integrations-openai", "/admin/integrations/openai"],
     ["account", "/admin/account"],
   ];
   for (const [name, path] of pages) {

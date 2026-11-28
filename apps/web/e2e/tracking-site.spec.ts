@@ -177,13 +177,18 @@ test("X بعد موافقة الإعلانات وحدها: مضيفاته في C
     .toBe(true);
   const script = page.locator('script[src="https://static.ads-twitter.com/uwt.js"]');
   expect(await script.evaluate((node: HTMLScriptElement) => node.nonce)).not.toBe("");
-  const queue = await page.evaluate(() => JSON.stringify(window.twq?.queue ?? []));
-  expect(JSON.parse(queue)).toEqual(
-    expect.arrayContaining([
-      ["set", "autoAdvancedMatching", "false", X_PIXEL],
-      ["set", "dataLayerTracking", "false", X_PIXEL],
-      ["config", X_PIXEL],
-    ]),
+  const queue = JSON.parse(
+    await page.evaluate(() => JSON.stringify(window.twq?.queue ?? [])),
+  ) as unknown[];
+  // الأوامر الأربعة بترتيبها قبل أول config، فلا يعمل شيء آلي قبل إطفائه
+  const firstConfig = queue.findIndex(
+    (entry) => JSON.stringify(entry) === JSON.stringify(["config", X_PIXEL]),
+  );
+  expect(firstConfig).toBe(4);
+  expect(queue.slice(0, 4)).toEqual(
+    ["autoConfig", "autoAdvancedMatching", "dataLayerTracking", "autoDwellTracking"].map(
+      (feature) => ["set", feature, "false", X_PIXEL],
+    ),
   );
   await context.close();
 });

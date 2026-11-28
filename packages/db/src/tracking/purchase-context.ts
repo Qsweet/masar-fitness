@@ -34,6 +34,8 @@ export interface PurchaseContext {
   readonly ttp: string | null;
   /** مرجع متصفح OpenAI (`__obref`)، القرار 91. */
   readonly obref: string | null;
+  /** كوكي `__oppref` المختوم مع الطلب (مراجعة القرار 91). */
+  readonly opprefCookie: string | null;
   readonly clientIp: string | null;
   readonly userAgent: string | null;
   readonly pageUrl: string | null;
@@ -60,6 +62,7 @@ interface Row {
   readonly scid: string | null;
   readonly ttp: string | null;
   readonly obref: string | null;
+  readonly oppref: string | null;
   readonly client_ip: string | null;
   readonly user_agent: string | null;
   readonly page_url: string | null;
@@ -101,8 +104,8 @@ export async function loadPurchaseContext(
   const rows = await db.$queryRaw<Row[]>`
     SELECT o.id::text, o.reference, o.customer_id::text, o.customer_phone_e164, o.locale,
       o.total_minor, o.currency, o.paid_at, t.consent_analytics, t.consent_ads, t.first_touch,
-      t.last_touch, t.ga_client_id, t.fbp, t.fbc, t.scid, t.ttp, t.obref, t.client_ip, t.user_agent,
-      t.page_url, t.purged_at
+      t.last_touch, t.ga_client_id, t.fbp, t.fbc, t.scid, t.ttp, t.obref, t.oppref, t.client_ip,
+      t.user_agent, t.page_url, t.purged_at
     FROM orders o LEFT JOIN order_tracking t ON t.order_id = o.id
     WHERE o.id = ${orderId}::uuid`;
   const row = rows[0];
@@ -129,6 +132,7 @@ export async function loadPurchaseContext(
     scid: row.scid,
     ttp: row.ttp,
     obref: row.obref,
+    opprefCookie: row.oppref,
     clientIp: row.client_ip,
     userAgent: row.user_agent,
     pageUrl: row.page_url,

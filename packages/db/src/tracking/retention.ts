@@ -24,7 +24,7 @@ export interface PurgeSummary {
 async function purgeOrderBatch(db: Db, cutoff: Date, limit: number, now: Date): Promise<number> {
   return db.$executeRaw`
     UPDATE order_tracking SET ga_client_id = NULL, fbp = NULL, fbc = NULL, scid = NULL, ttp = NULL,
-      obref = NULL, client_ip = NULL, user_agent = NULL, page_url = NULL,
+      obref = NULL, oppref = NULL, client_ip = NULL, user_agent = NULL, page_url = NULL,
       first_touch = tracking_scrub_touch(first_touch), last_touch = tracking_scrub_touch(last_touch),
       purged_at = ${now}
     WHERE order_id IN (

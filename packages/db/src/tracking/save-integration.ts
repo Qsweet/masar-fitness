@@ -1,9 +1,18 @@
-import { DomainError, err, ok, TRACKING_FIELDS, usesHashedPhone, type Result } from "@masar/domain";
+import {
+  DomainError,
+  err,
+  ok,
+  TRACKING_FIELDS,
+  requiresAamConfirmation,
+  usesHashedPhone,
+  type Result,
+} from "@masar/domain";
 import type { Db } from "../client";
 import { writeAudit } from "../commerce/audit";
 import { inTransaction, type Tx } from "../commerce/transaction";
 import {
   configOf,
+  AAM_FLAG,
   PHONE_FLAG,
   TRACKING_AUDIT_ACTION,
   TRACKING_AUDIT_ENTITY,
@@ -41,7 +50,10 @@ function changedFields(before: LockedRow | undefined, input: SaveIntegrationInpu
   const phoneChanged =
     usesHashedPhone(input.provider) &&
     (old.sendHashedPhone !== false) !== (input.config.sendHashedPhone !== false);
-  return phoneChanged ? [...fields, PHONE_FLAG] : fields;
+  const aamChanged =
+    requiresAamConfirmation(input.provider) &&
+    (old.aamDisabled === true) !== (input.config.aamDisabled === true);
+  return [...fields, ...(phoneChanged ? [PHONE_FLAG] : []), ...(aamChanged ? [AAM_FLAG] : [])];
 }
 
 function secretAfter(before: LockedRow | undefined, input: SaveIntegrationInput) {

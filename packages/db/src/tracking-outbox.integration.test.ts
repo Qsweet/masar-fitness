@@ -74,6 +74,7 @@ async function pendingOrder(): Promise<string> {
     scid: null,
     ttp: null,
     obref: null,
+    oppref: null,
     clientIp: null,
     userAgent: null,
     pageUrl: null,

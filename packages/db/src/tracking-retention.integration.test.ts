@@ -73,6 +73,7 @@ async function trackedOrder(): Promise<string> {
     scid: "a1b2c3d4-e5f6",
     ttp: "ttp-value-1234",
     obref: "123e4567-e89b-42d3-a456-426614174000",
+    oppref: "op/pref+cookie=",
     clientIp: "203.0.113.9",
     userAgent: "Mozilla/5.0",
     pageUrl: "https://example.test/checkout?fbclid=IwAR",
@@ -108,6 +109,7 @@ describe("تفريغ معرّفات القياس", () => {
       scid: null,
       ttp: null,
       obref: null,
+      oppref: null,
       clientIp: null,
       userAgent: null,
       pageUrl: null,
@@ -149,10 +151,16 @@ describe("تفريغ معرّفات القياس", () => {
     await expect(db.$executeRaw`
       UPDATE order_tracking SET client_ip = NULL, purged_at = now()
       WHERE order_id = ${orderId}::uuid`).rejects.toThrow("order_tracking_immutable");
-    // تفريغ يُبقي مرجع متصفح OpenAI (القرار 91) ناقص فمرفوض
+    // تفريغ يُبقي مرجع متصفح OpenAI أو كوكي oppref (القرار 91) ناقص فمرفوض
     await expect(db.$executeRaw`
       UPDATE order_tracking SET ga_client_id = NULL, fbp = NULL, fbc = NULL, scid = NULL, ttp = NULL,
-        client_ip = NULL, user_agent = NULL, page_url = NULL,
+        oppref = NULL, client_ip = NULL, user_agent = NULL, page_url = NULL,
+        first_touch = tracking_scrub_touch(first_touch), last_touch = tracking_scrub_touch(last_touch),
+        purged_at = now()
+      WHERE order_id = ${orderId}::uuid`).rejects.toThrow("order_tracking_immutable");
+    await expect(db.$executeRaw`
+      UPDATE order_tracking SET ga_client_id = NULL, fbp = NULL, fbc = NULL, scid = NULL, ttp = NULL,
+        obref = NULL, client_ip = NULL, user_agent = NULL, page_url = NULL,
         first_touch = tracking_scrub_touch(first_touch), last_touch = tracking_scrub_touch(last_touch),
         purged_at = now()
       WHERE order_id = ${orderId}::uuid`).rejects.toThrow("order_tracking_immutable");

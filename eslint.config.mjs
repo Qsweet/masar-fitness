@@ -86,8 +86,8 @@ export default tseslint.config(
     },
   },
   {
-    // السجل المنظَّم هو المكان الوحيد المسموح له بالكتابة على console
-    files: ["apps/web/src/server/logger.ts"],
+    // السجل المنظَّم (الخادم) وتنبيه المطوّر (المتصفح، في التطوير وحده) وحدهما يكتبان على console
+    files: ["apps/web/src/server/logger.ts", "apps/web/src/components/tracking/dev-warning.ts"],
     rules: { "no-console": "off" },
   },
   {

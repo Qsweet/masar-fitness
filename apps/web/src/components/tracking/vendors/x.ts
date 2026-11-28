@@ -8,10 +8,13 @@
  */
 import { sendsHashedPhone, type IntegrationConfig } from "@masar/domain";
 import type { Sink, TrackCall } from "../types";
+import { devWarning } from "../dev-warning";
 import { injectScript, type XStub } from "./globals";
 
 const SCRIPT = "https://static.ads-twitter.com/uwt.js";
 const STUB_VERSION = "1.1";
+const DUPLICATE_BASE_TAG =
+  "X Pixel: twq existed before our base code. Remove the X base tag from the GTM container.";
 const AUTOMATIC = ["autoConfig", "autoAdvancedMatching", "dataLayerTracking", "autoDwellTracking"];
 
 function createStub(): XStub {
@@ -81,6 +84,9 @@ export function loadX(config: IntegrationConfig, nonce: string | undefined): Sin
   if (window.twq === undefined) {
     window.twq = createStub();
     injectScript(SCRIPT, nonce);
+  } else {
+    // وسم X آخر سبقنا (داخل حاوية GTM غالبًا): أوامرنا تُطبَّق عليه، والتكرار يُصلَح بإزالته من الحاوية
+    devWarning(DUPLICATE_BASE_TAG);
   }
   const twq = window.twq;
   for (const feature of AUTOMATIC) {

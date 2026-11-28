@@ -184,6 +184,8 @@
 
 **X** — في المتصفح فقط (القرار 90-1): `twq('event', <معرّف حدث الشراء>, {value, currency, conversion_id: purchase.<order_id>, contents: [{content_id, content_name, content_price, num_items}], phone_number?: sha256(E.164 بـ+), twclid?})`. `phone_number` مجزّأً على الخادم (uwt.js يمرّر قيمة SHA-256 كما هي ويجزّئ غيرها)، و`twclid` من اللمسة المختومة، كلاهما في أول عرض للطلب وبموافقة الإعلانات الآن ولحظة الشراء (89-1). قبل `config` تُطفأ مزايا uwt.js الآلية (`autoConfig`، `autoAdvancedMatching`، `dataLayerTracking`، `autoDwellTracking`). **الإرسال الخادمي** لا يُبنى: مرجع Conversion API يطلب تطبيق Ads API معتمدًا وOAuth 1.0a برمز مستخدم، والطريق الأحدث برمز البكسل (`X-Pixel-Token`) موثَّق في دليل GTM الخادمي وقالبه وحدهما ويخالف المرجع في حقل الوقت (`conversion_timestamp` بالملي ثانية مقابل `conversion_time` ISO-8601)، بلا نقطة اختبار موثَّقة. يُعاد النظر حين تُقرأ وثيقته الحالية كاملة.
 
+**X داخل GTM:** لا يُضبط وسم X الأساسي ولا أحداثه داخل حاوية GTM أيضًا: يُحمَّل البكسل مرتين ويُحسب الحدث مرتين (صفحة X في اللوحة تنبّه لذلك). إن وجد محمّلنا `twq` قائمًا قبله طبّق أوامر إطفاء المزايا الآلية عليه، ونبّه المطوّر في وحدة التحكم في التطوير وحده.
+
 **مفتاح الجوال لكل منصة (القرار 90-3):** `config.sendHashedPhone` (الغائب مفعَّل). مطفأ ⇒ لا `ph` في Meta وSnap، ولا `phone` في TikTok، ولا `user_data` في Google Ads، ولا `identify` في TikTok، ولا `phone_number` في X؛ والبقية كما هي.
 
 ### 4.4 التجزئة (ملخص)

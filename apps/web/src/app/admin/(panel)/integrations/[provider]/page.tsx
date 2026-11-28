@@ -60,6 +60,7 @@ export default async function IntegrationPage(props: Props) {
       </PageHeader>
       <Notice text={noticeText(query.done, dictionary)} />
       {provider === "gtm" ? <Alert tone="info">{text.gtmContainerNote}</Alert> : null}
+      {provider === "x" ? <Alert tone="info">{text.xContainerNote}</Alert> : null}
       <Card title={text.form.title} narrow>
         <ProviderForm
           provider={provider}

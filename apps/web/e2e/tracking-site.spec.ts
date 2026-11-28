@@ -16,6 +16,12 @@ const X_PIXEL = "e2ex1";
 const X_PURCHASE = "tw-e2ex1-buy01";
 const OPENAI_PIXEL = "e2e1345349876";
 const OPENAI_SDK = "https://bzrcdn.openai.com/sdk/oaiq.min.js";
+/** يستبدل `oaiq` ويفرّغ طابور الشيفرة الأساسية مرة واحدة، كما يفعل السكربت الحقيقي. */
+const FAKE_OAIQ_SDK = [
+  "(function(){var old=window.oaiq;var got=window.__oaiqReceived=[];",
+  "window.oaiq=function(){got.push(Array.prototype.slice.call(arguments));};",
+  "var q=(old&&old.q)||[];for(var i=0;i<q.length;i++){got.push(Array.prototype.slice.call(q[i]));}})();",
+].join("");
 const SHOTS_DIR = "screens/tracking";
 const SIZES = [
   { width: 390, height: 844 },
@@ -204,12 +210,23 @@ test("إعلانات ChatGPT بعد موافقة الإعلانات وحدها: 
   await admin.goto("/admin/integrations/openai");
   await admin.getByLabel(TEXT.integrations.form.enabled, { exact: true }).check();
   await admin.getByLabel(TEXT.integrations.form.fields.pixelId.label).fill(OPENAI_PIXEL);
+  await admin.getByLabel(TEXT.integrations.form.aamDisabled).check();
   await admin.getByRole("button", { name: TEXT.integrations.form.submit }).click();
   await expect(admin.getByText(TEXT.notices.tracking_saved)).toBeVisible();
   await adminContext.close();
 
   const context = await browser.newContext();
   const requests = await recordThirdParty(context);
+  // سكربت وهمي يتصرف كالحقيقي (مراجعة القرار 91، H1): يستبدل `oaiq` بدالته ويفرّغ الطابور مرة واحدة،
+  // فحدث يُدفع بعدها إلى الطابور القديم لا يصل
+  await context.route(OPENAI_SDK, async (route) => {
+    requests.push(route.request().url());
+    await route.fulfill({
+      status: 200,
+      contentType: "application/javascript",
+      body: FAKE_OAIQ_SDK,
+    });
+  });
   const page = await context.newPage();
   const csp = (await page.goto("/"))?.headers()["content-security-policy"] ?? "";
   expect(csp).toContain("https://bzr.openai.com");
@@ -224,16 +241,23 @@ test("إعلانات ChatGPT بعد موافقة الإعلانات وحدها: 
   await expect.poll(() => requests.includes(OPENAI_SDK)).toBe(true);
   const script = page.locator(`script[src="${OPENAI_SDK}"]`);
   expect(await script.evaluate((node: HTMLScriptElement) => node.nonce)).not.toBe("");
-  // السكربت مردود فارغًا، فالطابور باقٍ كما ملأته الشيفرة الأساسية وأوامرنا
-  const queue = await page.evaluate(() => {
-    const stub = window.oaiq as unknown as { q?: ArrayLike<unknown>[] } | undefined;
-    return (stub?.q ?? []).map((entry) => Array.from(entry));
-  });
-  expect(queue.slice(0, 2)).toEqual([
+  const received = () =>
+    page.evaluate(
+      () => (window as unknown as { __oaiqReceived?: unknown[][] }).__oaiqReceived ?? [],
+    );
+  await expect.poll(async () => (await received()).length).toBeGreaterThan(0);
+  expect((await received()).slice(0, 2)).toEqual([
     ["consent", true],
     ["init", { pixelId: OPENAI_PIXEL }],
   ]);
-  expect(queue.some((entry) => entry[0] === "measure" && entry[1] === "page_viewed")).toBe(true);
+  const pageViews = async () =>
+    (await received()).filter((entry) => entry[0] === "measure" && entry[1] === "page_viewed")
+      .length;
+  const before = await pageViews();
+  // تنقل داخل التطبيق بعد تحميل السكربت: page_viewed يصل دالة السكربت الجديدة
+  await page.locator('footer a[href="/memberships"]').first().click();
+  await expect(page).toHaveURL(/\/memberships$/);
+  await expect.poll(pageViews).toBe(before + 1);
   await context.close();
 });
 

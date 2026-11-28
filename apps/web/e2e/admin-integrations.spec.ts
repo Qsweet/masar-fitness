@@ -209,17 +209,23 @@ test("إعلانات ChatGPT: Pixel ID بنمطه، ومفتاح Conversions API
   await expect(page.getByText(TEXTS.openaiMatchingNote)).toBeVisible();
   await expect(page.getByLabel(TEXTS.form.testEventCode)).toHaveCount(0);
   await expect(page.getByLabel(TEXTS.form.sendHashedPhone)).toBeChecked();
-  const save = async (pixel: string) => {
+  await expect(page.getByLabel(TEXTS.form.aamDisabled)).not.toBeChecked();
+  const save = async (pixel: string, aamDisabled: boolean) => {
     await page.getByLabel(TEXTS.form.enabled, { exact: true }).check();
     await page.getByLabel(TEXTS.form.fields.pixelId.label).fill(pixel);
+    await page.getByLabel(TEXTS.form.aamDisabled).setChecked(aamDisabled);
     await page.getByLabel(TEXTS.form.secret).fill(SECRET);
     await page.getByRole("button", { name: TEXTS.form.submit }).click();
   };
-  await save("134'534");
+  await save("134'534", true);
   await expect(formAlert(page)).toHaveText(TEXT.errors["tracking.invalid_pixelId"]);
-  await save("1345349876");
+  // بلا تأكيد إطفاء المطابقة المتقدمة الآلية لا تفعيل (مراجعة القرار 91، M1)
+  await save("1345349876", false);
+  await expect(formAlert(page)).toHaveText(TEXT.errors["tracking.required_aamDisabled"]);
+  await save("1345349876", true);
   await expect(page.getByText(TEXT.notices.tracking_saved)).toBeVisible();
   await expect(page.getByLabel(TEXTS.form.secret)).toHaveValue("");
+  await expect(page.getByLabel(TEXTS.form.aamDisabled)).toBeChecked();
   expect(await page.content()).not.toContain(SECRET);
 
   await page.getByRole("button", { name: TEXTS.test.submit }).click();

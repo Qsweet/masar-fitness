@@ -9,20 +9,10 @@ export type {
   RevealedPhone,
   RevealPhoneInput,
 } from "./customers";
-export {
-  ADMIN_VISIBLE_PHONE_DIGITS,
-  ORDER_LIST_TABS,
-  countOrdersByTab,
-  listOrders,
-} from "./list-orders";
-export type {
-  OrderCountQuery,
-  OrderListPage,
-  OrderListQuery,
-  OrderListRow,
-  OrderListTab,
-  OrderTabCounts,
-} from "./list-orders";
+export { ADMIN_VISIBLE_PHONE_DIGITS, ORDER_LIST_TABS, listOrders } from "./list-orders";
+export type { OrderListPage, OrderListQuery, OrderListRow, OrderListTab } from "./list-orders";
+export { countOrdersByTab, listOrdersWithCounts } from "./count-orders";
+export type { OrderCountQuery, OrderTabCounts } from "./count-orders";
 export { findManualReferenceUse, recordManualPayment } from "./manual-payment";
 export type { ManualReferenceUse, RecordManualPaymentInput } from "./manual-payment";
 export type { ManualPaymentView } from "./manual-payment-view";

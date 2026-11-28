@@ -80,10 +80,13 @@ function tabFilter(tab: OrderListTab, now: Date): Prisma.OrderWhereInput {
   }
 }
 
-interface Bounds {
+/** حدّا المدى لحظتين (بداية اليوم الأول ونهاية الأخير في منطقة النادي)؛ null بلا حد. */
+export interface OrderDayBounds {
   readonly starts: Date | null;
   readonly ends: Date | null;
 }
+
+type Bounds = OrderDayBounds;
 
 /** أبعد ما يُستعلم عنه: لا طلب قبل المنصة ولا بعد قرن، وتاريخ خارج المدى لا يصل إلى حساب المنطقة. */
 const MIN_RANGE_YEAR = 2000;
@@ -104,7 +107,7 @@ function clampDay(day: PlainDate): PlainDate {
  * حدّا المدى لحظتين: بداية اليوم الأول ونهاية اليوم الأخير في منطقة النادي (القاعدة تحسبهما). اليوم
  * خارج المدى المعقول يُقصّ إليه: سنة 1 أو 9999 تُخرج لحظة لا يمثّلها Date فتُسقط الاستعلام.
  */
-async function dayBounds(
+export async function dayBounds(
   db: Db,
   query: Pick<OrderListQuery, "clubId" | "from" | "to">,
 ): Promise<Bounds> {
@@ -157,27 +160,20 @@ function toRow(row: ListRow, now: Date): OrderListRow {
   };
 }
 
-/** عدد طلبات كل تبويب في المدى نفسه: عدّادات العروض المحفوظة فوق الجدول (ADMIN_REDESIGN §6.1). */
-export type OrderTabCounts = Readonly<Record<OrderListTab, number>>;
-
-export type OrderCountQuery = Pick<OrderListQuery, "clubId" | "from" | "to" | "now">;
-
-export async function countOrdersByTab(db: Db, query: OrderCountQuery): Promise<OrderTabCounts> {
-  const range = rangeFilter(await dayBounds(db, query));
-  const counts = await Promise.all(
-    ORDER_LIST_TABS.map((tab) =>
-      db.order.count({ where: { clubId: query.clubId, ...tabFilter(tab, query.now), ...range } }),
-    ),
-  );
-  const entries = ORDER_LIST_TABS.map((tab, index) => [tab, counts[index] ?? 0] as const);
-  return Object.fromEntries(entries) as Record<OrderListTab, number>;
+export async function listOrders(db: Db, query: OrderListQuery): Promise<OrderListPage> {
+  return listOrdersWithin(db, query, await dayBounds(db, query));
 }
 
-export async function listOrders(db: Db, query: OrderListQuery): Promise<OrderListPage> {
+/** القائمة بحدّي مدى محسوبين سلفًا (`listOrdersWithCounts` يحسبهما مرة للاثنين). */
+export async function listOrdersWithin(
+  db: Db,
+  query: OrderListQuery,
+  bounds: OrderDayBounds,
+): Promise<OrderListPage> {
   const where: Prisma.OrderWhereInput = {
     clubId: query.clubId,
     ...tabFilter(query.tab, query.now),
-    ...rangeFilter(await dayBounds(db, query)),
+    ...rangeFilter(bounds),
     ...(query.reference === undefined ? {} : { reference: query.reference }),
     ...(query.customerId === undefined ? {} : { customerId: query.customerId }),
   };

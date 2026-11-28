@@ -14,6 +14,7 @@ import {
   type FieldForm,
 } from "../ui/field-form";
 import { SelectField, TextField } from "../ui/fields";
+import { Disclosure, PointList } from "../ui/section";
 
 type SettingsText = AdminDictionary["sales"]["settings"];
 
@@ -28,25 +29,6 @@ interface SettingsFormProps {
   readonly errors: Readonly<Record<string, string>>;
 }
 
-function Consequences({
-  title,
-  lines,
-}: {
-  readonly title: string;
-  readonly lines: readonly string[];
-}) {
-  return (
-    <div className={formStyles.form}>
-      <p className={formStyles.label}>{title}</p>
-      <ul className={formStyles.consequences}>
-        {lines.map((line) => (
-          <li key={line}>{line}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 function ruleOptions(text: SettingsText, unset: boolean) {
   const rules = Object.entries(text.startRule.options).map(([value, label]) => ({ value, label }));
   return unset ? [{ value: "", label: text.startRule.unset }, ...rules] : rules;
@@ -56,40 +38,45 @@ type FieldsProps = Pick<SettingsFormProps, "startRuleUnset" | "providerMinimum" 
   readonly form: FieldForm;
 };
 
-/** الحقلان، وتحت كل واحد ما يترتب عليه. */
+/**
+ * الحقلان، وتحت كل واحد تلميح سطر وما يترتب عليه مطويًّا. ما لم يُحسم بعد يُفتح شرحه: هو شرط القرار.
+ */
 function SettingsFields({ form, startRuleUnset, providerMinimum, text }: FieldsProps) {
-  const windowLines = [
-    ...text.window.consequences,
-    ...(providerMinimum === null
-      ? []
-      : [fill(text.window.providerMinimum, { minutes: String(providerMinimum) })]),
-  ];
+  const windowHint =
+    providerMinimum === null
+      ? text.window.hint
+      : `${text.window.hint} ${fill(text.window.providerMinimum, { minutes: String(providerMinimum) })}`;
+  const windowUnset = form.value("windowMinutes") === "";
   return (
     <div key={form.state.stamp} className={formStyles.form}>
       <TextField
         id="settings-window"
         name="windowMinutes"
         label={text.window.label}
-        hint={text.window.hint}
+        hint={windowHint}
         error={form.errorOf("windowMinutes")}
         defaultValue={form.value("windowMinutes")}
         inputMode="numeric"
         dir="ltr"
         autoComplete="off"
       />
-      <Consequences title={text.window.consequencesTitle} lines={windowLines} />
+      <Disclosure summary={text.window.consequencesTitle} open={windowUnset}>
+        <PointList lines={text.window.consequences} />
+      </Disclosure>
       <SelectField
         id="settings-startRule"
         name="startRule"
         label={text.startRule.label}
+        hint={text.startRule.hint}
         error={form.errorOf("startRule")}
         defaultValue={form.value("startRule")}
         options={ruleOptions(text, startRuleUnset)}
       />
-      <Consequences
-        title={text.startRule.consequencesTitle}
-        lines={[...Object.values(text.startRule.consequences), text.startRule.renewalNote]}
-      />
+      <Disclosure summary={text.startRule.consequencesTitle} open={startRuleUnset}>
+        <PointList
+          lines={[...Object.values(text.startRule.consequences), text.startRule.renewalNote]}
+        />
+      </Disclosure>
     </div>
   );
 }
@@ -121,7 +108,6 @@ export function SettingsForm(props: SettingsFormProps) {
       ) : (
         <>
           <SettingsFields {...props} form={form} />
-          <p className={formStyles.note}>{text.scopeNote}</p>
           <FormFooter>
             <FormButton form={form} intent="save">
               {text.review}

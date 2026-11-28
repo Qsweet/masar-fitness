@@ -2,7 +2,8 @@ import { getSalesSettings } from "@masar/db";
 import { basisPoints, checkoutBlockers, CURRENCIES } from "@masar/domain";
 import type { Metadata } from "next";
 import { SettingsForm } from "@/components/admin/sales/settings-form";
-import { Alert, Card, Facts, Ltr, Notice, noticeText, PageHeader } from "@/components/admin/ui/kit";
+import { Alert, Facts, Ltr, Notice, noticeText, PageHeader } from "@/components/admin/ui/kit";
+import { SettingsSection, SettingsStack } from "@/components/admin/ui/section";
 import { getAdminDictionary } from "@/i18n/admin";
 import { requireStaff } from "@/server/admin/guard";
 import { formatRate } from "@/server/admin/sales/catalog-view";
@@ -46,28 +47,30 @@ export default async function SalesSettingsPage(props: PageProps<"/admin/sales/s
           </span>
         </Alert>
       )}
-      <Card title={text.formTitle} narrow>
-        <SettingsForm
-          lockToken={settings.lockToken}
-          values={{
-            windowMinutes: String(settings.orderPaymentWindowMinutes ?? ""),
-            startRule: settings.membershipStartRule ?? "",
-          }}
-          startRuleUnset={settings.membershipStartRule === null}
-          providerMinimum={providerMinimumWindow()}
-          text={text}
-          errors={dictionary.errors}
-        />
-      </Card>
-      <Card title={text.readonly.title} description={text.readonly.lead} narrow>
-        <Facts
-          items={[
-            [text.readonly.vat, <bdi key="vat">{formatRate(settings.vatRateBps)}</bdi>],
-            [text.readonly.currency, <Ltr key="currency">{settings.currency}</Ltr>],
-            [text.readonly.timezone, <Ltr key="timezone">{settings.timezone}</Ltr>],
-          ]}
-        />
-      </Card>
+      <SettingsStack>
+        <SettingsSection title={text.formTitle} description={text.formLead}>
+          <SettingsForm
+            lockToken={settings.lockToken}
+            values={{
+              windowMinutes: String(settings.orderPaymentWindowMinutes ?? ""),
+              startRule: settings.membershipStartRule ?? "",
+            }}
+            startRuleUnset={settings.membershipStartRule === null}
+            providerMinimum={providerMinimumWindow()}
+            text={text}
+            errors={dictionary.errors}
+          />
+        </SettingsSection>
+        <SettingsSection title={text.readonly.title} description={text.readonly.lead}>
+          <Facts
+            items={[
+              [text.readonly.vat, <bdi key="vat">{formatRate(settings.vatRateBps)}</bdi>],
+              [text.readonly.currency, <Ltr key="currency">{settings.currency}</Ltr>],
+              [text.readonly.timezone, <Ltr key="timezone">{settings.timezone}</Ltr>],
+            ]}
+          />
+        </SettingsSection>
+      </SettingsStack>
     </>
   );
 }

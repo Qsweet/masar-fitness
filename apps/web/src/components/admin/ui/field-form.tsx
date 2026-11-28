@@ -75,7 +75,7 @@ export function FormTop({ form }: { readonly form: FieldForm }) {
     mounted.current = true;
   }, [state]);
   return (
-    <div ref={top} tabIndex={-1} className={styles.form}>
+    <div ref={top} tabIndex={-1} className={cx(styles.form, styles.formTop)}>
       {form.formError === null ? null : (
         <p role="alert" className={cx(styles.alert, styles.alertDanger)}>
           {form.formError}

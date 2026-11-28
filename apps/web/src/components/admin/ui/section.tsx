@@ -12,6 +12,8 @@ interface SettingsSectionProps {
   /** مرساة داخل الصفحة. */
   readonly id?: string;
   readonly tone?: "default" | "danger" | "accent";
+  /** المحتوى يلامس حواف اللوحة (جدول). */
+  readonly flush?: boolean;
   readonly testId?: string;
   readonly children: ReactNode;
 }
@@ -26,6 +28,7 @@ export function SettingsSection({
   aside,
   id,
   tone = "default",
+  flush,
   testId,
   children,
 }: SettingsSectionProps) {
@@ -44,7 +47,7 @@ export function SettingsSection({
         {description === undefined ? null : <p className={styles.description}>{description}</p>}
         {aside}
       </div>
-      <div className={styles.panel}>{children}</div>
+      <div className={cx(styles.panel, flush === true && styles.flush)}>{children}</div>
     </section>
   );
 }
@@ -54,6 +57,25 @@ export function PanelFooter({ children }: { readonly children: ReactNode }) {
   return <div className={styles.footer}>{children}</div>;
 }
 
+interface ActionRowProps {
+  readonly title: string;
+  readonly lead: string;
+  readonly children: ReactNode;
+}
+
+/** صف فعل داخل لوحة: اسمه وسطر أثره في جهة، وزره في الأخرى (إعادة ضبط، تعطيل). */
+export function ActionRow({ title, lead, children }: ActionRowProps) {
+  return (
+    <div className={styles.actionRow}>
+      <div className={styles.actionText}>
+        <p className={styles.actionTitle}>{title}</p>
+        <p className={styles.actionLead}>{lead}</p>
+      </div>
+      <div className={styles.actionControl}>{children}</div>
+    </div>
+  );
+}
+
 /** مجموعة أقسام بإيقاع واحد وخط شعري بينها. */
 export function SettingsStack({ children }: { readonly children: ReactNode }) {
   return <div className={styles.stack}>{children}</div>;
@@ -61,6 +83,8 @@ export function SettingsStack({ children }: { readonly children: ReactNode }) {
 
 interface DisclosureProps {
   readonly summary: string;
+  /** مفتوح عند الرسم: حين يكون الشرح شرط القرار (قيمة لم تُحسم بعد). */
+  readonly open?: boolean;
   readonly children: ReactNode;
   readonly testId?: string;
 }
@@ -69,12 +93,13 @@ interface DisclosureProps {
  * «ما الذي يترتب؟»: الشرح الطويل مطويًّا تحت الحقل بدل جدار نص. `<details>` أصلي: يعمل بلا JavaScript
  * ويُقرأ لقارئ الشاشة، والملخص زر بأيقونة.
  */
-export function Disclosure({ summary, children, testId }: DisclosureProps) {
+export function Disclosure({ summary, open, children, testId }: DisclosureProps) {
   return (
-    <details className={styles.disclosure} data-testid={testId}>
+    <details className={styles.disclosure} open={open} data-testid={testId}>
       <summary className={styles.summary}>
         <AdminIcon name="info" />
         <span>{summary}</span>
+        <AdminIcon name="chevron" className={styles.chevron} />
       </summary>
       <div className={styles.disclosureBody}>{children}</div>
     </details>

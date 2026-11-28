@@ -39,6 +39,10 @@ export const integrationsAr = {
       name: "TikTok",
       lead: "في المتصفح: TikTok Pixel. وللشراء من الخادم: Events API.",
     },
+    x: {
+      name: "X",
+      lead: "في المتصفح: X Pixel، والشراء وإضافة السلة والاستفسار بمعرّفات أحداثك. لا إرسال خادمي بعد.",
+    },
   },
   form: {
     title: "الإعداد",
@@ -62,12 +66,28 @@ export const integrationsAr = {
         hint: "ما بعد الشرطة المائلة في send_to من إعداد الوسم نفسه.",
       },
       pixelId: { label: "معرّف البكسل", hint: "من Events Manager في لوحة المنصة." },
+      purchaseEventId: {
+        label: "معرّف حدث الشراء",
+        hint: "tw-XXXXX-XXXXX: Events Manager ← البكسل ← إضافة حدث «Purchase» ← معرّف الحدث في شيفرته. مطلوب.",
+      },
+      addToCartEventId: {
+        label: "معرّف حدث إضافة السلة",
+        hint: "tw-XXXXX-XXXXX لحدث «Add to cart». اختياري: فارغ لا يُرسل.",
+      },
+      leadEventId: {
+        label: "معرّف حدث الاستفسار",
+        hint: "tw-XXXXX-XXXXX لحدث «Lead». اختياري: يُرسل اسم الحدث وحده بلا شيء مما كُتب في النموذج.",
+      },
     },
     pixelHints: {
       meta: "أرقام: Events Manager ← مصادر البيانات ← مجموعة البيانات ← الإعدادات.",
       snap: "UUID: Ads Manager ← Events Manager ← البكسل.",
       tiktok: "رمز بحروف كبيرة وأرقام: Ads Manager ← الأدوات ← Events ← Web Events.",
+      x: "خمسة محارف: ads.x.com ← الأدوات ← Events Manager ← البكسل (‏twq('config','XXXXX') في شيفرته الأساسية).",
     },
+    sendHashedPhone: "إرسال الجوال المجزّأ",
+    sendHashedPhoneHint:
+      "مع موافقة الزائر على الإعلانات وحدها: جوال الطلب بعد SHA-256، لتربط المنصة الشراء بالإعلان. أطفئه لتعتمد على المعرّفات التقنية وحدها.",
     testEventCode: "رمز أحداث الاختبار",
     testEventCodeHint:
       "من «اختبار الأحداث» في لوحة المنصة. يُستعمل لحدث الاختبار وحده، لا مع الأحداث الحية.",
@@ -84,6 +104,8 @@ export const integrationsAr = {
     secretReadOnly: "كتابة المفتاح للمالك وحده.",
     secretClear: "احذف المفتاح المحفوظ",
     browserOnly: "لا مفتاح خادمي لهذه المنصة: تعمل في المتصفح وحده.",
+    browserOnlyX:
+      "لا مفتاح خادمي لـX: واجهة تحويلاته الخادمية تحتاج تطبيق مطوّر معتمدًا لـAds API، فالشراء يصل من البكسل في صفحة الطلب المدفوع.",
     submit: "احفظ الإعداد",
   },
   test: {
@@ -130,6 +152,7 @@ export const integrationsAr = {
       network: "تعذّر الاتصال",
       validation_failed: "رفضته نقطة التحقق",
       api_invalid: "رفضته المنصة",
+      retention_purged: "انقضت مدة الاحتفاظ قبل الإرسال",
     },
   },
 } as const;
@@ -145,6 +168,14 @@ export const integrationsErrorsAr = {
   "tracking.required_conversionLabel": "اكتب تسمية التحويل قبل التفعيل.",
   "tracking.invalid_pixelId": "معرّف البكسل بصيغة غير صحيحة لهذه المنصة.",
   "tracking.required_pixelId": "اكتب معرّف البكسل قبل التفعيل.",
+  "tracking.invalid_purchaseEventId": "معرّف حدث الشراء بصيغة غير صحيحة (tw-XXXXX-XXXXX).",
+  "tracking.required_purchaseEventId": "اكتب معرّف حدث الشراء قبل التفعيل.",
+  "tracking.pixel_mismatch_purchaseEventId": "معرّف حدث الشراء لبكسل آخر: وسطه يطابق معرّف البكسل.",
+  "tracking.invalid_addToCartEventId": "معرّف حدث إضافة السلة بصيغة غير صحيحة (tw-XXXXX-XXXXX).",
+  "tracking.pixel_mismatch_addToCartEventId":
+    "معرّف حدث إضافة السلة لبكسل آخر: وسطه يطابق معرّف البكسل.",
+  "tracking.invalid_leadEventId": "معرّف حدث الاستفسار بصيغة غير صحيحة (tw-XXXXX-XXXXX).",
+  "tracking.pixel_mismatch_leadEventId": "معرّف حدث الاستفسار لبكسل آخر: وسطه يطابق معرّف البكسل.",
   "tracking.invalid_test_code": "رمز الاختبار حروف وأرقام فقط، من 4 إلى 40.",
   "tracking.invalid_secret": "المفتاح بصيغة غير متوقعة: الصقه كما هو بلا مسافات.",
   "tracking.no_secret": "لا مفتاح خادمي محفوظ لهذه المنصة.",
@@ -170,6 +201,7 @@ export const integrationsAuditAr = {
     meta: integrationsAr.providers.meta.name,
     snap: integrationsAr.providers.snap.name,
     tiktok: integrationsAr.providers.tiktok.name,
+    x: integrationsAr.providers.x.name,
   },
   actions: { tracking_integration_updated: "عُدّل إعداد منصة ربط" },
   details: {
@@ -183,5 +215,9 @@ export const integrationsAuditAr = {
     conversionId: "معرّف التحويل",
     conversionLabel: "تسمية التحويل",
     pixelId: "معرّف البكسل",
+    purchaseEventId: "معرّف حدث الشراء",
+    addToCartEventId: "معرّف حدث إضافة السلة",
+    leadEventId: "معرّف حدث الاستفسار",
+    sendHashedPhone: "إرسال الجوال المجزّأ",
   },
 } as const;

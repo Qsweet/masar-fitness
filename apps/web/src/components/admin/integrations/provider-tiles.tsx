@@ -1,3 +1,4 @@
+import { fieldsOf } from "@masar/domain";
 import { ButtonLink, Badge, type Tone } from "@/components/admin/ui/kit";
 import { integrationPath } from "@/config/admin";
 import type { AdminDictionary } from "@/i18n/admin";
@@ -11,9 +12,13 @@ const TONES: Readonly<Record<ProviderStatus, Tone>> = {
   missingSecret: "warning",
 };
 
-/** المعرّفات العامة المحفوظة سطرًا واحدًا (لا مفتاح خادمي أبدًا). */
+/** المعرّفات العامة المحفوظة سطرًا واحدًا (لا مفتاح خادمي أبدًا، ولا مفتاح الجوال). */
 function ids(card: ProviderCard): string {
-  return Object.values(card.view?.config ?? {}).join(" · ");
+  const config = card.view?.config ?? {};
+  return fieldsOf(card.provider)
+    .map((field) => config[field])
+    .filter((value) => value !== undefined)
+    .join(" · ");
 }
 
 export function ProviderTiles({

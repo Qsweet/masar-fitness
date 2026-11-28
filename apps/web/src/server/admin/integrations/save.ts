@@ -8,6 +8,7 @@ import {
   isTrackingProvider,
   isValidTestEventCode,
   parseIntegrationConfig,
+  usesHashedPhone,
   type TrackingProvider,
 } from "@masar/domain";
 import { isPlausibleSecret, MAX_SECRET_LENGTH, sealTrackingSecret } from "@masar/tracking";
@@ -79,6 +80,10 @@ export async function saveIntegrationForm(
   if (issue !== undefined) {
     return reject(`tracking.${issue[1]}_${issue[0]}`);
   }
+  // خانة «إرسال الجوال المجزّأ» لمن يقبله وحده (القرار 90-3): غير المؤشَّرة مطفأة صراحةً
+  const config = usesHashedPhone(provider)
+    ? { ...parsed.config, sendHashedPhone: formData.get("sendHashedPhone") === "on" }
+    : parsed.config;
   const testEventCode = testCodeOf(provider, formData);
   if (testEventCode === undefined) {
     return reject("tracking.invalid_test_code");
@@ -91,7 +96,7 @@ export async function saveIntegrationForm(
     clubId: context.staff.clubId,
     provider,
     enabled,
-    config: parsed.config,
+    config,
     testEventCode,
     secret,
     staffId: context.staff.id,

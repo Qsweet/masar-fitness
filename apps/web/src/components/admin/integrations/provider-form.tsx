@@ -3,6 +3,7 @@ import {
   acceptsTestEventCode,
   fieldsOf,
   isServerProvider,
+  usesHashedPhone,
   type TrackingField,
   type TrackingProvider,
 } from "@masar/domain";
@@ -25,7 +26,7 @@ type Text = AdminDictionary["integrations"]["form"];
 function fieldHint(provider: TrackingProvider, field: TrackingField, text: Text): string {
   if (
     field === "pixelId" &&
-    (provider === "meta" || provider === "snap" || provider === "tiktok")
+    (provider === "meta" || provider === "snap" || provider === "tiktok" || provider === "x")
   ) {
     return text.pixelHints[provider];
   }
@@ -42,7 +43,7 @@ function secretStatus(view: IntegrationView | null, canWrite: boolean, text: Tex
 function SecretFields({ provider, view, canWriteSecret, dictionary }: ProviderFormProps) {
   const text = dictionary.integrations.form;
   if (!isServerProvider(provider)) {
-    return <p>{text.browserOnly}</p>;
+    return <p>{provider === "x" ? text.browserOnlyX : text.browserOnly}</p>;
   }
   const hint = `${text.secretHints[provider]} ${secretStatus(view, canWriteSecret, text)}`;
   if (!canWriteSecret) {
@@ -98,6 +99,15 @@ export function ProviderForm(props: ProviderFormProps) {
           dir="ltr"
         />
       ))}
+      {usesHashedPhone(provider) ? (
+        <CheckboxField
+          id="integration-send-phone"
+          name="sendHashedPhone"
+          label={text.sendHashedPhone}
+          hint={text.sendHashedPhoneHint}
+          defaultChecked={view?.config.sendHashedPhone !== false}
+        />
+      ) : null}
       {acceptsTestEventCode(provider) ? (
         <TextField
           id="integration-test-code"

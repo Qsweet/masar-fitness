@@ -84,6 +84,40 @@ WantedBy=timers.target
 
 ثم `systemctl enable --now masar-tracking-dispatch.timer`. كل دورة سطر `{"event":"tracking.dispatch","claimed":…,"sent":…,"retried":…,"dead":…,"skipped":…}` في `journalctl -u masar-tracking-dispatch`. مرسِلان معًا لا يأخذان السطر نفسه (`SKIP LOCKED` ومهلة حجز خمس دقائق). **تدوير `ADMIN_SECRET_KEY` يُبطل مفاتيح المنصات المحفوظة:** يعيد المالك إدخالها من «الربط والقياس»، وما في الطابور حتى ذلك يُسجَّل «المفتاح لا يُفك». `TRACKING_TRANSPORT=fake` لا يرسل شيئًا ولا يُقبل إلا على عنوان الجهاز (اختبارات المتصفح).
 
+### تفريغ معرّفات القياس (القرار 90-6)
+
+`ADMIN_A5_TRACKING.md` §7.1: كل يوم يفرّغ `order_tracking` لما أُنشئ طلبه قبل 90 يومًا (العنوان والوكيل ومعرّفات النقر وكوكيات المنصات ورابط الصفحة)، ويبقي الموافقة و`utm_*` وصفحة الهبوط. يقرأ `DATABASE_URL` وحده، ويطبع العدد وحده. دفعات 500 حتى 200 دفعة للتشغيل، والإعادة بلا أثر، فيُثبَّت مع المرسِل ولو لم تُفعَّل منصة:
+
+```ini
+# /etc/systemd/system/masar-tracking-purge.service
+[Unit]
+Description=Masar tracking data retention purge
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/masar/deploy
+ExecStart=/usr/bin/docker compose exec -T app pnpm --filter @masar/tracking tracking:purge
+
+# /etc/systemd/system/masar-tracking-purge.timer
+[Unit]
+Description=Run tracking retention purge daily
+[Timer]
+OnCalendar=*-*-* 03:17:00
+Persistent=true
+[Install]
+WantedBy=timers.target
+```
+
+التثبيت (المرسِل والتفريغ معًا، بعد نسخ الملفات الأربعة أعلاه إلى `/etc/systemd/system/`):
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now masar-tracking-dispatch.timer masar-tracking-purge.timer
+systemctl list-timers 'masar-tracking-*'
+sudo systemctl start masar-tracking-purge.service && journalctl -u masar-tracking-purge -n 5
+```
+
+كل تشغيل سطر `{"event":"tracking.purge","orders":…,"outbox":…}` في `journalctl -u masar-tracking-purge`.
+
 ## خادم المعاينة
 
 | البند    | القيمة                                                                                                                           |

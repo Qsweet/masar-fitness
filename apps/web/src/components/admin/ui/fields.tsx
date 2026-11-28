@@ -178,14 +178,16 @@ interface FieldGroupProps {
   readonly legend: string;
   readonly hint?: string | undefined;
   readonly error?: string | undefined;
+  /** العنوان لقارئ الشاشة وحده (القسم المحيط يحمل العنوان نفسه ظاهرًا). */
+  readonly legendHidden?: boolean;
   readonly children: ReactNode;
 }
 
 /** مجموعة حقول بعنوانها (خانات اختيار متعددة، أو صفوف متكررة): `fieldset` حقيقي لقارئ الشاشة. */
-export function FieldGroup({ legend, hint, error, children }: FieldGroupProps) {
+export function FieldGroup({ legend, hint, error, legendHidden, children }: FieldGroupProps) {
   return (
     <fieldset className={styles.fieldGroup}>
-      <legend className={styles.label}>{legend}</legend>
+      <legend className={legendHidden === true ? "sr-only" : styles.label}>{legend}</legend>
       {hint === undefined ? null : <p className={styles.hint}>{hint}</p>}
       {children}
       {error === undefined ? null : <p className={styles.fieldError}>{error}</p>}

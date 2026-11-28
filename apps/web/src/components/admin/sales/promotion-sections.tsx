@@ -3,7 +3,8 @@ import type { AdminDictionary } from "@/i18n/admin";
 import { formatDay } from "@/i18n/admin/format";
 import { formatNumber } from "@/i18n/format";
 import { promotionFacts, usageText } from "@/server/admin/sales/promotions-view";
-import { Alert, Card, Facts } from "../ui/kit";
+import { Alert, Facts } from "../ui/kit";
+import { SettingsSection } from "../ui/section";
 import { Amount } from "./order-parts";
 import styles from "./sales.module.css";
 
@@ -17,7 +18,7 @@ interface SectionProps {
 export function PromotionFactsCard({ row, dictionary, timezone }: SectionProps) {
   const labels = dictionary.sales.promotions.detail;
   return (
-    <Card title={labels.factsTitle}>
+    <SettingsSection title={labels.factsTitle}>
       <Facts
         items={[
           ...promotionFacts(row, timezone, dictionary).map(
@@ -26,7 +27,7 @@ export function PromotionFactsCard({ row, dictionary, timezone }: SectionProps) 
           [labels.created, formatDay(row.createdAt, timezone)],
         ]}
       />
-    </Card>
+    </SettingsSection>
   );
 }
 
@@ -35,7 +36,7 @@ export function PromotionUsageCard({ row, dictionary }: Omit<SectionProps, "time
   const text = dictionary.sales.promotions;
   const labels = text.detail;
   return (
-    <Card title={labels.usageTitle} description={labels.usageLead}>
+    <SettingsSection title={labels.usageTitle} description={labels.usageLead}>
       <dl className={styles.counters} data-testid="promotion-usage">
         <div className={styles.counter}>
           <dt>{labels.active}</dt>
@@ -57,6 +58,6 @@ export function PromotionUsageCard({ row, dictionary }: Omit<SectionProps, "time
         </div>
       </dl>
       {row.state === "exhausted" ? <Alert tone="warning">{labels.exhaustedNote}</Alert> : null}
-    </Card>
+    </SettingsSection>
   );
 }

@@ -116,3 +116,5 @@ export function PointList({ lines }: { readonly lines: readonly string[] }) {
     </ul>
   );
 }
+
+export { styles as sectionStyles };

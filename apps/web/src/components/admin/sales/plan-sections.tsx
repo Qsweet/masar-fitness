@@ -7,7 +7,8 @@ import { formatNumber } from "@/i18n/format";
 import { savePlanLinksAction } from "@/server/admin/actions/sales-plans";
 import { AdminForm } from "../admin-form";
 import { CheckboxField, FieldGroup } from "../ui/fields";
-import { Card, Facts, Ltr, uiStyles } from "../ui/kit";
+import { Facts, Ltr, uiStyles } from "../ui/kit";
+import { SettingsSection } from "../ui/section";
 import { ProductStatusBadge } from "./catalog-parts";
 import styles from "./sales.module.css";
 
@@ -21,7 +22,7 @@ export function PlanFactsCard({ product, sales, timezone }: SectionProps & { tim
   const text = sales.plans;
   const labels = text.detail;
   return (
-    <Card title={labels.factsTitle}>
+    <SettingsSection title={labels.factsTitle}>
       <Facts
         items={[
           [labels.kind, sales.statuses.itemKind[product.kind]],
@@ -35,7 +36,7 @@ export function PlanFactsCard({ product, sales, timezone }: SectionProps & { tim
           [labels.sold, formatNumber(product.soldItems)],
         ]}
       />
-    </Card>
+    </SettingsSection>
   );
 }
 
@@ -46,7 +47,7 @@ export function PlanIdentityFacts({ product, sales }: SectionProps) {
   const or = (value: string | undefined): string =>
     value === undefined || value === "" ? labels.none : value;
   return (
-    <Card title={labels.identityReadOnly}>
+    <SettingsSection title={labels.identityReadOnly}>
       <Facts
         items={[
           [form.nameAr, product.name.ar],
@@ -57,7 +58,7 @@ export function PlanIdentityFacts({ product, sales }: SectionProps) {
           [labels.sortOrder, formatNumber(product.sortOrder)],
         ]}
       />
-    </Card>
+    </SettingsSection>
   );
 }
 
@@ -97,7 +98,7 @@ export function PlanLinksCard({ product, sales, canWrite, errors }: LinksProps) 
   const kind = product.kind;
   const editable = kind === "addon" && canWrite && product.links.length > 0;
   return (
-    <Card title={labels.linksTitle[kind]} description={labels.linksLead[kind]}>
+    <SettingsSection title={labels.linksTitle[kind]} description={labels.linksLead[kind]}>
       {kind === "addon" && product.links.length === 0 ? (
         <p className={uiStyles.note}>{labels.noPlans}</p>
       ) : null}
@@ -123,6 +124,6 @@ export function PlanLinksCard({ product, sales, canWrite, errors }: LinksProps) 
       ) : (
         <LinkList product={product} sales={sales} />
       )}
-    </Card>
+    </SettingsSection>
   );
 }

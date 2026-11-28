@@ -188,13 +188,21 @@ function BenefitRow({ form, labels, index }: Omit<FieldsProps, "kind"> & { index
  * المزايا صفوفًا (عربي، إنجليزي، ترتيب). بلا JavaScript: المكتوب منها وصفّان فارغان؛ ومعه زر يضيف صفًّا
  * حتى الحد. الترتيب رقم يُكتب، لا سحب وإفلات.
  */
-export function BenefitRows({ form, labels }: Omit<FieldsProps, "kind">) {
+export function BenefitRows({
+  form,
+  labels,
+  bare,
+}: Omit<FieldsProps, "kind"> & {
+  /** داخل قسم عنوانه «المزايا»: العنوان والتلميح لقارئ الشاشة وحده، فلا يتكرران. */
+  readonly bare?: boolean;
+}) {
   const [rows, setRows] = useState(() => benefitRowCount(form.state.values));
   const enhanced = useEnhanced();
   return (
     <FieldGroup
       legend={labels.benefitsTitle}
-      hint={labels.benefitsLead}
+      hint={bare === true ? undefined : labels.benefitsLead}
+      legendHidden={bare === true}
       error={form.errorOf("benefits")}
     >
       <div className={formStyles.rows}>

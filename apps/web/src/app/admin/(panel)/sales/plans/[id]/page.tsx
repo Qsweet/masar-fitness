@@ -16,17 +16,9 @@ import {
   PlanIdentityFacts,
   PlanLinksCard,
 } from "@/components/admin/sales/plan-sections";
-import {
-  Alert,
-  ButtonLink,
-  Card,
-  CardGrid,
-  Notice,
-  noticeText,
-  PageHeader,
-  Tabs,
-} from "@/components/admin/ui/kit";
-import { planPath, planStatusPath } from "@/config/admin";
+import { Alert, ButtonLink, Notice, noticeText, PageHeader, Tabs } from "@/components/admin/ui/kit";
+import { SettingsSection, SettingsStack } from "@/components/admin/ui/section";
+import { ADMIN_ROUTES, planPath, planStatusPath } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { isUuid } from "@/server/admin/form";
 import { requireStaff } from "@/server/admin/guard";
@@ -76,15 +68,16 @@ function DetailsTab({ product, dictionary, role, timezone }: View & { timezone: 
   const canWrite = hasPermission(role, "catalog.write");
   const editable = canWrite && isProductAdminKind(product.kind) ? product.kind : undefined;
   return (
-    <>
-      <CardGrid>
-        <PlanFactsCard product={product} sales={sales} timezone={timezone} />
-        <PlanLinksCard product={product} sales={sales} canWrite={canWrite} errors={errors} />
-      </CardGrid>
+    <SettingsStack>
+      <PlanFactsCard product={product} sales={sales} timezone={timezone} />
+      <PlanLinksCard product={product} sales={sales} canWrite={canWrite} errors={errors} />
       {editable === undefined ? (
         <PlanIdentityFacts product={product} sales={sales} />
       ) : (
-        <Card title={sales.plans.form.identityTitle} description={sales.plans.form.identityLead}>
+        <SettingsSection
+          title={sales.plans.form.identityTitle}
+          description={sales.plans.form.identityLead}
+        >
           <PlanIdentityForm
             productId={product.id}
             kind={editable}
@@ -93,9 +86,9 @@ function DetailsTab({ product, dictionary, role, timezone }: View & { timezone: 
             labels={sales.plans.form}
             errors={errors}
           />
-        </Card>
+        </SettingsSection>
       )}
-    </>
+    </SettingsStack>
   );
 }
 
@@ -114,10 +107,10 @@ function PricingTab({ product, dictionary, role, timezone, vatRateBps, now }: Pr
       : undefined;
   const blocked = product.status === "active" && !hasPermission(role, "catalog.publish");
   return (
-    <>
+    <SettingsStack>
       <CurrentTermsCard product={product} text={text} vatRateBps={vatRateBps} />
       {editable === undefined ? null : (
-        <Card title={text.detail.termsFormTitle} description={text.detail.termsFormLead}>
+        <SettingsSection title={text.detail.termsFormTitle} description={text.detail.termsFormLead}>
           {blocked ? (
             <Alert tone="info">{text.detail.termsNeedPublish}</Alert>
           ) : (
@@ -131,10 +124,10 @@ function PricingTab({ product, dictionary, role, timezone, vatRateBps, now }: Pr
               confirm={text.termsConfirm}
             />
           )}
-        </Card>
+        </SettingsSection>
       )}
       <VersionHistoryCard product={product} text={text} timezone={timezone} now={now} />
-    </>
+    </SettingsStack>
   );
 }
 
@@ -161,6 +154,7 @@ export default async function PlanPage(props: PageProps<"/admin/sales/plans/[id]
   return (
     <>
       <PageHeader
+        back={{ href: ADMIN_ROUTES.plans, label: sales.plans.title }}
         title={product.name.ar}
         description={product.tier?.ar}
         badge={<ProductStatusBadge status={product.status} statuses={sales.statuses} />}

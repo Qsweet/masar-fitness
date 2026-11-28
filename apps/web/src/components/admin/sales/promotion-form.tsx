@@ -1,5 +1,6 @@
 "use client";
 
+import { sectionStyles } from "../ui/section";
 import { cx } from "@/lib/cx";
 import type { FieldFormState, FormValues } from "@/server/admin/field-form";
 import { formStyles, FormButton, FormFooter, FormTop, useFieldForm } from "../ui/field-form";
@@ -55,7 +56,7 @@ export function PromotionForm(props: PromotionFormProps) {
       {props.lockToken === undefined ? null : (
         <input type="hidden" name="lockToken" value={props.lockToken} />
       )}
-      <div key={form.state.stamp} className={formStyles.formStack}>
+      <div key={form.state.stamp} className={sectionStyles.stack}>
         <BasicsCard {...section} creating={creating} />
         {termsEditable ? (
           <DiscountCard {...section} />

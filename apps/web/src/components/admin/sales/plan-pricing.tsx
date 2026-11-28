@@ -5,7 +5,8 @@ import { fillNodes } from "@/i18n/fill";
 import { formatMonths, formatNumber } from "@/i18n/format";
 import { formatRate, includedVat } from "@/server/admin/sales/catalog-view";
 import { Cell, DataTable } from "../ui/data-table";
-import { Alert, Badge, Card, Facts, uiStyles } from "../ui/kit";
+import { Alert, Badge, Facts, uiStyles } from "../ui/kit";
+import { SettingsSection } from "../ui/section";
 import { Amount } from "./order-parts";
 import styles from "./sales.module.css";
 
@@ -24,9 +25,9 @@ export function CurrentTermsCard({ product, text, vatRateBps }: CurrentProps) {
   const version = product.currentVersion;
   if (version === null) {
     return (
-      <Card title={labels.currentTitle}>
+      <SettingsSection title={labels.currentTitle}>
         <Alert tone="warning">{labels.noCurrent}</Alert>
-      </Card>
+      </SettingsSection>
     );
   }
   // المبلغ والنسبة معزولا الاتجاه: «15%» لا تنقلب داخل الجملة العربية
@@ -38,7 +39,7 @@ export function CurrentTermsCard({ product, text, vatRateBps }: CurrentProps) {
   const months = (value: number | null, none: string): string =>
     value === null || value === 0 ? none : formatMonths(value, "ar");
   return (
-    <Card title={labels.currentTitle}>
+    <SettingsSection title={labels.currentTitle}>
       <Facts
         items={[
           [
@@ -70,7 +71,7 @@ export function CurrentTermsCard({ product, text, vatRateBps }: CurrentProps) {
           </ul>
         )}
       </div>
-    </Card>
+    </SettingsSection>
   );
 }
 
@@ -95,7 +96,7 @@ export function VersionHistoryCard({ product, text, timezone, now }: HistoryProp
   const months = (value: number | null): string =>
     value === null || value === 0 ? "—" : formatMonths(value, "ar");
   return (
-    <Card title={labels.historyTitle} description={labels.historyLead} flush>
+    <SettingsSection title={labels.historyTitle} description={labels.historyLead} flush>
       <DataTable
         caption={labels.historyTitle}
         columns={Object.values(columns)}
@@ -138,6 +139,6 @@ export function VersionHistoryCard({ product, text, timezone, now }: HistoryProp
           );
         })}
       </DataTable>
-    </Card>
+    </SettingsSection>
   );
 }

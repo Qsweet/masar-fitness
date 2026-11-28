@@ -1,7 +1,6 @@
 "use client";
 
 import { ADMIN_ROUTES } from "@/config/admin";
-import { cx } from "@/lib/cx";
 import type { AdminDictionary } from "@/i18n/admin";
 import {
   createPlanAction,
@@ -18,7 +17,8 @@ import {
   useFieldForm,
 } from "../ui/field-form";
 import { FieldRow, TextField } from "../ui/fields";
-import { ButtonLink, Card } from "../ui/kit";
+import { ButtonLink } from "../ui/kit";
+import { SettingsSection, sectionStyles } from "../ui/section";
 import { BenefitRows, IdentityFields, TermsFields, type PlanFormLabels } from "./plan-fields";
 
 type PlansText = AdminDictionary["sales"]["plans"];
@@ -44,8 +44,8 @@ export function PlanCreateForm({ productId, kind, values, labels, text, errors }
       <FormTop form={form} />
       <input type="hidden" name="productId" value={productId} />
       <input type="hidden" name="kind" value={kind} />
-      <div key={form.state.stamp} className={formStyles.formStack}>
-        <Card title={labels.identityTitle} description={labels.identityLead}>
+      <div key={form.state.stamp} className={sectionStyles.stack}>
+        <SettingsSection title={labels.identityTitle} description={labels.identityLead}>
           <FieldRow>
             <TextField
               id="plan-slug"
@@ -64,13 +64,13 @@ export function PlanCreateForm({ productId, kind, values, labels, text, errors }
             <span aria-hidden="true" />
           </FieldRow>
           <IdentityFields form={form} labels={labels} kind={kind} />
-        </Card>
-        <Card title={labels.termsTitle}>
+        </SettingsSection>
+        <SettingsSection title={labels.termsTitle}>
           <TermsFields form={form} labels={labels} kind={kind} />
-        </Card>
-        <Card>
-          <BenefitRows form={form} labels={labels} />
-        </Card>
+        </SettingsSection>
+        <SettingsSection title={labels.benefitsTitle} description={labels.benefitsLead}>
+          <BenefitRows form={form} labels={labels} bare />
+        </SettingsSection>
       </div>
       <FormFooter>
         <FormButton form={form} intent="save">
@@ -104,7 +104,7 @@ export function PlanIdentityForm({
 }: EditProps) {
   const form = useFieldForm(savePlanIdentityAction, values, errors);
   return (
-    <form action={form.formAction} className={cx(formStyles.form, formStyles.bounded)} noValidate>
+    <form action={form.formAction} className={formStyles.form} noValidate>
       <FormTop form={form} />
       <input type="hidden" name="productId" value={productId} />
       <input type="hidden" name="lockToken" value={lockToken} />
@@ -133,7 +133,7 @@ export function PlanTermsForm(props: TermsProps) {
   return (
     <form
       action={form.formAction}
-      className={cx(formStyles.form, formStyles.bounded)}
+      className={formStyles.form}
       noValidate
       data-step={form.state.step}
     >

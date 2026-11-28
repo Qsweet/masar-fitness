@@ -13,14 +13,8 @@ import {
   PromotionFactsCard,
   PromotionUsageCard,
 } from "@/components/admin/sales/promotion-sections";
-import {
-  Alert,
-  ButtonLink,
-  CardGrid,
-  Notice,
-  noticeText,
-  PageHeader,
-} from "@/components/admin/ui/kit";
+import { Alert, ButtonLink, Notice, noticeText, PageHeader } from "@/components/admin/ui/kit";
+import { SettingsStack } from "@/components/admin/ui/section";
 import { ADMIN_ROUTES, promotionStatusPath } from "@/config/admin";
 import { getAdminDictionary, type AdminDictionary } from "@/i18n/admin";
 import { savePromotionAction } from "@/server/admin/actions/sales-promotions";
@@ -109,6 +103,7 @@ export default async function PromotionPage(props: PageProps<"/admin/sales/promo
   return (
     <>
       <PageHeader
+        back={{ href: ADMIN_ROUTES.promotions, label: text.title }}
         title={row.rule.name.ar}
         description={row.rule.code === null ? text.types.automatic : text.types.coupon}
         badge={<PromotionStateBadge state={row.state} statuses={sales.statuses} />}
@@ -116,10 +111,10 @@ export default async function PromotionPage(props: PageProps<"/admin/sales/promo
         {canWrite ? <Actions row={row} text={text.detail} /> : null}
       </PageHeader>
       <Notice text={noticeText(query.done, dictionary)} />
-      <CardGrid>
+      <SettingsStack>
         <PromotionFactsCard row={row} dictionary={dictionary} timezone={club.timezone} />
         <PromotionUsageCard row={row} dictionary={dictionary} />
-      </CardGrid>
+      </SettingsStack>
       {note === undefined ? null : <Alert tone="info">{note}</Alert>}
       {editable ? (
         <PromotionForm

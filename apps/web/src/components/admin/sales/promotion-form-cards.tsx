@@ -12,7 +12,8 @@ import {
   SelectField,
   TextField,
 } from "../ui/fields";
-import { Card, Facts } from "../ui/kit";
+import { Facts } from "../ui/kit";
+import { SettingsSection } from "../ui/section";
 
 export type PromotionFormLabels = AdminDictionary["sales"]["promotions"]["form"];
 
@@ -94,7 +95,7 @@ function TypeAndCode({ form, labels, types }: SectionProps) {
 export function BasicsCard(props: SectionProps & { readonly creating: boolean }) {
   const { form, labels, creating } = props;
   return (
-    <Card title={creating ? labels.basicsTitle : labels.nameTitle}>
+    <SettingsSection title={creating ? labels.basicsTitle : labels.nameTitle}>
       {creating ? <TypeAndCode {...props} /> : <Kept form={form} names={["type", "code"]} />}
       <FieldRow>
         <TextField
@@ -114,13 +115,13 @@ export function BasicsCard(props: SectionProps & { readonly creating: boolean })
           required
         />
       </FieldRow>
-    </Card>
+    </SettingsSection>
   );
 }
 
 export function DiscountCard({ form, labels }: SectionProps) {
   return (
-    <Card title={labels.discountTitle}>
+    <SettingsSection title={labels.discountTitle}>
       <FieldRow>
         <SelectField
           {...bind(form, "discountKind")}
@@ -146,7 +147,7 @@ export function DiscountCard({ form, labels }: SectionProps) {
           />
         </div>
       </FieldRow>
-    </Card>
+    </SettingsSection>
   );
 }
 
@@ -179,7 +180,7 @@ function ProductChoices({ form, labels, products }: SectionProps) {
 export function ScopeCard(props: SectionProps & { readonly scopeEditable: boolean }) {
   const { form, labels, scopeEditable } = props;
   return (
-    <Card title={labels.scopeTitle}>
+    <SettingsSection title={labels.scopeTitle}>
       {scopeEditable ? (
         <SelectField
           id="promotion-scope"
@@ -196,7 +197,7 @@ export function ScopeCard(props: SectionProps & { readonly scopeEditable: boolea
       ) : null}
       <Facts items={[[labels.audience, labels.audienceAnyone]]} />
       <p className={formStyles.note}>{labels.audienceHint}</p>
-    </Card>
+    </SettingsSection>
   );
 }
 
@@ -225,7 +226,7 @@ export function WindowCard(props: SectionProps & { readonly startEditable: boole
   const { form, labels, timezone, startEditable } = props;
   const zone = fill(labels.windowHint, { timezone });
   return (
-    <Card title={labels.windowTitle}>
+    <SettingsSection title={labels.windowTitle}>
       <FieldRow>
         {startEditable ? (
           <DateField
@@ -254,6 +255,6 @@ export function WindowCard(props: SectionProps & { readonly startEditable: boole
         hint={labels.stackableHint}
         defaultChecked={form.value("stackable") === "on"}
       />
-    </Card>
+    </SettingsSection>
   );
 }

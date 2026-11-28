@@ -204,6 +204,7 @@
   .table td,
   .table td:first-child,
   .table td:last-child {
+    height: auto;
     display: flex;
     align-items: baseline;
     justify-content: space-between;

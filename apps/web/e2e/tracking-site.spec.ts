@@ -12,6 +12,8 @@ import { testDb } from "./payments-support";
  */
 const GA4_ID = "G-E2ETEST01";
 const META_PIXEL = "100000000000042";
+const X_PIXEL = "e2ex1";
+const X_PURCHASE = "tw-e2ex1-buy01";
 const SHOTS_DIR = "screens/tracking";
 const SIZES = [
   { width: 390, height: 844 },
@@ -138,6 +140,51 @@ test("الرفض بنقرة، ثم السحب والتعديل من التذيي
   await expect
     .poll(() => requests.some((url) => url.includes("connect.facebook.net/en_US/fbevents.js")))
     .toBe(true);
+  await context.close();
+});
+
+test("X بعد موافقة الإعلانات وحدها: مضيفاته في CSP، وuwt.js بالـnonce، ومزاياه الآلية مطفأة", async ({
+  browser,
+}) => {
+  const adminContext = await browser.newContext();
+  const admin = await adminContext.newPage();
+  await signIn(admin, await newStaff(db, { id: siteClub }, { withTotp: true }));
+  await admin.goto("/admin/integrations/x");
+  await admin.getByLabel(TEXT.integrations.form.enabled, { exact: true }).check();
+  await admin.getByLabel(TEXT.integrations.form.fields.pixelId.label).fill(X_PIXEL);
+  await admin.getByLabel(TEXT.integrations.form.fields.purchaseEventId.label).fill(X_PURCHASE);
+  await admin.getByRole("button", { name: TEXT.integrations.form.submit }).click();
+  await expect(admin.getByText(TEXT.notices.tracking_saved)).toBeVisible();
+  await adminContext.close();
+
+  const context = await browser.newContext();
+  const requests = await recordThirdParty(context);
+  const page = await context.newPage();
+  const csp = (await page.goto("/"))?.headers()["content-security-policy"] ?? "";
+  expect(csp).toContain("https://analytics.twitter.com");
+  expect(csp).toContain("https://t.co");
+  await expect(banner(page).locator("bdi", { hasText: /^X$/ })).toHaveCount(1);
+  await banner(page).getByRole("button", { name: consentAr.customize }).click();
+  await banner(page).getByLabel(consentAr.categories.analytics.label).check();
+  await banner(page).getByRole("button", { name: consentAr.save }).click();
+  await expect.poll(() => requests.some((url) => url.includes(`gtag/js?id=${GA4_ID}`))).toBe(true);
+  expect(requests.some((url) => url.includes("ads-twitter.com"))).toBe(false);
+
+  await page.getByRole("button", { name: consentAr.settingsLink }).click();
+  await banner(page).getByRole("button", { name: consentAr.acceptAll }).click();
+  await expect
+    .poll(() => requests.some((url) => url === "https://static.ads-twitter.com/uwt.js"))
+    .toBe(true);
+  const script = page.locator('script[src="https://static.ads-twitter.com/uwt.js"]');
+  expect(await script.evaluate((node: HTMLScriptElement) => node.nonce)).not.toBe("");
+  const queue = await page.evaluate(() => JSON.stringify(window.twq?.queue ?? []));
+  expect(JSON.parse(queue)).toEqual(
+    expect.arrayContaining([
+      ["set", "autoAdvancedMatching", "false", X_PIXEL],
+      ["set", "dataLayerTracking", "false", X_PIXEL],
+      ["config", X_PIXEL],
+    ]),
+  );
   await context.close();
 });
 

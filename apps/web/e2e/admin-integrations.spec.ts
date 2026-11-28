@@ -61,7 +61,7 @@ test("المالك يفعّل ميتا: نمط المعرّف، والمفتاح
   const owner = await newStaff(db, club, { withTotp: true });
   await signIn(page, owner);
   await page.goto("/admin/integrations");
-  await expect(page.getByTestId("provider-tiles").getByRole("listitem")).toHaveCount(6);
+  await expect(page.getByTestId("provider-tiles").getByRole("listitem")).toHaveCount(7);
 
   await openMeta(page);
   await saveMeta(page, "12ab");
@@ -139,4 +139,55 @@ test("منصة مجهولة 404، وحدث اختبار بلا مفتاح يُر
   await page.goto("/admin/integrations/ga4");
   await page.getByRole("button", { name: TEXTS.test.submit }).click();
   await expect(formAlert(page)).toHaveText(TEXT.errors["tracking.not_configured"]);
+});
+
+test("X: البكسل وأحداثه بأنماطها، ولا مفتاح خادمي ولا حدث اختبار، وخانة الجوال مفعّلة افتراضيًا", async ({
+  page,
+}, testInfo) => {
+  const club = await newClub(db);
+  await signIn(page, await newStaff(db, club, { withTotp: true }));
+  await page.goto("/admin/integrations/x");
+  await expect(page.getByRole("heading", { level: 1, name: TEXTS.providers.x.name })).toBeVisible();
+  await expect(page.getByText(TEXTS.form.browserOnlyX)).toBeVisible();
+  await expect(page.getByRole("button", { name: TEXTS.test.submit })).toHaveCount(0);
+  await expect(page.getByLabel(TEXTS.form.sendHashedPhone)).toBeChecked();
+
+  const fields = TEXTS.form.fields;
+  await page.getByLabel(TEXTS.form.enabled, { exact: true }).check();
+  await page.getByLabel(fields.pixelId.label).fill("o8z5x");
+  await page.getByLabel(fields.purchaseEventId.label).fill("tw-zzzzz-p1q2r");
+  await page.getByRole("button", { name: TEXTS.form.submit }).click();
+  await expect(formAlert(page)).toHaveText(TEXT.errors["tracking.pixel_mismatch_purchaseEventId"]);
+  await page.getByLabel(fields.purchaseEventId.label).fill("tw-o8z5x-p1q2r");
+  await page.getByLabel(TEXTS.form.sendHashedPhone).uncheck();
+  await page.getByRole("button", { name: TEXTS.form.submit }).click();
+  await expect(page.getByText(TEXT.notices.tracking_saved)).toBeVisible();
+  await expect(page.getByLabel(TEXTS.form.sendHashedPhone)).not.toBeChecked();
+  const saved = await db.trackingIntegration.findUniqueOrThrow({
+    where: { clubId_provider: { clubId: club.id, provider: "x" } },
+  });
+  expect(saved.config).toEqual({
+    pixelId: "o8z5x",
+    purchaseEventId: "tw-o8z5x-p1q2r",
+    sendHashedPhone: false,
+  });
+  await expectAccessible(page, "x");
+
+  const width = page.viewportSize()?.width ?? 0;
+  for (const theme of ["light", "dark"] as const) {
+    await setTheme(page, theme);
+    await page.goto("/admin/integrations/x");
+    await expect(page.getByText(TEXTS.log.emptyTitle)).toBeVisible();
+    await page.screenshot({
+      path: `${SHOTS_DIR}/integrations-x-${theme}-${String(width)}.png`,
+      fullPage: true,
+    });
+    await page.goto("/admin/integrations");
+    await expect(page.getByTestId("provider-tiles").getByText("tw-o8z5x-p1q2r")).toBeVisible();
+    await page.screenshot({
+      path: `${SHOTS_DIR}/integrations-hub-x-${theme}-${String(width)}.png`,
+      fullPage: true,
+    });
+  }
+  testInfo.annotations.push({ type: "shots", description: SHOTS_DIR });
 });

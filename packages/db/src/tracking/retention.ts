@@ -34,14 +34,22 @@ async function purgeOrderBatch(db: Db, cutoff: Date, limit: number, now: Date): 
 }
 
 /**
- * الطابور لا يحمل حمولة ولا جسم رد أصلًا (القرار 88-7)؛ ما بقي معلّقًا من العمر نفسه يُغلق بسببه فلا
- * يُبنى من طلب فُرِّغ، والسطر يبقى سجلًّا بالحالة والرمز وحدهما.
+ * الطابور لا يحمل حمولة ولا جسم رد أصلًا (القرار 88-7). المعلّق لطلب فُرِّغ قياسه أو أُنشئ قبل الحد
+ * يُغلق بسببه فلا يُبنى من طلب فُرِّغ، والسطر يبقى سجلًّا بالحالة والرمز. المحجوز الآن (رمز حجز ومهلة
+ * لم تنقضِ) يُترك لمرسِله، وهو يسجّل السبب نفسه حين يجد الطلب مفرَّغًا.
  */
 async function closeStaleOutbox(db: Db, cutoff: Date, now: Date): Promise<number> {
   return db.$executeRaw`
     UPDATE tracking_outbox SET status = 'dead', last_reason = ${PURGE_REASON}, claim_token = NULL,
       updated_at = ${now}
-    WHERE status = 'pending' AND created_at < ${cutoff}`;
+    WHERE id IN (
+      SELECT t.id FROM tracking_outbox t
+      JOIN orders o ON o.id = t.order_id
+      LEFT JOIN order_tracking ot ON ot.order_id = t.order_id
+      WHERE t.status = 'pending' AND t.kind = 'live'
+        AND (t.claim_token IS NULL OR t.next_attempt_at <= ${now})
+        AND (ot.purged_at IS NOT NULL OR o.created_at < ${cutoff})
+      FOR UPDATE OF t SKIP LOCKED)`;
 }
 
 export async function purgeExpiredTracking(db: Db, options: PurgeOptions): Promise<PurgeSummary> {

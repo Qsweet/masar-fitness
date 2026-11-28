@@ -3,6 +3,8 @@ import {
   createDb,
   createOrder,
   markOrderPaid,
+  purgeExpiredTracking,
+  PURGE_REASON,
   recordOrderTracking,
   saveIntegration,
   type Db,
@@ -13,6 +15,7 @@ import {
   createTestStaff,
   orderInput,
   resetCommerceTables,
+  TEST_NOW,
   testDatabaseUrl,
   unwrap,
   type TestProduct,
@@ -77,11 +80,15 @@ async function enable(provider: "meta" | "ga4", options: { testCode?: string } =
   );
 }
 
-async function paidOrder(gaClientId: string | null = "123.456"): Promise<string> {
+async function paidOrder(
+  gaClientId: string | null = "123.456",
+  beforePayment: () => Promise<unknown> = () => Promise.resolve(),
+  stampedAt: Date = now,
+): Promise<string> {
   const { orderId } = unwrap(await createOrder(db, orderInput(plan.slug, PRICE)));
   await recordOrderTracking(db, {
     orderId,
-    consent: { analytics: true, ads: true, version: CONSENT_VERSION, at: now },
+    consent: { analytics: true, ads: true, version: CONSENT_VERSION, at: stampedAt },
     firstTouch: null,
     lastTouch: null,
     gaClientId,
@@ -92,8 +99,9 @@ async function paidOrder(gaClientId: string | null = "123.456"): Promise<string>
     clientIp: "203.0.113.9",
     userAgent: "Mozilla/5.0",
     pageUrl: null,
-    now,
+    now: stampedAt,
   });
+  await beforePayment();
   const payment = {
     provider: "test_pay",
     providerPaymentId: randomUUID(),
@@ -183,6 +191,17 @@ describe("المرسِل", () => {
     });
     expect(summary).toMatchObject({ skipped: 1 });
     expect((await rows("meta"))[0]?.lastReason).toBe("secret_unreadable");
+  });
+
+  it("طلب سُوّي بعد تفريغ قياسه: يموت retention_purged بلا إرسال (القرار 90-6)", async () => {
+    await enable("meta");
+    // الطلب وختمه في وقت الاختبار الثابت (قبل أكثر من 90 يومًا)، ففُرِّغ قبل أن يُدفع الآن
+    const purge = () => purgeExpiredTracking(db, { now, batchSize: 10, maxBatches: 1 });
+    await paidOrder("123.456", purge, TEST_NOW);
+    expect(await rows("meta")).toHaveLength(1);
+    expect(await dispatch()).toMatchObject({ claimed: 1, dead: 1 });
+    expect(fake.requests).toHaveLength(0);
+    expect((await rows("meta"))[0]).toMatchObject({ status: "dead", lastReason: PURGE_REASON });
   });
 });
 

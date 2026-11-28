@@ -6,6 +6,7 @@ import {
   claimDueEvents,
   loadPurchaseContext,
   loadSendableIntegration,
+  PURGE_REASON,
   recordAttempt,
   type ClaimedEvent,
   type Db,
@@ -64,6 +65,10 @@ async function prepare(deps: DispatchDeps, event: ClaimedEvent, now: Date): Prom
   const purchase = await loadPurchaseContext(deps.db, event.orderId);
   if (purchase === null) {
     return final("skipped", "no_order_context");
+  }
+  if (purchase.purgedAt !== null) {
+    // معرّفات الطلب فُرِّغت بعد مدة الاحتفاظ (القرار 90-6): لا يُبنى منه شيء
+    return final("dead", PURGE_REASON);
   }
   if (isTooOld(event.provider, event.eventTime, now)) {
     return final("dead", "too_old");

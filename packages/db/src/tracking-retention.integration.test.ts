@@ -1,9 +1,11 @@
+import { randomUUID } from "node:crypto";
 import { CONSENT_VERSION } from "@masar/domain";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   createDb,
   createOrder,
   loadPurchaseContext,
+  Prisma,
   purgeExpiredTracking,
   PURGE_REASON,
   recordOrderTracking,
@@ -148,28 +150,53 @@ describe("تفريغ معرّفات القياس", () => {
     );
   });
 
-  it("الطابور: المعلّق من العمر نفسه يُغلق بسببه، والمرسَل يبقى سجلًّا", async () => {
+  it("الطابور: المعلّق لطلب فُرِّغ يُغلق ولو أُدرج متأخرًا، والمحجوز الآن والمرسَل يبقيان", async () => {
     const orderId = await trackedOrder();
-    for (const [provider, status] of [
-      ["meta", "pending"],
-      ["snap", "sent"],
-    ] as const) {
+    const lease = new Date(AFTER_RETENTION.getTime() + DAY_MS);
+    const rows: readonly (readonly [string, string, Date, Date, boolean])[] = [
+      // المنصة، الحالة، وقت الإدراج، موعد المحاولة، محجوز
+      ["meta", "pending", AFTER_RETENTION, AFTER_RETENTION, false], // تسوية متأخرة بعد الحد
+      ["snap", "sent", TEST_NOW, TEST_NOW, false],
+      ["tiktok", "pending", TEST_NOW, lease, true], // في يد مرسِل الآن
+      ["ga4", "pending", TEST_NOW, TEST_NOW, true], // حجز انقضت مهلته
+    ];
+    for (const [provider, status, createdAt, next, claimed] of rows) {
       await db.$executeRaw`
         INSERT INTO tracking_outbox (id, club_id, order_id, provider, event_name, event_id, kind,
           status, attempts, next_attempt_at, event_time, created_at, updated_at, claim_token)
         VALUES (gen_random_uuid(), ${clubId}::uuid, ${orderId}::uuid, ${provider}, 'purchase',
-          ${`purchase.${orderId}`}, 'live', ${status}, 1, ${TEST_NOW}, ${TEST_NOW}, ${TEST_NOW},
-          ${TEST_NOW}, gen_random_uuid())`;
+          ${`purchase.${orderId}`}, 'live', ${status}, 1, ${next}, ${createdAt}, ${createdAt},
+          ${createdAt}, ${claimed ? randomUUID() : null}::uuid)`;
     }
-    expect((await purgeExpiredTracking(db, { now: AFTER_RETENTION, ...OPTIONS })).outbox).toBe(1);
-    const rows = await db.trackingOutbox.findMany({
+    expect((await purgeExpiredTracking(db, { now: AFTER_RETENTION, ...OPTIONS })).outbox).toBe(2);
+    const after = await db.trackingOutbox.findMany({
       where: { orderId },
       orderBy: { provider: "asc" },
     });
-    expect(rows.map((item) => [item.provider, item.status, item.lastReason])).toEqual([
+    expect(after.map((item) => [item.provider, item.status, item.lastReason])).toEqual([
+      ["ga4", "dead", PURGE_REASON],
       ["meta", "dead", PURGE_REASON],
       ["snap", "sent", null],
+      ["tiktok", "pending", null],
     ]);
-    expect(rows[0]?.claimToken).toBeNull();
+    expect(after[0]?.claimToken).toBeNull();
+  });
+
+  it("الـtrigger يرفض تفريغًا يبقي معرّف نقر في لمسة، وتعديل رابط الصفحة وحده", async () => {
+    const orderId = await trackedOrder();
+    const identifiers = Prisma.sql`ga_client_id = NULL, fbp = NULL, fbc = NULL, scid = NULL,
+      ttp = NULL, client_ip = NULL, user_agent = NULL, page_url = NULL, purged_at = now()`;
+    for (const touches of [
+      Prisma.sql`first_touch = first_touch, last_touch = tracking_scrub_touch(last_touch)`,
+      Prisma.sql`first_touch = tracking_scrub_touch(first_touch), last_touch = last_touch`,
+    ]) {
+      await expect(db.$executeRaw`
+        UPDATE order_tracking SET ${identifiers}, ${touches}
+        WHERE order_id = ${orderId}::uuid`).rejects.toThrow("order_tracking_immutable");
+    }
+    await expect(db.$executeRaw`
+      UPDATE order_tracking SET page_url = NULL WHERE order_id = ${orderId}::uuid`).rejects.toThrow(
+      "order_tracking_immutable",
+    );
   });
 });
